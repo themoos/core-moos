@@ -53,7 +53,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
     m_nDBPort = nPort;
     m_bHeadless = true;
     
-    MOOSTrace("This is headless MOOS called \"%s\" waiting for direction from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
+    MOOSTrace("This is headless Antler called \"%s\" waiting for direction from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
     
        //start a monitoring thread
     m_RemoteControlThread.Initialise(_RemoteControlCB, this);
@@ -182,6 +182,7 @@ bool CAntler::SendMissionFile( )
     In.close();
     
     MOOSTrace("Master MOOS Published mission file\n");
+    return true;
     
 }
 bool CAntler::OnMOOSConnect()
@@ -236,7 +237,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
     
     if(!MOOSStrCmp("SYSTEMPATH",m_sDefaultExecutablePath))
     {
-        MOOSTrace(" \"ExecutablePath\" is %s  (silent default is system path)\n",m_sDefaultExecutablePath.c_str());
+        MOOSTrace("\"ExecutablePath\" is %s\n",m_sDefaultExecutablePath.c_str());
         if(*m_sDefaultExecutablePath.rbegin()!='/')
         {
             //look to add extra / if needed
@@ -471,17 +472,41 @@ CAntler::MOOSProc* CAntler::CreateMOOSProcess(string sConfiguration)
 	//look for tilde demarking end of param=val block
     string sOption = MOOSChomp(sParam,"~");
     
-    if(m_bHeadless)
-    {
-        std::string sAntlerRequired;
-        if(!MOOSValFromString(sAntlerRequired, sOption, "AntlerID", true))
-    		return NULL; //this is for primary Antler
-        
-        if(!MOOSStrCmp(sAntlerRequired, m_sAntlerName))
-        	return NULL; //for some other Antler
     
-        //OK it is for us...
-        MOOSTrace("Headless MOOS found a RUN directive...");
+    
+    bool bDistributed=false;
+    m_MissionReader.GetConfigurationParam("EnableDistributed",bDistributed);
+
+    if(bDistributed)
+    {
+               
+        
+        if(m_bHeadless)
+        {
+            //we are a drone
+            std::string sAntlerRequired;
+            if(!MOOSValFromString(sAntlerRequired, sOption, "AntlerID", true))
+                return NULL; //this is for primary Antler
+            
+                        
+            if(!MOOSStrCmp(sAntlerRequired, m_sAntlerName))
+                return NULL; //for some other Antler
+            
+            //OK it is for us...
+            MOOSTrace("Headless Antler found a RUN directive...\n");
+        }
+        else
+        {
+            //we are a TopMOOS
+            std::string sAntlerRequired;
+            if(MOOSValFromString(sAntlerRequired, sOption, "AntlerID", true))
+                return NULL; //this is for a drone
+            
+        }
+    }
+    else
+    {
+        //we run everything
     }
     
     //do we want a new console?
