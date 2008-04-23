@@ -200,7 +200,7 @@ bool CAntler::OnMOOSConnect()
 }
 bool CAntler::OnMOOSDisconnect()
 {
-	MOOSTrace("Headless Antler found lost DB");    
+	MOOSTrace("Headless Antler lost DB Connection\n");    
     return true;
 }
 
