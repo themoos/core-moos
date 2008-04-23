@@ -101,8 +101,8 @@ class CAntler
         
         //this is used to communicate with the BD and ultimately other instantiations of
         //pAntler on different machines...
-        CMOOSCommClient m_MOOSComms;
         CMOOSThread m_RemoteControlThread;
+        CMOOSCommClient * m_pMOOSComms;
         /**method to allow Listen thread to be launched with a MOOSThread.*/
         static bool _RemoteControlCB(void* pParam)
         {

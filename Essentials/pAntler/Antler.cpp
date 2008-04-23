@@ -13,10 +13,35 @@ CAntler::CAntler()
     m_nDBPort = 9000;
 }
 
+
+bool QuickXTest()
+{
+    //make a child process
+    pid_t pid = fork();
+    if(pid<0)
+    {
+        //hell!
+        MOOSTrace("fork failed, not good\n");
+        return false;
+    }
+    else if(pid ==0)
+    {
+        MOOSTrace("child");
+        return true;
+    }
+    else
+    {
+        MOOSTrace("parent");
+        return true;
+    }
+    
+}
+
 bool CAntler::Run(const std::string &  sMissionFile)
 {
     m_bHeadless = false;
     m_sMissionFile = sMissionFile;
+    //return QuickXTest();
     return Spawn(m_sMissionFile);
 }
 
@@ -30,11 +55,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
     
     MOOSTrace("This is headless MOOS called \"%s\" waiting for direction from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
     
-    
-    if(!ConfigureMOOSComms())
-        return true;
-    
-    //start a monitoring thread
+       //start a monitoring thread
     m_RemoteControlThread.Initialise(_RemoteControlCB, this);
     m_RemoteControlThread.Start();
     
@@ -60,21 +81,26 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
 bool CAntler::DoRemoteControl()
 {
     
-        
+    
+    
+    if(!ConfigureMOOSComms())
+        return true;
+    
+    
 	
     
     while(1)
     {
         MOOSPause(100);
-        if(!m_MOOSComms.IsConnected())
+        if(!m_pMOOSComms->IsConnected())
             continue;
         
         //better check mail
         MOOSMSG_LIST NewMail;
-        if(m_MOOSComms.Fetch(NewMail))
+        if(m_pMOOSComms->Fetch(NewMail))
         {
             CMOOSMsg Msg;
-            if(m_MOOSComms.PeekAndCheckMail(NewMail,"MISSION_FILE",Msg))
+            if(m_pMOOSComms->PeekAndCheckMail(NewMail,"MISSION_FILE",Msg))
             {
                 //tell the current job to quit
                 m_bQuitCurrentJob = true;
@@ -85,7 +111,7 @@ bool CAntler::DoRemoteControl()
                 //make a new file name
                 m_sReceivedMissionFile = MOOSFormat("%s.moos",MOOSGetDate().c_str());   
                             
-                
+                MOOSTrace("received mission file at run time\n");
                 
                 //here we copy the mission file contained in the message to 
                 std::stringstream ss(Msg.GetString());
@@ -117,14 +143,15 @@ bool CAntler::DoRemoteControl()
 
 bool CAntler::ConfigureMOOSComms()
 {
-    m_MOOSComms.SetOnConnectCallBack(_MOOSConnectCB,this);
-	m_MOOSComms.SetOnDisconnectCallBack(_MOOSDisconnectCB,this);
-    m_MOOSComms.SetQuiet(true);
+    m_pMOOSComms = new CMOOSCommClient;
+    m_pMOOSComms->SetOnConnectCallBack(_MOOSConnectCB,this);
+	m_pMOOSComms->SetOnDisconnectCallBack(_MOOSDisconnectCB,this);
+    m_pMOOSComms->SetQuiet(true);
     
     std::string sMe =MOOSFormat("Antler{%s}",m_sAntlerName.c_str());
     
     //try and connect to a DB
-    if(!m_MOOSComms.Run(m_sDBHost.c_str(), (long int)m_nDBPort, sMe.c_str(), 1))
+    if(!m_pMOOSComms->Run(m_sDBHost.c_str(), (long int)m_nDBPort, sMe.c_str(), 1))
         return MOOSFail("could not set up MOOSComms\n");
     
     if(m_bHeadless==false)
@@ -137,7 +164,7 @@ bool CAntler::ConfigureMOOSComms()
 
 
 
-bool CAntler::SendMissionFile()
+bool CAntler::SendMissionFile( )
 {
     std::ifstream In(m_sMissionFile.c_str());
     
@@ -150,7 +177,7 @@ bool CAntler::SendMissionFile()
     //you've gotta lurve C++ ...
     ss<<In.rdbuf();
     
-    m_MOOSComms.Notify("MISSION_FILE",ss.str());
+    m_pMOOSComms->Notify("MISSION_FILE",ss.str());
     
     In.close();
     
@@ -162,7 +189,7 @@ bool CAntler::OnMOOSConnect()
     if(m_bHeadless)
     {
         MOOSTrace("Headless Antler found a DB\n");    
-        m_MOOSComms.Register("MISSION_FILE",0);
+        m_pMOOSComms->Register("MISSION_FILE",0);
     }
     else
     {
@@ -194,25 +221,6 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
     
     if(!m_MissionReader.GetConfiguration(  m_MissionReader.GetAppName(),sParams))
         return MOOSFail("error reading antler config block from mission file\n");
-    
-    if(bHeadless==false)
-    {
-        bool bMaster=false;
-        m_MissionReader.GetConfigurationParam("EnableDistributed",bMaster);
-        if(bMaster)
-        {
-            
-            m_MissionReader.GetValue("ServerHost",m_sDBHost);
-            m_MissionReader.GetValue("ServerPort",m_nDBPort);
-            
-            
-            if(!ConfigureMOOSComms())
-                return MOOSFail("failed to start MOOS comms");
-            
-        }
-        
-        
-    }
     
     
     //fetch all the lines in teg Antler configuration block
@@ -269,9 +277,27 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
         }
     }
     
+    
+    
+    if(bHeadless==false)
+    {
+        bool bMaster=false;
+        m_MissionReader.GetConfigurationParam("EnableDistributed",bMaster);
+        if(bMaster)
+        {
+            
+            m_MissionReader.GetValue("ServerHost",m_sDBHost);
+            m_MissionReader.GetValue("ServerPort",m_nDBPort);
+            
+            
+            if(!ConfigureMOOSComms())
+                return MOOSFail("failed to start MOOS comms");
+            
+        }
+    }
+    
+    
     //now wait on all our processes to close....
-    
-    
     while(m_ProcList.size()!=0)
     {
         MOOSPROC_LIST::iterator q;
