@@ -335,6 +335,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 #else
             if(m_bQuitCurrentJob)
             {
+                MOOSTrace("actively killing running child\n");
 				kill(pMOOSProc->m_ChildPID,SIGSTOP);              
             }
             
