@@ -105,9 +105,14 @@ bool CAntler::DoRemoteControl()
                 //tell the current job to quit
                 m_bQuitCurrentJob = true;
                 
+                
+                
+                MOOSTrace("Waiting for jobs to quit\n");
+                
                 //wait for that to happen
                 m_JobLock.Lock();        
                 
+                MOOSTrace("AllJobs should have quit\n")
                 //make a new file name
                 m_sReceivedMissionFile = MOOSFormat("%s.moos",MOOSGetDate().c_str());   
                             
@@ -297,6 +302,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
         }
     }
     
+
     
     //now wait on all our processes to close....
     while(m_ProcList.size()!=0)
