@@ -3,7 +3,7 @@
 using namespace std;
 #include <sstream>
 
-#define DEBUG_LAUNCH 1
+#define DEBUG_LAUNCH 0
 CAntler::CAntler()
 {
 	m_JobLock.UnLock();    
@@ -100,20 +100,17 @@ bool CAntler::DoRemoteControl()
         if(m_pMOOSComms->Fetch(NewMail))
         {
             CMOOSMsg Msg;
-            if(m_pMOOSComms->PeekAndCheckMail(NewMail,"MISSION_FILE",Msg))
+            if(m_pMOOSComms->PeekMail(NewMail,"MISSION_FILE",Msg))
             {
                 //tell the current job to quit
                 m_bQuitCurrentJob = true;
                 
                 
-                
-                MOOSTrace("Waiting for jobs to quit\n");
-                
+                             
                 //wait for that to happen
                 m_JobLock.Lock();        
                 
-                MOOSTrace("AllJobs should have quit\n");
-                //make a new file name
+            	//make a new file name
                 m_sReceivedMissionFile = MOOSFormat("%s.moos",MOOSGetDate().c_str());   
                             
                 MOOSTrace("received mission file at run time\n");
@@ -335,8 +332,10 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 #else
             if(m_bQuitCurrentJob)
             {
-                MOOSTrace("actively killing running child\n");
-				kill(pMOOSProc->m_ChildPID,SIGSTOP);              
+                MOOSTrace("actively killing running child %s\n",pMOOSProc->m_sApp.c_str());
+				kill(pMOOSProc->m_ChildPID,SIGKILL);
+                //just give it a little time - for pities sake - no need for this pause
+                MOOSPause(300);
             }
             
             
@@ -771,7 +770,7 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
         for(int j = 0;j<i;j++)
             MOOSTrace("argv[%d]:\"%s\"\n",j,pExecVParams[j]);
 #endif
-        MOOSTrace("here we go\n");
+        
         //and finally replace ourselves with a new xterm process image
         if(execvp(pExecVParams[0],(char * const *)pExecVParams)==-1)
         {
