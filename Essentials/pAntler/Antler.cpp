@@ -112,7 +112,7 @@ bool CAntler::DoRemoteControl()
                 //wait for that to happen
                 m_JobLock.Lock();        
                 
-                MOOSTrace("AllJobs should have quit\n")
+                MOOSTrace("AllJobs should have quit\n");
                 //make a new file name
                 m_sReceivedMissionFile = MOOSFormat("%s.moos",MOOSGetDate().c_str());   
                             
