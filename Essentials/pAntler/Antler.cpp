@@ -11,6 +11,7 @@ CAntler::CAntler()
     m_sAntlerName = "Monach";
     m_sDBHost = "localhost";
     m_nDBPort = 9000;
+    m_bQuitCurrentJob = false;
 }
 
 
