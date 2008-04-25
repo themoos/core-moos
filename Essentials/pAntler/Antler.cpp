@@ -14,38 +14,15 @@ CAntler::CAntler()
     m_bQuitCurrentJob = false;
 }
 
-
-bool QuickXTest()
-{
-    //make a child process
-    pid_t pid = fork();
-    if(pid<0)
-    {
-        //hell!
-        MOOSTrace("fork failed, not good\n");
-        return false;
-    }
-    else if(pid ==0)
-    {
-        MOOSTrace("child");
-        return true;
-    }
-    else
-    {
-        MOOSTrace("parent");
-        return true;
-    }
-    
-}
-
+//this is the vanilla version of Run - called to run from a single mission file
 bool CAntler::Run(const std::string &  sMissionFile)
 {
     m_bHeadless = false;
     m_sMissionFile = sMissionFile;
-    //return QuickXTest();
     return Spawn(m_sMissionFile);
 }
 
+//this version will wait for a mission fiel to be sent via a DB
 bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAntlerName)
 {
     //this is more interesting...
@@ -56,7 +33,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
     
     MOOSTrace("This is headless Antler called \"%s\" waiting for direction from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
     
-       //start a monitoring thread
+    //start a monitoring thread
     m_RemoteControlThread.Initialise(_RemoteControlCB, this);
     m_RemoteControlThread.Start();
     
@@ -103,19 +80,23 @@ bool CAntler::DoRemoteControl()
             CMOOSMsg Msg;
             if(m_pMOOSComms->PeekMail(NewMail,"MISSION_FILE",Msg))
             {
+                MOOSTrace("\n|***** Dynamic Brief *****|\n\n");
+                
+                //make a new file name
+                m_sReceivedMissionFile = MOOSFormat("runtime_%s.moos",MOOSGetTimeStampString().c_str());   
+                
+                MOOSTrace("   %s received \n",m_sReceivedMissionFile.c_str());
+                MOOSTrace("   shutting down all current spawned processes:\n");
+                
+                
                 //tell the current job to quit
                 m_bQuitCurrentJob = true;
                 
-                
-                             
                 //wait for that to happen
                 m_JobLock.Lock();        
                 
-            	//make a new file name
-                m_sReceivedMissionFile = MOOSFormat("%s.moos",MOOSGetDate().c_str());   
-                            
-                MOOSTrace("received mission file at run time\n");
-                
+                              
+            	                
                 //here we copy the mission file contained in the message to 
                 std::stringstream ss(Msg.GetString());
                 std::ofstream Out(m_sReceivedMissionFile.c_str());
@@ -132,10 +113,11 @@ bool CAntler::DoRemoteControl()
 
                 //we no longer want the current job to quit (it already has)
                 m_bQuitCurrentJob = false;
+                
                 //signal that we have more work to do
                 m_bNewJob =true;
                             
-                //let thrad 0 continue
+                //let thread 0 continue
                 m_JobLock.UnLock();
      			
                 
@@ -157,11 +139,7 @@ bool CAntler::ConfigureMOOSComms()
     if(!m_pMOOSComms->Run(m_sDBHost.c_str(), (long int)m_nDBPort, sMe.c_str(), 1))
         return MOOSFail("could not set up MOOSComms\n");
     
-    if(m_bHeadless==false)
-    {
-        MOOSTrace("This is a master MOOS called %s\n",m_sAntlerName.c_str());
-    }
-    
+      
     return true;
 }
 
@@ -169,22 +147,20 @@ bool CAntler::ConfigureMOOSComms()
 
 bool CAntler::SendMissionFile( )
 {
-    std::ifstream In(m_sMissionFile.c_str());
-    
-    if(!In.is_open())
-        return MOOSFail("failed to open file for reading");
-        
-    
+    MOOSTrace("\n\n|***** Propagate *****|\n\n");
+    CMOOSFileReader FR;
+    FR.SetFile(m_sMissionFile);
     std::stringstream ss;
-    
-    //you've gotta lurve C++ ...
-    ss<<In.rdbuf();
-    
+
+    while(!FR.eof())
+    {
+        std::string sL = FR.GetNextValidLine()+"\n";
+        ss<<sL;
+    }
     m_pMOOSComms->Notify("MISSION_FILE",ss.str());
     
-    In.close();
     
-    MOOSTrace("Master MOOS Published mission file\n");
+    MOOSTrace("   Master MOOS Published mission file %d bytes\n",ss.str().size());
     return true;
     
 }
@@ -211,6 +187,8 @@ bool CAntler::OnMOOSDisconnect()
 
 bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 {
+    
+    MOOSTrace("\n\n|****** Launch ******|\n\n");
     m_nCurrentLaunch = 0;
     
     
@@ -240,7 +218,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
     
     if(!MOOSStrCmp("SYSTEMPATH",m_sDefaultExecutablePath))
     {
-        MOOSTrace("\"ExecutablePath\" is %s\n",m_sDefaultExecutablePath.c_str());
+        //MOOSTrace("\"ExecutablePath\" is %s\n",m_sDefaultExecutablePath.c_str());
         if(*m_sDefaultExecutablePath.rbegin()!='/')
         {
             //look to add extra / if needed
@@ -270,7 +248,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             
             if(pNew!=NULL)
             {
-                MOOSTrace("MOOSProcess: \"%s\" launched successfully\n",pNew->m_sApp.c_str());
+                MOOSTrace("   [%.3d] Process: \"%s\" launched successfully\n",m_nCurrentLaunch,pNew->m_sApp.c_str());
                 m_ProcList.push_front(pNew);
 				m_nCurrentLaunch++;
             }
@@ -333,7 +311,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 #else
             if(m_bQuitCurrentJob)
             {
-                MOOSTrace("actively killing running child %s\n",pMOOSProc->m_sApp.c_str());
+                MOOSTrace("\tactively killing running child %s\n",pMOOSProc->m_sApp.c_str());
 				kill(pMOOSProc->m_ChildPID,SIGKILL);
                 //just give it a little time - for pities sake - no need for this pause
                 MOOSPause(300);
@@ -343,7 +321,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             int nStatus = 0;
             if(waitpid(pMOOSProc->m_ChildPID,&nStatus,WNOHANG)>0)
             {
-                MOOSTrace("%s has quit\n",pMOOSProc->m_sApp.c_str());
+                MOOSTrace("\t\t%s has quit\n",pMOOSProc->m_sApp.c_str());
                 
                 m_ProcList.erase(q);
                 break;
@@ -355,7 +333,6 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
               
     }
     
-    MOOSTrace("All MOOS Processes complete...\n");
 
     
     return 0;
@@ -378,7 +355,7 @@ bool CAntler::MakeExtraExecutableParameters(std::string sParam,STRING_LIST & Ext
     
     //OK look for this configuration string
     if(!m_MissionReader.GetConfigurationParam(sExtraParamsName,sExtraParams))
-        return MOOSFail("cannot find extra parameters named \"%s\"\n",sExtraParamsName.c_str());
+        return MOOSFail("   warning cannot find extra parameters named \"%s\"\n",sExtraParamsName.c_str());
     
     while(!sExtraParams.empty())
         ExtraCommandLineParameters.push_back(MOOSChomp(sExtraParams,","));
@@ -435,7 +412,7 @@ bool CAntler::MakeConsoleLaunchParams(std::string sParam,STRING_LIST & LaunchLis
         
         //OK look for this configuration string
         if(!m_MissionReader.GetConfigurationParam(sLaunchConfigurationName,sLaunchConfiguration))
-			return MOOSFail("could not find resource string called \"%s\"",sLaunchConfigurationName.c_str()) ;
+			return MOOSFail("   warning: could not find resource string called \"%s\"",sLaunchConfigurationName.c_str()) ;
     }
     
     //OK now simply chomp our way through a space delimited list...
@@ -500,7 +477,7 @@ CAntler::MOOSProc* CAntler::CreateMOOSProcess(string sConfiguration)
                 return NULL; //for some other Antler
             
             //OK it is for us...
-            MOOSTrace("Headless Antler found a RUN directive...\n");
+            //MOOSTrace("Headless Antler found a RUN directive...\n");
         }
         else
         {
