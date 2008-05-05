@@ -13,12 +13,11 @@
 
 //Run two instances of pAntlerTestAppA under different names
 //note two new configuration blocks are needed (Oxford and FenTech)
-ProcessConfig = Antler
+//ProcessConfig = Antler
 {
     Run = MOOSDB @ NewConsole = true
     Run = pAntlerTestAppA @ NewConsole = true  ~ Oxford
     Run = pAntlerTestAppA @ NewConsole = true ~ FenTech
-    Run  = ping
 }
 
 
@@ -32,6 +31,16 @@ ProcessConfig = Antler
     BParams = CustomVar,ThisIsAString
     
 }
+
+//specifying a default executable path and overloading it for MOOSBD
+ProcessConfig = Antler
+{
+    ExecutablePath  = C:/codescratch/MOOS/MOOSBin/debug/q
+    Run = MOOSDB @ path=C:/codescratch/MOOS/MOOSBin/debug, NewConsole = true
+    Run = qq @ NewConsole = true
+       
+}
+
 
 //passing three parameters to pTestAppC which is not expecting the first
 //two parameters to be Mission File and MOOSName
