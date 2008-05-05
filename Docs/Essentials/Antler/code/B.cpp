@@ -38,8 +38,10 @@ int main(int argc,char *argv[])
     char * sWhat = "not set";
     switch(argc)
     {
+    case 5:
+        sWhat = argv[4];
     case 4:
-        sMissionFile = argv[3];
+        sPublish = argv[3];
     case 3:
         sMOOSName = argv[2];
     case 2:

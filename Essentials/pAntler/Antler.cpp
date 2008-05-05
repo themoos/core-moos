@@ -248,7 +248,10 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             
             if(pNew!=NULL)
             {
-                MOOSTrace("   [%.3d] Process: \"%s\" launched successfully\n",m_nCurrentLaunch,pNew->m_sApp.c_str());
+                MOOSTrace("   [%.3d] Process: %-15s ~ %-15s launched successfully\n",
+                    m_nCurrentLaunch,
+                    pNew->m_sApp.c_str(),
+                    pNew->m_sMOOSName.c_str());
                 m_ProcList.push_front(pNew);
 				m_nCurrentLaunch++;
             }
@@ -299,7 +302,9 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             pMOOSProc->pWin32Proc->vWaitForTerminate(100);
             if(    pMOOSProc->pWin32Proc->dwGetExitCode()!=STILL_ACTIVE)
             {
-                MOOSTrace("%s has quit\n",pMOOSProc->m_sApp.c_str());
+                MOOSTrace("   [%.3d] Process: %-15s has quit\n",
+                    --m_nCurrentLaunch,
+                    pMOOSProc->m_sApp.c_str());
                 
                 delete pMOOSProc->pWin32Attrib;
                 delete pMOOSProc->pWin32Proc;
@@ -321,7 +326,9 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             int nStatus = 0;
             if(waitpid(pMOOSProc->m_ChildPID,&nStatus,WNOHANG)>0)
             {
-                MOOSTrace("\t\t%s has quit\n",pMOOSProc->m_sApp.c_str());
+                MOOSTrace("   [%.3d] Process: %-15s has quit\n",
+                    --m_nCurrentLaunch,
+                    pMOOSProc->m_sApp.c_str());
                 
                 m_ProcList.erase(q);
                 break;

@@ -5,11 +5,11 @@ class CA:public CMOOSApp
 {
     bool OnStartUp()
     {
-        MOOSTrace("Example A : This a vanilla MOOSApp");
+        MOOSTrace("Example A : This a vanilla MOOSApp\n");
         std::string sPrintThis = "not good";
         if(m_MissionReader.GetConfigurationParam("PrintThis",sPrintThis))
         {
-            MOOSTrace("Found print directive: print : \"\"\n",sPrintThis.c_str());
+            MOOSTrace("Found print directive: print : \"%s\"\n",sPrintThis.c_str());
         }
         else
         {
