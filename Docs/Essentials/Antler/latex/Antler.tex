@@ -174,7 +174,7 @@ will cause the executable called "iGPS" to be launched in a new console but (bec
 Of course just passing the MOOSName to a process doesn't mean automagically that all MOOS connections within that process will use this name. Supporting code must be provided. Listing \ref{Code:Argv} illustrates just one way in which this can be done.
 
 
-\lstinputlisting[ caption = {Handling default command line parameters. Note how the MOOSName and Mission file are passed to the CMOOSApp derived object.},label = {Code:Argv} ]{./code/main.cpp}
+\lstinputlisting[ caption = {Handling default command line parameters. Note how the MOOSName and Mission file are passed to the CMOOSApp derived object.},label = {Code:Argv} ]{../code/main.cpp}
  
 
 
@@ -228,7 +228,7 @@ The above would launch a process called \"iProcA" in a new console, (with defaul
 
 If you want to launch a process with \code{Antler} that has not been designed to handle the mission file name an MOOS name as the first two parameters passed in the command line then it is possible to tell \code{Antler} not to pass these parameters. This is done using the \code{InhibitMOOSParams}  key word. For example if you wanted to launch the executable \code{top} in its own window you would use configuration similar to that in Listing \ref{Code:Top}
 
-\lstinputlisting[ caption = {Launching a non moos process -like top (here on a 'nix system). Note the use of \code{InhibitMOOSParams}},label = {Code:Top} ]{./code/top.moos}
+\lstinputlisting[ caption = {Launching a non moos process -like top (here on a 'nix system). Note the use of \code{InhibitMOOSParams}},label = {Code:Top} ]{../code/top.moos}
  
 
 
@@ -268,4 +268,9 @@ case of an AUV the interface can only be reached  through in-air
 wireless communications, which will clearly disappear when the
 vehicle submerges but will gracefully re-connect when surfacing(
 not so easy to do with a PPP or similar link). 
+
+
+
+\section{Example Configuration Blocks}
+\lstinputlisting[ caption = {Example Configuration Blocks for Antler where all process are run on the same host machine. This file can be found in the sibling code directory of Antler in the documentation tree},label = {Code:LocalExampleSet} ]{../code/LocalExampleSet.moos}
 \end{document}
