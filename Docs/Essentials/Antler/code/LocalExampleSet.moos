@@ -1,0 +1,62 @@
+
+//Un-Comment/ Comment the first line of each each example block
+//to play with various antler configurations
+
+
+//simplest possible example
+ProcessConfig = Antler
+{
+    Run = MOOSDB @ NewConsole = true;
+    Run = pTestAppA @ NewConsole = true;
+}
+
+//passing an additional two parameters to pTestAppB
+ProcessConfig = Antler
+{
+    Run = MOOSDB @ NewConsole = true;
+    Run = pTestAppA @ NewConsole = true;
+    
+    Run = pTestAppB, ExtraProcessParams = BParams @ NewConsole = true;
+    BParams = CustomVar,ThisIsAString
+    
+}
+
+//passing three parameters to pTestAppC which is not expecting the first
+//two parameters to be Mission File and MOOSName
+ProcessConfig = Antler
+{
+    Run = MOOSDB @ NewConsole = true;
+    Run = pTestAppA @ NewConsole = true;
+    
+    Run = pTestAppB, ExtraProcessParams = BParams @ NewConsole = true;
+    BParams = CustomVar,ThisIsAString
+    
+    Run = pTestAppC, ExtraProcessParams = CParams, InhibitMOOSParams=true @ NewConsole = true;
+    CParams = set,the,moos,loose,1,2,3,45.6
+    
+}
+
+//Adding some colour to MOOSDB
+ProcessConfig = Antler
+{
+    Run = MOOSDB,Win32Config=DBWin32,XConfig=DBX @ NewConsole = true;
+    DBX = -bg,#FF0000, -geometry, 80x40+200+300
+    DBWin32 = BACKGROUND_RED
+    
+    Run = pTestAppA @ NewConsole = true;
+
+}
+
+
+//Configuration for TestAppA - just looks for a string to print
+ProcessConfig = pTestAppA
+{
+    PrintThis = SetTheMOOSLoose
+}
+
+//configuration for pTestAppB  - nothing but it expects a third and fourth
+//command line tell it what to publish...
+ProcessConfig = pTestAppB
+{
+
+}
