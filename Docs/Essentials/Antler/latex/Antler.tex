@@ -232,6 +232,17 @@ If you want to launch a process with \code{Antler} that has not been designed to
  
 
 
+\section{Distributing  a Community over Multiple Machines}
+
+Up until now we have implicitly assumed that all processes launched by a single instance of \code{Antler} reside on the same physical computer. Surely this is conflicts with the idea that any MOOS process can run on any machine under any (common) OS? You're right it does and this issue has been addressed in post V7.0.2 versions.
+
+\begin{figure}
+\centering
+\epsfig{figure=images/distributed.eps,width = \linewidth}
+\caption{Antler can be started in one of two ways. Here on the machine lisa1.robots.ox.ac.uk it is started  in "Top MOOS" mode with the name of a mission file on the command line. On the two other machines (lisa2 and lisa3) Anterl is started in headless mode receiving three command line parameters - the machine name on which a \code{MOOSDB} can be found, the port that \code{MOOSDB} is serving on and an Antler name which in this case is simply set to the machine name. When the "topMOOS" has spawned its processes it pushes the mission file to the DB. The headless Antlers pick up this notification and run themselves from the newly received Mission file. They only launch processes which are specified to run on Antlers with their own Antler name.} 
+\end{figure}
+
+
 
 \section{Application note : I/O Redirection - Deployment} 
 Frequently \code{iRemote}, displayed on a remote machine, will be
