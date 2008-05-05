@@ -1,10 +1,10 @@
-PROJECT(AntlerTestApp)
+PROJECT(AntlerTestApps)
 
 
 # Add executable
 ADD_EXECUTABLE( pAntlerTestAppA A.cpp)
-ADD_EXECUTABLE( pAntlerAppB B.cpp)
-ADD_EXECUTABLE( pAntlerAppC C.cpp)
+ADD_EXECUTABLE( pAntlerTestAppB B.cpp)
+ADD_EXECUTABLE( pAntlerTestAppC C.cpp)
 
 # Link the executable
 TARGET_LINK_LIBRARIES(pAntlerTestAppA ${MOOSLIBS} ${PLATFORM_LIBS} )

@@ -72,7 +72,7 @@ ENDIF(BUILD_INSTRUMENTS)
 ############# EXAMPLES ? ################
 SET( BUILD_EXAMPLES OFF CACHE BOOL "Build Documentation Examples ")
 IF(BUILD_EXAMPLES)
-    SET(BUILD_DIRS ${BUILD_DIRS} Docs/ProgrammingWithMOOS/code )
+    SET(BUILD_DIRS ${BUILD_DIRS} Docs/ProgrammingWithMOOS/code Docs/Essentials/Antler/code )
 ENDIF(BUILD_EXAMPLES)
 
 

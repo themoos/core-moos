@@ -34,7 +34,7 @@ int main(int argc,char *argv[])
     default:
         for(int i = 3;i<argc;i++)
         {
-            MOOSTrace("arg[%d] = %s\n",i,argv[i])
+            MOOSTrace("arg[%d] = %s\n",i,argv[i]);
         }
     }
     CA A;
