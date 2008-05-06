@@ -1,0 +1,59 @@
+//if you are really runing this on different hosts
+//makesure you set the server hostname below
+//if you are simply testing how to run multipls
+//instances of MOOS leaving it as local host is just fine
+
+ServerHost = localhost
+ServerPort = 9000
+
+
+//Adding some colour to MOOSDB, pAntlerTestB and pAntlerTestC
+ProcessConfig = Antler
+{
+    EnableDistributed = true
+    Run = MOOSDB @Win32Config=DBWin32,XConfig=DBX , NewConsole = true
+    DBX = -bg,#FF0000, -geometry, 80x40+200+300
+    DBWin32 = BACKGROUND_RED
+    
+    Run = pAntlerTestAppA @ AntlerID = jupiter, NewConsole = true
+    
+    Run = pAntlerTestAppB @ AntlerID = neptune,Win32Config=BWin32,XConfig=BX, ExtraProcessParams = BParams , NewConsole = true
+    BParams = CustomVar,ThisIsAString
+    BWin32 = BACKGROUND_GREEN,BACKGROUND_BLUE
+    BX = -bg,#00FFFF, -geometry, 80x40+350+300
+    
+    Run = pAntlerTestAppC @ Win32Config=CWin32,XConfig=CX,ExtraProcessParams = CParams, InhibitMOOSParams=true , NewConsole = true
+    CParams = set,the,moos,loose,1,2,3,45.6
+    CWin32 = BACKGROUND_RED,BACKGROUND_BLUE
+    CX = -bg,#FF00FF, -geometry, 80x40+400+300
+    
+}
+
+
+//Configuration for TestAppA - just looks for a string to print
+ProcessConfig = pAntlerTestAppA
+{
+    PrintThis = SetTheMOOSLoose
+}
+
+//configuration for pTestAppB  - nothing but it expects a third and fourth
+//command line tell it what to publish...
+ProcessConfig = pAntlerTestAppB
+{
+
+}
+
+//Configuration for FenTech (which is actually  and instantiation of
+// pAntlerTestAppA) - just looks for a string to print
+ProcessConfig = FenTech
+{
+    PrintThis = ThisIsTestAppAAsFenTech
+}
+
+//Configuration for Oxford (which is actually  an instantiation of
+// pAntlerTestAppA) - just looks for a string to print
+ProcessConfig = Oxford
+{
+    PrintThis = ThisIsTestAppAAsOxford
+}
+
