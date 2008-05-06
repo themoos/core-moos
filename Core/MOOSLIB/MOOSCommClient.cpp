@@ -522,29 +522,33 @@ bool CMOOSCommClient::IsConnected()
 
 bool CMOOSCommClient::OnCloseConnection()
 {
-	MOOSTrace("closing connection...");
+	if(!m_bQuiet)
+		MOOSTrace("closing connection...");
 	m_pSocket->vCloseSocket();
 	if(m_pSocket)
 		delete m_pSocket;
 	m_pSocket= NULL;
 	m_bConnected = false;
-	MOOSTrace("done\n");
+	if(!m_bQuiet)
+		MOOSTrace("done\n");
 
 	ClearResources();
 
 	if(m_pfnDisconnectCallBack!=NULL)
 	{
-
-		MOOSTrace("Invoking User OnDisconnect() callback...");
+		if(!m_bQuiet)
+			MOOSTrace("Invoking User OnDisconnect() callback...");
 		//invoke user defined callback
 		bool bUserResult = (*m_pfnDisconnectCallBack)(m_pDisconnectCallBackParam);
 		if(bUserResult)
 		{
-			MOOSTrace("ok\n");
+			if(!m_bQuiet)
+				MOOSTrace("ok\n");
 		}
 		else
 		{
-			MOOSTrace("returned fail\n");
+			if(!m_bQuiet)
+				MOOSTrace("returned fail\n");
 		}
 
 	}
@@ -792,22 +796,27 @@ bool CMOOSCommClient::FakeSource(bool bFake)
 
 bool CMOOSCommClient::ClearResources()
 {
-
-	MOOSTrace("purging out box...");
+	if(!m_bQuiet)
+		MOOSTrace("purging out box...");
 	m_OutLock.Lock();
 	m_OutBox.clear();
 	m_OutLock.UnLock();
-	MOOSTrace("done\n");
+	if(!m_bQuiet)
+		MOOSTrace("done\n");
 
-	MOOSTrace("purging in box...");
+	if(!m_bQuiet)
+		MOOSTrace("purging in box...");
 	m_InLock.Lock();
 	m_InBox.clear();
 	m_InLock.UnLock();
-	MOOSTrace("done\n");
+	if(!m_bQuiet)
+        MOOSTrace("done\n");
 
-	MOOSTrace("clearing registered set...");
+	if(!m_bQuiet)
+		MOOSTrace("clearing registered set...");
 	m_Registered.clear();
-	MOOSTrace("done\n");
+	if(!m_bQuiet)
+		MOOSTrace("done\n");
 
 	return true;
 
