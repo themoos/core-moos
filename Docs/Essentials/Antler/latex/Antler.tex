@@ -234,15 +234,41 @@ If you want to launch a process with \code{Antler} that has not been designed to
 
 \section{Distributing  a Community over Multiple Machines}
 
-Up until now we have implicitly assumed that all processes launched by a single instance of \code{Antler} reside on the same physical computer. Surely this is conflicts with the idea that any MOOS process can run on any machine under any (common) OS? You're right it does and this issue has been addressed in post V7.0.2 versions.
+Up until now we have implicitly assumed that all processes launched by a single instance of \code{Antler} reside on the same physical computer. Surely this is conflicts with the idea that any MOOS process can run on any machine under any (common) OS? You're right it does and this issue has been addressed in post V7.0.2 versions. Excellent. In the broadest of terms it is possible to have have one Antler send a single mission file to a host of other Antlers (presumably but not necessarily sitting on a different machine or OS) which they then process and launch processes locally. The idea is that you still only need to edit one mission file to control a suite of processes running over any number of physical machines. The operating paradigm is that once a suitably configured \code{Antler} has been started on a machine you need never kill or restart it. It stays alive patiently waiting for a instructions. See Figure \ref{Fig:Distributed}
 
-\begin{figure}
+\begin{figure}\label{Fig:Distributed}
 \centering
 \epsfig{figure=images/distributed.eps,width = \linewidth}
-\caption{Antler can be started in one of two ways. Here on the machine lisa1.robots.ox.ac.uk it is started  in "Top MOOS" mode with the name of a mission file on the command line. On the two other machines (lisa2 and lisa3) Anterl is started in headless mode receiving three command line parameters - the machine name on which a \code{MOOSDB} can be found, the port that \code{MOOSDB} is serving on and an Antler name which in this case is simply set to the machine name. When the "topMOOS" has spawned its processes it pushes the mission file to the DB. The headless Antlers pick up this notification and run themselves from the newly received Mission file. They only launch processes which are specified to run on Antlers with their own Antler name.} 
+\caption{In distributed mode, \code{Antler} can be started in one of two ways. Here on the machine lisa1.robots.ox.ac.uk it is started  in "Top MOOS" mode with the name of a mission file on the command line. On the two other machines (lisa2 and lisa3) Antler is started in headless mode receiving three command line parameters - the machine name on which a \code{MOOSDB} can be found, the port that \code{MOOSDB} is serving on and an AntlerID name which in this case is simply set to the machine name. When the "topMOOS" has spawned its processes it pushes the mission file to the DB. The headless Antlers pick up this notification and run themselves from the newly received Mission file. Each headless Antler  only launches processes which have a Run directive line containing that particular instantiation of Antler's ID.} 
 \end{figure}
 
+The idea is that \code{Antler} can be run in one of two modes which we shall refer to as ``headless'' and ``monach''\footnote{as in Monach of the Glen - referring to the size antlers}. These terms only have meaning if the \code{EnableDistributed} flag is set to \code{true} in the Antler configuration block -- ie when Antler is being told to support distributed process control. If this flag is set and \code{Antler} is launched in the usual way:
 
+\begin{lstlisting}
+./pAntler Mission.moos
+\end{lstlisting}
+
+then this will become a ``Monach''. Think of it as king/governing/top/controlling \code{Antler} which will take responsibility for distributing (via the MOOSDB) the mission file to any other ``headless'' Antlers sitting on other machines.  If however you start \code{Antler} with three command line parameters as follows
+
+\begin{lstlisting}
+./pAntler lisa1.robots.ox.ac.uk 9000 lisa2
+\end{lstlisting}
+
+then Antler will launch in ``headless'' mode. Headless \code{Antlers} are bound to a single ``Monachs'' via a MOOSDB (which will usually be lauched by the monach itself. ) The three parameters specify the location and port of this MOOSDB and alls an AntlerID. This last parameter is a string which is used by headless Antlers to figure out which Run directives they should execute.
+
+Consider the following simple example:
+
+\begin{lstlisting}
+ProcessConfig = Antler
+{
+	EnableDistributed = true
+	Run = iProcA @ AntlerID = lisa2, NewConsole = true	
+	Run = MOOSDB @ NewConsole=true
+}
+\end{lstlisting}
+
+Note how \code{iProcA} has an \code{AntlerID} specified. Now if as above I started a headless \code{Antler} with ``lisa2'' as its Antler ID on machine ``B'' and then started another instance of \code{Antler}  on machine ``B'' \footnote{ A can equal B but whats the point?} but this time only specifying a mission file (ie start Antler as a ``monach'') you would witness a MOOSDB coming up on machine A and iProcA
+starting on machine B. If no AntlerID is specified in a run directive, it is assumed that the monach is required to  process the directive. Headless \code{Antlers} only process run directives possessing an AntlerID matching their own.
 
 \section{Application note : I/O Redirection - Deployment} 
 Frequently \code{iRemote}, displayed on a remote machine, will be
