@@ -31,20 +31,25 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
     m_nDBPort = nPort;
     m_bHeadless = true;
     
-    MOOSTrace("This is headless Antler called \"%s\" waiting for direction from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
     
-    //start a monitoring thread
-    m_RemoteControlThread.Initialise(_RemoteControlCB, this);
-    m_RemoteControlThread.Start();
+    if(!ConfigureMOOSComms())
+        return true;
+        
     
-
+    MOOSTrace("   This is headless Antler called \"%s\"\n   Waiting for mission file from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
+    
+       
+	char * sSpin = "-\\|/";
     while(1)
     {
         //wait to be signalled that there is work to do...
-        
+        int i = 0;
         while(!m_bNewJob)
-            MOOSPause(100);
-    	
+        {
+            MOOSPause(1000);
+            MOOSTrace("   Speak to me Monach....%c\r",sSpin[i++%3]);
+        }
+            
         //no more launching until this community is complete
         m_JobLock.Lock();
         Spawn(m_sReceivedMissionFile,true);
@@ -60,13 +65,7 @@ bool CAntler::DoRemoteControl()
 {
     
     
-    
-    if(!ConfigureMOOSComms())
-        return true;
-    
-    
-	
-    
+	    
     while(1)
     {
         MOOSPause(100);
@@ -78,56 +77,79 @@ bool CAntler::DoRemoteControl()
         if(m_pMOOSComms->Fetch(NewMail))
         {
             CMOOSMsg Msg;
-            if(m_pMOOSComms->PeekMail(NewMail,"MISSION_FILE",Msg))
+            if(m_bHeadless)
             {
-                MOOSTrace("\n|***** Dynamic Brief *****|\n\n");
                 
-                //make a new file name
-                m_sReceivedMissionFile = MOOSFormat("runtime_%s.moos",MOOSGetTimeStampString().c_str());   
-                
-                MOOSTrace("   %s received \n",m_sReceivedMissionFile.c_str());
-                MOOSTrace("   shutting down all current spawned processes:\n");
-                
-                
-                //tell the current job to quit
-                m_bQuitCurrentJob = true;
-                
-                //wait for that to happen
-                m_JobLock.Lock();        
-                
-                              
-            	                
-                //here we copy the mission file contained in the message to 
-                std::stringstream ss(Msg.GetString());
-                std::ofstream Out(m_sReceivedMissionFile.c_str());
-                if(!Out.is_open())
+                if(m_pMOOSComms->PeekMail(NewMail,"MISSION_FILE",Msg))
                 {
+                    MOOSTrace("\n|***** Dynamic Brief *****|\n\n");
+                    
+                    //make a new file name
+                    m_sReceivedMissionFile = MOOSFormat("runtime_%s.moos",MOOSGetTimeStampString().c_str());   
+                    
+                    MOOSTrace("   %s received [%d bytes]\n",m_sReceivedMissionFile.c_str(),Msg.GetString().size());
+                    MOOSTrace("   shutting down all current spawned processes:\n");
+                    
+                    //tell the current job to quit
+                    m_bQuitCurrentJob = true;
+                    
+                    //wait for that to happen
+                    m_JobLock.Lock();        
+                    
+                    //here we copy the mission file contained in the message to 
+                    std::stringstream ss(Msg.GetString());
+                    std::ofstream Out(m_sReceivedMissionFile.c_str());
+                    if(!Out.is_open())
+                    {
+                        m_JobLock.UnLock();
+                        return MOOSFail("failed to open mission file for writing");
+                    }
+                    
+                    //you've gotta lurve C++ ...
+                    Out<<ss.rdbuf();
+                    
+                    Out.close();
+                    
+                    //we no longer want the current job to quit (it already has)
+                    m_bQuitCurrentJob = false;
+                    
+                    //signal that we have more work to do
+                    m_bNewJob =true;
+                    
+                    //let thread 0 continue
                     m_JobLock.UnLock();
-                   return MOOSFail("failed to open mission file for writing");
+                    
+                    
                 }
-                
-                //you've gotta lurve C++ ...
-                Out<<ss.rdbuf();
-                
-                Out.close();
-
-                //we no longer want the current job to quit (it already has)
-                m_bQuitCurrentJob = false;
-                
-                //signal that we have more work to do
-                m_bNewJob =true;
-                            
-                //let thread 0 continue
-                m_JobLock.UnLock();
-     			
-                
             }
+            else
+            {
+                if(m_pMOOSComms->PeekAndCheckMail(NewMail, "ANTLER_STATUS", Msg))
+                {
+                    std::string sWhat;
+                    MOOSValFromString(sWhat, Msg.GetString(),"Action");
+                    std::string sProc;
+                    MOOSValFromString(sProc, Msg.GetString(),"Process");
+                    std::string sID;
+                    MOOSValFromString(sID, Msg.GetString(), "AntlerID");
+                    
+                    MOOSTrace("   [rmt] Process %-15s has %s (by %s)\n",sProc.c_str(),sWhat.c_str(),sID.c_str());
+                }    
+            }
+            
         }
     }        
 }
 
 bool CAntler::ConfigureMOOSComms()
 {
+    
+    
+    //start a monitoring thread
+    m_RemoteControlThread.Initialise(_RemoteControlCB, this);
+    m_RemoteControlThread.Start();
+    
+    
     m_pMOOSComms = new CMOOSCommClient;
     m_pMOOSComms->SetOnConnectCallBack(_MOOSConnectCB,this);
 	m_pMOOSComms->SetOnDisconnectCallBack(_MOOSDisconnectCB,this);
@@ -160,7 +182,7 @@ bool CAntler::SendMissionFile( )
     m_pMOOSComms->Notify("MISSION_FILE",ss.str());
     
     
-    MOOSTrace("   Master MOOS Published mission file %d bytes\n",ss.str().size());
+    MOOSTrace("   Monach published thinned mission file [%d bytes]\n\n",ss.str().size());
     return true;
     
 }
@@ -168,20 +190,68 @@ bool CAntler::OnMOOSConnect()
 {
     if(m_bHeadless)
     {
-        MOOSTrace("Headless Antler found a DB\n");    
+        MOOSTrace("  Connecting to a DB\n");    
         m_pMOOSComms->Register("MISSION_FILE",0);
+      
     }
     else
     {
+        m_pMOOSComms->Register("ANTLER_STATUS",0);
         SendMissionFile();
     }
     return true;
 }
 bool CAntler::OnMOOSDisconnect()
 {
-	MOOSTrace("Headless Antler lost DB Connection\n");    
+    if(m_bHeadless)
+    {
+        
+        MOOSTrace("   DB Connection Lost\n");    
+        
+        if(m_bKillOnDBDisconnect)
+        {
+            //look likes the monach is dead.....
+            MOOSTrace("   shutting down all current spawned processes:\n");
+            
+            //tell the current job to quit
+            m_bQuitCurrentJob = true;
+            
+            //wait for that to happen
+            m_JobLock.Lock();        
+            m_JobLock.UnLock();        
+        }
+       
+    }
     return true;
 }
+
+bool CAntler::PublishProcessQuit(const std::string & sProc)
+{
+	if(!m_bHeadless)
+        return false;
+    
+    if(!m_pMOOSComms->IsConnected())
+        return false;
+
+    m_pMOOSComms->Notify("ANTLER_STATUS",MOOSFormat("Action=Quit,Process=%s,AntlerID=%s",sProc.c_str(),m_sAntlerName.c_str()));
+    
+    
+    return true;
+}
+
+bool CAntler::PublishProcessLaunch(const std::string & sProc)
+{
+	if(!m_bHeadless)
+        return false;
+    
+    if(!m_pMOOSComms->IsConnected())
+        return false;
+    
+    m_pMOOSComms->Notify("ANTLER_STATUS",MOOSFormat("Action=Launched,Process=%s,AntlerID=%s",sProc.c_str(),m_sAntlerName.c_str()));
+    
+    return true;
+}
+
 
 
 
@@ -254,6 +324,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
                     pNew->m_sMOOSName.c_str());
                 m_ProcList.push_front(pNew);
 				m_nCurrentLaunch++;
+                PublishProcessLaunch(pNew->m_sApp);
             }
             
 	        //wait a while
@@ -280,6 +351,11 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             
         }
     }
+    else
+    {
+        m_bKillOnDBDisconnect = true;
+        m_MissionReader.GetConfigurationParam("KillOnDBDisconnect",m_bKillOnDBDisconnect);
+    }
     
 
     
@@ -302,10 +378,12 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             pMOOSProc->pWin32Proc->vWaitForTerminate(100);
             if(    pMOOSProc->pWin32Proc->dwGetExitCode()!=STILL_ACTIVE)
             {
+
                 MOOSTrace("   [%.3d] Process: %-15s has quit\n",
                     --m_nCurrentLaunch,
                     pMOOSProc->m_sApp.c_str());
                 
+                PublishProcessQuit(pMOOSProc->m_sApp);
                 delete pMOOSProc->pWin32Attrib;
                 delete pMOOSProc->pWin32Proc;
                 delete pMOOSProc;
@@ -316,7 +394,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 #else
             if(m_bQuitCurrentJob)
             {
-                MOOSTrace("\tactively killing running child %s\n",pMOOSProc->m_sApp.c_str());
+                MOOSTrace("   actively killing running child %s\n",pMOOSProc->m_sApp.c_str());
 				kill(pMOOSProc->m_ChildPID,SIGKILL);
                 //just give it a little time - for pities sake - no need for this pause
                 MOOSPause(300);
@@ -329,6 +407,8 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
                 MOOSTrace("   [%.3d] Process: %-15s has quit\n",
                     --m_nCurrentLaunch,
                     pMOOSProc->m_sApp.c_str());
+                
+                PublishProcessQuit(pMOOSProc->m_sApp);
                 
                 m_ProcList.erase(q);
                 break;

@@ -92,6 +92,10 @@ class CAntler
         bool ConfigureMOOSComms();
         bool SendMissionFile();
         
+        //tell a Monach what is goinon remotely
+        bool PublishProcessQuit(const std::string & sProc);
+        bool PublishProcessLaunch(const std::string & sProc);
+        
         typedef std::list<MOOSProc*> MOOSPROC_LIST;
         MOOSPROC_LIST    m_ProcList;
         std::string m_sDefaultExecutablePath;
@@ -128,15 +132,17 @@ class CAntler
         bool OnMOOSDisconnect();
         
         CMOOSLock m_JobLock;
+        std::string m_sMissionFile;
+        bool m_bHeadless;
         bool m_bQuitCurrentJob;
         bool m_bRunning;
         bool m_bNewJob;
+        std::string m_sMonachAntler;
+        bool m_bKillOnDBDisconnect;
         std::string m_sReceivedMissionFile;
         std::string m_sAntlerName;
         std::string m_sDBHost;
         int m_nDBPort;
-        std::string m_sMissionFile;
-        bool m_bHeadless;
         
     };
 #endif
