@@ -46,7 +46,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
         int i = 0;
         while(!m_bNewJob)
         {
-            MOOSPause(1000);
+            MOOSPause(500);
             MOOSTrace("   Speak to me Monach....%c\r",sSpin[i++%3]);
         }
             
