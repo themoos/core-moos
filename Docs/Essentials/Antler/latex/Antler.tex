@@ -234,6 +234,8 @@ If you want to launch a process with \code{Antler} that has not been designed to
 
 \section{Distributing  a Community over Multiple Machines}
 
+\subsection{Motivation}
+
 Up until now we have implicitly assumed that all processes launched by a single instance of \code{Antler} reside on the same physical computer. Surely this is conflicts with the idea that any MOOS process can run on any machine under any (common) OS? You're right it does and this issue has been addressed in post V7.0.2 versions. Excellent. In the broadest of terms it is possible to have have one Antler send a single mission file to a host of other Antlers (presumably but not necessarily sitting on a different machine or OS) which they then process and launch processes locally. The idea is that you still only need to edit one mission file to control a suite of processes running over any number of physical machines. The operating paradigm is that once a suitably configured \code{Antler} has been started on a machine you need never kill or restart it. It stays alive patiently waiting for a instructions. See Figure \ref{Fig:Distributed}
 
 \begin{figure}\label{Fig:Distributed}
@@ -241,6 +243,8 @@ Up until now we have implicitly assumed that all processes launched by a single 
 \epsfig{figure=images/distributed.eps,width = \linewidth}
 \caption{In distributed mode, \code{Antler} can be started in one of two ways. Here on the machine lisa1.robots.ox.ac.uk it is started  in "Top MOOS" mode with the name of a mission file on the command line. On the two other machines (lisa2 and lisa3) Antler is started in headless mode receiving three command line parameters - the machine name on which a \code{MOOSDB} can be found, the port that \code{MOOSDB} is serving on and an AntlerID name which in this case is simply set to the machine name. When the "topMOOS" has spawned its processes it pushes the mission file to the DB. The headless Antlers pick up this notification and run themselves from the newly received Mission file. Each headless Antler  only launches processes which have a Run directive line containing that particular instantiation of Antler's ID.} 
 \end{figure}
+
+\subsection{Antler Modes: Monach and Headless}
 
 The idea is that \code{Antler} can be run in one of two modes which we shall refer to as ``headless'' and ``monach''\footnote{as in Monach of the Glen - referring to the size antlers}. These terms only have meaning if the \code{EnableDistributed} flag is set to \code{true} in the Antler configuration block -- ie when Antler is being told to support distributed process control. If this flag is set and \code{Antler} is launched in the usual way:
 
@@ -268,7 +272,52 @@ ProcessConfig = Antler
 \end{lstlisting}
 
 Note how \code{iProcA} has an \code{AntlerID} specified. Now if as above I started a headless \code{Antler} with ``lisa2'' as its Antler ID on machine ``B'' and then started another instance of \code{Antler}  on machine ``B'' \footnote{ A can equal B but whats the point?} but this time only specifying a mission file (ie start Antler as a ``monach'') you would witness a MOOSDB coming up on machine A and iProcA
-starting on machine B. If no AntlerID is specified in a run directive, it is assumed that the monach is required to  process the directive. Headless \code{Antlers} only process run directives possessing an AntlerID matching their own.
+starting on machine B. If no AntlerID is specified in a run directive, it is assumed that the monach is required to  process the directive. Headless \code{Antlers} only process run directives possessing an AntlerID matching their own. Each headless Antler writes the runtime received mission file (stripped of comments and superfluous white space) to local disk (working directory) under the name \code{dynamic\_<TIMESTAMP>.moos} for future perusal.
+
+
+\subsubsection{Shutdown Behaviour}
+
+The default behaviour is for headless Antlers to shut down all their spawned processes when contact is lost with the MOOSDB. If this is not the desired behaviour and you want launched processes to carry on running simply add the directive ``KillOnDBDisconnect=false'' to the configuration block.
+
+\begin{lstlisting}
+ProcessConfig = Antler
+{
+	EnableDistributed = true
+	KillOnDBDisconnect=false
+	Run = iProcA @ AntlerID = lisa2, NewConsole = true	
+	Run = MOOSDB @ NewConsole=true
+}
+\end{lstlisting}
+
+In any case as soon as a Mission file is received by a headless Antler any and all running processes will be shutdown before processing the new Mission file.
+
+
+\section{Examples}
+
+If you enable the building of examples via the CMake build screen (See Figure \ref{Fig:Build}) then the example configurations in Sections \ref{Sec:Local} and \ref{Sec:Distrib} serve as a good starting point in experimenting with \code{Antler}.  There are three examples processes supplied in the sibling code directory of the documentation:
+
+\begin{description}
+\item [pAnterTestAppA] is nothing more than a dumb CMOOSApp that prints a string declared in its configuration block
+\item [pAnterTestAppB] is nothing more than a dumb CMOOSApp which takes more than the standard two command line arguments, it uses these additional params to publish a variable to a MOOSDB  
+\item [pAnterTestAppC] is not a CMOOSApp. its just a program which prints out its command line arguments and spins in a do nothing loop. 
+\
+\end{description}
+
+\begin{figure}\label{Fig:Build}
+\centering
+\epsfig{figure=./images/buildexample.eps, width = 1.0\linewidth}
+\caption{selecting the building of examples in the MOOS build screen}
+\end{figure} 
+
+
+\subsection{Local Configurations}\label{Sec:Local}
+
+\lstinputlisting[ caption = {Example Configuration Blocks for Antler where all process are run on the same host machine. This file can be found in the sibling code directory of Antler in the documentation tree},label = {Code:LocalExampleSet} ]{../code/LocalExampleSet.moos}
+
+
+\subsection{Distributed Configuration}\label{Sec:Distrib}
+\lstinputlisting[ caption = {Example Configuration Blocks for Antler where  process are run on different. This file can be found in the sibling code directory of Antler in the documentation tree},label = {Code:DistributedExampleSet} ]{../code/DistributedExampleSet.moos}
+
 
 \section{Application note : I/O Redirection - Deployment} 
 Frequently \code{iRemote}, displayed on a remote machine, will be
@@ -295,8 +344,4 @@ wireless communications, which will clearly disappear when the
 vehicle submerges but will gracefully re-connect when surfacing(
 not so easy to do with a PPP or similar link). 
 
-
-
-\section{Example Configuration Blocks}
-\lstinputlisting[ caption = {Example Configuration Blocks for Antler where all process are run on the same host machine. This file can be found in the sibling code directory of Antler in the documentation tree},label = {Code:LocalExampleSet} ]{../code/LocalExampleSet.moos}
 \end{document}
