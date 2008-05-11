@@ -1,16 +1,24 @@
 //if you are really runing this on different hosts
 //makesure you set the server hostname below
-//if you are simply testing how to run multipls
-//instances of MOOS leaving it as local host is just fine
+//if you are simply testing how to run multiple
+//instances of MOOS using localhost is just fine
 
-ServerHost = localhost
+
+ServerHost = host1.robots.ox.ac.uk
 ServerPort = 9000
 
 
-//Adding some colour to MOOSDB, pAntlerTestB and pAntlerTestC
+//you need to start three instances of pAntler...
+//On host3: pAntler host1.robots.ox.ac.uk 9000 jupiter
+//On host2: pAntler host1.robots.ox.ac.uk 9000 neptune
+//On host 1: pAntler <MissionFile.moos>
+
+//Running AppA on jupiter(host3) B on neptune(host2), DB and C on host1 
 ProcessConfig = Antler
 {
     EnableDistributed = true
+    
+    
     Run = MOOSDB @Win32Config=DBWin32,XConfig=DBX , NewConsole = true
     DBX = -bg,#FF0000, -geometry, 80x40+200+300
     DBWin32 = BACKGROUND_RED
@@ -28,6 +36,33 @@ ProcessConfig = Antler
     CX = -bg,#FF00FF, -geometry, 80x40+400+300
     
 }
+
+//As above but now with three versions of AppA
+//ProcessConfig = Antler
+{
+    
+    EnableDistributed = true
+    
+    Run = MOOSDB @Win32Config=DBWin32,XConfig=DBX , NewConsole = true
+    DBX = -bg,#FF0000, -geometry, 80x40+200+300
+    DBWin32 = BACKGROUND_RED
+    
+    Run = pAntlerTestAppA @ AntlerID = jupiter, NewConsole = true
+    Run = pAntlerTestAppA @ AntlerID = jupiter, NewConsole = true ~ FenTech
+    Run = pAntlerTestAppA @ AntlerID = jupiter, NewConsole = true ~ Oxford
+    
+    Run = pAntlerTestAppB @ AntlerID = neptune,Win32Config=BWin32,XConfig=BX, ExtraProcessParams = BParams , NewConsole = true
+    BParams = CustomVar,ThisIsAString
+    BWin32 = BACKGROUND_GREEN,BACKGROUND_BLUE
+    BX = -bg,#00FFFF, -geometry, 80x40+350+300
+    
+    Run = pAntlerTestAppC @ Win32Config=CWin32,XConfig=CX,ExtraProcessParams = CParams, InhibitMOOSParams=true , NewConsole = true
+    CParams = set,the,moos,loose,1,2,3,45.6
+    CWin32 = BACKGROUND_RED,BACKGROUND_BLUE
+    CX = -bg,#FF00FF, -geometry, 80x40+400+300
+    
+}
+
 
 
 //Configuration for TestAppA - just looks for a string to print
