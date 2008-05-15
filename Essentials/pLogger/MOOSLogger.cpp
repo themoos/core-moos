@@ -102,6 +102,9 @@ CMOOSLogger::CMOOSLogger()
 
     //and append a time ot the stem
     m_bAppendFileTimeStamp = true;
+    
+    //lets always sort mail by time...
+    SortMailByTime(true);
 
 }
 
