@@ -35,9 +35,10 @@
     #pragma warning(disable : 4503)
 #endif
 #include <MOOSLIB/MOOSLib.h>
-#include <iostream>
+#include <iostream> 
 #include <sstream>
 #include <iomanip>
+#include <cctype>
 using namespace std;
 #include "MOOSInstrument.h"
 
@@ -181,23 +182,27 @@ bool CMOOSInstrument::DoNMEACheckSum(string sNMEA)
 input sMsg, output is $sMsg*CHKSUM
 eg Msg= "MOOS,MOOSDATA"
 output would be something like "$MOOS,MOOSDATA*A7\r\n"*/
+//changed June 4th after Scott R. Sideleau, emailed me that
+//it isn't quite NMEA compliant
 string CMOOSInstrument::Message2NMEA(string sMsg)
 {
     unsigned char xCheckSum=0;
     //now calculate what we think check sum should be...
     string::iterator p;
-    for(p = sMsg.begin();p!=sMsg.end();p++)
+    for(p = sMsg.begin(); p != sMsg.end(); p++)
     {
-        xCheckSum^=*p;
+        xCheckSum ^= *p;
     }
-
-    ostringstream os;
-
-    os.flags(ios::hex);
-    os<<(int)xCheckSum<<ends;
-    string sChkSum = os.str();
     
-    string sOutput = "$"+sMsg+"*"+sChkSum+"\r\n";
-
+    ostringstream os;
+    
+    os.flags(ios::hex);
+    os<<(int)xCheckSum; //<<ends;
+    string sChkSum = os.str();
+    std::transform(sChkSum.begin(), sChkSum.end(), sChkSum.begin(), \
+                   (int(*)(int)) std::toupper);
+    
+    string sOutput = "$" + sMsg + "*" + sChkSum + "\r\n";
+    
     return sOutput;
 }
