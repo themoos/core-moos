@@ -25,14 +25,14 @@ IF(FLTK_FOUND)
    ADD_EXECUTABLE( uMS WIN32  MACOSX_BUNDLE ${UMS_SRCS})
 
    IF( APPLE )
-      SET( PROGNAME uMS )
-      SET( MACOSX_BUNDLE_ICON_FILE xanthos.icns)
-      FILE(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents/Resources)
+#      SET( PROGNAME uMS )
+#      SET( MACOSX_BUNDLE_ICON_FILE xanthos.icns)
+#      FILE(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents/Resources)
 
 	
-      ADD_CUSTOM_COMMAND( TARGET ${PROGNAME} POST_BUILD
-      COMMAND cp ARGS Mac/${MACOSX_BUNDLE_ICON_FILE} ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents/Resources
-      COMMENT Setting up translations & resources ) 
+#      ADD_CUSTOM_COMMAND( TARGET ${PROGNAME} POST_BUILD
+#      COMMAND cp ARGS Mac/${MACOSX_BUNDLE_ICON_FILE} ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents/Resources
+#      COMMENT Setting up translations & resources ) 
    ENDIF( APPLE )
 
 
