@@ -490,7 +490,7 @@ string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/)
     }
     else
     {
-        os<<setw(nFieldWidth)<<"NaN"<<ends;       
+        os<<setw(nFieldWidth)<<"NotSet"<<ends;       
     }
 
     return os.str();

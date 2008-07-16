@@ -241,6 +241,29 @@ bool CHTTPConnection::SendWebPage()
    return true;
 }
 
+char CharFromHex (std::string a)
+{
+    std::istringstream k (a);
+    int Z;
+    k >> std::hex >> Z;
+    
+    return char (Z); // cast to char and return
+}
+
+std::string Decode(std::string Text)
+{
+    
+    std::string::size_type Pos;
+    std::string Hex;
+    while (std::string::npos != (Pos = Text.find('%')))
+    {
+        Hex = Text.substr(Pos + 1, 2);
+        Text.replace(Pos, 3, 1, CharFromHex(Hex));
+    }
+    return Text;
+    
+}
+
 
 bool CHTTPConnection::HandlePoke(std::string sPokeURL)
 {
@@ -283,13 +306,14 @@ bool CHTTPConnection::HandlePoke(std::string sPokeURL)
         }
         else
         {
-            m_pMOOSComms->Notify(sVar,sWhat);
+            m_pMOOSComms->Notify(sVar,Decode(sWhat));
         }
     }
     m_pMOOSCommsLock->UnLock();
 
     return true;
 }
+
 
 bool CHTTPConnection::MakeWebPage()
 {
@@ -320,6 +344,7 @@ bool CHTTPConnection::MakeWebPage()
                 CHTMLTag HTML(wp,"HTML","style=\"font-family:arial\"");
                 {
                     CHTMLTag Head(wp,"HEAD");
+                    wp<<"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n";
                     //wp<<"<meta http-equiv=\"refresh\" content=\"0.5;URL=http://localhost:9080\">\n";
                     CHTMLTag Title(wp,"TITLE","","MOOSDB");
                 }
@@ -454,11 +479,25 @@ bool CHTTPConnection::BuildFullDBWebPageContents( std::ostringstream & wp,MOOSMS
         for(q =  MsgList.begin(); q!=MsgList.end();q++)
         {
             CMOOSMsg & rMsg = *q;
+            
+            std::string sT;
+            switch(rMsg.m_cDataType)
+            {
+                case MOOS_STRING:
+                    sT = "$";
+                    break;
+                case MOOS_DOUBLE:
+                    sT = "double";
+                    break;
+                case MOOS_NOT_SET:
+                    sT = "pending";
+                    break;
+            }
           
             CHTMLTag Row(wp,"TR");
             wp<<CHTMLTag::Print("TD","valign=\"left\"",CHTMLTag::Print("A","href = /"+rMsg.GetName(),rMsg.GetName()));
             wp<<CHTMLTag::Print("TD","valign=\"left\"",MOOSFormat("%.3f",rMsg.GetTime()));
-            wp<<CHTMLTag::Print("TD","valign=\"left\"",MOOSFormat("%s",rMsg.IsDouble()?"double":"string"));
+            wp<<CHTMLTag::Print("TD","valign=\"left\"",MOOSFormat("%s",sT.c_str() ) );
             wp<<CHTMLTag::Print("TD","valign=\"left\"",MOOSFormat("%.3f",rMsg.m_dfVal2));
             wp<<CHTMLTag::Print("TD","valign=\"left\"",rMsg.GetSource());
             wp<<CHTMLTag::Print("TD","valign=\"left\"",rMsg.GetCommunity());
