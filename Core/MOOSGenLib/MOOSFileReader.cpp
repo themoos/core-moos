@@ -96,13 +96,15 @@ bool CMOOSFileReader::SetFile(const std::string  & sFile)
     }
     
 	ClearFileMap();
+    
+    BuildLocalShellVars();
 
     return true;
 
 }
 
 
-std::string CMOOSFileReader::GetNextValidLine()
+std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
 {
 
 
@@ -141,6 +143,8 @@ std::string CMOOSFileReader::GetNextValidLine()
     } // end jckerken
 
     
+    if(bDoSubstitution)
+        DoVariableExpansion(sLine);
     return sLine;
 }
 
@@ -383,3 +387,100 @@ bool CMOOSFileReader::IsOpen()
 
     return GetFile()->is_open();
 }
+
+
+
+bool CMOOSFileReader::BuildLocalShellVars()
+{
+    
+    if(GetFile()->is_open())
+    {
+        Reset();
+        
+        GetFile()->seekg(std::ios::beg);
+        
+        std::string sLine,sVal,sTok;
+        while(!GetFile()->eof())
+        {
+            sLine = GetNextValidLine(false);
+
+            MOOSChomp(sLine,"define:");
+
+            if(!sLine.empty())
+            {
+                std::string sVarName,sVarVal;
+                if(GetTokenValPair(sLine,sVarName,sVarVal))
+                {
+                    m_LocalShellVariables[sVarName] = sVarVal;    
+                }
+                return true;
+            }
+        }       
+        
+        
+        return true;
+    }
+    
+    return false;
+    
+}
+
+
+bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
+{
+    
+    std::string sBuilt,sExpand;
+    do
+    {
+        sExpand.clear();
+        
+    	sBuilt = MOOSChomp(sVal,"${");
+        
+        sExpand = MOOSChomp(sVal,"}");
+        
+        if(!sExpand.empty())
+        {
+            std::map<std::string,std::string>::iterator p;
+            p = m_LocalShellVariables.find(sExpand);
+            if(p == m_LocalShellVariables.end())
+            {
+                //maybe its a system shell var?
+                char * pShellVal = getenv(sExpand.c_str());
+                if(pShellVal!=NULL)
+                {
+                    //MOOSTrace("using system variable expansion ${%s} -> %s",sExpand.c_str(),pShellVal);
+
+                    //indeed it is!
+                    sExpand = std::string(pShellVal);
+                    
+                }
+                else
+                {
+                    //MOOSTrace("Error in mission file\n\t no shell or mission file expansion fouind for ${%s}\n",sExpand.c_str());
+                }
+            }
+            else
+            {
+                //OK we have been told about this in file scope
+                MOOSTrace("using local variable expansion ${%s} -> %s",sExpand.c_str(),p->second.c_str());
+
+                sExpand=p->second;
+            }
+            
+            sBuilt+=sExpand;
+            
+        }
+        
+    }while(!sExpand.empty());
+    
+    
+    sVal = sBuilt;
+    
+    return true;
+    
+    
+    
+    
+}
+
+

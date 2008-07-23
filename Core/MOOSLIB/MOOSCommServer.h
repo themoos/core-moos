@@ -86,8 +86,7 @@ public:
 
     /** Set the disconnect message call back handler.  The supplied call back must be of the form
     static bool MyCallBack(std::string  & sClient,, void * pParam).
-    @param sClient    contains the incoming messages.
-    @param TxLst    passed to the handler as a recepticle for all the message that    should be sent back to the client in response to teh incoming messages.
+    @param sClient   Name of client at the end of the socket sending this Pkt
     @param pParam      user suplied parameter to be passed to callback function
     */
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);

@@ -269,6 +269,7 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
     return false;
 }
 
+
 bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::string & sVal)
 {
     if(!m_sAppName.empty())

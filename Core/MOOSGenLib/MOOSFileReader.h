@@ -98,7 +98,7 @@ public:
     static bool    GetTokenValPair(std::string  sLine, std::string &sTok, std::string & sVal,bool bPreserveWhiteSpace = false);
 
     /** returns a string of teh next non comment line (and removs trailing comments)*/
-    std::string  GetNextValidLine();
+    std::string  GetNextValidLine(bool bDoShellSubstitution = true);
 
 	/** iterates through filemap freeing up resources then calls filemap's clear method */
 	void ClearFileMap()
@@ -111,6 +111,9 @@ public:
 		}
 		m_FileMap.clear();
 	}
+    
+    bool DoVariableExpansion(std::string & sVal);
+    bool BuildLocalShellVars();
 
 protected:
     std::ifstream * GetFile();
@@ -119,6 +122,7 @@ protected:
     std::string    m_sFileName;
     std::ifstream m_File;
 
+    std::map<std::string,std::string> m_LocalShellVariables;
     /** every thread get its own pointer to a stream*/
     THREAD2FILE_MAP m_FileMap;
 
