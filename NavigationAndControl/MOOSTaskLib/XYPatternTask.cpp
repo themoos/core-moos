@@ -208,11 +208,16 @@ bool CXYPatternTask::Run(CPathAction &DesiredAction)
             else
             {
                 //calculate vector heading angle to goal
+			
+
                 double dfDesiredYaw = -atan2(m_XDOF.GetError(),m_YDOF.GetError());
 
                 m_YawDOF.SetDesired(dfDesiredYaw);
 
                 double dfError = m_YawDOF.GetError();
+
+				MOOSTrace("x_err = %f y_err = %f current_yaw = %f desired_yaw = %f\n",
+					m_XDOF.GetError(),m_YawDOF.GetError(),m_YawDOF.GetCurrent(),m_dfDesiredYaw);
 
 
                 dfError = MOOS_ANGLE_WRAP(dfError);
@@ -236,7 +241,7 @@ bool CXYPatternTask::Run(CPathAction &DesiredAction)
 bool CXYPatternTask::SetControl(CPathAction &DesiredAction,double dfRudder,double dfThrust)
 {
     DesiredAction.Set(  ACTUATOR_RUDDER,
-                        dfRudder,
+                        0*dfRudder,
                         m_nPriority,
                         GetName().c_str());
 
@@ -244,7 +249,7 @@ bool CXYPatternTask::SetControl(CPathAction &DesiredAction,double dfRudder,doubl
     if(m_bThrustSet)
     {
         DesiredAction.Set(  ACTUATOR_THRUST,
-                            dfThrust,
+                            0*dfThrust,
                             m_nPriority,
                             GetName().c_str());
     }
