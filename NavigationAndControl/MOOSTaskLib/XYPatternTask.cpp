@@ -95,8 +95,11 @@ bool CXYPatternTask::OnNewMail(MOOSMSG_LIST &NewMail)
 					m_XDOF.SetCurrent(Pose[0],Msg.GetTime());
 					m_YDOF.SetCurrent(Pose[1],Msg.GetTime());
 					m_YawDOF.SetCurrent(Pose[2],Msg.GetTime());
+
+                    // MOOSTrace("we are at %f %f %f\n",Pose[0],Pose[1],Pose[2]);
 				}
 			}
+
         }
     }
 
@@ -216,8 +219,8 @@ bool CXYPatternTask::Run(CPathAction &DesiredAction)
 
                 double dfError = m_YawDOF.GetError();
 
-				MOOSTrace("x_err = %f y_err = %f current_yaw = %f desired_yaw = %f\n",
-					m_XDOF.GetError(),m_YawDOF.GetError(),m_YawDOF.GetCurrent(),m_dfDesiredYaw);
+//				MOOSTrace("x_err = %f y_err = %f current_yaw = %f desired_yaw = %f\n",
+                //				m_XDOF.GetError(),m_YDOF.GetError(),m_YawDOF.GetCurrent(),dfDesiredYaw);
 
 
                 dfError = MOOS_ANGLE_WRAP(dfError);
@@ -241,7 +244,7 @@ bool CXYPatternTask::Run(CPathAction &DesiredAction)
 bool CXYPatternTask::SetControl(CPathAction &DesiredAction,double dfRudder,double dfThrust)
 {
     DesiredAction.Set(  ACTUATOR_RUDDER,
-                        0*dfRudder,
+                        dfRudder,
                         m_nPriority,
                         GetName().c_str());
 
@@ -249,7 +252,7 @@ bool CXYPatternTask::SetControl(CPathAction &DesiredAction,double dfRudder,doubl
     if(m_bThrustSet)
     {
         DesiredAction.Set(  ACTUATOR_THRUST,
-                            0*dfThrust,
+                            dfThrust,
                             m_nPriority,
                             GetName().c_str());
     }
