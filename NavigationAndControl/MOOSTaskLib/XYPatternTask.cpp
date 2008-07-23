@@ -81,6 +81,25 @@ bool CXYPatternTask::OnNewMail(MOOSMSG_LIST &NewMail)
 {
 
     CMOOSMsg Msg;
+
+	if(PeekMail(NewMail,"NAV_POSE",Msg))
+	{
+        if(!Msg.IsSkewed(GetTimeNow()))
+        {
+			std::vector<double> Pose;
+			int nRows,nCols;
+			if(MOOSValFromString(Pose,nRows,nCols,Msg.GetString(),"Pose",true))
+			{
+				if(Pose.size()==3)
+				{
+					m_XDOF.SetCurrent(Pose[0],Msg.GetTime());
+					m_YDOF.SetCurrent(Pose[1],Msg.GetTime());
+					m_YawDOF.SetCurrent(Pose[2],Msg.GetTime());
+				}
+			}
+        }
+    }
+
     if(PeekMail(NewMail,"NAV_X",Msg))
     {
         if(!Msg.IsSkewed(GetTimeNow()))
@@ -125,6 +144,7 @@ bool CXYPatternTask::GetRegistrations(STRING_LIST &List)
     List.push_front("NAV_X");
     List.push_front("NAV_Y");
     List.push_front("NAV_YAW");
+    List.push_front("NAV_POSE");
 
     //always call base class version
     CMOOSBehaviour::GetRegistrations(List);
