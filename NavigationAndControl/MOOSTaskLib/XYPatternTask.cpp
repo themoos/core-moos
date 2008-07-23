@@ -90,7 +90,7 @@ bool CXYPatternTask::OnNewMail(MOOSMSG_LIST &NewMail)
 			int nRows,nCols;
 			if(MOOSValFromString(Pose,nRows,nCols,Msg.GetString(),"Pose",true))
 			{
-				if(Pose.size()==3)
+				if(Pose.size() == 3)
 				{
 					m_XDOF.SetCurrent(Pose[0],Msg.GetTime());
 					m_YDOF.SetCurrent(Pose[1],Msg.GetTime());
