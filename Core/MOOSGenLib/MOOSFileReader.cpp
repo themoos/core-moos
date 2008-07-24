@@ -145,6 +145,9 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
     
     if(bDoSubstitution)
         DoVariableExpansion(sLine);
+    
+    
+    
     return sLine;
 }
 
@@ -413,7 +416,6 @@ bool CMOOSFileReader::BuildLocalShellVars()
                 {
                     m_LocalShellVariables[sVarName] = sVarVal;    
                 }
-                return true;
             }
         }       
         
@@ -434,7 +436,7 @@ bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
     {
         sExpand.clear();
         
-    	sBuilt = MOOSChomp(sVal,"${");
+        sBuilt+= MOOSChomp(sVal,"${");
         
         sExpand = MOOSChomp(sVal,"}");
         
@@ -448,7 +450,7 @@ bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
                 char * pShellVal = getenv(sExpand.c_str());
                 if(pShellVal!=NULL)
                 {
-                    //MOOSTrace("using system variable expansion ${%s} -> %s",sExpand.c_str(),pShellVal);
+                    //MOOSTrace("using system variable expansion ${%s} -> %s\n",sExpand.c_str(),pShellVal);
 
                     //indeed it is!
                     sExpand = std::string(pShellVal);
@@ -456,25 +458,26 @@ bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
                 }
                 else
                 {
-                    //MOOSTrace("Error in mission file\n\t no shell or mission file expansion fouind for ${%s}\n",sExpand.c_str());
+                    MOOSTrace("Error in mission file\n\t no shell or mission file expansion fouind for ${%s}\n",sExpand.c_str());
                 }
             }
             else
             {
                 //OK we have been told about this in file scope
-                MOOSTrace("using local variable expansion ${%s} -> %s",sExpand.c_str(),p->second.c_str());
+                //MOOSTrace("using local variable expansion ${%s} ->  %s\n",sExpand.c_str(),p->second.c_str());
 
                 sExpand=p->second;
             }
             
             sBuilt+=sExpand;
-            
+            //MOOSTrace("and sBuilt = %s\n",sBuilt.c_str());
         }
         
     }while(!sExpand.empty());
     
     
     sVal = sBuilt;
+    
     
     return true;
     
