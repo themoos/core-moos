@@ -419,6 +419,8 @@ bool CMOOSFileReader::BuildLocalShellVars()
             }
         }       
         
+        Reset();
+        
         
         return true;
     }
