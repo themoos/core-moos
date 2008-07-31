@@ -85,6 +85,8 @@ CMOOSCommClient::CMOOSCommClient()
 
 	m_pfnDisconnectCallBack = NULL;
 	m_pDisconnectCallBackParam = NULL;
+    
+    m_pfnMailCallBack = NULL;
 
 	m_nOutPendingLimit = OUTBOX_PENDING_LIMIT;
 	m_nInPendingLimit = INBOX_PENDING_LIMIT;
@@ -95,6 +97,8 @@ CMOOSCommClient::CMOOSCommClient()
     m_bQuiet= false;
 
 	m_bMailPresent = false;
+    
+    SetVerboseDebug(false);
 
 	SocketsInit();
 
@@ -144,6 +148,36 @@ bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName,
 	return true;
 }
 
+bool CMOOSCommClient::SetCommsTick(int nCommmTick)
+{
+    if(m_nFundamentalFreq>CLIENT_MAX_FUNDAMENTAL_FREQ)
+	{
+		MOOSTrace("Setting Fundamental Freq to maximum value of %d Hz\n",CLIENT_MAX_FUNDAMENTAL_FREQ);
+		m_nFundamentalFreq=CLIENT_MAX_FUNDAMENTAL_FREQ;
+        return false;
+	}
+    else
+    {
+        MOOSTrace("setting comms tick\n");
+        m_nFundamentalFreq = (int)nCommmTick;
+        return true;
+    }
+    
+}
+
+
+//void CMOOSCommClient::SetOnMailtCallBack(bool (__cdecl *pfn)( void * pMailtParam), void * pMailParam)
+void CMOOSCommClient::SetOnMailCallBack(bool (*pfn)( void * pMailParam), void * pMailParam)
+{
+	m_pfnMailCallBack = pfn;
+	m_pMailCallBackParam = pMailParam;
+}
+
+bool CMOOSCommClient::HasMailCallBack()
+{
+    return m_pfnMailCallBack!=NULL;
+}
+
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
@@ -165,6 +199,7 @@ bool CMOOSCommClient::ClientLoop()
 
 	//MOOSTrace("ClientLoop() Begins\n");
 
+    double dfTDebug = HPMOOSTime();
 	while(!m_bQuit)
 	{
 		//this is the connect loop...
@@ -175,8 +210,18 @@ bool CMOOSCommClient::ClientLoop()
 
 			while(!m_bQuit)
 			{
+                
+                if(m_bVerboseDebug)
+                {
+					MOOSTrace("COMMSCLIENT DEBUG: Tick period %f ms (should be %d ms)\n",HPMOOSTime()-dfTDebug,(int)(1000.0/m_nFundamentalFreq));
+                    dfTDebug = HPMOOSTime();
+                }
+                                   
 				if(!DoClientWork())
 					break;
+                
+                if(m_bVerboseDebug)
+                    MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",HPMOOSTime()-dfTDebug);
 
 				//wait a while before contacting server again;
 				MOOSPause((int)(1000.0/m_nFundamentalFreq));
@@ -211,6 +256,8 @@ bool CMOOSCommClient::DoClientWork()
 		//note the symmetry here... a warm feeling
 
 		CMOOSCommPkt PktTx,PktRx;
+        
+        bool bNullPacket  = false;
 
 		m_OutLock.Lock();         
 		{
@@ -222,6 +269,7 @@ bool CMOOSCommClient::DoClientWork()
 				CMOOSMsg Msg;
 				Msg.m_sSrc = m_sMyName;
 				m_OutBox.push_front(Msg);
+                bNullPacket = true;
 			}
 
 
@@ -235,12 +283,25 @@ bool CMOOSCommClient::DoClientWork()
 		}
 		m_OutLock.UnLock();
 
+        double dfPktTxTime;
+        if(m_bVerboseDebug)
+        {
+            dfPktTxTime = HPMOOSTime();
+            MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfPktTxTime);
+        }
+                    
 		SendPkt(m_pSocket,PktTx);
 
 		ReadPkt(m_pSocket,PktRx);
 
 		//quick! grab this time
 		double dfPktRxTime = HPMOOSTime();
+        
+        if(m_bVerboseDebug)
+        {
+            MOOSTrace("COMMSERVER DEBUG: completed call to DB after %f s\n",dfPktRxTime-dfPktTxTime);
+        }
+                 
 
 
 		m_InLock.Lock();
@@ -264,12 +325,20 @@ bool CMOOSCommClient::DoClientWork()
 			//did you manage to grab the DB time while you were there?
 			if(!isnan(dfPktTxTime))
 				UpdateMOOSSkew(dfPktTxTime,dfPktRxTime);
-
+            
+            
+       
 			m_bMailPresent = true;
 		}
 		m_InLock.UnLock();
 
+        if(m_pfnMailCallBack!=NULL && m_bMailPresent)
+        {
+            bool bUserResult = (*m_pfnMailCallBack)(m_pMailCallBackParam);
+        }
 
+        
+        
 	}
 	catch(CMOOSException e)
 	{
