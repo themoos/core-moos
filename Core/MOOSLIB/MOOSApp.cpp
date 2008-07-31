@@ -88,6 +88,21 @@ bool MOOSAPP_OnDisconnect(void * pParam)
     return false;
 }
 
+
+bool MOOSAPP_OnMail(void *pParam)
+{
+    if(pParam!=NULL)
+    {
+        CMOOSApp* pApp = (CMOOSApp*)pParam;
+        
+        //client mail work
+        return pApp->OnMailCallBack();
+        
+    }
+    return false;
+    
+}
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -218,77 +233,88 @@ bool CMOOSApp::Run( const char * sName,
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/
 
-    //local vars
-    MOOSMSG_LIST MailIn;
+  
 
     while(1)
     {
-        //look for mail
-        double dfT1 = MOOSTime();
-
-        if(m_bUseMOOSComms)
-        {
-            if(m_Comms.Fetch(MailIn))
-            {
-                /////////////////////////////
-                //   process mail
-
-                if(m_bSortMailByTime)
-                    MailIn.sort(MOOSMsgTimeSorter);
-	               
-                	
-                //call our own private version
-                OnNewMailPrivate(MailIn);
-
-                //classes will have their own personal versions of this
-                OnNewMail(MailIn);
-
-                m_nMailCount++;
-            }
-
-            if(m_Comms.IsConnected())
-            {
-                //do private work
-                IteratePrivate();
-
-                //////////////////////////////////////
-                //  do application specific processing
-                Iterate();
-
-                m_nIterateCount++;
-            }
-        }
+        if(!m_Comms.HasMailCallBack())
+        	DoRunWork();
         else
-        {
-            //do private work
-            IteratePrivate();
-
-            /////////////////////////////////////////
-            //  do application specific processing
-            Iterate();
-            m_nIterateCount++;
-        }
-
-        //store for derived class use the last time iterate was called;
-        m_dfLastRunTime = HPMOOSTime();
-
-        //sleep
-        if(m_dfFreq>0)
-        {
-            int nSleep = (int)(1000.0/m_dfFreq-1000*(m_dfLastRunTime-dfT1));
-
-            //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
-            //tick once more and let the OS schedule us appropriately
-            if(nSleep>10)
-            {
-                MOOSPause(nSleep);
-            }
-        }
+            MOOSPause(1000);
+                
     }
 
     /***************************   END OF MOOS APP LOOP ***************************************/
 
     return true;
+}
+
+bool CMOOSApp::DoRunWork()
+{
+    //look for mail
+    double dfT1 = MOOSTime();
+    //local vars
+    MOOSMSG_LIST MailIn;
+    if(m_bUseMOOSComms)
+    {
+        if( m_Comms.Fetch(MailIn))
+        {
+            /////////////////////////////
+            //   process mail
+            
+            if(m_bSortMailByTime)
+                MailIn.sort(MOOSMsgTimeSorter);
+            
+            
+            //call our own private version
+            OnNewMailPrivate(MailIn);
+            
+            //classes will have their own personal versions of this
+            OnNewMail(MailIn);
+            
+            m_nMailCount++;
+        }
+        
+        if(m_Comms.IsConnected())
+        {
+            //do private work
+            IteratePrivate();
+            
+            //////////////////////////////////////
+            //  do application specific processing
+            Iterate();
+            
+            m_nIterateCount++;
+        }
+    }
+    else
+    {
+        //do private work
+        IteratePrivate();
+        
+        /////////////////////////////////////////
+        //  do application specific processing
+        Iterate();
+        m_nIterateCount++;
+    }
+    
+    //store for derived class use the last time iterate was called;
+    m_dfLastRunTime = HPMOOSTime();
+    
+    //sleep
+    if(m_dfFreq>0)
+    {
+        int nSleep = (int)(1000.0/m_dfFreq-1000*(m_dfLastRunTime-dfT1));
+        
+        //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
+        //tick once more and let the OS schedule us appropriately
+        if(nSleep>10 && !m_Comms.HasMailCallBack())
+        {
+            MOOSPause(nSleep);
+        }
+    }
+    
+    
 }
 
 
@@ -317,7 +343,16 @@ bool CMOOSApp::CheckSetUp()
     return true;
 }
 
-
+/////////////////// EXPERIMENTAL July 2008 ////////////////////
+bool CMOOSApp::UseMailCallBack()
+{
+    /* by calling this function Iterate and OnNewMail will be
+     called from the thread that is servicing the MOOS Comms client. It
+     is provided to let really very specialised MOOSApps have very speedy
+     response times. It is not recommended for general use*/
+    m_Comms.SetOnMailCallBack(MOOSAPP_OnMail,this);
+    return true;
+}
 
 ////////////////////// DEFAULT HANDLERS //////////////////////
 bool CMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
@@ -345,6 +380,12 @@ bool CMOOSApp::OnDisconnectFromServer()
 {
     MOOSTrace("- default OnDisconnectFromServer called\n");
     return true;
+}
+
+/** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
+bool CMOOSApp::OnMailCallBack()
+{
+    return DoRunWork();
 }
 
 bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
@@ -421,12 +462,14 @@ void CMOOSApp::SetAppFreq(double  dfFreq)
     }
 }
 
-void CMOOSApp::SetCommsFreq(unsigned int nFreq)
+bool CMOOSApp::SetCommsFreq(unsigned int nFreq)
 {
     if(nFreq<=MOOS_MAX_COMMS_FREQ)
     {
         m_nCommsFreq = nFreq;
+        return m_Comms.SetCommsTick(m_nCommsFreq);
     }
+    return false;
 }
 
 bool CMOOSApp::IsSimulateMode()

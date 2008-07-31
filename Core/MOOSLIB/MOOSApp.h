@@ -41,7 +41,7 @@
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
 #define MOOS_MAX_APP_FREQ 50
-#define MOOS_MAX_COMMS_FREQ 20
+#define MOOS_MAX_COMMS_FREQ 200
 #define STATUS_PERIOD 2
 
 #include "MOOSVariable.h"
@@ -106,7 +106,7 @@ protected:
     CMOOSCommClient m_Comms;
 
     /** Set the time between calls into the DB - can be set using the CommsTick flag in the config file*/
-    void SetCommsFreq(unsigned int nFreq);
+    bool SetCommsFreq(unsigned int nFreq);
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
     void SetAppFreq(double dfFreq);
@@ -117,7 +117,9 @@ protected:
     /**a very useful object that lets us retrieve configuration information from the mission file using calls like ::GetConfigurationParam() */
     CProcessConfigReader m_MissionReader;
 
-
+	/** A function which Run eventually calls which itself  calls on NewMail and Iterate*/
+    bool DoRunWork();
+    
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //                       UTITLITY  METHODS
@@ -280,6 +282,13 @@ public:
     are not interesting to the casual user*/
     void OnDisconnectToServerPrivate();
     void OnConnectToServerPrivate();
+    bool OnMailCallBack();
+    
+    /* by calling this function Iterate and OnNewMail will be
+     called from the thread that is servicing the MOOS Comms client. It
+     is provided to let really very specialised MOOSApps have very speedy
+     response times. It is not recommended for general use*/
+    bool UseMailCallBack();
 
 private:
     /* this function is used to process mail on behalf of the client just before

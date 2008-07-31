@@ -44,7 +44,7 @@
 #define OUTBOX_PENDING_LIMIT 1000
 #define INBOX_PENDING_LIMIT 1000
 #define CLIENT_DEFAULT_FUNDAMENTAL_FREQ 5
-#define CLIENT_MAX_FUNDAMENTAL_FREQ 50
+#define CLIENT_MAX_FUNDAMENTAL_FREQ 200
 
 #ifndef UNUSED_PARAMETER
     #ifdef _WIN32
@@ -131,6 +131,14 @@ public:
     @param pCallerParam parameter passed to callback function when invoked*/
     void SetOnDisconnectCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
+    /** set the user supplied OnMail callback. This usually will not be set. Users are expected to use FetchMail from
+     their own thread and not use this call back. This function is experimental as of release 7.2 and coders are
+     not encouraged to use it*/
+    void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
+    
+    /** return true if a mail callback is installed */
+    bool HasMailCallBack();
+    
     /** Directly and asynhrounously make a request to the server (use this very rarely if ever. Its not meant for public consumption)
     @param sWhat string specifying what request to make - ALL, DB_CLEAR, PROCESS_SUMMARY or VAR_SUMMARY
     @param MsgList List of messages returned by server
@@ -174,6 +182,13 @@ public:
     
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
+    
+    /** used to control debug printing */
+    void SetVerboseDebug(bool bT){m_bVerboseDebug = bT;};
+    
+    bool SetCommsTick(int nCommsTick);
+    
+
 
 protected:
     bool ClearResources();
@@ -267,6 +282,12 @@ protected:
     /** the user supplied OnDisConnect callback */
     bool (*m_pfnDisconnectCallBack)( void * pParam);
     
+    /** parameter that user wants passed to mail callback */
+    void * m_pMailCallBackParam;
+    
+    /** the user supplied OnMailCallBack*/
+    bool (*m_pfnMailCallBack)(void* pParam);
+    
     
     /** funcdamental frequency with which comms with server occurs
     @see Run
@@ -281,6 +302,9 @@ protected:
 
     /** controls how verbose connectionn is*/
     bool m_bQuiet;
+    
+    /** controls verbose debugging printing */
+    bool m_bVerboseDebug;
     
 };
 
