@@ -314,6 +314,7 @@ bool CMOOSApp::DoRunWork()
         }
     }
     
+    return true;
     
 }
 
