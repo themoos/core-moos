@@ -379,7 +379,7 @@ bool CMOOSCommClient::ConnectToServer()
 	while(!m_bQuit)
 	{
         if(!m_bQuiet)
-		    MOOSTrace("  contacting MOOSDB %s:%d -  try %.5d ",m_sDBHost.c_str(),m_lPort,++nAttempt);
+		    MOOSTrace("  contacting a MOOS server %s:%d -  try %.5d ",m_sDBHost.c_str(),m_lPort,++nAttempt);
 
 		try
 		{
