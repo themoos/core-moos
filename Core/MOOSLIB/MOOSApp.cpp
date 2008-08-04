@@ -130,13 +130,16 @@ CMOOSApp::~CMOOSApp()
 }
 
 bool CMOOSApp::Run( const char * sName,
-                   const char * sMissionFile)
+                    const char * sMissionFile,
+					const char * sSubscribeName)
 {
 
     //save absolutely crucial info...
     m_sAppName      = sName;
     m_sMissionFile  = sMissionFile;
     m_MissionReader.SetAppName(m_sAppName);
+    
+    m_sSubscribeName = sSubscribeName==NULL? m_sAppName :sSubscribeName;
 
     //what time did we start?
     m_dfAppStartTime = MOOSTime();
@@ -434,7 +437,7 @@ bool CMOOSApp::ConfigureComms()
     m_Comms.SetOnConnectCallBack(MOOSAPP_OnConnect,this);
 
     //start the comms client....
-    m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sAppName.c_str(),m_nCommsFreq);
+    m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sSubscribeName.c_str(),m_nCommsFreq);
 
     return true;
 }
