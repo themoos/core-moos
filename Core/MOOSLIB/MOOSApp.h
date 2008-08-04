@@ -71,10 +71,11 @@ protected:
     /////////////////////////////////////////////////////////////////////////////////////////////
 public:
     /**called to start the application
-    @param sName The name of this application (must be unique amoungst MOOS components
+    @param sName The name of this application (used to read configuration from a mission file and if sSubscribeName is NULL, to register with the MOOSDB)
     @param the name of the mission file
+    @param the subscribe name of the application. If NULL then sName
     */
-    bool Run( const char * sName,const char * sMissionFile);
+    bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName=NULL);
 
     /** Called when the class has succesully connected to the server. Overload this function
     and place use it to register for notification when variables of interest change */
@@ -228,6 +229,9 @@ protected:
     /** name of this application */
     std::string m_sAppName;
 
+    /** subscribe name of application usually by default this will be m_sAppName*/
+    std::string m_sSubscribeName;
+    
     /** frequency at which server will be contacted */
     int m_nCommsFreq;
 
