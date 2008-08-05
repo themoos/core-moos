@@ -13,6 +13,7 @@ SET(MOOSGENLIB_SRCS
    ProcessConfigReader.h
    MOOSLinuxSerialPort.h
    MOOSSerialPort.h
+   MOOSThread.h
    )
 
 IF(WIN32)
