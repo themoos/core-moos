@@ -126,7 +126,8 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName)
 
     m_lListenPort = lPort;
 
-    DoBanner();
+    if(!m_bQuiet)
+    	DoBanner();
 
     m_nTotalActions = 0;
     SocketsInit();
