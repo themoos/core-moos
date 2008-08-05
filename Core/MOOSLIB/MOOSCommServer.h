@@ -109,6 +109,11 @@ public:
     @param lPort port number to listen on
     */
     bool Run(long lPort,const std::string  & sCommunityName);
+    
+    
+    /** used to control how verbose the server is. Setting to true turns off all Tracing */
+    void SetQuiet(bool bQ){m_bQuiet = bQ;};
+
 
     /// default constructor
     CMOOSCommServer();
@@ -214,6 +219,11 @@ protected:
 
     /// name of community being served
     std::string  m_sCommunityName;
+    
+    
+    ///how quiet are we
+    
+    bool m_bQuiet;
 };
 
 #endif // !defined(AFX_MOOSCOMMSERVER_H__2FDF870F_F998_4D3C_AD18_FCC2C5C12DDA__INCLUDED_)

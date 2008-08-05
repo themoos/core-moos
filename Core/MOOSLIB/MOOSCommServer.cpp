@@ -110,6 +110,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
     m_sCommunityName = "!£";
+    m_bQuiet  = false;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
@@ -137,6 +138,10 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName)
 
 bool CMOOSCommServer::TimerLoop()
 {
+	//optionally inhibit all MOOSTrace..    
+    if(m_bQuiet)
+        InhibitMOOSTraceInThisThread(true);
+    
     int nPeriod = 3000;
 
     double dfTimeOut = 4.0;
@@ -214,6 +219,12 @@ bool  CMOOSCommServer::OnAbsentClient(XPCTcpSocket* pClient)
 
 bool CMOOSCommServer::ListenLoop()
 {
+    //optionally inhibit all MOOSTrace..    
+    if(m_bQuiet)
+        InhibitMOOSTraceInThisThread(true);
+    
+    
+    
     m_pListenSocket = new XPCTcpSocket(m_lListenPort);
 
     try
@@ -281,6 +292,10 @@ bool CMOOSCommServer::ListenLoop()
 bool CMOOSCommServer::ServerLoop()
 {
 
+    //optionally inhibit all MOOSTrace..    
+    if(m_bQuiet)
+        InhibitMOOSTraceInThisThread(true);
+    
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
