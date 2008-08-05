@@ -198,7 +198,7 @@ bool CAntler::SendMissionFile( )
 
     //copy the filters in
     ss<<"ANTLERFILTER:";
-    std::copy (m_Filter.begin(), m_Filter.end(), ostream_iterator <std::string> (ss, ":"));
+    std::copy (m_Filter.begin(), m_Filter.end(), ostream_iterator <std::string> (ss, " "));
     ss<<std::endl;
     
     while(!FR.eof())
