@@ -110,7 +110,8 @@ bool CAntler::DoRemoteControl()
                     //suck out the Antler filter line
                     std::string sFilter;
                     std::getline(ss, sFilter);
-                    MOOSChomp(sFilter,"ANTLER_FILTER:", true);
+		    MOOSTrace("%s\n", sFilter.c_str());
+                    MOOSChomp(sFilter,"ANTLERFILTER:", true);
                     std::stringstream ssF(sFilter);
                     
                     //fill in the filter set
