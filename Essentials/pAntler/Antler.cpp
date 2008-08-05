@@ -2,6 +2,13 @@
 
 using namespace std;
 #include <sstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <iterator>
+#include <algorithm>
+
+
 
 #define DEBUG_LAUNCH 0
 CAntler::CAntler()
@@ -15,10 +22,11 @@ CAntler::CAntler()
 }
 
 //this is the vanilla version of Run - called to run from a single mission file
-bool CAntler::Run(const std::string &  sMissionFile)
+bool CAntler::Run(const std::string &  sMissionFile,std::set<std::string> Filter )
 {
     m_bHeadless = false;
     m_sMissionFile = sMissionFile;
+    m_Filter = Filter;
     return Spawn(m_sMissionFile);
 }
 
@@ -98,6 +106,20 @@ bool CAntler::DoRemoteControl()
                     
                     //here we copy the mission file contained in the message to 
                     std::stringstream ss(Msg.GetString());
+                    
+                    //suck out the Antler filter line
+                    std::string sFilter;
+                    std::getline(ss, sFilter);
+                    MOOSChomp(sFilter,"ANTLER_FILTER:", true);
+                    std::stringstream ssF(sFilter);
+                    
+                    //fill in the filter set
+                    std::copy(istream_iterator<std::string>(ssF), 
+                              istream_iterator<string>(),
+                              std::inserter(m_Filter,m_Filter.begin()));
+                    
+                    
+                    //write out the whole file
                     std::ofstream Out(m_sReceivedMissionFile.c_str());
                     if(!Out.is_open())
                     {
@@ -174,6 +196,11 @@ bool CAntler::SendMissionFile( )
     FR.SetFile(m_sMissionFile);
     std::stringstream ss;
 
+    //copy the filters in
+    ss<<"ANTLERFILTER:";
+    std::copy (m_Filter.begin(), m_Filter.end(), ostream_iterator <std::string> (ss, ":"));
+    ss<<std::endl;
+    
     while(!FR.eof())
     {
         std::string sL = FR.GetNextValidLine()+"\n";
@@ -635,6 +662,12 @@ CAntler::MOOSProc* CAntler::CreateMOOSProcess(string sConfiguration)
 	}
     
     
+    //here we bail according to our filters 
+    if(!m_Filter.empty() && m_Filter.find(sMOOSName)==m_Filter.end())
+    {
+        return NULL;
+    }
+        
     //it is pssible to specifiy complicated parameters to the process being launched. (For example
     //xterm being passed a whole load of configurations and then the name of the MOOS process it should
     //itself launch. This next call fills in a string list of such parameters

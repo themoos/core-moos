@@ -63,7 +63,7 @@ class CAntler
         //constructor
         CAntler();
         //this is the only public function. Call it to have Antler do its thing.
-        bool Run(const std::string & sMissionFile);
+        bool Run(const std::string & sMissionFile,std::set<std::string> Filter = std::set<std::string>() );
         
         //run in a headless fashion - instructions will be recieved via MOOSComms
         bool Run(const std::string & sHost,  int lPort, const std::string & sAntlerName);
@@ -100,6 +100,9 @@ class CAntler
         MOOSPROC_LIST    m_ProcList;
         std::string m_sDefaultExecutablePath;
         CProcessConfigReader m_MissionReader;
+        
+        //if this set is non empty then only procs listed here will be run..
+        std::set<std::string> m_Filter;
         
         int m_nCurrentLaunch;
         
@@ -143,6 +146,8 @@ class CAntler
         std::string m_sAntlerName;
         std::string m_sDBHost;
         int m_nDBPort;
+        
+
         
     };
 #endif

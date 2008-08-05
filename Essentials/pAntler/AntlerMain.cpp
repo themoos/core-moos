@@ -33,7 +33,10 @@
 
 
 #include "Antler.h"
+#include <sstream>
 #include <string>
+#include <iterator>
+#include <algorithm>
 
 using namespace std;
 
@@ -53,6 +56,22 @@ int main(int argc ,char *argv[])
             std::string sMissionFile = argv[1];
             CAntler Antler;
             return Antler.Run(sMissionFile) ? 0 :-1;            
+        }
+        case 3:
+        {
+            //standard principal Antler but only run a subset of processes
+            //arg 3 must be string quoted
+            std::string sMissionFile = argv[1];
+            CAntler Antler;
+            
+            //make a set of processes we want to launch
+            std::stringstream S(argv[2]); 
+            std::set<std::string> Filter;
+            std::copy(istream_iterator<std::string>(S), 
+                      istream_iterator<string>(),
+                      std::inserter(Filter,Filter.begin()));
+                       
+            return Antler.Run(sMissionFile,Filter);
         }
         case 4:
         {            
