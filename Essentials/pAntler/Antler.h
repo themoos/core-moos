@@ -92,7 +92,7 @@ class CAntler
         bool ConfigureMOOSComms();
         bool SendMissionFile();
         
-        //tell a Monach what is goinon remotely
+        //tell a Monarch what is goinon remotely
         bool PublishProcessQuit(const std::string & sProc);
         bool PublishProcessLaunch(const std::string & sProc);
         
@@ -137,7 +137,7 @@ class CAntler
         bool m_bQuitCurrentJob;
         bool m_bRunning;
         bool m_bNewJob;
-        std::string m_sMonachAntler;
+        std::string m_sMonarchAntler;
         bool m_bKillOnDBDisconnect;
         std::string m_sReceivedMissionFile;
         std::string m_sAntlerName;

@@ -8,7 +8,7 @@ CAntler::CAntler()
 {
 	m_JobLock.UnLock();    
     m_bNewJob = false;
-    m_sAntlerName = "Monach";
+    m_sAntlerName = "Monarch";
     m_sDBHost = "localhost";
     m_nDBPort = 9000;
     m_bQuitCurrentJob = false;
@@ -47,7 +47,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
         while(!m_bNewJob)
         {
             MOOSPause(500);
-            MOOSTrace("   Speak to me Monach....%c\r",sSpin[i++%3]);
+            MOOSTrace("   Speak to me Monarch....%c\r",sSpin[i++%3]);
         }
             
         //no more launching until this community is complete
@@ -182,7 +182,7 @@ bool CAntler::SendMissionFile( )
     m_pMOOSComms->Notify("MISSION_FILE",ss.str());
     
     
-    MOOSTrace("   Monach published thinned mission file [%d bytes]\n\n",ss.str().size());
+    MOOSTrace("   Monarch published thinned mission file [%d bytes]\n\n",ss.str().size());
     return true;
     
 }
@@ -210,7 +210,7 @@ bool CAntler::OnMOOSDisconnect()
         
         if(m_bKillOnDBDisconnect)
         {
-            //look likes the monach is dead.....
+            //look likes the monarch is dead.....
             MOOSTrace("   shutting down all current spawned processes:\n");
             
             //tell the current job to quit
