@@ -37,6 +37,7 @@
 #include <iterator>
 #include <cctype>
 #include <string>
+#include <map>
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
@@ -48,6 +49,7 @@
 #include <termios.h>
 #include <dirent.h>
 #include <errno.h>
+#include <pthread.h>
 #endif
 
 #ifdef _WIN32
@@ -80,6 +82,12 @@ using namespace std;
 #endif
 #ifndef TWO_PI
 #define     TWO_PI          6.28318530717
+#endif
+
+#ifdef _WIN32
+typedef std::map<int,bool> THREAD2TRACE_MAP;
+#else
+typedef std::map<pthread_t,bool> THREAD2TRACE_MAP;
 #endif
 
 
@@ -858,6 +866,21 @@ bool MOOSFail(const char * FmtStr,...)
 }
 
 
+//this is library scopt mapping of threadid to a flag
+//specifying whether or no a thread should allow MOOSTracing.
+THREAD2TRACE_MAP gThread2TraceMap;
+
+void InhibitMOOSTraceInThisThread(bool bInhibit)
+{
+    
+#ifdef _WIN32
+    DWORD Me = GetCurrentThreadId(); 
+#else
+    pthread_t Me =  pthread_self();
+#endif
+    
+    gThread2TraceMap[Me] = bInhibit;
+}
 
 void MOOSTrace(string  sStr)
 {
@@ -867,6 +890,23 @@ void MOOSTrace(string  sStr)
 
 void MOOSTrace(const char *FmtStr,...)
 {
+    
+    //initially we wqnt to check to see if printing
+    //from this thread has been inhibited by a call to
+    //
+#ifdef _WIN32
+    DWORD Me = GetCurrentThreadId(); 
+#else
+    pthread_t Me =  pthread_self();
+#endif
+    THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
+    
+    //have we been told to be quiet?
+    if(p!=gThread2TraceMap.end())
+        if(p->second==true)
+            return;
+        
+    
     const unsigned int MAX_TRACE_STR = 2048;
 
     if(strlen(FmtStr)<MAX_TRACE_STR)

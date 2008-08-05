@@ -135,6 +135,9 @@ void MOOSTrace(const char *FmtStr,...);
 /** return a formatted string (with printf-like format codes*/
 std::string MOOSFormat(const char * FmtStr,...);
 
+/** Inhibit (enable) MOOSTracing in the calling thread*/
+void InhibitMOOSTraceInThisThread(bool bInhibit = true);
+
 /** like MOOSTrace but returns false - useful for return statements */
 bool MOOSFail(const char * FmtStr,...);
 
