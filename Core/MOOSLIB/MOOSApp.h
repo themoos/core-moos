@@ -146,6 +146,9 @@ protected:
 
     /** enable/disable the behind the scenes search for command messages */
     void EnableCommandMessageFiltering(bool bEnable);
+    
+    /** Allow ::Iterate to be called without a connection to a DB*/
+    void EnableIterateWithoutComms(bool bEnable);
 
     /** dispatching function for ::OnCommandMsg */
     bool LookForAndHandleAppCommand(MOOSMSG_LIST & NewMail);
@@ -264,7 +267,12 @@ protected:
     /** return number of times iterate has been called*/
     int GetIterateCount();
 
-
+    /** returns true if we can iterate without comms*/
+    bool CanIterateWithoutComms();
+    
+    
+    
+    
     /** returns the string which constitutes a command string for this application.
     if CommandFiltering is enabled (see EnableCommandMessageFiltering() ) the
     application will filter incoming mail and Call OnCommandMsg() (which can be overiden)
@@ -301,6 +309,8 @@ private:
     /* and this is a private iterate - we may need to regularly do things behind the scenes */
     void IteratePrivate();
 
+    /**can we iterate without comms*/
+    bool m_bIterateWithoutComms;
 
 
 private:
@@ -318,7 +328,7 @@ private:
     it prints a help statement and returns false */
     bool CheckSetUp();
     
-   
+    
 };
 
 #endif
