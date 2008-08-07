@@ -435,6 +435,9 @@ bool CMOOSApp::ConfigureComms()
 
     //register a callback for On Connect
     m_Comms.SetOnConnectCallBack(MOOSAPP_OnConnect,this);
+    
+    //and one for the disconnect callback
+    m_Comms.SetOnDisconnectCallBack(MOOSAPP_OnDisconnect,this);
 
     //start the comms client....
     m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sSubscribeName.c_str(),m_nCommsFreq);
