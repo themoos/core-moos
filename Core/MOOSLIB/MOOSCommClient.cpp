@@ -705,6 +705,9 @@ bool CMOOSCommClient::Notify(const string &sVar, const string & sVal, double dfT
 
 bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList, double dfTimeOut, bool bClear)
 {
+    if(!IsConnected())
+        return false;
+    
 	CMOOSMsg Msg(MOOS_SERVER_REQUEST,sWhat.c_str(),"");
 	Post(Msg);
 
