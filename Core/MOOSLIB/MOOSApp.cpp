@@ -122,6 +122,7 @@ CMOOSApp::CMOOSApp()
     m_dfLastStatusTime = -1;
     m_bSortMailByTime = true;
 
+    EnableIterateWithoutComms(false);
 }
 
 CMOOSApp::~CMOOSApp()
@@ -278,7 +279,7 @@ bool CMOOSApp::DoRunWork()
             m_nMailCount++;
         }
         
-        if(m_Comms.IsConnected())
+        if(m_Comms.IsConnected() ||  CanIterateWithoutComms() )
         {
             //do private work
             IteratePrivate();
@@ -608,6 +609,18 @@ bool CMOOSApp::MOOSDebugWrite(const string &sTxt)
         return false;
     }
 }
+
+bool CMOOSApp::CanIterateWithoutComms()
+{
+    return m_bIterateWithoutComms;
+}
+
+void CMOOSApp::EnableIterateWithoutComms(bool bEnable)
+{
+    m_bIterateWithoutComms = bEnable;
+}
+
+
 
 double CMOOSApp::GetTimeSinceIterate()
 {
