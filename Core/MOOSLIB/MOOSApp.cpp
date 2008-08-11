@@ -130,9 +130,17 @@ CMOOSApp::~CMOOSApp()
 
 }
 
+//this is an overloaded 3 parameter version which allows explicit setting of the registration name
+bool CMOOSApp::Run(const char * sName,const char * sMissionFile,const char * sMOOSName)
+{
+    //fill in specialised MOOSName
+    m_sMOOSName = sMOOSName;
+    return Run(sName,sMissionFile);
+}
+
+//the main MOOSApp Run function
 bool CMOOSApp::Run( const char * sName,
-                    const char * sMissionFile,
-					const char * sSubscribeName)
+                    const char * sMissionFile)
 {
 
     //save absolutely crucial info...
@@ -140,8 +148,10 @@ bool CMOOSApp::Run( const char * sName,
     m_sMissionFile  = sMissionFile;
     m_MissionReader.SetAppName(m_sAppName);
     
-    m_sSubscribeName = sSubscribeName==NULL? m_sAppName :sSubscribeName;
-
+    //by default we will 
+	if(m_sMOOSName.empty())
+        m_sMOOSName=m_sAppName;
+    
     //what time did we start?
     m_dfAppStartTime = MOOSTime();
 
@@ -404,6 +414,7 @@ bool CMOOSApp::ConfigureComms()
 {
 
 
+
     if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
     {
         MOOSTrace("Warning Server host not read from mission file: assuming LOCALHOST\n");
@@ -441,7 +452,10 @@ bool CMOOSApp::ConfigureComms()
     m_Comms.SetOnDisconnectCallBack(MOOSAPP_OnDisconnect,this);
 
     //start the comms client....
-    m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sSubscribeName.c_str(),m_nCommsFreq);
+    if(m_sMOOSName.empty())
+        m_sMOOSName = m_sAppName;
+    
+    m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sMOOSName.c_str(),m_nCommsFreq);
 
     return true;
 }
