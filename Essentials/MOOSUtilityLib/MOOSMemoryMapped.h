@@ -17,6 +17,8 @@
 #include <iterator>
 #include <algorithm>
 #include <iomanip>
+#include <functional>
+
 
 
 #ifdef WIN32
@@ -394,7 +396,12 @@ struct ALogLineInfo : public TextLineInfo
         return (isalnum(c) != 0);       
     }
     
+	static bool isnumeric(char c)
+	{
+		return (isdigit(c)!=0) || c=='-' || c=='.';
+	}
     
+
     bool IsEmpty()
     {
         //        return std::find_if(pLineStart,pLineEnd,isalnum)==pLineEnd;
@@ -403,9 +410,23 @@ struct ALogLineInfo : public TextLineInfo
     
     bool IsNumFirst()
     {
-        return isdigit(*pLineStart);
+		// This does not detect lines with negative time stamps (as we seem to get when
+		// we use wildcard logging).  I'm not sure if this is a problem or not. ARH
+		return (isdigit(*pLineStart) != 0);
     }
     
+	bool IsNumFollowedByWhiteSpace()
+	{
+		char *pFirstNonNumeric = std::find_if(pLineStart,pLineEnd, not1(ptr_fun(isnumeric)) );
+
+		if (pFirstNonNumeric == pLineEnd)
+		{
+			return true;
+		}
+
+		return (iswspace(*pFirstNonNumeric) != 0);
+	}
+
     bool IsWanted()
     {
         if(IsComment())
@@ -416,6 +437,10 @@ struct ALogLineInfo : public TextLineInfo
         
         if(!IsNumFirst())
             return false;
+
+		if(!IsNumFollowedByWhiteSpace())
+			return false;
+
         return true;
     }
     
