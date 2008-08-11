@@ -295,7 +295,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
         return MOOSFail("error reading mission file\n");
     
     
-    m_MissionReader.SetAppName("ANTLER"); //NB no point in running under another name...(I guess Anter1 could luanch Antler2 though...)
+    m_MissionReader.SetAppName("ANTLER"); //NB no point in running under another name...(I guess Anter1 could launch Antler2 though...)
     
     STRING_LIST      sParams;
     
