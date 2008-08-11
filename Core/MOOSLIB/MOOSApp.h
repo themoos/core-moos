@@ -75,7 +75,8 @@ public:
     @param the name of the mission file
     @param the subscribe name of the application. If NULL then sName
     */
-    bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName=NULL);
+    bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName);
+    bool Run( const char * sName,const char * sMissionFile);
 
     /** Called when the class has succesully connected to the server. Overload this function
     and place use it to register for notification when variables of interest change */
@@ -233,7 +234,7 @@ protected:
     std::string m_sAppName;
 
     /** subscribe name of application usually by default this will be m_sAppName*/
-    std::string m_sSubscribeName;
+    std::string m_sMOOSName;
     
     /** frequency at which server will be contacted */
     int m_nCommsFreq;
