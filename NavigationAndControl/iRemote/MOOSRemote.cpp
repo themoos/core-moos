@@ -197,12 +197,12 @@ bool CMOOSRemote::StartThreads()
 bool CMOOSRemote::Run( const char * sName,
                       const char * sMissionFile)
 {
-
-
     //save absolutely crucial info...
     m_sAppName      = sName;
+    m_MissionReader.SetAppName(m_sAppName);
+    m_sSubscribeName = m_sAppName;
     m_sMissionFile = sMissionFile;
-
+    
     //waht time did we start?
     m_dfAppStartTime = MOOSTime();
 
