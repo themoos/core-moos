@@ -203,7 +203,7 @@ bool CMOOSRemote::Run( const char * sName,
     m_sSubscribeName = m_sAppName;
     m_sMissionFile = sMissionFile;
     
-    //waht time did we start?
+    //what time did we start?
     m_dfAppStartTime = MOOSTime();
 
     //can we see the mission file
