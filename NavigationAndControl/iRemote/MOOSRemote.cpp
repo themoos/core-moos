@@ -200,7 +200,7 @@ bool CMOOSRemote::Run( const char * sName,
     //save absolutely crucial info...
     m_sAppName      = sName;
     m_MissionReader.SetAppName(m_sAppName);
-    m_sSubscribeName = m_sAppName;
+    m_sMOOSName = m_sAppName;
     m_sMissionFile = sMissionFile;
     
     //what time did we start?
