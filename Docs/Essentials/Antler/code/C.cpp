@@ -19,3 +19,4 @@ int main(int argc,char *argv[])
         MOOSTrace("pretending to do something %c\r",q[i++%3]);
     }
 }
+
