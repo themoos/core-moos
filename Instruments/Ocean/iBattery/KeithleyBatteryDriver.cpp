@@ -63,7 +63,7 @@ bool CKeithleyBatteryDriver::GetData()
     //1 is the address of the device (if other Keithleys
     //are in the chain, each must be addressed separately
     //RD reads data, end the string with a <cr>
-    char* sGetKeithleyString = "$1RD\r";
+    const char * sGetKeithleyString = "$1RD\r";
 
     m_pPort->Flush();
 

@@ -32,10 +32,10 @@ protected:
 
 int main(int argc,char *argv[])
 {
-    char * sMissionFile = "Mission.moos";
-    char * sMOOSName = "pTestAppB";
-    char * sPublish = "NotSet" ;
-    char * sWhat = "not set";
+    const char * sMissionFile = "Mission.moos";
+    const char * sMOOSName = "pTestAppB";
+    const char * sPublish = "NotSet" ;
+    const char * sWhat = "not set";
     switch(argc)
     {
     case 5:
@@ -57,3 +57,4 @@ int main(int argc,char *argv[])
     CB B;
     B.Run(sMOOSName,sMissionFile,sPublish,sWhat);
 }
+

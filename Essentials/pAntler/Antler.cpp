@@ -47,7 +47,7 @@ bool CAntler::Run(const std::string & sHost,  int nPort, const std::string & sAn
     MOOSTrace("   This is headless Antler called \"%s\"\n   Waiting for mission file from %s:%d\n",m_sAntlerName.c_str(),m_sDBHost.c_str(),m_nDBPort);
     
        
-	char * sSpin = "-\\|/";
+	const char * sSpin = "-\\|/";
     while(1)
     {
         //wait to be signalled that there is work to do...

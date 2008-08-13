@@ -21,8 +21,8 @@ class CA:public CMOOSApp
 
 int main(int argc,char *argv[])
 {
-    char * sMissionFile = "Mission.moos";
-    char * sMOOSName = "pTestAppA";
+    const char * sMissionFile = "Mission.moos";
+    const char * sMOOSName = "pTestAppA";
     switch(argc)
     {
     case 3:
@@ -40,3 +40,4 @@ int main(int argc,char *argv[])
     CA A;
     A.Run(sMOOSName,sMissionFile);
 }
+

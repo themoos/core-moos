@@ -34,7 +34,7 @@
 
 int main(int argc ,char * argv[])
 {
-    char * sMissionFile = "Mission.moos";
+    const char * sMissionFile = "Mission.moos";
 
     if(argc>1)
     {
