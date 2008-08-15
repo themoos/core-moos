@@ -8,13 +8,6 @@ PlaybackWindow.h
 MOOSPlayBackV2.h
 MOOSPlayBackV2.cpp)
 
-
-# Add executable
-#(note the WIN32 bit says under windows use /subsystem:windows not console
-#this prevents fltk app from producing an annoying console aswell
-
-
-
 #look for FLTK ourselves
 INCLUDE(${MOOS_SOURCE_DIR}/cmake_modules/FindFLTK.cmake)
 
@@ -25,8 +18,10 @@ IF(FLTK_FOUND)
    # Add executable
    #(note the WIN32 bit says under windows use /subsystem:windows not console
    #this prevents fltk app from producing an annoying console aswell
-   
-   ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
+   #ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
+   # However, this does not work under windows in release mode
+ ADD_EXECUTABLE( uPlayBack ${UPLAYBACK_SRCS})   
+
    # Link the executable
    TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBS} )
 
