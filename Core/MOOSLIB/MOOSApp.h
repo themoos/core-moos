@@ -122,6 +122,9 @@ protected:
 	/** A function which Run eventually calls which itself  calls on NewMail and Iterate*/
     bool DoRunWork();
     
+    /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
+    void SetAppError(bool bFlag, const std::string & sReason);
+    
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //                       UTITLITY  METHODS
@@ -257,6 +260,12 @@ protected:
     
     /**should mail be handed to the user sorted by increasing time*/
     bool m_bSortMailByTime;
+    
+    /** string that should be written to the status string if the App Error flag is true */
+    std::string m_sAppError;
+    
+    /** flag specifying the error state of the App - set via SetAppError()*/
+    bool m_bAppError;
     
     
     /** Time since last iterate was called*/
