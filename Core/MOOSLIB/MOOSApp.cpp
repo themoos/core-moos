@@ -121,7 +121,7 @@ CMOOSApp::CMOOSApp()
     m_bCommandMessageFiltering = false;
     m_dfLastStatusTime = -1;
     m_bSortMailByTime = true;
-
+	m_bAppError = false;
     EnableIterateWithoutComms(false);
 }
 
@@ -357,6 +357,14 @@ bool CMOOSApp::CheckSetUp()
 
     return true;
 }
+
+
+void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
+{
+    m_bAppError = bErr;
+    m_sAppError =  m_bAppError ? sErr : "";
+}
+
 
 /////////////////// EXPERIMENTAL July 2008 ////////////////////
 bool CMOOSApp::UseMailCallBack()
@@ -723,6 +731,10 @@ std::string CMOOSApp::MakeStatusString()
     std::set<std::string> Registered = m_Comms.GetRegistered();
 
     std::stringstream ssStatus;
+    ssStatus<<"AppErrorFlag="<<(m_bAppError?"true":"false")<<",";
+    if(m_bAppError)
+        ssStatus<<"AppErrorReason="<<m_sAppError<<",";
+    
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
 
     ssStatus<<"MOOSName="<<GetAppName()<<",";

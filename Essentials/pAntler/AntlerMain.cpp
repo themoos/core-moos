@@ -42,7 +42,7 @@ using namespace std;
 
 int main(int argc ,char *argv[])
 {
-    
+      
     MOOSTrace("*************************************\n");
     MOOSTrace("*  This is Antler, head of MOOS...  *\n");
     MOOSTrace("*  P. Newman 2008                   *\n");
