@@ -828,18 +828,19 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
         //I'm the child now..
         
         STRING_LIST::iterator p = pNewProc->m_ConsoleLaunchParameters.begin();
-        char ** pExecVParams = new char  *  [pNewProc->m_ConsoleLaunchParameters.size()+pNewProc->m_ExtraCommandLineParameters.size()+ 6];
+	unsigned int nExecParams = pNewProc->m_ConsoleLaunchParameters.size()+pNewProc->m_ExtraCommandLineParameters.size()+ 6;
+        const char ** pExecVParams = new const char* [nExecParams];
         int i = 0;
         
         //do we need to configure an xterm?
         if(pNewProc->m_bNewConsole)
         {
-            pExecVParams[i++] =DEFAULT_NIX_TERMINAL; 
+            pExecVParams[i++] = DEFAULT_NIX_TERMINAL; 
             if(!pNewProc->m_ConsoleLaunchParameters.empty())
             {
                 while(p!=pNewProc->m_ConsoleLaunchParameters.end())
                 {
-                    pExecVParams[i++] = (char*)(p++->c_str());
+                    pExecVParams[i++] = (p++->c_str());
                 }
             }
             
@@ -848,19 +849,19 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
         }
         
         //here we fill in the process name we really care about
-        pExecVParams[i++] = (char *)pNewProc->m_sApp.c_str() ;
+        pExecVParams[i++] = (pNewProc->m_sApp.c_str()) ;
         if(!pNewProc->m_bInhibitMOOSParams)
         {
-            //we do teh usual thing f supplying Mission file and MOOSName
-            pExecVParams[i++] = (char *)pNewProc->m_sMissionFile.c_str(); 
-            pExecVParams[i++] = (char *)pNewProc->m_sMOOSName.c_str(); 
+            //we do the usual thing of supplying Mission file and MOOSName
+            pExecVParams[i++] = pNewProc->m_sMissionFile.c_str(); 
+            pExecVParams[i++] = pNewProc->m_sMOOSName.c_str(); 
         }
         
         
         //here we pass extra parameters to the MOOS process if required
         for(p = pNewProc->m_ExtraCommandLineParameters.begin();p!=pNewProc->m_ExtraCommandLineParameters.end();p++)
         {
-            pExecVParams[i++] = (char *)(p->c_str());
+            pExecVParams[i++] = (p->c_str());
         }
         
         //terminate list
@@ -871,7 +872,8 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
 #endif
         
         //and finally replace ourselves with a new xterm process image
-        if(execvp(pExecVParams[0],(char * const *)pExecVParams)==-1)
+	char * const * pParamList = const_cast<char * const *> (pExecVParams);
+        if(execvp(pExecVParams[0], pParamList)==-1)
         {
             MOOSTrace("Failed exec - not good. Called exec as follows:\n");
             exit(EXIT_FAILURE);
