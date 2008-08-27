@@ -64,7 +64,7 @@ private :
 
 public:
 
-    CPlaybackWindow( int X, int Y, int W, int H,  char *l );
+    CPlaybackWindow( int X, int Y, int W, int H,  const char *l );
     void OnControlWidget(Fl_Widget* pWidget,int ID);
     bool OnPlayButton();
     bool OnStopButton();

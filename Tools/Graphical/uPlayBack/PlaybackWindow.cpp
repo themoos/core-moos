@@ -76,7 +76,7 @@ void GUIRefresh(void* pParam)
     pMe->OnGUIRefresh();
 }
 
-CPlaybackWindow::CPlaybackWindow( int X, int Y, int W, int H,  char *l ) : BASE(X,Y,W,H,l)
+CPlaybackWindow::CPlaybackWindow( int X, int Y, int W, int H,  const char *l ) : BASE(X,Y,W,H,l)
 {
     m_dfTimerInterval = DEFAULT_TIMER_INTERVAL;
 
