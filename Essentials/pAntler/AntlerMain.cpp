@@ -84,7 +84,7 @@ int main(int argc ,char *argv[])
         }
         default:
         {
-            MOOSTrace("usage:\n pAntler missionfile.moos\nor\n pAntler DBHost DBPort AntlerName\n");
+            MOOSTrace("usage:\n pAntler missionfile.moos\nor\n pAntler missionfile.moos \"P1,P2,P3...\"\nor pAntler DBHost DBPort AntlerName\n");
             return -1;
         }
     }
