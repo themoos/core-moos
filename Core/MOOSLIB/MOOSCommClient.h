@@ -183,8 +183,9 @@ public:
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
-    /** used to control whether skew is set */
-    void SetSkewHandling(bool bS){m_bUseSkewHandling = bS;};
+    /** used to control whether local clock skew (used by MOOSTime())  is se via the server at the other
+     end of this connection */
+    void DoLocalTimeCorrection(bool b){m_bDoLocalTimeCorrection = b;};
     
     /** used to control debug printing */
     void SetVerboseDebug(bool bT){m_bVerboseDebug = bT;};
@@ -310,7 +311,7 @@ protected:
     bool m_bVerboseDebug;
 
     /** controls whether skew is set */
-    bool m_bUseSkewHandling;
+    bool m_bDoLocalTimeCorrection;
     
 };
 

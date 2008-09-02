@@ -132,7 +132,7 @@ bool IsLittleEndian()
 
 
 
-double HPMOOSTime()
+double HPMOOSTime(bool bApplyMOOSCommsCorrection)
 {
 #ifdef _WIN32
     static LARGE_INTEGER liStart;
@@ -152,32 +152,32 @@ double HPMOOSTime()
         LARGE_INTEGER liNow;
         QueryPerformanceCounter(&liNow);
 
-        return gdfMOOSSkew+dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
+        double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
+        if(bApplyMOOSCommsCorrection)
+        {
+        	return gdfMOOSSkew+T;
+        }
+        else
+        {
+            return T;
+        }
     }
 #else
     return MOOSTime();
 #endif
 
-
-
 }
 
 
 
-double MOOSTime()
+double MOOSTime(bool bApplyMOOSCommsCorrection)
 {
     double dfT=0.0;
     //grab the time..
 #ifndef _WIN32
 
-#if(0) //PMN May03 04
-    struct timeb timebuffer;
-    ftime( &timebuffer );
-    dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
-#else
-
     struct timeval TimeVal;
-
+    
     if(gettimeofday(&TimeVal,NULL)==0)
     {
         dfT = TimeVal.tv_sec+TimeVal.tv_usec/1000000.0;
@@ -186,20 +186,18 @@ double MOOSTime()
     {
         dfT =-1;
     }
-#endif
-
-
-
+    
 #else
     struct _timeb timebuffer;
     _ftime( &timebuffer );
     dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
 
-
-
 #endif
-    return dfT+gdfMOOSSkew;
-
+    
+    if(bApplyMOOSCommsCorrection)
+	    return dfT+gdfMOOSSkew;
+	else
+        return dfT;
 }
 
 void MOOSPause(int nMS)
