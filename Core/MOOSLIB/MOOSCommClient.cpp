@@ -95,6 +95,7 @@ CMOOSCommClient::CMOOSCommClient()
 	m_nNextMsgID=0;
 	m_bFakeSource = false;
     m_bQuiet= false;
+    m_bUseSkewHandling = true;
 
 	m_bMailPresent = false;
     
@@ -323,7 +324,7 @@ bool CMOOSCommClient::DoClientWork()
 			PktRx.Serialize(m_InBox,false,true,&dfPktTxTime);
 
 			//did you manage to grab the DB time while you were there?
-			if(!isnan(dfPktTxTime))
+			if(m_bUseSkewHandling && !isnan(dfPktTxTime))
 				UpdateMOOSSkew(dfPktTxTime,dfPktRxTime);
             
             
@@ -538,7 +539,8 @@ bool CMOOSCommClient::HandShake()
         if(!m_bQuiet)
 		    MOOSTrace("  Handshaking as \"%s\"\n",m_sMyName.c_str());
 
-		SetMOOSSkew(0);
+        if(m_bUseSkewHandling)
+		    SetMOOSSkew(0);
 
 		//a little bit of handshaking..we need to say who we are
 		CMOOSMsg Msg(MOOS_DATA,"",(char *)m_sMyName.c_str());
@@ -570,7 +572,8 @@ bool CMOOSCommClient::HandShake()
                 MOOSTrace("  Handshaking Complete\n");
 
 			double dfSkew = WelcomeMsg.m_dfVal;
-			SetMOOSSkew(dfSkew);
+            if(m_bUseSkewHandling)
+			    SetMOOSSkew(dfSkew);
 
 
 		}
