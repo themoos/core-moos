@@ -95,7 +95,11 @@ CMOOSCommClient::CMOOSCommClient()
 	m_nNextMsgID=0;
 	m_bFakeSource = false;
     m_bQuiet= false;
-    m_bUseSkewHandling = true;
+    
+    //by default this client will adjust the local time skew
+    //by using time information sent by the CommServer sitting
+    //at the other end of this conenection.
+    m_bDoLocalTimeCorrection = true;
 
 	m_bMailPresent = false;
     
@@ -324,7 +328,7 @@ bool CMOOSCommClient::DoClientWork()
 			PktRx.Serialize(m_InBox,false,true,&dfPktTxTime);
 
 			//did you manage to grab the DB time while you were there?
-			if(m_bUseSkewHandling && !isnan(dfPktTxTime))
+			if(m_bDoLocalTimeCorrection && !isnan(dfPktTxTime))
 				UpdateMOOSSkew(dfPktTxTime,dfPktRxTime);
             
             
@@ -336,6 +340,8 @@ bool CMOOSCommClient::DoClientWork()
         if(m_pfnMailCallBack!=NULL && m_bMailPresent)
         {
             bool bUserResult = (*m_pfnMailCallBack)(m_pMailCallBackParam);
+            if(!bUserResult)
+                MOOSTrace("user mail callback returned false..is all ok?\n");
         }
 
         
@@ -539,7 +545,7 @@ bool CMOOSCommClient::HandShake()
         if(!m_bQuiet)
 		    MOOSTrace("  Handshaking as \"%s\"\n",m_sMyName.c_str());
 
-        if(m_bUseSkewHandling)
+        if(m_bDoLocalTimeCorrection)
 		    SetMOOSSkew(0);
 
 		//a little bit of handshaking..we need to say who we are
@@ -572,7 +578,7 @@ bool CMOOSCommClient::HandShake()
                 MOOSTrace("  Handshaking Complete\n");
 
 			double dfSkew = WelcomeMsg.m_dfVal;
-            if(m_bUseSkewHandling)
+            if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
 
 
