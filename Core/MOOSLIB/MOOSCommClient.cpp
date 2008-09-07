@@ -295,16 +295,18 @@ bool CMOOSCommClient::DoClientWork()
             MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfPktTxTime);
         }
                     
-		SendPkt(m_pSocket,PktTx);
+		double dfLocalPktTxTime = HPMOOSTime();
+        
+        SendPkt(m_pSocket,PktTx);
 
 		ReadPkt(m_pSocket,PktRx);
 
 		//quick! grab this time
-		double dfPktRxTime = HPMOOSTime();
+		double dfLocalPktRxTime = HPMOOSTime();
         
         if(m_bVerboseDebug)
         {
-            MOOSTrace("COMMSERVER DEBUG: completed call to DB after %f s\n",dfPktRxTime-dfPktTxTime);
+            MOOSTrace("COMMSERVER DEBUG: completed call to DB after %f s\n",dfLocalPktRxTime-dfLocalPktRxTime);
         }
                  
 
@@ -322,15 +324,17 @@ bool CMOOSCommClient::DoClientWork()
 			//but no NULL messages
 			//we ask serialise also to return the DB time
 			//by looking in the first NULL_MSG in the packet
-			double dfPktTxTime=numeric_limits<double>::quiet_NaN();
+			double dfServerPktTxTime=numeric_limits<double>::quiet_NaN();
 
 			//extract...
-			PktRx.Serialize(m_InBox,false,true,&dfPktTxTime);
+			PktRx.Serialize(m_InBox,false,true,&dfServerPktTxTime);
 
 			//did you manage to grab the DB time while you were there?
-			if(m_bDoLocalTimeCorrection && !isnan(dfPktTxTime))
-				UpdateMOOSSkew(dfPktTxTime,dfPktRxTime);
-            
+			if(m_bDoLocalTimeCorrection && !isnan(dfServerPktTxTime))
+            {
+                double dfTransportDelay = 0.5*(dfLocalPktRxTime-dfLocalPktTxTime);
+				UpdateMOOSSkew(dfServerPktTxTime,dfLocalPktRxTime);
+            }
             
        
 			m_bMailPresent = true;
