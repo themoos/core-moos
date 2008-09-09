@@ -616,6 +616,67 @@ bool CMOOSSerialPort::GetTelegram(std::string &sTelegram,double dfTimeOut,double
 }
 
 
+bool CMOOSSerialPort::GetTelegramOrAccumulate(std::string &sTelegram,double dfTimeOut,double *pTime)
+{
+    if(IsStreaming())
+    {
+        MOOSTrace("don't call GetTelegram on a streaming device!\n");
+        return false;
+    }
+    
+    static char telegramBuffer[TELEGRAM_LEN];
+    static int nTelegramBufferRead = 0;              //total number of chars read
+    
+    double dfTimeWaited = 0.0;              //haven't waited any time yet
+    double dfInterval = 0.01;             //10ms
+    
+    
+    while ((dfTimeWaited<dfTimeOut) && nTelegramBufferRead<TELEGRAM_LEN)
+    {
+        int nGrabbed = 0;
+        
+        //try the read
+        nGrabbed = GrabN(telegramBuffer+nTelegramBufferRead,1);
+        
+        if (nGrabbed == 0)
+        {
+            //OK wait a while...maybe it is on its way!
+            dfTimeWaited+=dfInterval;
+            
+            MOOSPause((int)(dfInterval*1000.0));
+        }
+        else
+        {
+            if(nTelegramBufferRead==0 && pTime!=NULL)
+            {
+                //grab the time..                        
+                *pTime = MOOSTime();
+            }
+            
+            
+            nTelegramBufferRead+=nGrabbed;
+            
+            //have we reached the end of the message?
+            if(IsCompleteReply(telegramBuffer,TELEGRAM_LEN,nTelegramBufferRead))
+            {
+                telegramBuffer[nTelegramBufferRead]='\0';
+                nTelegramBufferRead = 0;
+                sTelegram = telegramBuffer;
+                MOOSRemoveChars(sTelegram,"\r\n");
+                
+                if(IsVerbose())
+                {
+                    MOOSTrace("Telegram = %s\n",sTelegram.c_str());
+                }
+                //MOOSTrace("Required %d retries and %d accumulates\n",nRetries,nAccumulates);
+                return true;
+            }            
+        }
+    }
+    
+    return false;
+}
+
 bool CMOOSSerialPort::Close()
 {
 
