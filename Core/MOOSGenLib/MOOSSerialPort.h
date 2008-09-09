@@ -109,12 +109,18 @@ public:
     virtual bool Create(const char * pPortNum=DEFAULT_PORT, int nBaudRate=DEFAULT_BAUDRATE)=0;
     virtual int  ReadNWithTimeOut(char * pBuff, int  nBufferLen,double Timeout=0.5, double* pTime = NULL);
     virtual int  Write(const char* Str,int nLen, double* pTime=NULL)=0;
-    bool GetTelegram(std::string &sTelegram,double dfTimeOut,double *pTime=NULL);
 
+    //returns a complete telegram in sTelegram (block of terminated characters)
+    bool GetTelegram(std::string &sTelegram,double dfTimeOut,double *pTime=NULL);
+    
+    /**
+     * Similar to the GetTelegram method,
+     * but uses an internal data buffer to store incomplete telegrams.
+     * addition to API submitted by submitted by Arjan Vermeij*/
+    bool GetTelegramOrAccumulate(std::string &sTelegram,double dfTimeOut,double *pTime=NULL);
+    
     // This version of ReadNWithTimeOut returns a negative value to signal an error
     virtual int  ReadNWithTimeOut2(char * pBuff, int nBufferLen, double Timeout=0.5, double* pTime = NULL);
-
-
 
     void SetIsCompleteReplyCallBack(bool (*pfn)(char *pData, int nLen, int nRead) );
 
