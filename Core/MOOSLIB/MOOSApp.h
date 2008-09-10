@@ -187,7 +187,7 @@ protected:
     /** Pass mail (usually collected in OnNewMail) to the set of dynamic variables. If they are interested (mail name matches their subscribe name) they will update themselves automatically */
     bool UpdateMOOSVariables(MOOSMSG_LIST & NewMail);
 
-    /** Set  value in a dynamic variable if teh variable is of type double (type is set on first write )*/
+    /** Set  value in a dynamic variable if the variable is of type double (type is set on first write )*/
     bool SetMOOSVar(const std::string & sName,const std::string & sVal,double dfTime);
 
     /** Set  value in a dynamic variable if the variable is of type string (type is set on first write ) */

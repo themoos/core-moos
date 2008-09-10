@@ -75,11 +75,11 @@ public:
     bool GetClientNames(STRING_LIST & sList);
 
     /** Set the recieve message call back handler. The callback will be called whenever
-    a client sends one or more messages to teh server. The supplied call back must be of the form
+    a client sends one or more messages to the server. The supplied call back must be of the form
     static bool MyCallBack(MOOSMSG_LIST & RxLst,MOOSMSG_LIST & TxLst, void * pParam).
     @param sClient    Name of client at the end of the socket sending this Pkt
     @param RxLst    contains the incoming messages.
-    @param TxLst    passed to the handler as a recepticle for all the message that    should be sent back to the client in response to teh incoming messages.
+    @param TxLst    passed to the handler as a recepticle for all the message that    should be sent back to the client in response to the incoming messages.
     @param pParam      user suplied parameter to be passed to callback function
     */
     void SetOnRxCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam);
@@ -135,7 +135,7 @@ protected:
     /** Get the name of the client on the remote end of pSocket*/
     std::string  GetClientName(XPCTcpSocket* pSocket);
 
-    /** Send a Poisoned mesasge to the client on the end of pSocket. This may cause teh client
+    /** Send a Poisoned mesasge to the client on the end of pSocket. This may cause the client
     comms thrad to die */
     void PoisonClient(XPCTcpSocket* pSocket,const char * sReason);
 
@@ -169,7 +169,7 @@ protected:
     @see SetOnRxCallBack */
     bool (*m_pfnRxCallBack)(const std::string  & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx,void * pCaller);
 
-    /** place holder for teh address of the object passed back to the user during an Rx callback
+    /** place holder for the address of the object passed back to the user during an Rx callback
     @see SetOnRxCallBack */
     void * m_pRxCallBackParam;
 
@@ -178,7 +178,7 @@ protected:
     @see SetOnDisconnectCallBack */
     bool (*m_pfnDisconnectCallBack)(std::string  & sClient,void * pParam);
 
-    /** place holder for teh address of the object passed back to the user during a Disconnect callback
+    /** place holder for the address of the object passed back to the user during a Disconnect callback
     @see SetOnDisconnectCallBack */
     void * m_pDisconnectCallBackParam;
 
@@ -192,11 +192,11 @@ protected:
     SOCKETLIST    m_ClientSocketList;
 
 
-    /** map of socket file descriptors to the std::string  name of the client process at teh other end*/
+    /** map of socket file descriptors to the std::string  name of the client process at the other end*/
     SOCKETFD_2_CLIENT_NAME_MAP m_Socket2ClientMap;
 
     /** Called when a new client connects. Performs handshaking and adds new socket to m_ClientSocketList
-    @param pNewClient pointer to teh new socket created in ListenLoop;
+    @param pNewClient pointer to the new socket created in ListenLoop;
     @see ListenLoop*/
     virtual bool    OnNewClient(XPCTcpSocket * pNewClient,char * sName);
 
@@ -213,7 +213,7 @@ protected:
     /// largest FD of all connected sockets
     int        m_nMaxSocketFD;
 
-    /// called from init to start teh listen and server threads up
+    /// called from init to start the listen and server threads up
     bool    StartThreads();
 
 

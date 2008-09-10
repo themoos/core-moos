@@ -547,7 +547,7 @@ void CMOOSCommServer::SetOnRxCallBack(bool ( *pfn)(const std::string & ,MOOSMSG_
     //address of function to invoke (static)
     m_pfnRxCallBack=pfn;
 
-    //store the address of the object invoking teh callback -> needed for scope
+    //store the address of the object invoking the callback -> needed for scope
     //resolution when callback is invoked
     m_pRxCallBackParam = pParam;
 }
@@ -558,7 +558,7 @@ void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, vo
     //address of function to invoke (static)
     m_pfnDisconnectCallBack=pfn;
 
-    //store the address of the object invoking teh callback -> needed for scope
+    //store the address of the object invoking the callback -> needed for scope
     //resolution when callback is invoked
     m_pDisconnectCallBackParam = pParam;
 }
@@ -609,7 +609,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             return false;
         }
 
-        //send a message back to teh client saying welcome
+        //send a message back to the client saying welcome
         CMOOSMsg MsgW(MOOS_WELCOME,"",dfSkew);
         SendMsg(pNewClient,MsgW);
 
