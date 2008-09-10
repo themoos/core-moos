@@ -32,6 +32,7 @@
 #ifndef __MOOSSkewFilter_h
 #define __MOOSSkewFilter_h
 
+#include <MOOSGenLib/MOOSGenLib.h>
 #include <deque>
 
 namespace MOOS
@@ -51,6 +52,11 @@ namespace MOOS
 			double dfPeriod;
 			double dfM, dfC;     // Slope and intersect
 			tPt    p1, p2; // Anchor points through which line passes
+
+			void DumpState()
+			{
+				MOOSTrace("Period=%0.6f,dfM=%0.6f,dfC=%0.6f\n", dfPeriod, dfM, dfC);
+			}
 		};
 
 
@@ -70,9 +76,13 @@ namespace MOOS
 		/// segment
 		void CropFrontBefore(double x_min);
 
+		void DumpState();
+
 	private:
+		bool DeleteLastSeg();
 		bool MergeLastSeg();
 
+		void AppendSeg(const tSeg &seg);
 		bool MakeSeg(tSeg &seg, const tPt &p1, const tPt &p2) const;
 		bool GetLineParams(const tPt &p1, const tPt &p2, double &M, double &C) const;
 
@@ -110,18 +120,21 @@ namespace MOOS
 		double Update(double dfTXtime, double dfRXtime, double dfTransportDelay, tSkewInfo *skewinfo=NULL);
 		double GetSkew();
 
+		void DumpState();
+
 	private:
 		CMOOSSkewFilter(const CMOOSSkewFilter &v); // Not implemented
-		void operator=(const CMOOSSkewFilter &v);  // Not implemented
+		void  operator=(const CMOOSSkewFilter &v); // Not implemented
 
 	private:
 		double SmoothingFilter(double dfDT, double dfOldFilterVal, double dfNewMeas, double dfGradient) const;
 
 	private:
 		CConvexEnvelope m_env;
-		bool m_bIsRunning;
 		double m_dfLastVal;
 		double m_dfLastTime;
+
+		unsigned int m_nMeas;
 	};
 
 }

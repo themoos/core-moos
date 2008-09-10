@@ -34,6 +34,20 @@
 namespace MOOS
 {
 
+	void CMOOSSkewFilter::DumpState()
+	{
+		m_env.DumpState();
+	}
+
+
+	void CConvexEnvelope::DumpState()
+	{
+		MOOSTrace("%d Segments\n", GetNumSegs());
+		for (unsigned int i=0; i<m_segs.size(); i++)
+		{
+			m_segs[i].DumpState();
+		}
+	}
 
 	CMOOSSkewFilter::CMOOSSkewFilter()
 	{
@@ -43,9 +57,9 @@ namespace MOOS
 
 	void CMOOSSkewFilter::Reset()
 	{
-		m_bIsRunning   = false;
 		m_dfLastVal    = 0.0;
 		m_dfLastTime   = 0.0;
+		m_nMeas        = 0;
 		m_env.Reset();
 	}
 	
@@ -85,10 +99,15 @@ namespace MOOS
 			m_env.Reset();
 		}
 
-		// Get current best estimate of drift rate and offset
+		// Get current best estimate of drift rate and offset		
+		// But we'll only make a prediction if we've had a reasonable
+		// number of samples in already.  Have to wait for the convex
+		// envelope to settle down.
+		bool bUseEstimate = (m_nMeas > 50);
+
 		double dfGradient = 0.0;
 		CConvexEnvelope::tSeg seg;
-		if (m_env.GetLongestSeg(seg))
+		if (bUseEstimate && m_env.GetLongestSeg(seg))
 		{
 			// Update skew using a prediction from the convex envelope
 			dfSkew = seg.dfM * dfTXtime + seg.dfC;
@@ -104,7 +123,7 @@ namespace MOOS
 
 		// We'll push the result through a filter to ensure that 
 		// skew values don't change too quickly
-		if (m_bIsRunning)
+		if (m_nMeas > 0)
 		{
 			double dt = dfTXtime - m_dfLastTime;
 			double dfFiltOut = SmoothingFilter(dt, m_dfLastVal, dfSkew, dfGradient);
@@ -121,7 +140,8 @@ namespace MOOS
 
 		m_dfLastVal  = dfSkew;
 		m_dfLastTime = dfTXtime;
-		m_bIsRunning = true;
+
+		m_nMeas++;
 
 		return dfSkew;
 	}
@@ -144,6 +164,7 @@ namespace MOOS
 
 	bool CConvexEnvelope::GetLongestSeg(tSeg &seg) const
 	{
+		if (GetNumSegs() < 1) return false;
 		if (m_uiLongestSegID >= GetNumSegs()) return false;
 		seg = m_segs[m_uiLongestSegID];
 		return true;
@@ -169,7 +190,7 @@ namespace MOOS
 
 		tSeg seg;
 		if (!MakeSeg(seg, m_InitPt, pt)) return false;
-		m_segs.push_back(seg);
+		AppendSeg(seg);		
 
 
 		// Now try to merge segments from the back
@@ -188,6 +209,27 @@ namespace MOOS
 	}
 
 	
+	void CConvexEnvelope::AppendSeg(const tSeg & seg)
+	{
+		m_segs.push_back(seg);
+
+		tSeg longestSeg;
+		if (GetLongestSeg(longestSeg))
+		{
+			if (longestSeg.dfPeriod < seg.dfPeriod)
+			{
+				m_uiLongestSegID  = GetNumSegs()-1;
+				m_dfLongestSegLen = seg.dfPeriod;
+			}
+		}
+		else
+		{
+			m_uiLongestSegID  = 0;
+			m_dfLongestSegLen = seg.dfPeriod;
+		}
+	}
+
+
 	void CConvexEnvelope::CropFrontBefore(double x_min)
 	{
 		while (GetNumSegs() > 0 && m_uiLongestSegID > 0)
@@ -265,6 +307,7 @@ namespace MOOS
 		if (mergedSeg.dfPeriod > m_dfLongestSegLen)
 		{
 			m_uiLongestSegID = GetNumSegs()-1;
+			m_dfLongestSegLen = mergedSeg.dfPeriod;
 		}
 
 		return true;
