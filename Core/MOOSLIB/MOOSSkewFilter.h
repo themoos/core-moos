@@ -77,9 +77,8 @@ namespace MOOS
 		bool GetLineParams(const tPt &p1, const tPt &p2, double &M, double &C) const;
 
 	private:
-		// Copy constructor and equality are disabled
-		CConvexEnvelope(const CConvexEnvelope &v);
-		const CConvexEnvelope &CConvexEnvelope::operator=(const CConvexEnvelope &v);
+		CConvexEnvelope(const CConvexEnvelope &v); // Not implemented
+		void operator=(const CConvexEnvelope &v); // Not implemented
 
 	private:
 		std::deque<tSeg> m_segs;
