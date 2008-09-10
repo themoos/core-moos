@@ -42,6 +42,7 @@
 #include <set>
 #include <string>
 
+#include "MOOSSkewFilter.h"
 
 #define OUTBOX_PENDING_LIMIT 1000
 #define INBOX_PENDING_LIMIT 1000
@@ -263,7 +264,7 @@ protected:
     /** true if mail present (saves using a semaphore to open an empty box) */
     bool  m_bMailPresent;
 
-    bool UpdateMOOSSkew(double dfTxTime,double dfRxTime);
+    bool UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTransportDelay);
     
     /*thread to handle communications with a server object*/
     CMOOSThread m_ClientThread;
@@ -316,6 +317,9 @@ protected:
     /** controls whether skew is set */
     bool m_bDoLocalTimeCorrection;
     
+	/** Skew filter keeps track of clock skew with server */
+	MOOS::CMOOSSkewFilter m_skewFilter;
+
 };
 
 #endif // !defined(MOOSCommClientH)
