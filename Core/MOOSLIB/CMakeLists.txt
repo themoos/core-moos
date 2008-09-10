@@ -11,6 +11,7 @@ MOOSGlobalHelper.cpp
 MOOSMsg.cpp
 MOOSApp.cpp
 MOOSInstrument.cpp
+MOOSSkewFilter.cpp
 XPCGetHostInfo.cpp
 XPCGetProtocol.cpp
 XPCSocket.cpp
@@ -26,6 +27,7 @@ MOOSLib.h
 MOOSMsg.h
 MOOSApp.h
 MOOSInstrument.h
+MOOSSkewFilter.h
 XPCEndian.h
 XPCException.h
 XPCGetHostInfo.h
