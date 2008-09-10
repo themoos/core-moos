@@ -111,8 +111,8 @@ namespace MOOS
 		double GetSkew();
 
 	private:
-		CMOOSSkewFilter(const CMOOSSkewFilter &v);
-		const CMOOSSkewFilter &CMOOSSkewFilter::operator=(const CMOOSSkewFilter &v);
+		CMOOSSkewFilter(const CMOOSSkewFilter &v); // Not implemented
+		void operator=(const CMOOSSkewFilter &v);  // Not implemented
 
 	private:
 		double SmoothingFilter(double dfDT, double dfOldFilterVal, double dfNewMeas, double dfGradient) const;
