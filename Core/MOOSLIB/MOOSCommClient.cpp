@@ -50,6 +50,8 @@
 #include <string>
 #include <set>
 #include <limits>
+#include <iostream>
+#include <iomanip>
 using namespace std;
 
 #include <MOOSGenLib/MOOSGenLib.h>
@@ -923,6 +925,9 @@ string CMOOSCommClient::GetLocalIPAddress()
 	return std::string(Name);
 }
 
+
+std::auto_ptr<std::ofstream> SkewLog(NULL);
+
 bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime)
 {
 	double dfOldSkew = GetMOOSSkew();
@@ -942,6 +947,19 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime)
 	{
 		dfNewSkew = dfMeasuredSkew;
 	}
+
+	if (SkewLog.get())
+	{
+	    SkewLog->setf(std::ios::fixed);
+	    (*SkewLog) << 
+		"TX=" << setprecision(6) << dfTxTime << "," <<
+		"RX=" << setprecision(6) << dfRxTime << "," <<
+		"measSkew=" << setprecision(6) << dfMeasuredSkew << "," <<
+		"deltaMeas=" << setprecision(6) << dfMeasuredSkew - dfOldSkew << "," <<
+		"newSkew=" << setprecision(6) << dfNewSkew << "," <<
+		"deltaNew=" << setprecision(6) << dfNewSkew - dfOldSkew << std::endl;
+	}
+
 	SetMOOSSkew(dfNewSkew);
 
 	return true;
