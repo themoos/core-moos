@@ -216,7 +216,7 @@ protected:
     bool m_bFakeSource;
     
     /** performs a handshake with the server when a new connection is made. Within this
-    function this class tells teh server its name*/
+    function this class tells the server its name*/
     bool HandShake();
     
     /** The number of pending unsent messages that can be tolerated*/
@@ -250,7 +250,7 @@ protected:
     /** pointer to socket connected to server */
     XPCTcpSocket* m_pSocket;
     
-    /** name of teh host on which the server process lives
+    /** name of the host on which the server process lives
     @see Init*/
     std::string m_sDBHost;
     

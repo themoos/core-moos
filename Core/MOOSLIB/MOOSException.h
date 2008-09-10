@@ -49,7 +49,7 @@ public:
     virtual ~CMOOSException();
 
     /** construct an exception with a string argument giving the reason
-    for teh exception*/
+    for the exception*/
     CMOOSException(const char * sStr);
     CMOOSException(const std::string & s);
 
