@@ -42,8 +42,6 @@
 #include <set>
 #include <string>
 
-#include "MOOSSkewFilter.h"
-
 #define OUTBOX_PENDING_LIMIT 1000
 #define INBOX_PENDING_LIMIT 1000
 #define CLIENT_DEFAULT_FUNDAMENTAL_FREQ 5
@@ -58,6 +56,11 @@
 #endif
 
 class XPCTcpSocket;
+
+namespace MOOS
+{
+	class CMOOSSkewFilter;
+}
 
 extern std::auto_ptr<std::ofstream> SkewLog;
 
@@ -318,7 +321,7 @@ protected:
     bool m_bDoLocalTimeCorrection;
     
 	/** Skew filter keeps track of clock skew with server */
-	MOOS::CMOOSSkewFilter m_skewFilter;
+	std::auto_ptr<MOOS::CMOOSSkewFilter> m_pSkewFilter;
 
 };
 

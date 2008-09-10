@@ -103,7 +103,8 @@ CMOOSCommClient::CMOOSCommClient()
     //by using time information sent by the CommServer sitting
     //at the other end of this conenection.
     m_bDoLocalTimeCorrection = true;
-	m_skewFilter.Reset();
+	m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
+	if (m_pSkewFilter.get()) m_pSkewFilter->Reset(); // BAD things if this fails
 
 	m_bMailPresent = false;
     
@@ -937,8 +938,14 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTr
 	//back out correction which has already been made..
 	dfRxTime-=dfOldSkew;
 
+	if (!m_pSkewFilter.get())
+	{
+		// We don't seem to have a skew filter.  This really shouldn't happen
+		return false;
+	}
+
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
-	double dfNewSkew = m_skewFilter.Update(dfTxTime, dfRxTime, dfTransportDelay, &skewinfo);
+	double dfNewSkew = m_pSkewFilter->Update(dfTxTime, dfRxTime, dfTransportDelay, &skewinfo);
 
 
 /*
