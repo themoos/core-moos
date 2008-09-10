@@ -96,11 +96,19 @@ namespace MOOS
 	class CMOOSSkewFilter
 	{
 	public:
+		struct tSkewInfo
+		{
+			tSkewInfo() : m(0),c(0),envpred(0) {}
+			double m, c;
+			double envpred;
+		};
+
+	public:
 		CMOOSSkewFilter();
 
 		void   Reset();
 
-		double Update(double dfTXtime, double dfRXtime, double dfTransportDelay);
+		double Update(double dfTXtime, double dfRXtime, double dfTransportDelay, tSkewInfo *skewinfo=NULL);
 		double GetSkew();
 
 	private:

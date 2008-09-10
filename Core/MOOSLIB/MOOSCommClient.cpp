@@ -60,6 +60,7 @@ using namespace std;
 #include "MOOSCommPkt.h"
 #include "MOOSGlobalHelper.h"
 #include "MOOSException.h"
+#include "MOOSSkewFilter.h"
 #include <iostream>
 #include <cmath>
 
@@ -102,6 +103,7 @@ CMOOSCommClient::CMOOSCommClient()
     //by using time information sent by the CommServer sitting
     //at the other end of this conenection.
     m_bDoLocalTimeCorrection = true;
+	m_skewFilter.Reset();
 
 	m_bMailPresent = false;
     
@@ -335,7 +337,7 @@ bool CMOOSCommClient::DoClientWork()
 			if(m_bDoLocalTimeCorrection && !isnan(dfServerPktTxTime))
             {
                 double dfTransportDelay = 0.5*(dfLocalPktRxTime-dfLocalPktTxTime);
-				UpdateMOOSSkew(dfServerPktTxTime,dfLocalPktRxTime);
+				UpdateMOOSSkew(dfServerPktTxTime,dfLocalPktRxTime,dfTransportDelay);
             }
             
        
@@ -928,13 +930,20 @@ string CMOOSCommClient::GetLocalIPAddress()
 
 std::auto_ptr<std::ofstream> SkewLog(NULL);
 
-bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime)
+bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTransportDelay)
 {
 	double dfOldSkew = GetMOOSSkew();
 
 	//back out correction which has already been made..
 	dfRxTime-=dfOldSkew;
 
+	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
+	double dfNewSkew = m_skewFilter.Update(dfTxTime, dfRxTime, dfTransportDelay, &skewinfo);
+
+
+/*
+	This is the stuff that was replaced
+	
 	double dfMeasuredSkew = dfTxTime-dfRxTime;
 
 	double dfNewSkew;
@@ -947,6 +956,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime)
 	{
 		dfNewSkew = dfMeasuredSkew;
 	}
+*/
 
 	if (SkewLog.get())
 	{
@@ -954,10 +964,11 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime)
 	    (*SkewLog) << 
 		"TX=" << setprecision(6) << dfTxTime << "," <<
 		"RX=" << setprecision(6) << dfRxTime << "," <<
-		"measSkew=" << setprecision(6) << dfMeasuredSkew << "," <<
-		"deltaMeas=" << setprecision(6) << dfMeasuredSkew - dfOldSkew << "," <<
 		"newSkew=" << setprecision(6) << dfNewSkew << "," <<
-		"deltaNew=" << setprecision(6) << dfNewSkew - dfOldSkew << std::endl;
+		"m=" << setprecision(6) << skewinfo.m << "," <<
+		"c=" << setprecision(6) << skewinfo.c << "," <<
+		"envPred=" << setprecision(6) << skewinfo.envpred <<
+		std::endl;		
 	}
 
 	SetMOOSSkew(dfNewSkew);

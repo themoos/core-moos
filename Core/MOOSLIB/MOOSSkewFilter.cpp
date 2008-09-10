@@ -71,7 +71,7 @@ namespace MOOS
 	}
 
 
-	double CMOOSSkewFilter::Update(double dfTXtime, double dfRXtime, double dfTransportDelay)
+	double CMOOSSkewFilter::Update(double dfTXtime, double dfRXtime, double dfTransportDelay, tSkewInfo *skewinfo)
 	{
 		double dfSkew = dfTXtime - dfRXtime;
 		
@@ -93,6 +93,13 @@ namespace MOOS
 			// Update skew using a prediction from the convex envelope
 			dfSkew = seg.dfM * dfTXtime + seg.dfC;
 			dfGradient = seg.dfM;
+
+			if (skewinfo)
+			{
+				skewinfo->m       = dfGradient;
+				skewinfo->c       = seg.dfC;
+				skewinfo->envpred = dfSkew;
+			}
 		}
 
 		// We'll push the result through a filter to ensure that 
