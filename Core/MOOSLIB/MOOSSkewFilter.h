@@ -78,8 +78,8 @@ namespace MOOS
 
 	private:
 		// Copy constructor and equality are disabled
-		CConvexEnvelope(const CConvexEnvelope &v) {};
-		const CConvexEnvelope &CConvexEnvelope::operator=(const CConvexEnvelope &v) {};
+		CConvexEnvelope(const CConvexEnvelope &v);
+		const CConvexEnvelope &CConvexEnvelope::operator=(const CConvexEnvelope &v);
 
 	private:
 		std::deque<tSeg> m_segs;
@@ -127,6 +127,6 @@ namespace MOOS
 
 }
 
-#endif __MOOSSkewFilter_h
+#endif // __MOOSSkewFilter_h
 
 
