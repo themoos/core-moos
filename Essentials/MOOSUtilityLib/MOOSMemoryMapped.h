@@ -417,7 +417,7 @@ struct ALogLineInfo : public TextLineInfo
     
 	bool IsNumFollowedByWhiteSpace()
 	{
-		char *pFirstNonNumeric = std::find_if(pLineStart,pLineEnd, not1(ptr_fun(isnumeric)) );
+		char *pFirstNonNumeric = std::find_if(pLineStart,pLineEnd, std::not1(std::ptr_fun(isnumeric)) );
 
 		if (pFirstNonNumeric == pLineEnd)
 		{
