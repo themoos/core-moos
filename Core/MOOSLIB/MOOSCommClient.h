@@ -36,6 +36,8 @@
 
 #include <MOOSGenLib/MOOSLock.h>
 #include <MOOSGenLib/MOOSThread.h>
+#include <iostream>
+#include <iomanip>
 #include "MOOSCommObject.h"
 #include <set>
 #include <string>
@@ -56,6 +58,7 @@
 
 class XPCTcpSocket;
 
+extern std::auto_ptr<std::ofstream> SkewLog;
 
 /** This class is the most important component of MOOS as seen from the eyes
 of a component developer */
