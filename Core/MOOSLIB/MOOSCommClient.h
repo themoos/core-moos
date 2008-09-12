@@ -267,7 +267,7 @@ protected:
     /** true if mail present (saves using a semaphore to open an empty box) */
     bool  m_bMailPresent;
 
-    bool UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTransportDelay);
+    bool UpdateMOOSSkew(double dfRQTime, double dfTXTime,double dfRXTime);
     
     /*thread to handle communications with a server object*/
     CMOOSThread m_ClientThread;

@@ -335,8 +335,7 @@ bool CMOOSCommClient::DoClientWork()
 			//did you manage to grab the DB time while you were there?
 			if(m_bDoLocalTimeCorrection && !isnan(dfServerPktTxTime))
             {
-                double dfTransportDelay = 0.5*(dfLocalPktRxTime-dfLocalPktTxTime);
-				UpdateMOOSSkew(dfServerPktTxTime,dfLocalPktRxTime,dfTransportDelay);
+				UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
             }
             
        
@@ -929,11 +928,12 @@ string CMOOSCommClient::GetLocalIPAddress()
 
 std::auto_ptr<std::ofstream> SkewLog(NULL);
 
-bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTransportDelay)
+bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfRxTime)
 {
 	double dfOldSkew = GetMOOSSkew();
 
 	//back out correction which has already been made..
+	dfRqTime-=dfOldSkew;
 	dfRxTime-=dfOldSkew;
 
 	if (!m_pSkewFilter.get())
@@ -944,7 +944,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTr
 	}
 
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
-	double dfNewSkew = m_pSkewFilter->Update(dfTxTime, dfRxTime, dfTransportDelay, &skewinfo);
+	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
 
 
 /*
@@ -968,12 +968,17 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfTxTime,double dfRxTime,double dfTr
 	{
 	    SkewLog->setf(std::ios::fixed);
 	    (*SkewLog) << 
+		"RQ=" << setprecision(6) << dfRqTime << "," <<
 		"TX=" << setprecision(6) << dfTxTime << "," <<
 		"RX=" << setprecision(6) << dfRxTime << "," <<
-		"newSkew=" << setprecision(6) << dfNewSkew << "," <<
 		"m=" << setprecision(6) << skewinfo.m << "," <<
 		"c=" << setprecision(6) << skewinfo.c << "," <<
-		"envPred=" << setprecision(6) << skewinfo.envpred <<
+		"LB=" << setprecision(6) << skewinfo.LB << "," <<
+		"UB=" << setprecision(6) << skewinfo.UB << "," <<
+		"envLB=" << setprecision(6) << skewinfo.envLB << "," <<
+		"envUB=" << setprecision(6) << skewinfo.envUB << "," <<
+		"envEst=" << setprecision(6) << skewinfo.envEst << "," <<
+		"filtEst=" << setprecision(6) << skewinfo.filtEst <<
 		std::endl;		
 	}
 

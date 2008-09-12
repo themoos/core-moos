@@ -34,25 +34,93 @@
 namespace MOOS
 {
 
-	void CMOOSSkewFilter::DumpState()
+	void CMOOSSkewFilter::DumpState() const
 	{
-		m_env.DumpState();
+        MOOSTrace("LowerBound:\n");
+        m_LowerBound.DumpState();
+        MOOSTrace("UpperBound:\n");
+        m_UpperBound.DumpState();
 	}
 
 
-	void CConvexEnvelope::DumpState()
-	{
-		MOOSTrace("%d Segments\n", GetNumSegs());
-		for (unsigned int i=0; i<m_segs.size(); i++)
-		{
-			m_segs[i].DumpState();
-		}
-	}
+    CMOOSSkewFilter::CMOOSSkewFilter()
+        : m_LowerBound(CConvexEnvelope::envelopeAbove),
+        m_UpperBound(CConvexEnvelope::envelopeBelow)
+    {
+        Reset();
+    }
 
-	CMOOSSkewFilter::CMOOSSkewFilter()
-	{
-		Reset();
-	}
+
+    double CMOOSSkewFilter::GetLBSkewAtServerTime(double dfTime) const
+    {
+        // Result from this may not be good if envelope is
+        // not yet stable
+        
+        double m=0.0,c=0.0;
+        m_LowerBound.GetLineEstimate(m, c);
+        
+        return m*dfTime + c;
+    }
+    
+
+
+    double CMOOSSkewFilter::GetUBSkewAtServerTime(double dfTime) const
+    {
+        // Result from this may not be good if envelope is
+        // not yet stable
+        double m=0.0,c=0.0;
+        m_UpperBound.GetLineEstimate(m, c);
+        
+        return m*dfTime + c;
+    }
+        
+
+
+    bool CMOOSSkewFilter::GetSkewAtServerTime(double dfTime, double &dfSkew) const
+    {
+        double m=0.0, c=0.0;
+        GetMidLine(m, c);
+
+        dfSkew = m*dfTime + c;
+        return true;
+    }
+
+
+    // This tells us the skew at an un-corrected local time
+    bool CMOOSSkewFilter::GetSkewAtLocalTime(double dfTime, double &dfSkew) const
+    {
+
+        double m=0.0, c=0.0;
+        GetMidLine(m, c);
+        
+        if (m >= 1.0) return false;
+
+        dfSkew = m*dfTime + c;
+
+        // We need to adjust for the fact that the local
+        // clock runs at a different rate to the server's clock
+        dfSkew = dfSkew / (1.0-m);
+
+        return true;
+    }
+
+
+    void CMOOSSkewFilter::GetMidLine(double &m, double &c) const
+    {
+        // This finds the mean line between the two current
+        // envelope estimates.  Not a good idea to call it
+        // before the envelopes have stabilized
+
+        double m1=0.0,c1=0.0;
+        m_LowerBound.GetLineEstimate(m1, c1);
+
+        double m2=0.0,c2=0.0;
+        m_UpperBound.GetLineEstimate(m2, c2);
+
+        m = (m1+m2)/2.0;
+        c = (c1+c2)/2.0;
+    }
+
 
 
 	void CMOOSSkewFilter::Reset()
@@ -60,97 +128,157 @@ namespace MOOS
 		m_dfLastVal    = 0.0;
 		m_dfLastTime   = 0.0;
 		m_nMeas        = 0;
-		m_env.Reset();
+		m_LowerBound.Reset();
+        m_UpperBound.Reset();
 	}
 	
 
 	double CMOOSSkewFilter::SmoothingFilter(double dfDT, double dfOldFilterVal, double dfNewMeas, double dfGradient) const
 	{
-		// UP filter is much faster than down filter
-		const double alpha_up = 0.01;
-		const double alpha_dn = 0.0001;
-		
-		double pred = dfOldFilterVal + dfGradient * dfDT;
-
-		double innov = dfNewMeas - pred;
-
-		if (innov > 0)
-		{
-			return pred + alpha_up * innov;
-		}
-		else
-		{
-			return pred + alpha_dn * innov;
-		}
+        // Yes, this is a long winded way of writing things,
+        // but it's an easier form for applying nonlinear
+        // gubbins like maximum skew rates at a later date
+        const double alpha = 0.001;
+        double pred        = dfOldFilterVal + dfGradient * dfDT;
+        double innov       = dfNewMeas - pred;
+        return pred + alpha * innov;
 	}
 
 
-	double CMOOSSkewFilter::Update(double dfTXtime, double dfRXtime, double dfTransportDelay, tSkewInfo *skewinfo)
+    void CMOOSSkewFilter::UpdateEnvelopes(double dfTXtime, double dfSkewLB, double dfSkewUB)
+    {
+        // If these fail it's probably because we've
+        // got a duplicated time stamp (ie same as previous
+        // measurement)
+        // But could be because something's gone more wrong
+        // with the convex envelope.
+        // Until we get better error output we'll just
+        // have to assume the worst!
+        if (!m_LowerBound.AddPoint(dfTXtime, dfSkewLB))
+        {
+            m_LowerBound.Reset();
+        }
+
+		if (!m_UpperBound.AddPoint(dfTXtime, dfSkewUB))
+		{
+			m_UpperBound.Reset();
+		}
+    }
+
+
+
+	double CMOOSSkewFilter::Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
 	{
-		double dfSkew = dfTXtime - dfRXtime;
-		
-		if (!m_env.AddPoint(dfTXtime, dfSkew))
-		{
-			// Probably has happened because we've got the same time
-			// stamp as the previous measurement.  But could be because
-			// something's gone more wrong with the convex envelope
-			// Until we get better error info from AddPoint
-			// we'll just have to assume the worst
-			m_env.Reset();
-		}
+		double dfSkewLB = dfTXtime - dfRXtime;
+        double dfSkewUB = dfTXtime - dfRQtime;
 
-		// Get current best estimate of drift rate and offset		
-		// But we'll only make a prediction if we've had a reasonable
-		// number of samples in already.  Have to wait for the convex
-		// envelope to settle down.
-		bool bUseEstimate = (m_nMeas > 50);
+        // Push the new measurements into the convex envelope filters
+        UpdateEnvelopes(dfTXtime, dfSkewLB, dfSkewUB);
 
-		double dfGradient = 0.0;
-		CConvexEnvelope::tSeg seg;
-		if (bUseEstimate && m_env.GetLongestSeg(seg))
-		{
-			// Update skew using a prediction from the convex envelope
-			dfSkew = seg.dfM * dfTXtime + seg.dfC;
-			dfGradient = seg.dfM;
+		// Get current best estimates of drift rate and offset
+        // We won't use envelope vals if envelopes are not stable
+        double dfEnvSkewLB = GetLBSkewAtServerTime(dfTXtime);
+        double dfEnvSkewUB = GetUBSkewAtServerTime(dfTXtime);
+        
+        // Get the best estimate we can of
+        // skew and drift rate
+        double dfSkew = (dfSkewLB + dfSkewUB) / 2.0;
+        double dfM    = 0.0;
+        double dfC    = dfSkew;
+        if (m_LowerBound.IsStable())
+        {
+            dfSkew = dfEnvSkewLB;
+            m_LowerBound.GetLineEstimate(dfM, dfC);
 
-			if (skewinfo)
-			{
-				skewinfo->m       = dfGradient;
-				skewinfo->c       = seg.dfC;
-				skewinfo->envpred = dfSkew;
-			}
-		}
+            if (m_UpperBound.IsStable())
+            {
+                if (dfEnvSkewUB >= dfEnvSkewLB)
+                {
+                    dfSkew = (dfEnvSkewLB + dfEnvSkewUB) / 2.0;
+                    GetMidLine(dfM, dfC);
+                }
+            }
+        } 
+        else if (m_UpperBound.IsStable())
+        {
+            dfSkew = dfEnvSkewUB;
+            m_UpperBound.GetLineEstimate(dfM, dfC);
+        }
 
-		// We'll push the result through a filter to ensure that 
-		// skew values don't change too quickly
+        
+        // Push those values through a smoothing filter
+		double dfFiltOut = dfSkew;
 		if (m_nMeas > 0)
 		{
 			double dt = dfTXtime - m_dfLastTime;
-			double dfFiltOut = SmoothingFilter(dt, m_dfLastVal, dfSkew, dfGradient);
-			dfSkew = dfFiltOut;
+			dfFiltOut = SmoothingFilter(dt, m_dfLastVal, dfSkew, dfM);
 		}
 
-		if (m_env.GetNumSegs() > 500)
-		{
-			// It's highly unlikely ever to fill up this much but just in case...
-			double dfMaxPeriod_hrs = 3.0;
-			double dfMaxPeriod_s   = dfMaxPeriod_hrs * 60.0*60.0;
-			m_env.CropFrontBefore(dfTXtime - dfMaxPeriod_s);
+		// They're highly unlikely ever to get larger than about 25
+        // segments, but just in case...
+		double dfMaxPeriod_s   = 1.0 * 60.0*60.0; // 1 hour
+        if (m_LowerBound.GetNumSegs() > 500)
+        {
+            m_LowerBound.CropFrontBefore(dfTXtime - dfMaxPeriod_s);
+		}
+        if (m_UpperBound.GetNumSegs() > 500)
+        {
+            m_UpperBound.CropFrontBefore(dfTXtime - dfMaxPeriod_s);
 		}
 
-		m_dfLastVal  = dfSkew;
+        if (skewinfo)
+        {
+            // TODO: Output some useful stuff!
+            skewinfo->m = dfM;
+			skewinfo->c = dfC;
+			skewinfo->LB = dfSkewLB;
+			skewinfo->UB = dfSkewUB;
+			skewinfo->envLB = dfEnvSkewLB;
+			skewinfo->envUB = dfEnvSkewUB;
+			skewinfo->envEst = dfSkew;
+			skewinfo->filtEst = dfFiltOut;
+        }
+
+
+		m_dfLastVal  = dfFiltOut;
 		m_dfLastTime = dfTXtime;
 
 		m_nMeas++;
 
-		return dfSkew;
+		return dfFiltOut;
 	}
 
 
-	CConvexEnvelope::CConvexEnvelope()
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+
+
+	CConvexEnvelope::CConvexEnvelope(eDirection aboveOrBelow)
+        : m_aboveOrBelow(aboveOrBelow)
 	{
 		Reset();
 	}
+
+
+    void CConvexEnvelope::DumpState() const
+    {
+		MOOSTrace("%d Segments\n", GetNumSegs());
+		for (unsigned int i=0; i<m_segs.size(); i++)
+		{
+			m_segs[i].DumpState();
+		}
+	}
+
+
+    bool CConvexEnvelope::IsStable() const
+    {
+        // This is fairly arbitrary but should
+        // be more than enough
+        return m_nMeas > 50;
+    }
+
 
 	void CConvexEnvelope::Reset()
 	{
@@ -159,7 +287,24 @@ namespace MOOS
 		m_InitPt          =  tPt(0,0);
 		m_uiLongestSegID   = -1;
 		m_dfLongestSegLen =  0;
+        m_nMeas = 0;
 	}
+
+
+    void CConvexEnvelope::GetLineEstimate(double &m, double &c) const
+    {
+        tSeg seg;
+        if (GetLongestSeg(seg))
+        {
+            m = seg.dfM;
+            c = seg.dfC;
+        }
+        else
+        {
+            m = 0.0;
+            c = m_InitPt.y;
+        }
+    }
 
 
 	bool CConvexEnvelope::GetLongestSeg(tSeg &seg) const
@@ -203,7 +348,7 @@ namespace MOOS
 		// Store latest point for use next time
 		// a point is added
 		m_InitPt = pt;
-
+		m_nMeas++;
 		return true;
 
 	}
@@ -281,11 +426,17 @@ namespace MOOS
 		tSeg seg1 = *(m_segs.rbegin()+1);
 		tSeg seg2 = *(m_segs.rbegin());
 
-		if (seg2.dfM < seg1.dfM) return false;
 
+        if (m_aboveOrBelow == envelopeAbove)
+        {
+            if (seg2.dfM < seg1.dfM) return false;
+        }
+        else
+        {
+            if (seg2.dfM > seg1.dfM) return false;
+        }
 
-		// Later segment is less steep, so a merge is possible
-
+        // OK, merge is possible
 		if (m_uiLongestSegID >= GetNumSegs()-1)
 		{
 			// Ensure we check again for max segment length
@@ -300,7 +451,9 @@ namespace MOOS
 
 		mergedSeg.dfPeriod = seg1.dfPeriod + seg2.dfPeriod;
 
-		m_segs.pop_back();
+		// Remove the last two segments and replace them with
+        // the new merged segment.
+        m_segs.pop_back();
 		m_segs.pop_back();
 		m_segs.push_back(mergedSeg);
 
