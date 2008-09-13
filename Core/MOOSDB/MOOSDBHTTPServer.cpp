@@ -24,6 +24,13 @@ CMOOSDBHTTPServer::CMOOSDBHTTPServer(long lPort)
     //start a listen thread (which will spawn service threads)
     m_ListenThread.Initialise(_CB,this);
     m_ListenThread.Start();
+    
+    
+    //ignore broken pipes as is standard for network apps
+#ifndef _WIN32
+    signal(SIGPIPE,SIG_IGN);
+#endif
+    
 
 }
 
@@ -44,6 +51,12 @@ void CMOOSDBHTTPServer::DoBanner()
 
 bool CMOOSDBHTTPServer::Listen()
 {
+    //ignore broken pipes as is standard for network apps
+#ifndef _WIN32
+    signal(SIGPIPE,SIG_IGN);
+#endif
+    
+    
     while(!m_pMOOSComms->IsConnected())
         MOOSPause(100);
     

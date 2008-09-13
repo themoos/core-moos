@@ -168,6 +168,8 @@ bool CMOOSCommClient::SetCommsTick(int nCommmTick)
     {
         MOOSTrace("setting comms tick\n");
         m_nFundamentalFreq = (int)nCommmTick;
+        if(m_nFundamentalFreq==0)//catch a stupid settting
+            m_nFundamentalFreq = 1;
         return true;
     }
     
@@ -205,8 +207,7 @@ void CMOOSCommClient::SetOnDisconnectCallBack(bool ( *pfn)( void * pConnectParam
 bool CMOOSCommClient::ClientLoop()
 {
 
-	//MOOSTrace("ClientLoop() Begins\n");
-
+	//MOOSTrace("ClientLoop() Begins\n");s
     double dfTDebug = HPMOOSTime();
 	while(!m_bQuit)
 	{
@@ -232,6 +233,9 @@ bool CMOOSCommClient::ClientLoop()
                     MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",HPMOOSTime()-dfTDebug);
 
 				//wait a while before contacting server again;
+                if(m_nFundamentalFreq==0)
+                    m_nFundamentalFreq=1;
+                
 				MOOSPause((int)(1000.0/m_nFundamentalFreq));
 
 			}
