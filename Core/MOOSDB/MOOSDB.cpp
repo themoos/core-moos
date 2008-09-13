@@ -108,6 +108,10 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_CLIENTS"] = NewVar;
     }
     
+    //ignore broken pipes as is standard for network apps
+#ifndef _WIN32
+    signal(SIGPIPE,SIG_IGN);
+#endif
     
     
     
