@@ -4,6 +4,10 @@
 #include "MOOSDBHTTPServer.h"
 #include "HTTPConnection.h"
 
+#ifndef _WIN32
+    #include "signal.h"
+#endif
+
 #define WEBSERVER_PORT 9080L
 #define WEBSERVER_COMMCLIENT_TICK 5
 
