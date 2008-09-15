@@ -126,7 +126,7 @@ public:
     /** start the connection processing...*/
     bool Run();
 
-    /** has teh connection terminated?*/
+    /** has the connection terminated?*/
     bool HasCompleted();
 
     /** call back to allow Serve to run in MOOSThread*/
@@ -146,7 +146,7 @@ protected:
     bool SendHeader();
     /** Sends a 404 error header */
     bool SendFailureHeader();
-	/** Send teh webpage itself*/
+	/** Send the webpage itself*/
     bool SendWebPage();
     /** respond to someone putting data */
     bool HandlePoke(std::string sPokeURL);

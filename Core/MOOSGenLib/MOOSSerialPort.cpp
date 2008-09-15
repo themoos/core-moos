@@ -295,7 +295,7 @@ bool CMOOSSerialPort::CommsLoop()
                 continue;
             }
             
-            //append to teh accumulator
+            //append to the accumulator
             memcpy(pAccumulator+nInStore,pTmp,nRead);
             
             //we have more in the cupboard!

@@ -97,7 +97,7 @@ public:
     /**static helper which splits a line into token = value and by deafult removes white space*/
     static bool    GetTokenValPair(std::string  sLine, std::string &sTok, std::string & sVal,bool bPreserveWhiteSpace = false);
 
-    /** returns a string of teh next non comment line (and removs trailing comments)*/
+    /** returns a string of the next non comment line (and removs trailing comments)*/
     std::string  GetNextValidLine(bool bDoShellSubstitution = true);
 
 	/** iterates through filemap freeing up resources then calls filemap's clear method */
