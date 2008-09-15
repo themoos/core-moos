@@ -200,6 +200,37 @@ double MOOSTime(bool bApplyMOOSCommsCorrection)
         return dfT;
 }
 
+
+
+double MOOSLocalTime()
+{
+    double dfT=0.0;
+    //grab the time..
+#ifndef _WIN32
+
+    struct timeval TimeVal;
+    
+    if(gettimeofday(&TimeVal,NULL)==0)
+    {
+        dfT = TimeVal.tv_sec+TimeVal.tv_usec/1000000.0;
+    }
+    else
+    {
+        dfT =-1;
+    }
+    
+#else
+    struct _timeb timebuffer;
+    _ftime( &timebuffer );
+    dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
+
+#endif
+
+    return dfT;
+}
+
+
+
 void MOOSPause(int nMS)
 {
 #ifdef _WIN32
@@ -277,7 +308,7 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
     /*unsigned int*/ size_t  nPos = string::npos;
     if((nPos = MOOSStrFind(sStr,sTk,bInsensitive))!=string::npos)
     {
-        //we have the start of teh token at nPos
+        //we have the start of the token at nPos
         /*unsigned int*/ size_t  nEqualsPos = sStr.find('=',nPos);
         if(nEqualsPos!=string::npos)
         {
