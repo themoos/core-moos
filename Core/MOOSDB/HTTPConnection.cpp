@@ -5,6 +5,10 @@
 #include "MOOSGenLib/MOOSLock.h"
 #include "MOOSLIB/MOOSException.h"
 
+#ifndef _WIN32
+    #include <signal.h>
+#endif
+
 #include "HTTPConnection.h"
 #include <sstream>
 
