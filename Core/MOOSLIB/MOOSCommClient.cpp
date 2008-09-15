@@ -156,9 +156,9 @@ bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName,
 	return true;
 }
 
-bool CMOOSCommClient::SetCommsTick(int nCommmTick)
+bool CMOOSCommClient::SetCommsTick(int nCommTick)
 {
-    if(m_nFundamentalFreq>CLIENT_MAX_FUNDAMENTAL_FREQ)
+    if(nCommTick>CLIENT_MAX_FUNDAMENTAL_FREQ)
 	{
 		MOOSTrace("Setting Fundamental Freq to maximum value of %d Hz\n",CLIENT_MAX_FUNDAMENTAL_FREQ);
 		m_nFundamentalFreq=CLIENT_MAX_FUNDAMENTAL_FREQ;
@@ -167,8 +167,8 @@ bool CMOOSCommClient::SetCommsTick(int nCommmTick)
     else
     {
         MOOSTrace("setting comms tick\n");
-        m_nFundamentalFreq = (int)nCommmTick;
-        if(m_nFundamentalFreq==0)//catch a stupid settting
+        m_nFundamentalFreq = (int)nCommTick;
+        if(m_nFundamentalFreq==0)//catch a stupid setting
             m_nFundamentalFreq = 1;
         return true;
     }
