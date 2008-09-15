@@ -330,7 +330,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
         m_sDefaultExecutablePath="";
     }
     
-	//no cycle through each line in teh configuration block. If it begins with run then it means launch
+	//no cycle through each line in the configuration block. If it begins with run then it means launch
     for(p = sParams.begin();p!=sParams.end();p++)
     {
         std::string sLine = *p;

@@ -77,7 +77,7 @@ class CAntler
         //create, configure and launch a process
         MOOSProc* CreateMOOSProcess(std:: string sProcName);
         
-        // called to figure out what xterm parameters should be used with launch (ie where should teh xterm be and how should it look)
+        // called to figure out what xterm parameters should be used with launch (ie where should the xterm be and how should it look)
         bool MakeConsoleLaunchParams(std::string sParam,STRING_LIST & LaunchList,std::string sProcName,std::string sMOOSName);
         
         //caled to figure out what if any additional  parameters should be passed to the process being launched	

@@ -123,9 +123,9 @@ OBSLIST * CMOOSNavObsStore::GetListByType(CMOOSObservation::Type eType)
 
 }
 
-//all we do here is mark teh original observation as 
+//all we do here is mark the original observation as 
 //used. Note falgs like bGoodDA and bIgnore are not copiued
-//back. This means that every fetch from teh store comes with
+//back. This means that every fetch from the store comes with
 //clean observations. Apart from those that have already been used 
 //and which are never even passed out!
 bool CMOOSNavObsStore::MarkAsUsed(OBSLIST &ToMarkList)
@@ -149,7 +149,7 @@ bool CMOOSNavObsStore::MarkAsUsed(OBSLIST &ToMarkList)
             OBSLIST & rList = p->second;
             OBSLIST::iterator q;
 
-            //for all teh obs stored in that list
+            //for all the obs stored in that list
             for(q = rList.begin();q!=rList.end() && !bFound ;q++)
             {
                 CMOOSObservation & rObsStored = *q;

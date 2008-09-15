@@ -300,7 +300,7 @@ bool CHelmApp::Initialise()
         MOOSDebugWrite("Must have both EndMission and OverallTimeOut tasks for Helm to work");
         return false;
     }
-    //helpful to tell teh worl waht waypoints have been made
+    //helpful to tell the world what waypoints have been made
     string sWPs=MakeWayPointsString();
     m_Comms.Notify("WAY_POINTS",sWPs);
 

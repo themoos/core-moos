@@ -72,7 +72,7 @@ CMOOSDB::CMOOSDB()
     m_sDBName = "MOOSDB#1";
     m_sCommunityName = "#1";
     
-    //her is teh default port to listen on
+    //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     
     //make our own variable called DB_TIME
@@ -413,7 +413,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 
 
 /** we now want to store some message in anoth cleints message box, when they next call
-in they shall be informed of teh change by stuffing this msg into a return packet */
+in they shall be informed of the change by stuffing this msg into a return packet */
 bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
 {
     MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sClient);
@@ -478,7 +478,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
     
     if(bAlreadyThere && rVar.m_nWrittenTo!=0)
     {
-        //when teh client registered the variable already existed...
+        //when the client registered the variable already existed...
         //better tell them
         CMOOSMsg ReplyMsg;
         Var2Msg(rVar,ReplyMsg);
@@ -569,7 +569,7 @@ bool CMOOSDB::OnDisconnect(string &sClient)
 
 bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
-    //explictly requesting teh server to do something...
+    //explictly requesting the server to do something...
     
     if(Msg.m_sKey=="ALL")
     {

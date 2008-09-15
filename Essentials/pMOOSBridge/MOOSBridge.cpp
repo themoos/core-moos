@@ -166,7 +166,7 @@ bool CMOOSBridge::Configure()
         MOOSTrace("WARNING :Cannot read ::MOOS-scope variable SERVERHOST - assuming %s\n",sDefaultHost.c_str());
     }
 
-    //how fast should teh bridge operate in Hz (setting this to zero is a special case and
+    //how fast should the bridge operate in Hz (setting this to zero is a special case and
     //makes all registrations with dfPeriod = 0)
     m_nBridgeFrequency = DEFAULT_BRIDGE_FREQUENCY;
     m_MissionReader.GetConfigurationParam("BridgeFrequency",m_nBridgeFrequency);

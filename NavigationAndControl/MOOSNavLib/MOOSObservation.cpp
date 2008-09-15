@@ -182,7 +182,7 @@ bool CMOOSObservation::MakeBeacon2WRMatrices(Matrix &Innov,
     //position and velocity. eg a V1 at origin moving 1m/s in
     //x direction towards a beacon at 1500 on x axis will have
     //and estimated travel time of GREATER than 2 seconds!
-    //this is because if the vehcile is at teh origin now
+    //this is because if the vehcile is at the origin now
     //it would have been more than 1500 m away when it transmitted
     //the interrogation.... cunning!
     

@@ -325,7 +325,7 @@ bool CMOOSNavEKFEngine::Iterate(double dfTimeNow)
             int nIterations = 0;
             while(dfDT>TIME_SLICE)
             {
-                //split up teh whole period into even sized chunks
+                //split up the whole period into even sized chunks
                 dfDT=(dfTStop-m_dfLastUpdate)/(++nIterations);
             }
             

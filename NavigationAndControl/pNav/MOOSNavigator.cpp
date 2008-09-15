@@ -212,7 +212,7 @@ bool CMOOSNavigator::Iterate()
                     (*q)->SetInput(ResultMsg,ResultMsg.GetTime());
 
                 }
-                //also publish results of teh filter.
+                //also publish results of the filter.
                 //code in MangeInputs prevents us from
                 //subscribing to what we publish
                 m_Comms.Post(ResultMsg);
@@ -287,7 +287,7 @@ bool CMOOSNavigator::ManageInputs()
     //sometimes sensors supply data that we want that does not map to
     //state coordinates - eg LBL TOF...
     //this field is used for such occasions and to force the navigator
-    //to subscribe todata thgat is not decalred in teh priority queues
+    //to subscribe todata thgat is not decalred in the priority queues
     string sAlways;
     if(m_MissionReader.GetConfigurationParam("ALWAYS_READ",sAlways))
     {
@@ -299,7 +299,7 @@ bool CMOOSNavigator::ManageInputs()
 
 
     //so we have build a long list of all the variable we want to subscribe to
-    //now we tell teh server to tell us when they change.
+    //now we tell the server to tell us when they change.
     STRING_LIST::iterator p;
 
     //but don;t subscribe to things with the stems
@@ -898,7 +898,7 @@ bool CMOOSNavigator::MonitorFilters()
     // 1)spot divergence in the EKF
     // 2)spot failuer in LSQ (no updates)
     // 3) spot differeing solutions between EKF and LSQ
-    // 4) if possible reset teh EKF from the LSQ if the LSQ
+    // 4) if possible reset the EKF from the LSQ if the LSQ
     //    has been disagreeing with LSQ for a while
     //
     // note that 4) will reset the EKF continually if the LSQ is all
@@ -961,7 +961,7 @@ bool CMOOSNavigator::MonitorFilters()
 
         if(m_pEKF!=NULL && m_pEKF->IsEnabled() )
         {
-            //so teh EKF exists and we want to use it( Enabled)
+            //so the EKF exists and we want to use it( Enabled)
             // howver it may not be booted (online)
             if(!m_pEKF->IsOnline())
             {

@@ -337,7 +337,7 @@ bool CMOOSLinearLeastMedianFilter::CHypothesis::DoTotalLeastSquares()
     double dfDotProd1 = EigVec(1,1)*Line(1,1)+EigVec(2,1)*Line(2,1);
     double dfDotProd2 = EigVec(1,2)*Line(1,1)+EigVec(2,2)*Line(2,1);
 
-    //we want to know about noise orthogonal to teh line we just fitted
+    //we want to know about noise orthogonal to the line we just fitted
     int iOrthogonal = dfDotProd1<dfDotProd2?1:2;
 
     //MOOSTrace("e1=%f e2=%f",EigVal(1),EigVal(2));

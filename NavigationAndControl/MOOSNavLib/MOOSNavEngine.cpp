@@ -602,7 +602,7 @@ bool CMOOSNavEngine::AddEntity(CMOOSNavEntity *pEntity,
 {
     Matrix XNew;
 
-    //we always give entities a pinter to teh global estimate
+    //we always give entities a pinter to the global estimate
     //matrices
 
     pEntity->m_pXhat = & m_Xhat;
@@ -618,7 +618,7 @@ bool CMOOSNavEngine::AddEntity(CMOOSNavEntity *pEntity,
 
         if(nSize==0)
         {
-            //its not in teh state vector (eg a beaon)
+            //its not in the state vector (eg a beaon)
             return true;
         }
 
@@ -1427,7 +1427,7 @@ bool CMOOSNavEngine::PreFilterData()
             continue;
         }
 
-        //if teh observation is fixed or already marked for ignore
+        //if the observation is fixed or already marked for ignore
         //then don't use it
         if(!rObs.IsFixed() && rObs.m_bIgnore==false)
         {

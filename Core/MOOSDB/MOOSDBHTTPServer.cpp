@@ -94,7 +94,7 @@ bool CMOOSDBHTTPServer::Listen()
             //wait here for folk demanding attention
             m_pListenSocket->vListen();
             
-            //let them in teh door
+            //let them in the door
             XPCTcpSocket * pNewSocket = m_pListenSocket->Accept(sClientName);
 
             //make a new handler object

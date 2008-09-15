@@ -81,7 +81,7 @@ bool CMOOSNavBBCMLEngine::Shuffle()
     //but give it a new ID!
     pNewTracked->m_nID = GetNextID();
     
-    //and copy teh pointer back (this object is still ontop of the entity list)
+    //and copy the pointer back (this object is still ontop of the entity list)
     //m_pTracked will now point to our newly created object
     m_pTracked = pNewTracked;
 
@@ -129,7 +129,7 @@ bool CMOOSNavBBCMLEngine::Shuffle()
         pTraj->m_nStart+=pTraj->GetStateSize();
     }
 
-    //finally drop a state of teh end;
+    //finally drop a state of the end;
     CMOOSNavEntity* pToKill = m_Trajectories.back();
     delete pToKill;
     m_Trajectories.pop_back();

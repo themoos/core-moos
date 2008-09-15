@@ -385,7 +385,7 @@ bool CMOOSNavLSQEngine::DoWStatistic()
 {
     return true;
 
-    //now recalutate teh innovation based on our present
+    //now recalculate the innovation based on our present
     //estimate;
     if(!MakeObsMatrices())
         return false;

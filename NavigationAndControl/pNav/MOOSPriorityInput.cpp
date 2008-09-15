@@ -188,7 +188,7 @@ bool CMOOSPriorityInput::GetOutput(CMOOSMsg &OutMsg,double dfTimeNow)
                 //remeber our last value
                 m_dfLastValue = dfVal;
 
-                //and teh time we set it
+                //and the time we set it
                 m_dfLastTimeSet = dfTime;
 
                 return true;

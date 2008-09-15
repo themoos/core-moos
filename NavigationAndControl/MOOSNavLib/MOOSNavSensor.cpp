@@ -54,8 +54,8 @@ CMOOSNavSensor::~CMOOSNavSensor()
 }
 
 /** this function calculates the offsets of the sensor in a coordinates frame
-that is aligned with teh gloabl one. So if teh Vehicle is pointing at dfAng
-we rotate the sensor backwards through -dfAng and relove into teh 
+that is aligned with the gloabl one. So if the Vehicle is pointing at dfAng
+we rotate the sensor backwards through -dfAng and relove into the 
 cardinal axes */
 bool CMOOSNavSensor::GetAlignedOffsets(double dfAng, double &dfX, double &dfY, double &dfZ)
 {

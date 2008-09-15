@@ -129,7 +129,7 @@ public:
     int m_nChan;
 
 
-    //has teh observation been used?
+    //has the observation been used?
     bool    m_bUsed;
 
     //flag set to say ignore this observation
