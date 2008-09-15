@@ -118,8 +118,13 @@ void MOOSPause(int nMS);
  also apply a skew to this time so that all processes connected to a MOOSCommsServer (often in the
  shap of a DB) will have a unified time. Of course if your process isn't using MOOSComms
  at all this funtion works just fine and returns the unadulterated time as you would expect. Whatever
- if you pass "false" as the parameter you will get unultered local time**/
+ if you pass "false" as the parameter you will get unaltered local time**/
 double MOOSTime(bool bApplyMOOSCommsCorrection = true);
+
+/** Return time as a double (time since unix in seconds). This returns the time
+ as reported by the local clock.  It will *not* return time at the Comms Server,
+ as MOOSTime tries to do. **/
+double MOOSLocalTime();
 
 /**return high precision timestamp - time since unix in seconds*/
 double HPMOOSTime(bool bApplyMOOSCommsCorrection = true);
@@ -148,7 +153,7 @@ bool MOOSFail(const char * FmtStr,...);
 /** return nicely formatted time stamp string */
 std::string MOOSGetTimeStampString();
 
-/** get teh current date formatted nicely */
+/** get the current date formatted nicely */
 std::string MOOSGetDate();
 
 /** useful macro for debugging prints line and file */
