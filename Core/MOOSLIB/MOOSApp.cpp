@@ -266,7 +266,7 @@ bool CMOOSApp::Run( const char * sName,
 bool CMOOSApp::DoRunWork()
 {
     //look for mail
-    double dfT1 = MOOSTime();
+    double dfT1 = MOOSLocalTime();
     //local vars
     MOOSMSG_LIST MailIn;
     if(m_bUseMOOSComms)
@@ -275,7 +275,6 @@ bool CMOOSApp::DoRunWork()
         {
             /////////////////////////////
             //   process mail
-            
             if(m_bSortMailByTime)
                 MailIn.sort(MOOSMsgTimeSorter);
             
@@ -313,13 +312,13 @@ bool CMOOSApp::DoRunWork()
     }
     
     //store for derived class use the last time iterate was called;
-    m_dfLastRunTime = HPMOOSTime();
+    m_dfLastRunTime = MOOSLocalTime();
     
     //sleep
     if(m_dfFreq>0)
     {
         int nSleep = (int)(1000.0/m_dfFreq-1000*(m_dfLastRunTime-dfT1));
-        
+                
         //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
         //tick once more and let the OS schedule us appropriately
         if(nSleep>10 && !m_Comms.HasMailCallBack())
@@ -646,7 +645,7 @@ void CMOOSApp::EnableIterateWithoutComms(bool bEnable)
 
 double CMOOSApp::GetTimeSinceIterate()
 {
-    return MOOSTime()-m_dfLastRunTime;
+    return MOOSLocalTime()-m_dfLastRunTime;
 }
 
 double CMOOSApp::GetLastIterateTime()

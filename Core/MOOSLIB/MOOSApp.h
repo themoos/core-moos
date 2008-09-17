@@ -271,7 +271,8 @@ protected:
     /** Time since last iterate was called*/
     double GetTimeSinceIterate();
 
-    /** Return time at which the Run loop last ran (called Iterate)**/
+    /** Return time at which the Run loop last ran (called Iterate) - this is a local time - you need
+     to add GetMOOSSKew to produce a unified system time**/
     double GetLastIterateTime();
 
     /** return number of times iterate has been called*/

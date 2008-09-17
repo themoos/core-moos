@@ -72,8 +72,7 @@
 #include <stdio.h>
 #include <iostream>
 
-
-
+#define ENABLE_WIN32_HPMOOSTIME 0
 
 using namespace std;
 
@@ -131,83 +130,50 @@ bool IsLittleEndian()
 
 
 
-
-double HPMOOSTime(bool bApplyMOOSCommsCorrection)
+double HPMOOSTime()
 {
-#ifdef _WIN32
-    static LARGE_INTEGER liStart;
-    static LARGE_INTEGER liPerformanceFreq;
-    static double dfMOOSStart;
-    static bool bHPTimeInitialised=false;
-    if(!bHPTimeInitialised)
+#if ENABLE_WIN32_HPMOOSTIME
+    
+	#ifdef _WIN32
     {
-        QueryPerformanceCounter(&liStart);
-        QueryPerformanceFrequency(&liPerformanceFreq);
-        dfMOOSStart = MOOSTime();
-        bHPTimeInitialised=true;
-        return dfMOOSStart;
-    }
-    else
-    {
-        LARGE_INTEGER liNow;
-        QueryPerformanceCounter(&liNow);
-
-        double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
-        if(bApplyMOOSCommsCorrection)
+        static LARGE_INTEGER liStart;
+        static LARGE_INTEGER liPerformanceFreq;
+        static double dfMOOSStart;
+        static bool bHPTimeInitialised=false;
+        if(!bHPTimeInitialised)
         {
-        	return gdfMOOSSkew+T;
+            QueryPerformanceCounter(&liStart);
+            QueryPerformanceFrequency(&liPerformanceFreq);
+            dfMOOSStart = MOOSLocalTime();
+            bHPTimeInitialised=true;
+            return dfMOOSStart;
         }
         else
         {
-            return T;
+            LARGE_INTEGER liNow;
+            QueryPerformanceCounter(&liNow);
+            
+            double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
+            
+            return gdfMOOSSkew+T;
         }
+	#else
+        return MOOSTime();
     }
+	#endif
 #else
     return MOOSTime();
 #endif
+    
 
 }
-
-
-
-double MOOSTime(bool bApplyMOOSCommsCorrection)
-{
-    double dfT=0.0;
-    //grab the time..
-#ifndef _WIN32
-
-    struct timeval TimeVal;
-    
-    if(gettimeofday(&TimeVal,NULL)==0)
-    {
-        dfT = TimeVal.tv_sec+TimeVal.tv_usec/1000000.0;
-    }
-    else
-    {
-        dfT =-1;
-    }
-    
-#else
-    struct _timeb timebuffer;
-    _ftime( &timebuffer );
-    dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
-
-#endif
-    
-    if(bApplyMOOSCommsCorrection)
-	    return dfT+gdfMOOSSkew;
-	else
-        return dfT;
-}
-
-
 
 double MOOSLocalTime()
 {
     double dfT=0.0;
     //grab the time..
 #ifndef _WIN32
-
+    
     struct timeval TimeVal;
     
     if(gettimeofday(&TimeVal,NULL)==0)
@@ -223,14 +189,18 @@ double MOOSLocalTime()
     struct _timeb timebuffer;
     _ftime( &timebuffer );
     dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
-
+    
 #endif
 
     return dfT;
+    
+
 }
 
-
-
+double MOOSTime()
+{
+    return MOOSLocalTime()+gdfMOOSSkew;
+}
 void MOOSPause(int nMS)
 {
 #ifdef _WIN32

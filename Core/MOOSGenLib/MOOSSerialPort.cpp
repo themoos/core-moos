@@ -458,10 +458,10 @@ int CMOOSSerialPort::ReadNWithTimeOut(char *pData, int nLen, double dfTimeOut,do
     bool bQuit = false;                 // exit flag on complete message
     int nGrabbed = 0;
     
-    double  dfStopTime=HPMOOSTime()+dfTimeOut;
+    double  dfStopTime=MOOSLocalTime()+dfTimeOut;
     
     
-    while (HPMOOSTime()<dfStopTime && !bQuit)
+    while (MOOSLocalTime()<dfStopTime && !bQuit)
     {
 
         
@@ -485,9 +485,6 @@ int CMOOSSerialPort::ReadNWithTimeOut(char *pData, int nLen, double dfTimeOut,do
                 *pTime = MOOSTime();
             }
             
-            //great, so increment out buffer pointer
-            //and check to see if this is a complete
-            // nomad reply
             nSpace-=nGrabbed;
             nRead+=nGrabbed;
             
@@ -511,10 +508,10 @@ int CMOOSSerialPort::ReadNWithTimeOut2(char *pData, int nLen, double dfTimeOut, 
     bool bQuit = false;                 //exit flag on complete message
     int nGrabbed = 0;
     
-    double  dfStopTime=HPMOOSTime()+dfTimeOut;
+    double  dfStopTime=MOOSLocalTime()+dfTimeOut;
     
     
-    while (HPMOOSTime()<dfStopTime && !bQuit)
+    while (MOOSLocalTime()<dfStopTime && !bQuit)
     {
 
         
