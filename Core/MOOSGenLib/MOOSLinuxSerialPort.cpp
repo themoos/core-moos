@@ -218,7 +218,7 @@ void CMOOSLinuxSerialPort::Break()
     //according to http://www.mkssoftware.com/docs/man3/tcsendbreak.3.asp
     //a default value of 0 should work fine, sends a break for 250-500ms,
 #ifndef _WIN32
-    int nVal = tcsendbreak(m_nPortFD, 0);
+    tcsendbreak(m_nPortFD, 0);
 #endif
 }
 

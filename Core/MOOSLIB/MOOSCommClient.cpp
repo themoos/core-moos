@@ -208,7 +208,7 @@ bool CMOOSCommClient::ClientLoop()
 {
 
 	//MOOSTrace("ClientLoop() Begins\n");s
-    double dfTDebug = HPMOOSTime();
+    double dfTDebug = MOOSLocalTime();
 	while(!m_bQuit)
 	{
 		//this is the connect loop...
@@ -222,15 +222,15 @@ bool CMOOSCommClient::ClientLoop()
                 
                 if(m_bVerboseDebug)
                 {
-					MOOSTrace("COMMSCLIENT DEBUG: Tick period %f ms (should be %d ms)\n",HPMOOSTime()-dfTDebug,(int)(1000.0/m_nFundamentalFreq));
-                    dfTDebug = HPMOOSTime();
+					MOOSTrace("COMMSCLIENT DEBUG: Tick period %f ms (should be %d ms)\n",MOOSLocalTime()-dfTDebug,(int)(1000.0/m_nFundamentalFreq));
+                    dfTDebug = MOOSLocalTime();
                 }
                                    
 				if(!DoClientWork())
 					break;
                 
                 if(m_bVerboseDebug)
-                    MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",HPMOOSTime()-dfTDebug);
+                    MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",MOOSLocalTime()-dfTDebug);
 
 				//wait a while before contacting server again;
                 if(m_nFundamentalFreq==0)
@@ -298,18 +298,18 @@ bool CMOOSCommClient::DoClientWork()
         double dfPktTxTime;
         if(m_bVerboseDebug)
         {
-            dfPktTxTime = HPMOOSTime();
+            dfPktTxTime = MOOSLocalTime();
             MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfPktTxTime);
         }
                     
-		double dfLocalPktTxTime = HPMOOSTime();
+		double dfLocalPktTxTime = MOOSTime();
         
         SendPkt(m_pSocket,PktTx);
 
 		ReadPkt(m_pSocket,PktRx);
 
 		//quick! grab this time
-		double dfLocalPktRxTime = HPMOOSTime();
+		double dfLocalPktRxTime = MOOSTime();
         
         if(m_bVerboseDebug)
         {

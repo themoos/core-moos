@@ -114,20 +114,23 @@ double GetMOOSSkew();
 /**pause for nMS milliseconds */
 void MOOSPause(int nMS);
 
-/**return time as a double (time since unix in seconds). By default this will
+/**return time as a double (time since unix in seconds). This will
  also apply a skew to this time so that all processes connected to a MOOSCommsServer (often in the
  shap of a DB) will have a unified time. Of course if your process isn't using MOOSComms
- at all this funtion works just fine and returns the unadulterated time as you would expect. Whatever
- if you pass "false" as the parameter you will get unaltered local time**/
-double MOOSTime(bool bApplyMOOSCommsCorrection = true);
+ at all this funtion works just fine and returns the unadulterated time as you would expect**/
+double MOOSTime();
+
+/**return high precision timestamp - time since unix in seconds only has high precision in win32*/
+double HPMOOSTime();
 
 /** Return time as a double (time since unix in seconds). This returns the time
  as reported by the local clock.  It will *not* return time at the Comms Server,
  as MOOSTime tries to do. **/
 double MOOSLocalTime();
 
-/**return high precision timestamp - time since unix in seconds*/
-double HPMOOSTime(bool bApplyMOOSCommsCorrection = true);
+
+/** return local time - uncorrected by any skews derived via MOOS */
+double MOOSLocalTime();
 
 /**useful keyboard trap*/
 int     MOOSGetch();
