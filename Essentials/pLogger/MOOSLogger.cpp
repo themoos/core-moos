@@ -444,7 +444,7 @@ bool CMOOSLogger::HandleWildCardLogging()
     if(MOOSTime()-dfLastWildCardTime>DEFAULT_WILDCARD_TIME)
     {
         MOOSMSG_LIST InMail;
-        if(m_Comms.ServerRequest("VAR_SUMMARY",InMail))
+        if(m_Comms.ServerRequest("VAR_SUMMARY", InMail, 2.0, false))
         {
             MOOSAssert(InMail.size()==1);
             std::string ss(InMail.begin()->GetString());
