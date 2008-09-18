@@ -183,6 +183,9 @@ namespace MOOS
         // Get the best estimate we can of
         // skew and drift rate
         double dfSkew = (dfSkewLB + dfSkewUB) / 2.0;
+
+		if (m_nMeas < 10) dfSkew = dfSkewLB;  // UB often in error early on 
+
         double dfM    = 0.0;
         double dfC    = dfSkew;
         if (m_LowerBound.IsStable())
