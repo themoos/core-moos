@@ -302,14 +302,14 @@ bool CMOOSCommClient::DoClientWork()
             MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfPktTxTime);
         }
                     
-		double dfLocalPktTxTime = MOOSTime();
+		double dfLocalPktTxTime = MOOSLocalTime();
         
         SendPkt(m_pSocket,PktTx);
 
 		ReadPkt(m_pSocket,PktRx);
 
 		//quick! grab this time
-		double dfLocalPktRxTime = MOOSTime();
+		double dfLocalPktRxTime = MOOSLocalTime();
         
         if(m_bVerboseDebug)
         {
@@ -936,9 +936,11 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 {
 	double dfOldSkew = GetMOOSSkew();
 
+	// This function need to be provided MOOSLocal time stamps!
+
 	//back out correction which has already been made..
-	dfRqTime-=dfOldSkew;
-	dfRxTime-=dfOldSkew;
+	//dfRqTime-=dfOldSkew;
+	//dfRxTime-=dfOldSkew;
 
 	if (!m_pSkewFilter.get())
 	{

@@ -447,7 +447,7 @@ bool CMOOSCommServer::ProcessClient()
             //this is a user supplied call back
             if(!(*m_pfnRxCallBack)(sWho,MsgLstRx,MsgLstTx,m_pRxCallBackParam))
             {
-                //client call bcak failed!!
+                //client call back failed!!
                 MOOSTrace(" CMOOSCommServer::ProcessClient()  pfnCallback failed\n");
             }
 
@@ -459,7 +459,7 @@ bool CMOOSCommServer::ProcessClient()
             {
                 //add a default packet so client doesn't block
                 CMOOSMsg NullMsg;
-                NullMsg.m_dfVal = HPMOOSTime();
+                NullMsg.m_dfVal = MOOSLocalTime();
                 MsgLstTx.push_front(NullMsg);
             }
 
