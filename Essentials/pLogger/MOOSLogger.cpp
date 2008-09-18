@@ -935,7 +935,7 @@ bool CMOOSLogger::OnLoggerRestart()
 
 bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 {
-    //log asynchrounously...
+    //log asynchronously...
     if(m_AsyncLogFile.is_open()&& m_bAsynchronousLog)
     {
         MOOSMSG_LIST::iterator q;
