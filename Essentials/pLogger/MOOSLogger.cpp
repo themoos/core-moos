@@ -150,7 +150,6 @@ bool CMOOSLogger::OnConnectToServer()
 
 bool CMOOSLogger::OnNewMail(MOOSMSG_LIST &NewMail)
 {
-
     //these three calls look through the incoming mail
     //and handle all appropriate logging
     DoAsyncLog(NewMail);
@@ -272,6 +271,7 @@ bool CMOOSLogger::ConfigureLogging()
     //figure out what we are required to log....
     //here we read in what we want to log from the mission file..
     STRING_LIST Params;
+	bool bHasMissionFile = true;
     if(m_MissionReader.GetConfiguration(m_sAppName,Params))
     {
         //this will make columns in sync log in order they
@@ -293,6 +293,7 @@ bool CMOOSLogger::ConfigureLogging()
     }
     else
     {
+		bHasMissionFile = false;
         MOOSTrace("Warning:\n\tNo Configuration block was read - unusual but not terminal\n");
     }
 
@@ -317,8 +318,16 @@ bool CMOOSLogger::ConfigureLogging()
 
     //do we want wildcard logging - ie have the logger log every change...
     m_bWildCardLogging = false;
-    m_MissionReader.GetConfigurationParam("WildcardLogging",m_bWildCardLogging);
-    if(m_bWildCardLogging)
+    if(bHasMissionFile)
+	{
+		m_MissionReader.GetConfigurationParam("WildcardLogging",m_bWildCardLogging);
+	}
+	else
+	{
+		m_bWildCardLogging = true;
+	}
+
+    if(m_bWildCardLogging )
         m_bAsynchronousLog = true;
 
     //ok so now lets register our interest in all these MOOS vars!
@@ -939,7 +948,7 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             //which is used for the synchronous case..
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
-                m_AsyncLogFile.setf(ios::left);
+				m_AsyncLogFile.setf(ios::left);
                 m_AsyncLogFile.setf(ios::fixed);
 
                 m_AsyncLogFile<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
