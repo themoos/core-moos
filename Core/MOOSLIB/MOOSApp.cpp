@@ -317,8 +317,13 @@ bool CMOOSApp::DoRunWork()
     //sleep
     if(m_dfFreq>0)
     {
-        int nSleep = (int)(1000.0/m_dfFreq-1000*(m_dfLastRunTime-dfT1));
-                
+        int nElapsedTime_ms  = static_cast<int> (1000.0*(m_dfLastRunTime-dfT1));
+		int nRequiredWait_ms = static_cast<int> (1000.0/m_dfFreq);
+
+		if (nElapsedTime_ms < 0) nElapsedTime_ms = 0;
+		
+		int nSleep = (nRequiredWait_ms - nElapsedTime_ms);
+
         //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
         //tick once more and let the OS schedule us appropriately
         if(nSleep>10 && !m_Comms.HasMailCallBack())
