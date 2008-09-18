@@ -33,6 +33,8 @@
 
 
 #include "MOOSGenLibGlobalHelper.h"
+#include "MOOSGenLib/MOOSAssert.h"
+
 #include <algorithm>
 #include <iterator>
 #include <cctype>
@@ -97,14 +99,13 @@ void    SetMOOSSkew(double dfSkew)
     //printf("Clock Skew = %f seconds\n",dfSkew);
     gdfMOOSSkew = dfSkew;
 
-
-    //a call to HPMOOSTime() sets up high preformance clocks
+    //a call to HPMOOSTime() sets up high performance clocks
     HPMOOSTime();
 }
 
 double GetMOOSSkew()
 {
-    return gdfMOOSSkew;
+	return gdfMOOSSkew;
 }
 
 
@@ -114,97 +115,120 @@ Note after first call it remembers answer in a static so v. littel overhead in
 calling this function frequently*/
 bool IsLittleEndian()
 {
-    static bool bTested = false;
-    static bool bLittleEndIn = false;
+	static bool bTested = false;
+	static bool bLittleEndIn = false;
 
-    if(!bTested)
-    {
-        short int word = 0x0001;
-        char *byte = (char *) &word;
-        bLittleEndIn = byte[0]==1;
-        bTested = true;
-    }
+	if(!bTested)
+	{
+		short int word = 0x0001;
+		char *byte = (char *) &word;
+		bLittleEndIn = byte[0]==1;
+		bTested = true;
+	}
 
-    return bLittleEndIn;
+	return bLittleEndIn;
 }
 
+
+bool gbWin32HPTiming = true;
+bool SetWin32HighPrecisionTiming(bool bEnable)
+{
+#ifndef _WIN32
+	return false;
+#else
+	gbWin32HPTiming = bEnable;
+	return true;
+#endif
+
+}
+
+
+double MOOSLocalTime()
+{
+#ifndef _WIN32
+	double dfT=0.0;
+	struct timeval TimeVal;
+
+	if(gettimeofday(&TimeVal,NULL)==0)
+	{
+		dfT = TimeVal.tv_sec+TimeVal.tv_usec/1000000.0;
+	}
+	else
+	{
+		//lost the will to live.....
+		MOOSAssert(0);
+		dfT =-1;
+	}
+	return dfT;
+
+#else
+	if( gbWin32HPTiming )
+	{	
+
+		static LARGE_INTEGER liStart;
+		static LARGE_INTEGER liPerformanceFreq;
+		static double dfMOOSStart;
+		static bool bHPTimeInitialised=false;
+
+		//to do - we should consider thread saftery here..
+		if(!bHPTimeInitialised)
+		{			
+		
+			//initialise with crude time
+			struct _timeb timebuffer;
+			_ftime( &timebuffer );
+			dfMOOSStart = timebuffer.time+ ((double)timebuffer.millitm)/1000;
+
+			QueryPerformanceCounter(&liStart);
+			QueryPerformanceFrequency(&liPerformanceFreq);
+
+			bHPTimeInitialised=true;
+
+			return dfMOOSStart;
+
+		
+		}
+		else
+		{
+			//use fancy time
+			LARGE_INTEGER liNow;
+			QueryPerformanceCounter(&liNow);
+
+			double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
+
+			return T;
+		}
+
+
+
+	}
+	else
+	{
+		//user has elected to use low precision win32 timing
+		struct _timeb timebuffer;
+		_ftime( &timebuffer );
+		return  timebuffer.time + ((double)timebuffer.millitm)/1000.0;
+
+	}
+#endif
+
+
+}
 
 
 double HPMOOSTime()
 {
-#if ENABLE_WIN32_HPMOOSTIME
-    
-	#ifdef _WIN32
-    {
-        static LARGE_INTEGER liStart;
-        static LARGE_INTEGER liPerformanceFreq;
-        static double dfMOOSStart;
-        static bool bHPTimeInitialised=false;
-        if(!bHPTimeInitialised)
-        {
-            QueryPerformanceCounter(&liStart);
-            QueryPerformanceFrequency(&liPerformanceFreq);
-            dfMOOSStart = MOOSLocalTime();
-            bHPTimeInitialised=true;
-            return dfMOOSStart;
-        }
-        else
-        {
-            LARGE_INTEGER liNow;
-            QueryPerformanceCounter(&liNow);
-            
-            double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
-            
-            return gdfMOOSSkew+T;
-        }
-	#else
-        return MOOSTime();
-    }
-	#endif
-#else
-    return MOOSTime();
-#endif
-    
-
+	return MOOSTime();
 }
-
-double MOOSLocalTime()
-{
-    double dfT=0.0;
-    //grab the time..
-#ifndef _WIN32
-    
-    struct timeval TimeVal;
-    
-    if(gettimeofday(&TimeVal,NULL)==0)
-    {
-        dfT = TimeVal.tv_sec+TimeVal.tv_usec/1000000.0;
-    }
-    else
-    {
-        dfT =-1;
-    }
-    
-#else
-    struct _timeb timebuffer;
-    _ftime( &timebuffer );
-    dfT = timebuffer.time+ ((double)timebuffer.millitm)/1000;
-    
-#endif
-
-    return dfT;
-    
-
-}
-
 double MOOSTime()
 {
-    return MOOSLocalTime()+gdfMOOSSkew;
+	return MOOSLocalTime()+gdfMOOSSkew;
 }
+
 void MOOSPause(int nMS)
 {
 #ifdef _WIN32
-    ::Sleep(nMS);
+	::Sleep(nMS);
 #else
 
     timespec TimeSpec;
@@ -1123,7 +1147,7 @@ void Progress(double dfPC)
 
 
 
-/** formats a vector of doublse into standard MOOS format*/
+/** formats a vector of doubles into standard MOOS format*/
 std::string DoubleVector2String(const std::vector<double> & V)
 {
     std::stringstream ss;

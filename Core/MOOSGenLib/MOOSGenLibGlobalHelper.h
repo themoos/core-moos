@@ -120,6 +120,10 @@ void MOOSPause(int nMS);
  at all this funtion works just fine and returns the unadulterated time as you would expect**/
 double MOOSTime();
 
+/** call this to disable or anble high precision windows timers. By default they are on and always used in
+calls to MOOSTime()*/
+bool SetWin32HighPrecisionTiming(bool bEnable);
+
 /**return high precision timestamp - time since unix in seconds only has high precision in win32*/
 double HPMOOSTime();
 
