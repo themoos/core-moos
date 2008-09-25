@@ -33,7 +33,7 @@
 #ifndef _XPCException
 #define _XPCException
 
-#include <string.h>
+#include <cstring>
 
 
 class XPCException
