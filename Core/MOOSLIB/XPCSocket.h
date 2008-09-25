@@ -36,7 +36,7 @@
 #include "XPCGetProtocol.h"
 #include "XPCGetHostInfo.h"
 #include <stdio.h>
-#include <string.h>
+//#include <string.h>
 
 #ifdef UNIX
     #include <sys/socket.h>
