@@ -62,7 +62,7 @@ namespace MOOS
 	class CMOOSSkewFilter;
 }
 
-extern std::auto_ptr<std::ofstream> SkewLog;
+//extern std::auto_ptr<std::ofstream> SkewLog;
 
 /** This class is the most important component of MOOS as seen from the eyes
 of a component developer */

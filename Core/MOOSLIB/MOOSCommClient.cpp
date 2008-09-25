@@ -930,7 +930,7 @@ string CMOOSCommClient::GetLocalIPAddress()
 }
 
 
-std::auto_ptr<std::ofstream> SkewLog(NULL);
+//std::auto_ptr<std::ofstream> SkewLog(NULL);
 
 bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfRxTime)
 {
@@ -970,6 +970,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 	}
 */
 
+/*
 	if (SkewLog.get())
 	{
 	    SkewLog->setf(std::ios::fixed);
@@ -987,6 +988,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 		"filtEst=" << setprecision(6) << skewinfo.filtEst <<
 		std::endl;		
 	}
+*/
 
 	SetMOOSSkew(dfNewSkew);
 
