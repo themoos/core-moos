@@ -34,6 +34,7 @@ FIND_PATH( MATLAB_DIR extern/include/mex.h
 		/usr/local/matlab-7sp1
 		/opt/matlab-7sp1
 		C:/Program\ Files/MATLAB/R2007b
+		C:/Program\ Files/MATLAB/R2006b
 		$ENV{HOME}/matlab7_64
 		$ENV{HOME}/matlab-7sp1
 		$ENV{HOME}/redhat-matlab
@@ -84,16 +85,34 @@ SET( LIB_SEARCH_PATHS
 	${MATLAB_DIR}/extern/lib/${MATLAB_ARCH}/microsoft
 	)
 
-FIND_LIBRARY( MATLAB_LIBRARY_DIR NAMES ${MATLAB_LIBRARIES}
-	PATHS ${LIB_SEARCH_PATHS}
-	ENV CPATH 
-	DOC "The directory where the Matlab libraries are installed."
-	FORCE
-)
+IF(MATLAB_LIBRARY_DIR)
+	# User has already overridden the value, or we've got one from before.  Let's hope it works!
+	
+ELSE()
+	# This is a bit ugly since we're actually searching for the full path to ONE of the libraries
+	# listed in MATLAB_LIBRARIES
+	# We strip out just the path in the next step.  Unfortunately, once FIND_LIBRARY has
+	# done its thing, MATLAB_LIBRARY_DIR becomes a cache variable straight away.
+	# So the only way to remove the filename from the end is to use 'FORCE' later.
+	FIND_LIBRARY( MATLAB_LIBRARY_DIR NAMES ${MATLAB_LIBRARIES}
+		PATHS ${LIB_SEARCH_PATHS}
+		ENV CPATH 
+		DOC "The directory where the Matlab libraries are installed."
+		FORCE
+	)
 
-MESSAGE( "lib ${MATLAB_LIBRARIES}: ${MATLAB_LIBRARY_DIR} in ${SEARCH_PATHS}")
-GET_FILENAME_COMPONENT( MATLAB_LIBRARY_DIR ${MATLAB_LIBRARY_DIR} PATH CACHE )
-
+	IF(MATLAB_LIBRARY_DIR)
+		#MESSAGE( "lib ${MATLAB_LIBRARIES}: ${MATLAB_LIBRARY_DIR} in ${SEARCH_PATHS}")
+		GET_FILENAME_COMPONENT( MATLAB_LIBRARY_DIR_PATH ${MATLAB_LIBRARY_DIR} PATH )
+		
+		# We're using force here because we know that the user hasn't tried to override the value
+		SET(MATLAB_LIBRARY_DIR ${MATLAB_LIBRARY_DIR_PATH} CACHE PATH
+			"The directory where the Matlab libraries are installed."
+			FORCE)
+	ENDIF()
+ENDIF()
+	
+	
 IF( MATLAB_DIR AND MATLAB_INCLUDE_DIR AND MATLAB_LIBRARY_DIR )
     SET( MATLAB_FOUND TRUE CACHE INTERNAL "")
 ELSE()
