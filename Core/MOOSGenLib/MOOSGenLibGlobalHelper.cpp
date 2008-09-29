@@ -39,6 +39,8 @@
 #include <iterator>
 #include <cctype>
 #include <string>
+#include <memory>
+#include <cstring>
 #include <map>
 #include <time.h>
 #include <stdarg.h>

@@ -33,6 +33,8 @@
 //////////////////////////////////////////////////////////////////////
 #include <MOOSLIB/MOOSLib.h>
 #include <iostream>
+#include <cstring>
+
 using namespace std;
 
 #include "DVLInstrument.h"

@@ -38,6 +38,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 #include <assert.h>
 using namespace std;
 

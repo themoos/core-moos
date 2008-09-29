@@ -11,7 +11,7 @@ int main(int argc,char *argv[])
         MOOSTrace("arg[%d] = %s\n",i,argv[i]);
     }
     
-    char* q="-/|\\";
+    const char* q="-/|\\";
     int i = 0;
     while(1)
     {

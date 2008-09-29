@@ -33,6 +33,7 @@
 //////////////////////////////////////////////////////////////////////
 #include <MOOSLIB/MOOSLib.h>
 #include <sstream>
+#include <cstring>
 #include <iomanip>
 #include "MOOSJanitor.h"
 #define GROUND_FAULT 100

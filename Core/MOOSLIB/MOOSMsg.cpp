@@ -41,7 +41,8 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
+#include <cstring>
 
 using namespace std;
 

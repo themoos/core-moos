@@ -41,6 +41,7 @@
 #include "MOOSMsg.h"
 #include "MOOSGlobalHelper.h"
 #include <assert.h>
+#include <cstring>
 #include <iostream>
 using namespace std;
 

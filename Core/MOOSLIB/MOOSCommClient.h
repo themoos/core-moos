@@ -41,6 +41,8 @@
 #include "MOOSCommObject.h"
 #include <set>
 #include <string>
+#include <memory>
+
 
 #define OUTBOX_PENDING_LIMIT 1000
 #define INBOX_PENDING_LIMIT 1000
@@ -59,7 +61,7 @@ class XPCTcpSocket;
 
 namespace MOOS
 {
-	class CMOOSSkewFilter;
+  class CMOOSSkewFilter;
 }
 
 //extern std::auto_ptr<std::ofstream> SkewLog;
@@ -320,8 +322,8 @@ protected:
     /** controls whether skew is set */
     bool m_bDoLocalTimeCorrection;
     
-	/** Skew filter keeps track of clock skew with server */
-	std::auto_ptr<MOOS::CMOOSSkewFilter> m_pSkewFilter;
+    /** Skew filter keeps track of clock skew with server */
+    std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
 
 };
 
