@@ -55,18 +55,20 @@ public:
     CMOOSGeodesy();
     virtual ~CMOOSGeodesy();
 
-    double GetOriginNorthing();
-    double GetOriginEasting();
-    bool LatLong2LocalUTM(double lat, double lon, double & MetersNorth, double & MetersEast);
-    bool LocalGrid2LatLong(double dfEast, double dfNorth, double &dfLat, double &dfLon);
-    char * GetUTMZone();
-
-    int GetRefEllipsoid();
-    double GetMetersEast();
-    double GetMetersNorth();
-    double GetOriginLatitude();
-    double GetOriginLongitude();
-    bool Initialise(double lat, double lon);
+    double 	GetOriginNorthing();
+    double 	GetOriginEasting();
+    bool 	LatLong2LocalUTM(double lat, double lon, double & MetersNorth, double & MetersEast);
+    bool 	LocalGrid2LatLong(double dfEast, double dfNorth, double &dfLat, double &dfLon);
+    bool 	UTM2LatLong(double dfX, double dfY, double& dfLat, double& dfLong);
+    
+    
+    char * 	GetUTMZone();
+    int 	GetRefEllipsoid();
+    double 	GetMetersEast();
+    double 	GetMetersNorth();
+    double 	GetOriginLatitude();
+    double 	GetOriginLongitude();
+    bool 	Initialise(double lat, double lon);
 
 private:
     bool m_bSTEP_AFTER_INIT;

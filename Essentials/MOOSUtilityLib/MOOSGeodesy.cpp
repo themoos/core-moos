@@ -466,3 +466,45 @@ bool CMOOSGeodesy::LocalGrid2LatLong(double dfEast, double dfNorth, double &dfLa
     return true;
 }
 
+
+bool CMOOSGeodesy::UTM2LatLong(double dfX, double dfY, double& dfLat, double& dfLong)
+{
+    //written by Henrik Schmidt henrik@mit.edu
+    
+    double err = 1e20;
+    double dfx=dfX;
+    double dfy=dfY;
+    double eps = 1.0; // accuracy in m
+    
+    while (err > eps)
+    {
+        double dflat, dflon, dfnew_x, dfnew_y ;
+
+        // first guess geodesic
+        if (!LocalGrid2LatLong(dfx,dfy,dflat,dflon))
+            return(false);
+        
+        // now convert latlong to UTM
+        if (!LatLong2LocalUTM(dflat,dflon,dfnew_y,dfnew_x))
+            return(false);
+        
+        // how different
+        double dfdiff_x = dfnew_x -dfX;
+        double dfdiff_y = dfnew_y -dfY;
+        
+        // subtract difference and reconvert        
+        dfx -= dfdiff_x;
+        dfy -= dfdiff_y;
+        
+        err = hypot(dfnew_x-dfX,dfnew_y-dfY);
+        
+        //MOOSTrace("UTM2LatLong: error = %f\n",err); 
+    }
+    
+    if (!LocalGrid2LatLong(dfx, dfy, dfLat, dfLong))
+        return(false);
+    
+    
+ 	return true;
+}
+
