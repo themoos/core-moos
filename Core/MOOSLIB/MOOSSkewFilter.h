@@ -104,8 +104,8 @@ namespace MOOS
 		tPt  m_InitPt;
 
 		unsigned int m_uiLongestSegID;
-		double m_dfLongestSegLen;
-        const eDirection m_aboveOrBelow;
+		double       m_dfLongestSegLen;
+        const        eDirection m_aboveOrBelow;
 
         unsigned int m_nMeas;
 	};

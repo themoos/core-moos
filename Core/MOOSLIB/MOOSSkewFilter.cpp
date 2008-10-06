@@ -288,7 +288,7 @@ namespace MOOS
 		m_segs.clear();
 		m_bHaveInitPt     =  false;
 		m_InitPt          =  tPt(0,0);
-		m_uiLongestSegID   = -1;
+		m_uiLongestSegID  =  0;
 		m_dfLongestSegLen =  0;
         m_nMeas = 0;
 	}
