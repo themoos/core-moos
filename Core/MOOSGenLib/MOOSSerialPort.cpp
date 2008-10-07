@@ -477,6 +477,7 @@ int CMOOSSerialPort::ReadNWithTimeOut(char *pData, int nLen, double dfTimeOut,do
         else if(nGrabbed<0)
         {
             MOOSTrace("Grab FAILED %s\n",MOOSHERE);
+            MOOSPause(10);
         }
         else
         {
