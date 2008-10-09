@@ -74,6 +74,7 @@ bool CGPSInstrument::Iterate()
 
 bool CGPSInstrument::OnStartUp()
 {
+    
     CMOOSInstrument::OnStartUp();
 
     //set up Geodetic conversions

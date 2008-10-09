@@ -301,22 +301,40 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 
 bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
+    
     /*unsigned int*/ size_t  nPos = string::npos;
-    if((nPos = MOOSStrFind(sStr,sTk,bInsensitive))!=string::npos)
+    size_t k = 0;
+    while((nPos = MOOSStrFind(sStr.substr(k),sTk,bInsensitive))!=string::npos)
     {
+        nPos+=k;
         //we have the start of the token at nPos
+        //we need to be carefull here = there could be many spaces between token and =
         /*unsigned int*/ size_t  nEqualsPos = sStr.find('=',nPos);
+        
+    	//can we find an "="?
         if(nEqualsPos!=string::npos)
         {
+         
+            //there should only be white space twixt token and equals
+            std::string t = sStr.substr(nPos+sTk.size(),nEqualsPos-(nPos+sTk.size()));
+            MOOSTrimWhiteSpace(t);
+			if(!t.empty())
+            {
+                k = nEqualsPos;
+                continue;
+            }
+            
             sVal="";
 
             int nCommaPos =sStr.find(',',nEqualsPos);
 
             sVal.append(sStr,nEqualsPos+1,nCommaPos-nEqualsPos-1);
-            //sStr.copy(sVal.begin(),nCommaPos-nEqualsPos-1,nEqualsPos+1);
-            //sVal = sStr.substr(nEqualsPos+1,nCommaPos-nEqualsPos-1);
-
+                        
             return true;
+        }
+        else
+        {
+            return false;
         }
 
     }
