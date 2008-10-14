@@ -660,7 +660,17 @@ double MOOS_ANGLE_WRAP(double dfAng)
     if(dfAng<PI && dfAng>-PI)
         return dfAng;
 
-    return (dfAng+(dfAng>PI ? -TWO_PI :TWO_PI));
+	// Shift so that problem is now to wrap between (0, 2*PI)
+	dfAng += PI;
+
+	// Wrap
+	dfAng = fmod(dfAng, 2*PI);
+
+	// Shift back
+	return (dfAng == 0.0 ? PI : dfAng-PI);
+	
+	// Old version did not cope with multiple wraps
+	//return (dfAng+(dfAng>PI ? -TWO_PI :TWO_PI));
 }
 
 /** limit dfVal to lie between +/- dfLimit) */
