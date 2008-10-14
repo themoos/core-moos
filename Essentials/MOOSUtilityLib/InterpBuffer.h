@@ -56,12 +56,11 @@ public:
         if (this->size()==1) return this->begin()->second;
 
         typename BASE_TYPE::const_iterator hi;
-        typename BASE_TYPE::const_iterator low;
         
         hi = BASE_TYPE::lower_bound(interp_time);
-        low = hi; std::advance(low,-1);
         if (hi != this->begin()  && hi != this->end())
         {
+	        typename BASE_TYPE::const_iterator low = hi; low--;
             return m_interpFunc(*low,*hi,interp_time);
         }
         else
@@ -73,8 +72,9 @@ public:
             }
             else if (hi == this->end()) 
             {
-                typename BASE_TYPE::const_iterator low2 = low;
-                std::advance(low2,-1);
+                typename BASE_TYPE::const_iterator low  = hi;  low--;
+				typename BASE_TYPE::const_iterator low2 = low; low2--;
+                
                 return m_interpFunc(*low2,*low,interp_time);
             }
         }
@@ -172,11 +172,21 @@ class CTimeNumericInterpolator
             alpha = (dfMidTime - dfLoTime) / dt; 
         }    
         
-        if(fabs(alpha)>1.0)
+        if(alpha>1.0 || alpha<0)
         {
-            if( ((fabs(alpha)-1.0)*dt)>0.5)
+            double dfExtrapTime = 0.0;
+			if (alpha > 0)
+			{
+				dfExtrapTime = dfInterpTime - dfHiTime;
+			}
+			else
+			{
+				dfExtrapTime = dfLoTime - dfInterpTime;
+			}
+
+			if(dfExtrapTime>0.5)
             {
-                MOOSTrace("Warning more than 0.5 seconds data extrapolation (%f)\n",(fabs(alpha)-1.0)*dt);
+                MOOSTrace("Warning more than 0.5 seconds data extrapolation (%f)\n",dfExtrapTime);
             }
         }
 
@@ -218,11 +228,21 @@ class CTimeGenericInterpolator
             alpha = (dfMidTime - dfLoTime) / dt; 
         }    
         
-        if(fabs(alpha)>1.0)
+        if(alpha>1.0 || alpha<0)
         {
-            if( ((fabs(alpha)-1.0)*dt)>0.5)
+            double dfExtrapTime = 0.0;
+			if (alpha > 0)
+			{
+				dfExtrapTime = dfInterpTime - dfHiTime;
+			}
+			else
+			{
+				dfExtrapTime = dfLoTime - dfInterpTime;
+			}
+
+			if(dfExtrapTime>0.5)
             {
-                MOOSTrace("Warning more than 0.5 seconds data extrapolation (%f)\n",(fabs(alpha)-1.0)*dt);
+                MOOSTrace("Warning more than 0.5 seconds data extrapolation (%f)\n",dfExtrapTime);
             }
         }
 
