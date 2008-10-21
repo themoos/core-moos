@@ -294,18 +294,15 @@ bool CMOOSCommClient::DoClientWork()
 
 		}
 		m_OutLock.UnLock();
-
-        double dfPktTxTime;
-        if(m_bVerboseDebug)
-        {
-            dfPktTxTime = MOOSLocalTime();
-            MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfPktTxTime);
-        }
                     
 		double dfLocalPktTxTime = MOOSLocalTime();
-        
-        SendPkt(m_pSocket,PktTx);
 
+        if(m_bVerboseDebug)
+        {
+            MOOSTrace("COMMSERVER DEBUG: instigated call in to DB at %f\n",dfLocalPktTxTime);
+        }
+
+        SendPkt(m_pSocket,PktTx);
 		ReadPkt(m_pSocket,PktRx);
 
 		//quick! grab this time
