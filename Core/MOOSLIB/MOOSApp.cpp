@@ -251,7 +251,7 @@ bool CMOOSApp::Run( const char * sName,
     MOOSTrace("\t AppTick   @ %.1f Hz\n",m_dfFreq);
     MOOSTrace("\t CommsTick @ %d Hz\n",m_nCommsFreq);
     if(GetMOOSTimeWarp()!=1.0)
-	    MOOSTrace("\t Time Warp      @ x%.1f \n",GetMOOSTimeWarp());
+    	MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
 
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/

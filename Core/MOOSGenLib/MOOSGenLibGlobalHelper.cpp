@@ -232,10 +232,7 @@ double HPMOOSTime(bool bApplyTimeWarping)
 
 double MOOSTime(bool bApplyTimeWarping)
 {
-    if(bApplyTimeWarping)
-		return (MOOSLocalTime()+gdfMOOSSkew)*gdfMOOSTimeWarp;
-    else
-        return MOOSLocalTime()+gdfMOOSSkew;
+    return MOOSLocalTime(bApplyTimeWarping)+gdfMOOSSkew;
 }
 
 double GetMOOSTimeWarp()
