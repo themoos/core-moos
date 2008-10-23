@@ -111,30 +111,33 @@ void SetMOOSSkew(double dfSkew);
 /** return the offset between DB time and client time*/
 double GetMOOSSkew();
 
+/** set the rate at which time is accelerated (from start of unix time) */
+bool SetMOOSTimeWarp(double dfWarp);
+
+/** return the current time warp factor */
+double GetMOOSTimeWarp();
+
 /**pause for nMS milliseconds */
-void MOOSPause(int nMS);
+void MOOSPause(int nMS,bool bApplyTimeWarping = true);
 
 /**return time as a double (time since unix in seconds). This will
  also apply a skew to this time so that all processes connected to a MOOSCommsServer (often in the
  shap of a DB) will have a unified time. Of course if your process isn't using MOOSComms
  at all this funtion works just fine and returns the unadulterated time as you would expect**/
-double MOOSTime();
+double MOOSTime(bool bApplyTimeWarping=true);
 
 /** call this to disable or anble high precision windows timers. By default they are on and always used in
 calls to MOOSTime()*/
 bool SetWin32HighPrecisionTiming(bool bEnable);
 
 /**return high precision timestamp - time since unix in seconds only has high precision in win32*/
-double HPMOOSTime();
+double HPMOOSTime(bool bApplyTimeWarping = true);
 
 /** Return time as a double (time since unix in seconds). This returns the time
  as reported by the local clock.  It will *not* return time at the Comms Server,
  as MOOSTime tries to do. **/
-double MOOSLocalTime();
+double MOOSLocalTime(bool bApplyTimeWarping=true);
 
-
-/** return local time - uncorrected by any skews derived via MOOS */
-double MOOSLocalTime();
 
 /**useful keyboard trap*/
 int     MOOSGetch();
