@@ -67,6 +67,7 @@ int main(int argc ,char *argv[])
             //make a set of processes we want to launch
             std::stringstream S(argv[2]); 
             std::set<std::string> Filter;
+            //this rather fancy looking bit f stl simply iterates over a list of strings
             std::copy(istream_iterator<std::string>(S), 
                       istream_iterator<string>(),
                       std::inserter(Filter,Filter.begin()));
