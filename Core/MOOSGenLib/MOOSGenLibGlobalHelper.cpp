@@ -216,7 +216,7 @@ double MOOSLocalTime(bool bApplyTimeWarping)
 		_ftime( &timebuffer );
         double T = timebuffer.time + ((double)timebuffer.millitm)/1000.0; 
 
-        return bApplyTimeWarping ? T*gdfMOOSTimeWarp :T;
+        return bApplyTimeWarping ? T*gdfMOOSTimeWarp : T;
 
 	}
 #endif
