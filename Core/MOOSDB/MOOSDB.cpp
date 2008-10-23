@@ -133,6 +133,13 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
     {
         m_sDBName = "MOOSDB_"+m_sCommunityName;
     }
+
+    double dfWarp;
+    if(m_MissionReader.GetValue("MOOSTimeWarp",dfWarp))
+    {
+		SetMOOSTimeWarp(dfWarp);
+    }
+    
     
     string sPort;
     
