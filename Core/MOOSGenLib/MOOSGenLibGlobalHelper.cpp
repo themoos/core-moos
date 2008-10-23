@@ -77,6 +77,7 @@
 #include <iostream>
 
 #define ENABLE_WIN32_HPMOOSTIME 0
+#define MAX_TIME_WARP 100
 
 using namespace std;
 
@@ -93,7 +94,7 @@ typedef std::map<int,bool> THREAD2TRACE_MAP;
 typedef std::map<pthread_t,bool> THREAD2TRACE_MAP;
 #endif
 
-
+double gdfMOOSTimeWarp = 1.0;
 double gdfMOOSSkew =0.0;
 
 void    SetMOOSSkew(double dfSkew)
@@ -145,7 +146,7 @@ bool SetWin32HighPrecisionTiming(bool bEnable)
 }
 
 
-double MOOSLocalTime()
+double MOOSLocalTime(bool bApplyTimeWarping)
 {
 #ifndef _WIN32
 	double dfT=0.0;
@@ -161,7 +162,10 @@ double MOOSLocalTime()
 		MOOSAssert(0);
 		dfT =-1;
 	}
-	return dfT;
+    if(bApplyTimeWarping)
+		return dfT*gdfMOOSTimeWarp;
+    else
+        return dfT;
 
 #else
 	if( gbWin32HPTiming )
@@ -186,7 +190,7 @@ double MOOSLocalTime()
 
 			bHPTimeInitialised=true;
 
-			return dfMOOSStart;
+			return bApplyTimeWarping ? dfMOOSStart*gdfMOOSTimeWarp :dfMOOSStart;
 
 		
 		}
@@ -198,7 +202,8 @@ double MOOSLocalTime()
 
 			double T = dfMOOSStart+(double)(liNow.QuadPart-liStart.QuadPart)/((double)(liPerformanceFreq.QuadPart));
 
-			return T;
+            return bApplyTimeWarping ? T*gdfMOOSTimeWarp :T;
+
 		}
 
 
@@ -209,7 +214,9 @@ double MOOSLocalTime()
 		//user has elected to use low precision win32 timing
 		struct _timeb timebuffer;
 		_ftime( &timebuffer );
-		return  timebuffer.time + ((double)timebuffer.millitm)/1000.0;
+        double T = timebuffer.time + ((double)timebuffer.millitm)/1000.0; 
+
+        return bApplyTimeWarping ? T*gdfMOOSTimeWarp :T;
 
 	}
 #endif
@@ -218,17 +225,40 @@ double MOOSLocalTime()
 }
 
 
-double HPMOOSTime()
+double HPMOOSTime(bool bApplyTimeWarping)
 {
-	return MOOSTime();
-}
-double MOOSTime()
-{
-	return MOOSLocalTime()+gdfMOOSSkew;
+	return MOOSTime(bApplyTimeWarping);
 }
 
-void MOOSPause(int nMS)
+double MOOSTime(bool bApplyTimeWarping)
 {
+    if(bApplyTimeWarping)
+		return (MOOSLocalTime()+gdfMOOSSkew)*gdfMOOSTimeWarp;
+    else
+        return MOOSLocalTime()+gdfMOOSSkew;
+}
+
+double GetMOOSTimeWarp()
+{
+    return gdfMOOSTimeWarp;
+}
+
+
+bool SetMOOSTimeWarp(double dfWarp)
+{
+    if(dfWarp>0 && dfWarp<MAX_TIME_WARP)
+    {
+        gdfMOOSTimeWarp = dfWarp;
+        return true;
+    }
+    return MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
+    
+}
+
+void MOOSPause(int nMS,bool bApplyTimeWarping)
+{
+    if(bApplyTimeWarping)
+	    nMS = int(double(nMS)/gdfMOOSTimeWarp);
 #ifdef _WIN32
 	::Sleep(nMS);
 #else

@@ -152,8 +152,6 @@ bool CMOOSApp::Run( const char * sName,
 	if(m_sMOOSName.empty())
         m_sMOOSName=m_sAppName;
     
-    //what time did we start?
-    m_dfAppStartTime = MOOSTime();
 
     //can we see the mission file
     if(sMissionFile!=NULL)
@@ -164,14 +162,20 @@ bool CMOOSApp::Run( const char * sName,
         }
         else
         {
-
+			//what is the global time warp
+            double dfTimeWarp = 1.0;
+            if(m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
+            {
+                SetMOOSTimeWarp(dfTimeWarp);
+            }
+            
+            
             //are we expected to use MOOS comms?
             m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
             
             //are we being asked to sort mail by time..
             m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
             
-
             //are we in debug mode
             m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
 
@@ -193,13 +197,16 @@ bool CMOOSApp::Run( const char * sName,
             //in derived class constructors this can be set in the process config block
             //by the mission architect
             m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
-
+            
 
             //do we want to enable command filtering (default is set in constructor)
             m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
         }
     }
 
+    //what time did we start?
+    m_dfAppStartTime = MOOSTime();
+    
     //can we start the communications ?
     if(m_bUseMOOSComms)
     {
@@ -240,14 +247,14 @@ bool CMOOSApp::Run( const char * sName,
     }
 
 
-    MOOSTrace("%s AppTick   @ %.1f Hz\n",GetAppName().c_str(),m_dfFreq);
-    MOOSTrace("%s CommsTick @ %d Hz\n",GetAppName().c_str(),m_nCommsFreq);
-    MOOSTrace("%s is Running\n",GetAppName().c_str());
+    MOOSTrace("%s is Running:\n",GetAppName().c_str());
+    MOOSTrace("\t AppTick   @ %.1f Hz\n",m_dfFreq);
+    MOOSTrace("\t CommsTick @ %d Hz\n",m_nCommsFreq);
+    if(GetMOOSTimeWarp()!=1.0)
+	    MOOSTrace("\t Time Warp      @ x%.1f \n",GetMOOSTimeWarp());
 
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/
-
-  
 
     while(1)
     {
