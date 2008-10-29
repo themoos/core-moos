@@ -929,7 +929,7 @@ string CMOOSCommClient::GetLocalIPAddress()
 
 //std::auto_ptr<std::ofstream> SkewLog(NULL);
 
-bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfRxTime)
+bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double dfRxTime)
 {
 	double dfOldSkew = GetMOOSSkew();
 
@@ -938,6 +938,8 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 	//back out correction which has already been made..
 	//dfRqTime-=dfOldSkew;
 	//dfRxTime-=dfOldSkew;
+
+#ifdef MOOS_DETECT_CLOCK_DRIFT
 
 	if (!m_pSkewFilter.get())
 	{
@@ -949,9 +951,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
 	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
 
-
-/*
-	This is the stuff that was replaced
+#else // MOOS_DETECT_CLOCK_DRIFT
 	
 	double dfMeasuredSkew = dfTxTime-dfRxTime;
 
@@ -965,7 +965,8 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime,double dfR
 	{
 		dfNewSkew = dfMeasuredSkew;
 	}
-*/
+
+#endif // MOOS_DETECT_CLOCK_DRIFT
 
 /*
 	if (SkewLog.get())

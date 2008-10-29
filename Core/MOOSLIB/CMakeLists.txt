@@ -1,5 +1,11 @@
 PROJECT(MOOSLib)
 
+#do we want to turn on the experimental clock skew detection?
+SET(DETECT_CLOCK_DRIFT FALSE CACHE BOOL "MOOSCommClient<->MOOSDB Clock drift detection (experimental)")
+IF (DETECT_CLOCK_DRIFT)
+    ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
+ENDIF (DETECT_CLOCK_DRIFT)
+
 SET(MOOSLIB_SRCS 
 MOOSVariable.cpp
 MOOSCommClient.cpp
