@@ -60,8 +60,7 @@
 #include "MOOSGlobalHelper.h"
 #include "MOOSException.h"
 #include "MOOSSkewFilter.h"
-#include <iostream>
-#include <cmath>
+
 
 using namespace std;
 
