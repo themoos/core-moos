@@ -161,9 +161,9 @@ namespace MOOS
         void   GetMidLine(double &m, double &c) const;
 
 	private:
+		CConvexEnvelope m_LowerBound;
 		CConvexEnvelope m_UpperBound;
-        CConvexEnvelope m_LowerBound;
-		
+        
         // Smoothing filter state variables
         double m_dfLastVal;
 		double m_dfLastTime;
