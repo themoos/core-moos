@@ -52,7 +52,6 @@
 #include <limits>
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 #include <MOOSGenLib/MOOSGenLib.h>
 #include "XPCTcpSocket.h"
@@ -64,6 +63,7 @@ using namespace std;
 #include <iostream>
 #include <cmath>
 
+using namespace std;
 
 
 //////////////////////////////////////////////////////////////////////
