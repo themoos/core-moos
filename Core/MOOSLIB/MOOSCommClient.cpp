@@ -932,7 +932,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 {
 	double dfOldSkew = GetMOOSSkew();
 
-	// This function need to be provided MOOSLocal time stamps!
+	// This function needs to be provided MOOSLocal time stamps!
 
 	//back out correction which has already been made..
 	//dfRqTime-=dfOldSkew;
