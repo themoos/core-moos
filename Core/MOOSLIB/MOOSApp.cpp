@@ -122,6 +122,8 @@ CMOOSApp::CMOOSApp()
     m_dfLastStatusTime = -1;
     m_bSortMailByTime = true;
 	m_bAppError = false;
+    m_bQuitOnIterateFail = false;
+    
     EnableIterateWithoutComms(false);
 }
 
@@ -259,7 +261,13 @@ bool CMOOSApp::Run( const char * sName,
     while(1)
     {
         if(!m_Comms.HasMailCallBack())
-        	DoRunWork();
+        {
+            
+        	bool bOK = DoRunWork();
+            
+            if(m_bQuitOnIterateFail && !bOK)
+                return MOOSFail("MOOSApp Exiting as requested");
+        }
         else
             MOOSPause(1000);
                 
@@ -302,7 +310,10 @@ bool CMOOSApp::DoRunWork()
             
             //////////////////////////////////////
             //  do application specific processing
-            Iterate();
+            bool bOK = Iterate();
+            
+            if(m_bQuitOnIterateFail && !bOK)
+                return false;
             
             m_nIterateCount++;
         }
@@ -314,7 +325,12 @@ bool CMOOSApp::DoRunWork()
         
         /////////////////////////////////////////
         //  do application specific processing
-        Iterate();
+        bool bOK = Iterate();
+
+        if(m_bQuitOnIterateFail && !bOK)
+            return false;
+
+        
         m_nIterateCount++;
     }
     

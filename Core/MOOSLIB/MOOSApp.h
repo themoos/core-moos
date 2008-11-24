@@ -144,6 +144,9 @@ protected:
 
     /** call to say if you want mail to be delivered sorted by time*/
     void SortMailByTime(bool bSort=true){m_bSortMailByTime = bSort;};
+    
+    /** set to true to make the App sensitive (and quit) to Iterate() returning false*/
+    void SetQuitOnFailedIterate(bool bQuit){m_bQuitOnIterateFail = bQuit;};
 
     /**  Call this to write a debug string to the DB under the name "MOOS_DEBUG"  */
     bool MOOSDebugWrite(const std::string & sTxt);
@@ -250,7 +253,9 @@ protected:
 
     /** flag specifying whether command message fitlering is enabled */
     bool m_bCommandMessageFiltering;
-
+    
+    /** flag to say whether or not App should quit after an Iterate returns false*/
+	bool m_bQuitOnIterateFail;
     /** The start time of the application */
     double m_dfAppStartTime;
 
