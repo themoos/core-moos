@@ -46,7 +46,7 @@ bool CSimulator::Iterate()
     static int k = 0;
     if(k++%10==0)
     {
-    //simulate some brownina motion
+    //simulate some brownian motion
     static double dfHeading = 0;
     dfHeading+=MOOSWhiteNoise(0.1); 
 
@@ -70,7 +70,7 @@ bool CSimulator::Iterate()
 }
 
 /** called by the base class before the first ::Iterate is called. Place
-startup code here - especiall code whic reads configuration data from the 
+startup code here - especially code which reads configuration data from the 
 mission file **/
 bool CSimulator::OnStartUp()
 {       

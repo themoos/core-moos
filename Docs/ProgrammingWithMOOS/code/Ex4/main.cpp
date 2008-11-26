@@ -8,7 +8,7 @@ int main(int argc ,char * argv[])
 {
     //set up some default application parameters
 
-    //what's the name of the configuarion file that the application
+    //what's the name of the configuration file that the application
     //should look in if it needs to read parameters?
     const char * sMissionFile = "Mission.moos";
 

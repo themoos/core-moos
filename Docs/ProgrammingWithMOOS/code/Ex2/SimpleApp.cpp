@@ -37,12 +37,12 @@ bool CSimpleApp::OnNewMail(MOOSMSG_LIST &NewMail)
     // the messages
     if(MOOSStrCmp(rMsg.GetKey(),"VehicleStatus"))
     {
-        //this is message is about something called "VariableX"
+        //this message is about something called "VariableX"
         OnVehicleStatus(rMsg);
     }
     else if(MOOSStrCmp(rMsg.GetKey(),"Heading"))
     {
-        //this is message is about something called "VariableY"
+        //this message is about something called "VariableY"
         OnHeading(rMsg);
     }
     }
@@ -75,11 +75,11 @@ bool CSimpleApp::Iterate()
 }
 
 /** called by the base class before the first ::Iterate is called. Place
-startup code here - especiall code whic reads configuration data from the 
+startup code here - especially code which reads configuration data from the 
 mission file **/
 bool CSimpleApp::OnStartUp()
 {       
-    //do registrations - its good practive to do this BOTH in OnStartUp and
+    //do registrations - its good practice to do this BOTH in OnStartUp and
     //in OnConnectToServer - that way if comms is lost registrations will be
     //reinstigated when the connection is remade 
     DoRegistrations();
@@ -94,7 +94,7 @@ bool CSimpleApp::OnVehicleStatus(CMOOSMsg & Msg)
           GetAppName().c_str(),
           Msg.GetKey().c_str());
 
-    //if you want to see all teh details you can print a message...
+    //if you want to see all the details you can print a message...
     //Msg.Trace();
 
     if(!Msg.IsString())

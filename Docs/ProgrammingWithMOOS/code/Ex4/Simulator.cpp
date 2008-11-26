@@ -43,10 +43,10 @@ bool CSimulator::OnConnectToServer()
 which does the work of the application **/
 bool CSimulator::Iterate()
 { 
-    static int k = 0; // a simple counter to simulate a simulator -not and important detail...
+    static int k = 0; // a simple counter to simulate a simulator - not an important detail...
     if(k++%10==0)
     {
-    //simulate some brownina motion
+    //simulate some brownian motion
     m_dfHeading+=MOOSWhiteNoise(0.1); 
 
     //publish the data (2nd param is a double so it will be forever double data...)
@@ -63,7 +63,7 @@ bool CSimulator::Iterate()
                      m_sBilge.c_str());
 
     //publish the data (2nd param is a std::string so it will be forever string data...)
-    //note how name of variable is set by what was rad from configuration file
+    //note how name of variable is set by what was read from configuration file
     std::string sVarName = m_sVehicleName+"_Status";
     m_Comms.Notify(m_sVehicleName,sStatus,MOOSTime());
     }
@@ -71,7 +71,7 @@ bool CSimulator::Iterate()
 }
 
 /** called by the base class before the first ::Iterate is called. Place
-startup code here - especially code whic reads configuration data from the 
+startup code here - especially code which reads configuration data from the 
 mission file **/
 bool CSimulator::OnStartUp()
 {       
@@ -81,14 +81,14 @@ bool CSimulator::OnStartUp()
     MOOSTrace("Warning parameter \"VechicleName\" not specified. Using default of \"%s\"\n",m_sVehicleName.c_str());
 
 
-    //here we extract a vector of doubles fom the configuration file
+    //here we extract a vector of doubles from the configuration file
     std::vector<double> vInitialLocation(3,0.0);
     int nRows=vInitialLocation.size();
     int nCols = 1;
     if(!m_MissionReader.GetConfigurationParam("InitialLocation",vInitialLocation,nRows,nCols))
     MOOSTrace("Warning parameter \"InitialLocation\" not specified. Using default of \"%s\"\n",DoubleVector2String(vInitialLocation).c_str());
     
-    //here we extrac a more compicated compound string parameter
+    //here we extract a more complicated compound string parameter
     std::string sComplex;
     if(m_MissionReader.GetConfigurationParam("InitialConditions",sComplex))
     {

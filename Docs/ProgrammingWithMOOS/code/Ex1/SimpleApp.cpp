@@ -45,7 +45,7 @@ bool CSimpleApp::Iterate()
 }
 
 /** called by the base class before the first ::Iterate is called. Place
-startup code here - especiall code whic reads configuration data from the 
+startup code here - especially code which reads configuration data from the 
 mission file **/
 bool CSimpleApp::OnStartUp()
 {       
