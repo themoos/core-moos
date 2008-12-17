@@ -1394,9 +1394,21 @@ bool MOOSFileParts(std::string sFullPath, std::string & sPath,std::string &sFile
     }
 
     //finally look to split on "." for extension if it is there.
-    sFile = MOOSChomp(sFullFile,".");
-    sExtension = sFullFile;
-
+	// sFile = MOOSChomp(sFullFile,".");
+    // sExtension = sFullFile;
+	size_t nDot = sFullFile.find_last_of(".");
+	if (nDot==std::string::npos)
+	{
+		// No extension:
+		sFile = sFullFile;
+		sExtension = "";
+	}
+	else
+	{
+		// Split extension:
+		sFile = sFullFile.substr(0,nDot);
+		sExtension = sFullFile.substr(nDot+1);
+	}
     return true;
 }
 
