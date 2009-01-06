@@ -693,6 +693,9 @@ double MOOS_ANGLE_WRAP(double dfAng)
 	// Wrap
 	dfAng = fmod(dfAng, 2*PI);
 
+	// fmod seems to ignore the -ve...
+	if (dfAng < 0) dfAng += 2*PI;
+
 	// Shift back
 	return (dfAng == 0.0 ? PI : dfAng-PI);
 	
