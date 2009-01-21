@@ -32,7 +32,6 @@
 
 #include <string>
 //using namespace std;
-void MOOSDisaster(const char * pMsg ="REASON NOT SPECIFIED BUT IT MUST HAVE BEEN BAD");
 void SetMOOSPlayBack(bool bPlayBack);
 bool IsMOOSPlayBack();
 #endif

@@ -426,11 +426,13 @@ bool CMOOSCommClient::ConnectToServer()
 
 	if(HandShake())
 	{
-		if(m_pfnConnectCallBack!=NULL)
+		//suggestion to move this to here accpted by PMN on 21st Jan 2009
+        //we must be connected for user callback to work..
+        m_bConnected = true;
+
+        if(m_pfnConnectCallBack!=NULL)
 		{
 
-			//we must be connected for user callback to work..
-			m_bConnected = true;
 
 			if(!m_bQuiet)
                 MOOSTrace("  Invoking User OnConnect() callback...");
