@@ -682,6 +682,7 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
     return MOOSVectorFromString(sStr.substr(nPos),nValVec,nRows,nCols);   
 }
 
+
 double MOOS_ANGLE_WRAP(double dfAng)
 {
     if(dfAng<PI && dfAng>-PI)

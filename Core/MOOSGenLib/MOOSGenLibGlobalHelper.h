@@ -41,6 +41,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <sstream>
 #include <algorithm>
 
 
@@ -74,6 +75,8 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec, int &nRows, int &nCol
 bool MOOSVectorFromString(const std::string & sStr,std::vector<double> & dfVecVal,int & nRows,int & nCols);
 bool MOOSVectorFromString(const std::string & sStr,std::vector<float> & fValVec,int & nRows, int & nCols);
 bool MOOSVectorFromString(const std::string & sStr,std::vector<unsigned int> & dfVecVal,int & nRows,int & nCols);
+
+
 
 /** write a std::vector<double> to a string (using MOOS Notation) */
 std::string DoubleVector2String(const std::vector<double> & V);
@@ -264,6 +267,23 @@ template<class D> struct dynamic_caster
 {
     template<class S> D operator()(S s) const { return dynamic_cast<D> (s); }
 };
+
+
+//adds a token/value pair to end of the supplied string sIn
+template <class T>
+std::string & MOOSAddValToString(std::string & sIn, const std::string & sTok,const T & Val)
+{
+    std::stringstream s;
+    
+    if(!sIn.empty())
+		s<<",";
+    
+    s<<sTok<<"="<<Val;
+    
+    sIn+=s.str();
+    
+    return sIn;
+}
 
 
 ///////// USEFUL MACRO FOR PREVENTING COMPILER WARNINGS
