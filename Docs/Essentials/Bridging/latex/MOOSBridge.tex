@@ -22,15 +22,15 @@
 \maketitle
 
 \begin{center}
-\epsfig{file=images/moose6.eps,width = 0.2\linewidth} 
+\epsfig{file=images/moose6.eps,width = 0.2\linewidth}
 \end{center}
 \begin{abstract}
-This document will give you a description of how two use \code{pMOOSBridge} to link multiple MOOS communities together.
+This document will give you a description of how to use \code{pMOOSBridge} to link multiple MOOS communities together.
 \end{abstract}
 
 \section{Introduction}
 
-\code{pMOOSBridge} is a powerful tool in building MOOS derived
+\code{pMOOSBridge} is a powerful tool in building MOOS-derived
 systems. It allows messages to pass between communities and is
 able to rename the messages as they are shuffled between
 communities. Many of the sections in this document rely on
@@ -56,11 +56,11 @@ syntax is intuitive:\\
 [V1,V2...]}}}\\
 
 The triplet Comm@Host:Port is a description of a community ---  name and hostname/port pair. The community
-description can be omitted on the l.h.s of the arrow in which case the mission-file-scope defaults are assumed (see the example below).
+description can be omitted on the l.h.s of the arrow, in which case the mission-file-scope defaults are assumed (see the example below).
 Each variable (``V'') on the l.h.s (source) community will be inserted into the community on the r.h.s.
-If no variables names are specified on the r.h.s (destination) community the original names are used, otherwise
-there is a one to one mapping between variable names on the l.h.s and new variable names (aliases) on the r.h.s. If however
-there are more named shared variables than aliases, the variables for which a alias is not specified retain there original names.
+If no variable names are specified on the r.h.s (destination) community the original names are used, otherwise
+there is a one-to-one mapping between variable names on the l.h.s and new variable names (aliases) on the r.h.s. If however
+there are more named shared variables than aliases, the variables for which an alias is not specified retain their original names.
 
 
 For example\\
@@ -68,7 +68,7 @@ For example\\
 SHARE= VehA@nym.robots.ox.ac.uk:9000 [GPS_X]->VehB@kayak.mit.edu:9000 [GPS_X]
 \end{verbatim}
 Here the variable \code{GPS\_X} is shared between a community called ``VehA'' running from a \DB on the machine called
-``nym.robots.ox.ac.uk' listening on port 9000 is being inserted into a community called ``VehB'' using a \DB running on the machine called
+``nym.robots.ox.ac.uk'' listening on port 9000 is being inserted into a community called ``VehB'' using a \DB running on the machine called
 ``VehB@kayak.mit.edu'' also listening on port 9000. In both communities the variable is called ``GPS\_X''. However when viewed with
 something like \code{uMS} (see the document on Graphical Tools) it can be seen that the \code{m\_sOrginatingCommunity} member of the \code{MOOSMsg}
 carrying this data in the ``VehB'' commmunity will be ``VehA''.
@@ -76,29 +76,29 @@ carrying this data in the ``VehB'' commmunity will be ``VehA''.
 \begin{verbatim}
 SHARE= VehA@nym.robots.ox.ac.uk:9000 [GPS_X]->VehB@kayak.mit.edu:9000 [GPS_X_A]
 \end{verbatim}
-This is similar to the above example only \code{pMOOSBridge} will rename ``GPS\_X'' to ``GPS\_X\_A'' in the
+This is similar to the above example, only \code{pMOOSBridge} will rename ``GPS\_X'' to ``GPS\_X\_A'' in the
 destination community. The next example shows how the source address need not be specified. When omitted the source community is
-taken to be the community on which \code{pMOOSBridge} is running at the time. This example also shows how destination variable names may be ommitted in
+taken to be the community on which \code{pMOOSBridge} is running at the time. This example also shows how destination variable names may be omitted, in
 which case the original (source community) variable name is preserved.
 \begin{verbatim}
 SHARE= [GPS_X]->VehB@kayak.mit.edu:9000
 \end{verbatim}
-Finally more that one mapping can be specified in one line:
+Finally, more than one mapping can be specified in one line:
 \begin{verbatim}
 SHARE= [GPS_X,OVEN_TEMP]->VehB@kayak.mit.edu:9000 [GPS_X_A]
 \end{verbatim}
-here GPS\_X is being mapped and renamed to \code{GPS\_X\_A} in community ``VehB'' but the variable \code{OVEN\_TEMP} is simply being shared without renaming.
-It is important to realise that sharing is not bidirectional. In this case a process notifying change in \code{GPS\_X\_A} in community ``VehB'' \emph{would not}
+Here GPS\_X is being mapped and renamed to \code{GPS\_X\_A} in community ``VehB'' but the variable \code{OVEN\_TEMP} is simply being shared without renaming.
+It is important to realise that sharing is not bidirectional. In this case, a process notifying change in \code{GPS\_X\_A} in community ``VehB'' \emph{would not}
 result in pMOOSBridge notifying the \DB in community ``VehA'' that ``GPS\_X'' has changed.
 
 
 \begin{figure}[ht]
 \centering \epsfig{file = images/pMOOSBridge2.eps , width =
 0.6\linewidth} \caption{An alternative MOOSBridge Configuration
---- one bridge per community. This maybe preferable it is undesirable to have one process manage all
-the sharing of data. However it offers no \emph{functional} advantage of the topology shown in Figure
+--- one bridge per community. This may be preferable; it is undesirable to have one process manage all
+the sharing of data. However it offers no \emph{functional} advantage over the topology shown in Figure
 \ref{fig:MOOSBridge1}.}\label{fig:MOOSBridge2}
 \end{figure}
 
 
-\end{document}
+\end{document} 

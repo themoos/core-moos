@@ -23,17 +23,17 @@
 \maketitle
 
 \begin{center}
-\epsfig{file=images/moose6.eps,width = 0.2\linewidth} 
+\epsfig{file=images/moose6.eps,width = 0.2\linewidth}
 \end{center}
 \begin{abstract}
-This document will give you a description of \code{pScheduler} ---  a process useful for generating and marhsalling communication packets within a MOOS community.
+This document will give you a description of \code{pScheduler} ---  a process useful for generating and marshalling communication packets within a MOOS community.
 \end{abstract}
 
 \section{Introduction}\label{Sec:pScheduler}
 
 \code{pScheduler} is a simple tool for generating and responding
-to messages send to the \code{MOOSDB} by processes in a MOOS
-community. It supports three competencies which will now be
+to messages sent to the \code{MOOSDB} by processes in a MOOS
+community. It supports three competencies, which will now be
 described. Example configuration blocks will also be given.
 
 
@@ -41,12 +41,12 @@ described. Example configuration blocks will also be given.
 \item[SEQUENCES] A looping sequence of messages can be created and published by \code{pScheduler}. Each element of a
 sequence is specified in the configuration block  with a line:
 \code{SEQUENCE = PUBLISH\_NAME @ VALUE : TIME\_OFFSET }. For
-example the configuration in figure \ref{Fig:Sequences} would
+example, the configuration in Figure \ref{Fig:Sequences} would
 write the variable \code{LIGHT\_CONTROL} to the DB every 2 seconds
-with its String value alternating between "ON" and "OFF". The
+with its String value alternating between ``ON'' and ``OFF''. The
 total sequence period is given by the maximum \code{TIME\_OFFSET}
 parameter. Figure \ref{Fig:SchedulerExt} shows a more complicated
-configuration block in which a sequence is constructed from
+configuration block, in which a sequence is constructed from
 several different variables.
 \begin{figure}[ht]
 \label{Fig:Sequences}
@@ -59,11 +59,11 @@ ProcessConfig  = pScheduler
 \end{lstlisting}\caption{Configuring a sequence with \code{pScheduler}}
 \end{figure}
 \item[TIMERS] A ``timer'' allows a variable to be written to the
-data base repetitively. A timer can be started and stopped by
-publication (by some other application) of user specified
+database repetitively. A timer can be started and stopped by
+publication (by some other application) of user-specified
 variables. The scheduler can also be told  to derive the  value of
-the periodic variable from another MOOS variable, which, if
-arrives in the Scheduler's mail box overrides the initial value.
+the periodic variable from another MOOS variable, which, if it
+arrives in the scheduler's mail box, overrides the initial value.
 This sounds complicated but isn't. An example is useful. The
 general syntax is as follows\\
 \code{TIMER = PUBLISH\_NAME @ TIME , START\_VARIABLE,
@@ -72,7 +72,7 @@ Figure \ref{Fig:TIMER} shows a typical configuration block.
 \begin{figure}[ht]
 \label{Fig:TIMER}
 \begin{lstlisting}[]{}
-ProcessConfig  = pScheduler 
+ProcessConfig  = pScheduler
 {
     TIMER = CAMERA_CONTROL @ 4.0 , MISSION_START,  MISSION_END,DESIRED_CAMERA_ANGLE -> 0.0
     TIMER = CAMERA_GRAB @ 4.0, MISSION_START -> GRAB
@@ -81,14 +81,14 @@ ProcessConfig  = pScheduler
 \end{lstlisting}\caption{Configuring a timer with \code{pScheduler}}
 \end{figure}
 In this case the variable \code{CAMERA\_CONTROL} will be published
-every 4 seconds after some third party application writes
+every 4 seconds after some third-party application writes
 (publishes) the \code{MISSION\_START} variable. If, while the
-timer is active, the variable \code{CAMERA\_ANGLE} is published
+timer is active, the variable \code{CAMERA\_ANGLE} is published,
 the value of \code{CAMERA\_CONTROL} will be copied from that
 message. If \code{CAMERA\_ANGLE} is never published it will always
 have its default value of $0.0$. The timer turns off if any
 process publishes \code{MISSION\_END}. The second example is
-simpler and writes \code{CAMERA\_GRAB} with value "GRAB" every 4
+simpler and writes \code{CAMERA\_GRAB} with value ``GRAB'' every 4
 seconds as soon as \code{MISSION\_START} is written. The third
 version starts immediately (note the comma is required...). Figure
 \ref{Fig:SchedulerExt} shows a few more examples of the
@@ -97,12 +97,12 @@ configuration of timers in  \code{pScheduler}.
 publication of one variable with the publication of one or more
 different variables. The syntax is obvious: \code{RESPONSE =
 STIMULUS\_VARIABLE : RESPONSE\_VARIABLE @
-VALUE,RESPONSE\_VARIABLE2 @ VALUE,....  }. Here
+VALUE,RESPONSE\_VARIABLE2 @ VALUE,....  }. Here 
 \code{STIMULUS\_VARIABLE} is the name of the variable we wish
-\code{pScheduler} to respond to and after the colon comes a
-command separated list of response variables with the values they
+\code{pScheduler} to respond to, and after the colon comes a
+command-separated list of response variables with the values they
 should contain. Figure \ref{Fig:SchedulerExt} shows some clear
-example configurations of "responses" in \code{pScheduler}
+example configurations of ``responses'' in \code{pScheduler}
 \end{description}
 
 \begin{figure}

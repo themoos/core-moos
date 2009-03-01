@@ -21,40 +21,40 @@
 \maketitle
 
 \begin{center}
-\epsfig{file=images/moose6.eps,width = 0.2\linewidth} 
+\epsfig{file=images/moose6.eps,width = 0.2\linewidth}
 \end{center}
 \begin{abstract}
-This document will  describes two  control and navigation which are part of the standard
-releases of MOOS namely \code{pHelm} and \code{pNav}. Both these processes have a marine flavour two them (which speaks to the origins of MOOS) nevertheless both applications can be used on land vehicles.
+This document will  describes two  control and navigation processes which are part of the standard
+releases of MOOS, namely \code{pHelm} and \code{pNav}. Both these processes have a marine flavour to them (which speaks to the origins of MOOS); nevertheless, both applications can be used on land vehicles.
 \end{abstract}
 
 \section{ The Helm - \code{pHelm}}
-Along with \code{pNav} the Helm process \code{Helm} is one of the
+Along with \code{pNav}, the Helm process \code{Helm} is one of the
 most important high-level processes that are typically run on a
 given mission. The Helm's job is to take \code{NAV\_*} from the
 navigator and, given a set of mission goals, decide on the most
 suitable actuation commands. The multiple mission goals take the
-form of prioritized tasks within the Helm. For example a
+form of prioritized tasks within the Helm. For example, a
 ``snap-shot'' of the helm might reveal five active tasks: follow a
 track line, stay at constant depth, limit depth, limit altitude
 and limit mission length. The first two of these are conventional
-trajectory control task that could be expected to be found in any
-mobile robot lexicon. The last three tasks are safety tasks that
+trajectory control tasks that could be expected to be found in any
+mobile robot lexicon. The last three are safety tasks that
 take some action if a limiting condition specified within them is
 violated.
 
 The Helm is designed to allow ``at sea'' reloading of missions. If
 the mission file (specifying what tasks to run) is edited while
-the Helm is runnning, the Helm can be commanded via a MOOS message
+the Helm is running, the Helm can be commanded via a MOOS message
 (\code{RESTART\_HELM}) to clean down and rebuild itself. This
 makes for very rapid turnaround of missions in a research-oriented
 field trip.
 
 The Helm has two modes: online and off-line. When off-line no
-tasks are run and the Helm make no attempt to control actuators.
-In his mode the vehicle can be controlled via \code{iRemote} (see
-the document on \code{iRemote} for more information). When on-line the vehicle's motor are under the
-control of the Helm - autopilot is engaged. As would be expected
+tasks are run and the Helm makes no attempt to control actuators.
+In this mode the vehicle can be controlled via \code{iRemote} (see
+the document on \code{iRemote} for more information). When online, the vehicle's motors are under the
+control of the Helm -- autopilot is engaged. As would be expected,
 \code{iRemote} is used to send the signal that relinquishes the
 manual control of the vehicle and puts the Helm online. Manual
 control can be regained at any time by pressing ``space'' on the
@@ -67,10 +67,10 @@ relating to their management are now discussed.
 \centering \epsfig{figure=images/mission.eps,width = 1.0\linewidth}
 \caption{A typical mission plan. Traverse to (200,400), dive to
 50m and perform a survey. Impose safety limits of 100m depth and
-7m altitude. When the Survey is complete (or timed out) return to
+7m altitude. When the survey is complete (or timed out) return to
 the dive co-ordinate and surface. If something terrible has
-happened and mission is still running after one hour - abort
-immediately. The task priorities are written in triangles and
+happened and the mission is still running after one hour, abort
+immediately. The task priorities are written in triangles and the
 timeouts in boxes above the task descriptions.}
 \end{figure}
 
@@ -84,7 +84,7 @@ system. The Helm application handles all communications on behalf
 of its owned tasks. All received \code{CMOOSMsg}s are offered to
 all active tasks. Each task is queried for any newly required
 subscriptions that are subscribed for by the Helm. In a similar
-fashion each task is queried for any messages that it requires to
+fashion, each task is queried for any messages that it requires to
 be emitted. This mechanism gives each task the illusion that it
 has its own \code{CMOOSCommClient} object even though it is in
 fact sharing it with  other active tasks.
@@ -98,7 +98,7 @@ fact sharing it with  other active tasks.
 {\textbf{Property}} & {\textbf{Use}} \\ \hline %\hline
   \code{Name} & The name of the task - for example ``Leg7'' or
   ``InitialDelay''  \\ %\hline
-  \code{StartFlags} & A list of  messages names that if received, will spur the tasks into action (turn it
+  \code{StartFlags} & A list of  messages names that, if received, will spur the tasks into action (turn it
   on).
   \\ %\hline
   \code{FinishFlags} & A list of messages that are emitted when the task
@@ -112,15 +112,15 @@ fact sharing it with  other active tasks.
   \code{TimeOut} & The maximum time the task should run for. If the task does not complete naturally before this
   timeout the FinishFlags are sent and the task retires itself automatically. The value of ``NEVER'' can be specified to
   indicated that a task should never timeout --- useful for safety tasks. \\ %\hline
-  \code{InitialState} & A task can be on initially in which case it does not listen for start-flags. Or it can be off in which case it
+  \code{InitialState} & A task can be on initially, in which case it does not listen for start-flags. Or it can be off, in which case it
   must receive a start-flag before it goes active. \\ %\hline
   \code{Priority} & Each task is assigned a priority from 1 to $\infty$ (0 is reserved for the special \code{EndMission} task). The lower
-  the value the more important the task is.    \\ %\hline
+  the value, the more important the task is.    \\ %\hline
 \end{tabular}
 \end{table}
 
 All tasks are derived from a common base class that provides all
-descendants with a shared heritage. In particular the ability to
+descendants with a shared heritage, in particular the ability to
 specify in the mission file some key named properties which are
 described in Table \ref{tab:TaskProps}. Perhaps the most important
 thing to understand is that tasks use MOOS messages to synchronize
@@ -131,22 +131,22 @@ important consequences:
 \begin{itemize}
 \item One task can activate any number of other tasks.
 \item A task can be activated by activity {\it{outside}} of the
-helm. For example a command received by an acoustic modem could
+helm. For example, a command received by an acoustic modem could
 start a task. This open architecture is a powerful concept within
 MOOS.
 \end{itemize}
 
 \subsubsection{Task Completion}
 A given task completes when any of the following conditions are
-met:
+met.
 \begin{itemize}
-\item It has completed successfully - fulfilled its goal criteria.
-For example it has steered the vehicle close (enough) to a way
+\item It has completed successfully -- fulfilled its goal criteria.
+For example, it has steered the vehicle close (enough) to a way
 point or has driven the vehicle to a specified depth.
 \item It has timed out before achieving its goal.
 \item It has starved. This occurs when it is does not receive the
 data it needs at regular enough intervals. This is a crucial
-safety feature. Say for example the navigation has failed -
+safety feature. Say, for example, the navigation has failed --
 \code{NAV\_*} will not be being emitted by the navigator and a
 motion control task requiring navigation information to function
 should not be allowed to continue to run with blithe disregard.
@@ -158,15 +158,15 @@ the system configuration or navigation.
 The Helm employs the simplest of strategies in deciding which task
 wins when two concurrent active tasks are both trying to control
 the same actuator --- the one with highest priority (lowest
-numerical value) wins. To illustrate this point envision the case
+numerical value) wins. To illustrate this point, envision the case
 where a track-line task is running at priority level three. Then a
-way-point task with priority level two goes active - perhaps after
+way-point task with priority level two goes active -- perhaps after
 reception of data via an acoustic modem. The way-point task will
 take control of the rudder actuator until it completes. At this
 point the original track-line task will resume. Throughout the
 episode the track-line task is unaware that it does not have
 control of the vehicle. In the case that one or more equal
-priority tasks controlling the same actuator(s) are active the
+priority tasks controlling the same actuator(s) are active, the
 Helm simply chooses to give the first task processed (in its list
 of active tasks) control.
 
@@ -207,8 +207,8 @@ Task = ConstantHeading
 \end{lstlisting}
 \end{figure}
 %
-In this case two task are being configured -- one to drive south
-for 300 seconds and when this task completes another will drive
+In this case two tasks are being configured --- one will drive south
+for 300 seconds, and when this task completes another will drive
 north for 120 seconds --- note the pairing of Start and Finish
 flags. Each task derived from the base task class is likely to add
 its own specialization parameters (like \code{Heading} in the case
@@ -222,7 +222,7 @@ configuration block contains the line ``\code{TaskFile}=
 {\it{filename.hoof}}'' then at startup the helm builds all the
 tasks it finds in the specified \code{*.hoof} file. This
 indirection is useful for building a library of missions that can
-be loaded into the Helm at any time simply by changing a single
+be loaded into the Helm at any time, simply by changing a single
 line in the Mission file.
 
 
@@ -236,7 +236,7 @@ line in the Mission file.
 {\textbf{Task}}  &  {\textbf{Use}} \\ \hline
 %
 \code{TimeOut} & Issues \code{FinishFlags} after timeout. This is
-useful for creating a pause between tasks - for example a delay at
+useful for creating a pause between tasks -- for example a delay at
 mission start.
 \\%\hline
 %
@@ -272,7 +272,7 @@ several times.
 \\%\hline
 %
 \code{LimitDepth} & Fires event flag if the vehicle is too deep. A
-Safety task that is usually run with timeout=NEVER
+Safety task that is usually run with timeout=NEVER.
 \\%\hline
 %
 \code{EndMission} & Abort Mission (highest priority). Set to be
@@ -280,9 +280,9 @@ the highest priority task (0). Locks out all other tasks. Usually
 commands all actuation to zero.
 \\%\hline
 %
-\code{DiveTask}  & Dive from surface (e.g reverse dive) \\%\hline
+\code{DiveTask}  & Dive from surface (e.g reverse dive). \\%\hline
 %
-\code{Orbit} & Orbit a given location in XY plane. The direction, radius and number of orbits can be specified \\%\hline
+\code{Orbit} & Orbit a given location in XY plane. The direction, radius and number of orbits can be specified. \\%\hline
 %
 \code{Survey} & Perform a survey (mow lawn) centered  on specified
 position with given rotation and extent.\\%\hline
@@ -291,7 +291,7 @@ position with given rotation and extent.\\%\hline
 \\%\hline
 %
 \code{OverAllTimeOut} & Limit Total length of mission. Always use
-this task - it is compulsory. Its FinishFlag should be the
+this task -- it is compulsory. Its FinishFlag should be the
 StartFlag of an EndMission task.
 \\%\hline
 %
@@ -311,7 +311,7 @@ can be found on the MOOS documentation web-pages.
 
 \subsection{Third-party Task Execution}
 An interesting component of the Helm is its ability to dynamically
-launch a task on behalf of a another client -- ``a third-party
+launch a task on behalf of another client -- ``a third-party
 request''. Obviously some security needs to be in place to stop
 wayward software requesting tasks to be performed that endanger
 other aspects of the mission or even the vehicle itself. The issue
@@ -325,7 +325,7 @@ specified (named) client. Any third-party requests not mentioned
 in the configuration block will be denied.
 
 \subsubsection{Common Usage}
-One may wonder why given the event-driven nature of the Helm such
+One may wonder why, given the event-driven nature of the Helm, such
 a scheme is needed. The architecture was implemented by extending
 the model of Navigator and Helm pair to include a 'Guest
 Scientist' --- a client application which, on the fly, makes
@@ -375,7 +375,7 @@ seconds.
 \subsubsection{Request Generation}
 A client can generate a third-party request by using the
 \code{CThirdPartyRequest} class provided in \code{MOOSGenLib}. The
-class's methods allow specification of the task type, job name.
+class's methods allow specification of the task type and job name.
 For every line that one would usually see in a Task configuration
 block one call to \code{CThirdPartyRequest::AddProperty()} is made
 specifying the property name and value. This done, a call to the
@@ -391,15 +391,15 @@ We shall now discuss how each task maps navigation data and task
 goals to desired actuation settings.
 
 Each task possesses two standard PID controllers (Proportional
-Integral Differential)-- one for yaw control and one for depth
+Integral Differential) -- one for yaw control and one for depth
 control. All tasks that use navigation data as feedback for motion
 control use one or both of these controllers. The yaw axis
 controller is simple and is encapsulated in the class
 \code{CScalarPID} found in \code{MOOSGenLib}. The output of the
-controller is the tasks ``vote'' on \code{DESIRED\_RUDDER}.
+controller is the task ``vote'' on \code{DESIRED\_RUDDER}.
 
 \subsubsection{Scalar PID}
-The scalar PID has the structure shown in figure
+The scalar PID has the structure shown in Figure
 \ref{fig:ScalarPID}. It has integral limits to prevent integral
 wind up and is also output limited to bound the output values.
 Hence three gains and two limits specify the characteristics of
@@ -413,11 +413,11 @@ structure of the scalar PID}
 \end{figure}
 
 It is important to note that the controller does not require that
-it be run a precisely regular time intervals. Instead it uses the
+it be run at precisely regular time intervals. Instead it uses the
 sequence of time stamps on the input navigation data to perform
 the differentiation and integration as required. The
 differentiation is performed using a 5-tap FIR filter. This leads
-to smooth performance. However no phase advance is performed -- a
+to smooth performance. However, no phase advance is performed -- a
 point that could be improved upon.
 
 \subsubsection{Vertical Control via Pitch Control}
@@ -426,9 +426,9 @@ to the subsea case. Here we choose to control depth via pitch. The
 overall controller is fourth order and consists of an inner scalar
 PID loop controlling vehicle pitch. This loop maps error in pitch
 to desired elevator.  The set point for the pitch loop is derived
-from the error in the vertical direction \footnote{note altitude
+from the error in the vertical direction \footnote{Note altitude
 control and depth control have sign inversion between them. Depth
-is in the negative Z direction}. This topology is shown in figure
+is in the negative Z direction.}. This topology is shown in Figure
 \ref{fig:ZPID}.
 
 \begin{figure}[ht]
@@ -453,12 +453,12 @@ track-line plus some ``lead distance'' along it.
 \subsubsection{The Independence Assumption}
 Implicit in all this is that the dynamics  in the XY plane and Z
 axis are decoupled. Clearly this assumption may be too strong for
-some vehicles\footnote{Although two AUV's have been succesfully
-controller using this strategy.}.In this case XY controlling tasks
+some vehicles\footnote{Although two AUVs have been successfully
+controlled using this strategy.}.In this case XY controlling tasks
 will also need to place a vote on elevator as well as rudder
 commands. This is no big problem, but they will need to be
 extended to control in the vertical plane at the same time. In
-other words such a vehicle will not be able to tolerate the
+other words, such a vehicle will not be able to tolerate the
 division of tasks into XY and vertical control types as is
 currently the case.
 
@@ -467,9 +467,9 @@ currently the case.
 The pNav process is perhaps the most complex of all the MOOS
 processes. Its job requirement is simple -- \begin{quote}
 {\it{``taking asynchronous, anachronistic and inconsistent input
-from sensors, provide a single , up-to-date estimate of vehicle
+from sensors, provide a single, up-to-date estimate of vehicle
 pose and velocity.''}}. \end{quote} The most important output of
-\code{pNav} is the \code{NAV\_*} (said ``Nav Star'') family where
+\code{pNav} is the \code{NAV\_*} (pronounced ``Nav Star'') family where
 the wild card is any one of {\it{X, Y, Z, DEPTH, PITCH, ROLL, YAW,
 SPEED, X\_VEL, Y\_VEL, Z\_VEL or YAW\_VEL}}. Note that velocities
 are in earth coordinates not body coordinates. The \code{NAV\_*}
@@ -479,7 +479,7 @@ commands.
 
 \subsection{Priority Queues}
 pNav allows the route by which \code{NAV\_*} information is
-derived to be specified in it control block. This is achieved by
+derived to be specified in its control block. This is achieved by
 the use of Priority Queues or Stacks. The idea is simple -- each
 \code{NAV\_*} output has its own line in the configuration block.
 Reading from left to right specifies the preferences for deriving
@@ -490,14 +490,14 @@ through to NAV\_X and NAV\_Y and the first entry on the RHS of the ``X'' line
 in the pNav configuration block would be ``GPS@TIMEOUT''. Here the
 value of ``TIMEOUT'' would be the maximum time between GPS fixes
 that could be tolerated before assuming the sensor has stopped
-publishing valid data. For example if no GPS\_X data arrived for
+publishing valid data. For example, if no GPS\_X data arrived for
 TIMEOUT seconds then the GPS sensor would no longer be fed through
 to NAV\_X and the navigator would shift attention to the next
 ``SOURCE@TIMEOUT'' pair in the priority queue. A likely second
 entry would be \code{DVL}. When the vehicle dives GPS fixes will
 cease and it may be desirable to dead-reckon using a DVL in its
-place. In this case the second entry would be ``DVL@TIMEOUT''. As
-soon as the vehicle surfaces and GPS fixes resume the stack/queue
+place. In this case, the second entry would be ``DVL@TIMEOUT''. As
+soon as the vehicle surfaces and GPS fixes resume, the stack/queue
 would ``pop'' and NAV\_X would once more derive itself from GPS
 data. Figure \ref{fig:PriorityQueues} gives an example definition
 of navigation priority queues.
@@ -514,21 +514,20 @@ Yaw    = EKF @ 2.0 ,LSQ @ 5.0, INS @ 1.0
 Pitch  = INS Speed  = EKF
 \end{lstlisting}
 \caption{Specifying NAV\_* derivations. Here for example NAV\_X is
-derived preferentially from GPS (ie straight from GPS\_X) unless
+derived preferentially from GPS (i.e. straight from GPS\_X) unless
 no GPS data is received for 2 seconds. In this case EKF\_X is used
 in its place. If the EKF (extended Kalman filter) fails to produce
 any output for 2.5 seconds then as a last resort LSQ\_X is used
-(non-linear least squares). However as soon as GPS data begins to
+(non-linear least squares). However, as soon as GPS data begins to
 be delivered once more the system switches back to using GPS
 -- popping the stack.}
 \end{figure}
 
-Of course this scenario  assumes that the DVL sensor can produce
+Of course this scenario assumes that the DVL sensor can produce
 DVL\_X/Y measurements. It is more likely to produce reliable body
 velocity measurements. Now we must ask how to derive
-position estimates from sensors that do not measure positions? The
-\code{pNav} process solves this problem by providing two kinds of real
-time navigation filters: a ten state non-linear Kalman filter and
+position estimates from sensors that do not measure positions. The
+\code{pNav} process solves this problem by providing two kinds of real-time navigation filters: a ten state non-linear Kalman filter and
 a five state non-linear Least Squares filter. Collectively these
 filters provide the following functionality:
 \begin{itemize}
@@ -540,7 +539,7 @@ filters provide the following functionality:
 \item Self diagnostics
 \end{itemize}
 These navigation filters reside in the MOOSNavLib library, which is
-linked with pNav. They are discussed in greater detail in section
+linked with pNav. They are discussed in greater detail in Section
 \ref{sec:NavFilters}.
 
 \subsection{Stochastic Navigation Filters}\label{sec:NavFilters}
@@ -549,18 +548,18 @@ linked with pNav. They are discussed in greater detail in section
 \centering \epsfig{figure = images/NavFrames.eps, width = 0.8\linewidth}
 \caption{The relationship between tide, Z and depth. The navigation
 filters understand  LBL time of flights as a function of two
-vehicle positions (to be estimated) and the beacons location
+vehicle positions (to be estimated) and the beacon's location
 (known).}
 \end{figure}
 
 The navigation filters are moderately complicated software
 components and require a good understanding of stochastic
-estimation - the full extent of which is beyond the remit of this
+estimation --- the full extent of which is beyond the remit of this
 paper.
 
 There are two kinds of navigation filters used for online
 navigation: a non-linear Kalman Filter (EKF) and a non-linear Least
-Squares Filter (LSQ). \footnote{The Top down calibration filter within MOOS is
+Squares Filter (LSQ). \footnote{The top down calibration filter within MOOS is
 used for automatic calibration of an LBL net using GPS and
 acoustic ranges and is not considered to be online. }
 
@@ -573,17 +572,17 @@ measurements). Internally measurements are accrued (up to a certain
 time span) until the state space becomes observable, at which point
 a solution is found iteratively by successive linearizations. The
 accumulation of observations then begins again until the next
-estimate can be formed. Heuristically speaking the LSQ filter
+estimate can be formed. Heuristically speaking, the LSQ filter
 ``starts from scratch'' after every published estimate and has no
 concept of the flow of time across successive estimates. This
 implies that it is not easy to use measurements of rate  in
 deriving pose estimates. On the other hand, it does mean the LSQ
 filter is robust and immune to errors in previous estimates.
 
-\item[Extended Kalman Filter (EKF)] The EKF is the most complex of the two filters and also
-is the most versatile and accurate. It fuses predictions derived
+\item[Extended Kalman Filter (EKF)] The EKF is the most complex of the two filters and is also
+the most versatile and accurate. It fuses predictions derived
 from a simple vehicle model with measurements supplied by sensors.
-Internally it use a fine discretization of time to faithfully
+Internally it uses a fine discretization of time to faithfully
 interpret and model sensor measurements. The filter is recursive
 and so, heuristically speaking, possesses a concept of time. This
 enables it to produce estimates of velocity in addition  to pose using pose only measurements.
@@ -605,7 +604,7 @@ syntax is as follows:
 \begin{center}
 \code{SENSOR\_*} = {\it{iSource}} $\rightarrow$ {\it{sensorname}}
 @ {\it{x,y,z,[twist]}} ~ {\it{noise}}\\
-\end{center} Anthropomorphically the syntax can be read as:
+\end{center} Anthropomorphically, the syntax can be read as:
 \begin{quote}
 Declare a sensor of type (*) which is managed by a process called
 {\it{iSource}}. Call it {\it{sensorname}} and understand it to be
@@ -616,9 +615,9 @@ with standard deviation {\it{noise}}.
 \end{quote}
 
 Note there is no limit on the number of sensors that can be used.
-For example you can have two GPS sensors (XY). In fact on a large
+For example, you can have two GPS sensors (XY). In fact on a large
 vessel this will allow estimation of yaw without an orientation
-sensor - for ``free''.
+sensor --- for ``free''.
 
 \subsubsection{Mobile and Static Vehicles}
 The EKF allows the vehicle to be defined as static or mobile. A
@@ -638,27 +637,27 @@ precision of the state estimate over time (in the absence of data
 from sensors). The degree to which this happens is governed by the
 \code{EKF\_*\_DYNAMICS} variables, which vary from 0 to 10. A
 setting of zero implies the vehicle is immutable in that direction
-and never changes. For example, a planet sized vehicle might have a setting of
+and never changes. For example, a planet-sized vehicle might have a setting of
 zero for its yaw dynamics. A setting of 10 implies that the
-vehicle is very mobile in a given degree of freedom and in the
+vehicle is very mobile in a given degree of freedom, and in the
 absence of observations from sensors over a few seconds we expect
 to have a large uncertainty in our state estimate. Essentially
 these numbers are parameterizing the expected error in our
-state model. Heuristically a larger number means that we are not
-so sure the vehicle always obey a constant velocity model.
+state model. Heuristically, a larger number means that we are not
+so sure the vehicle always obeys a constant velocity model.
 
 Note that we do {\em not} inflict the constraint that the vehicle
 translates along the direction it is pointing (although when
 moving at speed this may be the case). Intentionally the vehicle
 model does not couple angular and cartesian degrees of freedom. Of
 course that is not to say that models explaining sensor data do
-the same - in particular the use of DVL body velocity observations
+the same --- in particular the use of DVL body velocity observations
 correlates yaw and position estimates.
 
 
 \subsubsection{Start Conditions}
 The LSQ filter can be used to initialize the EKF. If however the
-EKF is being run in stand-alone mode it needs an initial guess to
+EKF is being run in stand-alone mode, it needs an initial guess to
 start up. The initial state guess is provided in the mission file
 via the \code{EKF\_*} and the uncertainty (1 standard deviation
 bound) by the \code{EKF\_SIGMA\_*} variables. If the vehicle is
@@ -671,11 +670,11 @@ The performance of the navigation filters can be logged to file
 for post-mission analysis\footnote{The \code{MOOSMat} matlab
 script is designed to do this graphically.}. The location and stem
 name of these log files can be specified using the
-\code{NAV\_LOG\_*} variables. If time stamping is required the
+\code{NAV\_LOG\_*} variables. If time stamping is required, the
 file name includes the creation time of the log in standard MOOS
 format. Two kinds of files are created: {\it{*.olog}} and
 {\it{*.xlog}}. The former logs all  observations presented to the
-filter and the outcome of their processing  - rejection/acceptance
+filter and the outcome of their processing --- rejection/acceptance
  etc. The latter logs the evolution of the state estimate
 and its covariance. Both files are in text format and intended for
  simple quick parsing in Matlab.
@@ -695,45 +694,45 @@ tries to find the best (in terms of consensus) linear relationship
 between recent sensor data points. This done, it is able to
 identify outliers and remove them from the input stream feeding
 into the filter. The  \code{LSQ\_REJECTION} entries specify
-sensors (and acoustic channel for the case of LBL) which should be
+sensors (and acoustic channel in the case of LBL) which should be
 piped through this process. Each such statement declares the
 number of data points to be analyzed (the extent of the temporal
 history) and tolerable/expected deviation of point from the fitted
-line. For the case of LBL sensors this is a time measured in
+line. In the case of LBL sensors, this is a time measured in
 seconds.
 
 The EKF filter is a little smarter and uses its current state
 estimate and uncertainty to identify that the current crop of
 observations are not mutually consistent either with themselves or
 with the last state estimate (a common technique in Kalman
-filtering). However having detected that at least one of the
-current sensor measurement makes no sense it employs geometric
+filtering). However, having detected that at least one of the
+current sensor measurements makes no sense it employs geometric
 projective techniques to identify the true outlier.
 
 \subsubsection{EKF Lag}
 
 The EKF can be told to run ``behind time''. That is, only process
-sensor data up until $\eta$ seconds ago. Having done this the EKF
+sensor data up until $\eta$ seconds ago. Having done this, the EKF
 then forward predicts to the current time to produce an external
 navigation estimate (which is used to make dynamic control
 decisions). The next iteration will use the ``un-altered''
-internal estimate as a prior (ie the $\eta$ second old one). One
+internal estimate as a prior (i.e. the $\eta$ second old one). One
 might ask ``why bother?''. The reason stems from the fact that
-sensors cannot (should not) be relied upon to produce up to date
+sensors cannot (should not) be relied upon to produce up-to-date
 measurements. Typically they are always out of date by the time
 they are processed. Things are exacerbated in the case of LBL data
 processing. Envision the case where an LBL transceiver ranges to
-two beacons, one of which is close, say 150 m away, with a reply
-delay of 0.1 seconds, and the other one is distant, say 1.5km away
+two beacons, one of which is close, say 150m away, with a reply
+delay of 0.1 seconds, and the other one is distant, say 1.5km away,
 with a reply delay of 1 second. The reply from the first beacon
 will come in 0.3 seconds after the interrogation but the remaining
-beacon's reply will not be heard for three seconds. Only when all
+beacon's reply will not be heard for 3 seconds. Only when all
 replies are in (or the receive window has timed out) will the time
 of flight be transmitted by the sensor hardware. This means that
 by the time the data is processed it is at least 3 seconds old.
 Now, to properly ``explain'' these time measurements the filter
 must use the state estimates of the vehicle valid at the
-time-stamp of the data - in this case three seconds ago. Hence the
+time-stamp of the data --- in this case 3 seconds ago. Hence the
 filter needs to run behind time by an amount specified by the
 \code{EKF\_LAG} parameter. The filter buffers all sensor data in a
 queue (which is self-sorting on time stamp) and extracts data from
@@ -744,28 +743,28 @@ it valid at the current time minus whatever the lag is set to.
 
 It is possible to force a constraint on the navigation by
 declaring persistent observations. Every time the filter ``ticks''
-these artificial observations are added to a list observations
-stemming from real sensors. This for example would allow a surface
+these artificial observations are added to a list of observations
+stemming from real sensors. This, for example, would allow a surface
 craft with no depth sensor to use LBL navigation by declaring a zero depth artificial
 observation. Another case is when a heading measuring device is
 not available but a constant heading observation can be added to take
 its place. (Recall that the vehicle model does not correlate
-heading and position so with a constant heading observation the
+heading and position, so with a constant heading observation the
 vehicle will simply translate).
 
 \subsubsection{LSQ/EKF Interaction}
-If both the LSQ and EKF filters are run at the same time the LSQ
+If both the LSQ and EKF filters are run at the same time, the LSQ
 filter can be used to initialize and monitor the performance of
 the EKF. The fact that although they have lower precision LSQ
 estimates have no dependency on prior estimates can be exploited.
-This can be advantageous for several reasons:
+This can be advantageous for several reasons.
 
 \begin{description}
-\item [Robustness] A poorly tuned/setup EKF can diverge - that is, produce a
+\item [Robustness] A poorly tuned/setup EKF can diverge --- that is, produce a
 state estimate so far from the truth and with sufficient confidence
 that it rejects all incoming sensor data. There is no reason that
-this should happen given the data rejection schemes employed,
-however navigation is stochastic and unlikely things will happen
+this should happen given the data rejection schemes employed;
+however, navigation is stochastic and unlikely things will happen
 given time. A deployed system should be robust to such occurrences
 and the checking of estimates against the LSQ filter offers one (of
 several employed) way to do this. If the estimates emerging from
@@ -775,24 +774,24 @@ attempts to re-initialize it to the LSQ estimates. We require a
 lack of consensus over several seconds/fixes to prevent spurious
 LSQ fixes pulling the plug on the EKF prematurely. This also
 accords with the observation that once the EKF has diverged it is
-unlikely to recover and so waiting a few seconds is not going to
+unlikely to recover, and so waiting a few seconds is not going to
 change anything.
 
 \item[Observability] The LSQ estimate essentially solves a
 nonlinear set of equations to derive state observation data. No
 state estimate can be derived until the system of equations is
-observable - ie enough of the right kind of measurements have been
-accrued. If no LSQ solution can be produced for an extended period
+observable --- i.e. enough of the right kind of measurements have been
+accrued. If no LSQ solution can be produced for an extended period,
 it provides {\it{prima-facie}} evidence that the navigation
-problem is or has become( via sensor failure) unobservable and
+problem is or has become (via sensor failure) unobservable and
 unsolvable. Note that the EKF does not require full observability
-to operate - unobservable states just become more uncertain with
-each iteration\footnote{Until specified limits are reached at
+to operate --- unobservable states just become more uncertain with
+each iteration\footnote{Until specified limits are reached, at
 which point the filter is taken off-line.}. The navigation control
 block allows a LSQ timeout to be specified. If no LSQ fixes are
-derived for a time exceeding this an navigation failure is
+derived for a time exceeding this, an navigation failure is
 declared and all filters are taken off-line. This mechanism has two
-applications. Firstly it prevents an autonomous mission from being
+applications. Firstly, it prevents an autonomous mission from being
 started on a vehicle that cannot be navigated. Secondly, it serves
 to monitor sensor failure and prevent motion control decisions
 being taken on the basis of at least partially ``predict only''
@@ -802,19 +801,19 @@ EKF navigation estimates.
 produce a state estimate. Hence it does not need to be primed with
 an initial guess. Hence once a stable/repeatable stream of solutions
 begins to flow from the LSQ filter they can be used to initialize
-the EKF removing the need  for  approximate starting
+the EKF, removing the need  for  approximate starting
 conditions to be specified.
 
 \end{description}
 
 \subsubsection{Hidden State Estimation}
 
-Both the EKF and the LSQ estimate the tide height - the distance
+Both the EKF and the LSQ estimate the tide height --- the distance
 between the XY navigation plane and the surface. The EKF can
 optionally also estimate a bias term in an orientation sensor (one
 bias is applied to all orientation sensors). Great care has to be
 taken in ensuring that this term is in fact observable given the
-system configuration - heading bias estimation should only be
+system configuration --- heading bias estimation should only be
 enabled when operating with a body velocity sensor {\em{and}} a
 position sensor.
 
@@ -824,7 +823,7 @@ Limits can be placed on the permissible navigation uncertainty. If
 the one sigma bound of the estimates exceed these limits a
 {\it{Navigation Failure}} is declared. All relevant filters are
 taken off-line and the \code{EndMission} variable is published.
-This is the last line of defence against navigation failure - if
+This is the last line of defence against navigation failure --- if
 this happens things have gone badly wrong and the mission should
 be terminated. The EKF also watches the numerical value of the
 pose derivative states. If they exceed sensible limits (~10m/s or
@@ -839,29 +838,29 @@ guess to that of the first EKF derived estimate.
 \subsection{Sensible Configuration and Commissioning}
 This section is intended as a brief guide to actually using the
 navigation filters and owning process \code{pNav}. It is not exhaustive and
-cannot replace experience and understanding in the underlying
+cannot replace experience and understanding of the underlying
 techniques.
 
 \subsubsection{Defining the Navigation Frame}
 Different groups of people like to define coordinate origins in
-different places. In particular the $Z=0$ plane. In an area with
+different places, in particular the $Z=0$ plane. In an area with
 little or no tidal flux the use of an artificial tide observation
 (tide = 0) can be used to fix the $Z=0$ plane to the sea surface.
 All beacon locations will need to have negative Z
 coordinates\footnote{ However depth will still be positive as
-depth =tide-Z.}.
+depth = tide-Z.}.
 
 \subsubsection{Heuristic Hints}
-The following  are a selection of heuristic statements that are
+The following  is a selection of heuristic statements that are
 helpful to keep in mind during commissioning and verifying the
 navigation component of MOOS.
 
 \begin{itemize}
 
-\item If rate states are often being reset something is wrong.
+\item If rate states are often being reset, something is wrong.
 Poor data is being accepted when it should not be.
 
-\item LSQ filter cannot use velocity sensors (it has no idea of
+\item The LSQ filter cannot use velocity sensors (it has no idea of
 history).
 
 \item The LSQ filter cannot be used underwater without an LBL net
@@ -883,9 +882,9 @@ increase the chances of the  state vector being corrupted to the
 degree that no data is ever accepted again.
 
 \item Try to keep the \code{EKF\_LAG} setting as small as
-possible. If set too small LBL data will not be used. If set too
-large the final prediction step used to bring the estimate forward
-to the current time will be inaccurate - bad news for dynamic
+possible. If set too small, LBL data will not be used. If set too
+large, the final prediction step used to bring the estimate forward
+to the current time will be inaccurate -- bad news for dynamic
 control.
 
 \item The \code{EKF\_LAG} can be very small if no LBL sensing is
@@ -895,7 +894,7 @@ used.
 sensors and LBL data is used (with beacons on the sea bed).
 
 \item Tide estimation cannot be used using only altitude and LBL
-measurements as such a scheme would require a model of the sea-bed
+measurements as such a scheme would require a model of the sea bed
 to explain the altitude data.
 
 \item \textbf{Always} analyze the navigation logs before
@@ -907,10 +906,10 @@ emits the navigation failure flag (which should be monitored by
 the \code{EndMission} task).
 
 
-\item If the EKF is being run by itself (ie not booted from the
+\item If the EKF is being run by itself (i.e. not booted from the
 LSQ) make sure that its start coordinates and uncertainties are
 suitable to allow it to start accepting data when it starts up --
-ie close enough to its true position!
+i.e. close enough to its true position!
 
 \item It is a good plan to set the initial uncertainty in heading to
 be large. Otherwise orientation data may not be accepted.
@@ -918,4 +917,4 @@ be large. Otherwise orientation data may not be accepted.
 
 \end{itemize}
 
-\end{document}
+\end{document} 
