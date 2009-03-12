@@ -135,7 +135,8 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
     // remove comments made in line not at beginning
     int nC = (int)sLine.find("//");
 
-    if (nC >= 0 && nC <= (int)sLine.size()) {
+    if (nC >= 0 && nC <= (int)sLine.size())
+    {
         if (nC > 0)
             sLine = sLine.substr(0, nC);
         else
@@ -483,9 +484,63 @@ bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
     
     return true;
     
-    
+
+}
+
+bool CMOOSFileReader::MakeOverloadedCopy(const std::string & sCopyName,std::map<std::string, std::string> & OverLoads)
+{
+    if(GetFile()->is_open())
+    {
+        //open a file to copy to
+        std::ofstream of(sCopyName.c_str());
+        
+        if(!of.is_open())
+            return false;
+            
+            
+        Reset();
+
+        GetFile()->seekg(std::ios::beg);
+        
+        std::string sLine,sVal,sTok,sTmp;
+        while(!GetFile()->eof())
+        {
+            
+            
+            char Tmp[MAXLINESIZE];
+                        
+            GetFile()->getline(Tmp,sizeof(Tmp));
+            sLine = std::string(Tmp);
+            sTmp = sLine;
+            
+			MOOSTrimWhiteSpace(sTmp);
+            if(!sTmp.find("//")==0 && !sLine.empty())
+            {
+                std::string sVarName,sVarVal;
+                if(GetTokenValPair(sLine,sVarName,sVarVal))
+                {
+					if(OverLoads.find(sVarName)!=OverLoads.end())
+                    {
+                        of<<"//----  Next Line was commented and replaced with a command line overload ---- //"<<std::endl;
+                        of<<"//"+sLine+ "    (default)"<<std::endl;
+                        of<<sVarName<<" = "<<OverLoads[sVarName]<<std::endl;
+                        continue;
+                    }
+                }
+            }
+            
+            //nothing much to do just a simple copy
+            of<<sLine<<std::endl;
+            
+            
+        }       
+        
+        Reset();
+        
+        of.close();
+        return true;
+    }
     
     
 }
-
 

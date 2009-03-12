@@ -48,12 +48,59 @@ int main(int argc ,char *argv[])
     MOOSTrace("*  P. Newman 2008                   *\n");
     MOOSTrace("*************************************\n");
     
-    switch(argc)
+    
+    //here we look for overloading directoves which are of form --name=value
+    std::vector<std::string> vArgv;
+    std::map<std::string, std::string> OverLoads;
+    for(int i = 0;i<argc;i++)
+    {
+        std::string t(argv[i]);
+        if(t.find("--")==0)
+        {
+            //this looks like an overloading directive
+            MOOSChomp(t,"--");
+            std::string sVar = MOOSChomp(t,"=");
+            if(t.empty())
+            {
+                MOOSTrace("error incomplete overloading of parameter  --%s=value (are there extraneous whitespaces?)\n",sVar.c_str());
+                return -1;
+            }
+            else
+            {
+            	OverLoads[sVar] = t;
+            }
+        }
+        else
+        {
+            //nope this is a regular parameter so it gets passed onto what is yet to come
+            vArgv.push_back(t);
+        }
+    }
+    
+      
+    
+    switch(vArgv.size())
     {
         case 2:
         {
             //standard principal Antler
-            std::string sMissionFile = argv[1];
+            std::string sMissionFile = vArgv[1];
+            
+            if((int)vArgv.size()!=argc)
+            {
+                //we are overloading somehow...
+                CProcessConfigReader MR;
+                MR.SetFile(sMissionFile);
+                
+                sMissionFile+="++";
+                
+                //we need to take a copy of the missions file and fill in overloads
+                if(!MR.MakeOverloadedCopy(sMissionFile,OverLoads))
+                    return MOOSFail("error making overloaded mission file\n");
+                
+            }
+            
+                    
             CAntler Antler;
             return Antler.Run(sMissionFile) ? 0 :-1;            
         }
@@ -61,11 +108,28 @@ int main(int argc ,char *argv[])
         {
             //standard principal Antler but only run a subset of processes
             //arg 3 must be string quoted
-            std::string sMissionFile = argv[1];
+            std::string sMissionFile = vArgv[1];
+            
+            
+            if((int)vArgv.size()!=argc)
+            {
+                //we are overloading somehow...
+                CProcessConfigReader MR;
+                MR.SetFile(sMissionFile);
+                
+                sMissionFile+="++";
+                
+                //we need to take a copy of the missions file and fill in overloads
+                if(!MR.MakeOverloadedCopy(sMissionFile,OverLoads))
+                    return MOOSFail("error making overloaded mission file\n");
+                
+            }
+            
+            
             CAntler Antler;
             
             //make a set of processes we want to launch
-            std::stringstream S(argv[2]); 
+            std::stringstream S(vArgv[2]); 
             std::set<std::string> Filter;
             //this rather fancy looking bit f stl simply iterates over a list of strings
             std::copy(istream_iterator<std::string>(S), 
@@ -77,9 +141,9 @@ int main(int argc ,char *argv[])
         case 4:
         {            
             //headless MOOS - driven my another Antler somewhere else
-            std::string sDBHost = argv[1]; //where is DB?
-            int nPort = atoi(argv[2]); //what port
-            std::string sName = argv[3]; //what is our Antler name?
+            std::string sDBHost = vArgv[1]; //where is DB?
+            int nPort = atoi(vArgv[2].c_str()); //what port
+            std::string sName = vArgv[3]; //what is our Antler name?
             CAntler Antler;
             return Antler.Run(sDBHost,nPort,sName) ? 0 :-1;
         }

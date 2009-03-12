@@ -114,6 +114,8 @@ public:
     
     bool DoVariableExpansion(std::string & sVal);
     bool BuildLocalShellVars();
+    bool MakeOverloadedCopy(const std::string & sCopyName,std::map<std::string, std::string> & OverLoads);
+
 
 protected:
     std::ifstream * GetFile();
@@ -125,6 +127,7 @@ protected:
     std::map<std::string,std::string> m_LocalShellVariables;
     /** every thread get its own pointer to a stream*/
     THREAD2FILE_MAP m_FileMap;
+    
 
 };
 
