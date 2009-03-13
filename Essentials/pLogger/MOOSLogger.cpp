@@ -220,6 +220,11 @@ bool CMOOSLogger::OnStartUp()
 
     //what sort of file name are we using
     m_MissionReader.GetConfigurationParam("FILETIMESTAMP",m_bAppendFileTimeStamp);
+    
+    //where should we write a summary of where we are logging to?
+    m_sSummaryFile = "./.LastOpenedMOOSLogDirectory";
+    m_MissionReader.GetConfigurationParam("LoggingDirectorySummaryFile",m_sSummaryFile);
+    
 
     //do we have a path global name?
     if(!m_MissionReader.GetValue("GLOBALLOGPATH",m_sPath))
@@ -884,6 +889,15 @@ bool CMOOSLogger::OnNewSession()
 
     //and publish it
     m_Comms.Notify("LOGGER_DIRECTORY",m_sLogDirectoryName.c_str());
+    
+    //and write this to file
+    ofstream LF(m_sSummaryFile.c_str());
+    if(LF.is_open())
+    {
+        LF<<"LastOpenedLoggingDirectory="<<m_sLogDirectoryName<<std::endl;
+        
+    }
+    
 
     m_sAsyncFileName = m_sLogDirectoryName+"/"+sRoot+".alog";
     m_sSyncFileName = m_sLogDirectoryName+"/"+sRoot+".slog";

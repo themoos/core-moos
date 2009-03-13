@@ -121,6 +121,10 @@ protected:
     double m_dfLastSyncLogTime;
     double m_dfSyncLogPeriod;
     double m_dfLastMonitorTime;
+    
+    //name of a file where logger summary is written
+    std::string     m_sSummaryFile;
+
 
     //housekeeping variables for checking that monotired messages
     //rally are being written to...
