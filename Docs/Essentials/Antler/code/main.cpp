@@ -8,11 +8,11 @@ int main(int argc ,char * argv[])
 {
     //set up some default application parameters
 
-    //whats the name of the configuarion file that the application
+    //whats the name of the configuration file that the application
     //should look in if it needs to read parameters?
     const char * sMissionFile = "Mission.moos";
 
-    //under what name shoud the application register with the MOOSDB?
+    //under what name should the application register with the MOOSDB?
     const char * sMOOSName = "MyMOOSApp";
 
     switch(argc)
@@ -28,7 +28,7 @@ int main(int argc ,char * argv[])
     //make an application
     CSimpleApp TheApp;
 
-    //run forever pasing registration name and mission file parameters
+    //run forever passing registration name and mission file parameters
     TheApp.Run(sMOOSName,sMissionFile);
 
     //probably will never get here..

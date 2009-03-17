@@ -49,7 +49,7 @@ a complicated system and you really do want notification that an important varia
 
 \subsection{Logging Session}
 
-The logger supports the notion of logging sessions. For each log session the logger will create a new directory and place all the logged files within that directory. These are typically (see later sections) an alog file, a slog file, a system log file, a copy of the mission file (moos file) and, if applicable, a hoof file (if  \code{pHelm} is running). A new log session can be created by writing the variable \code{LOGGER\_RESTART} to the \code{MOOSDB} or if you are using \code{iRemote} by pressing shift-g.
+The logger supports the notion of logging sessions. For each log session the logger will create a new directory and place all the logged files within that directory. These are typically (see later sections) an {\it{alog}} file, a {\it{slog}} file, a system log file, a copy of the mission file (moos file) and, if applicable, a hoof file (if  \code{pHelm} is running). A new log session can be created by writing the variable \code{LOGGER\_RESTART} to the \code{MOOSDB} or if you are using \code{iRemote} by pressing shift-g.
 
 \subsection{Log File Types}\label{sec:LogTypes}
 The logger records data in two file formats -- synchronous
@@ -122,7 +122,7 @@ Note that this string format is identical to that found in the mission file, mod
 \code{DynamicSyncLogColumns} =  30
 \end{center}
 
-Here 30 columns are being reserved for variables that are requested at run time. As dynamic requests are received and processed by the logger, these unclaimed columns are consumed until none remain. At this point any future dynamic logging requests will still be accepted but the logged variables won't appear in the slog file (they will of course appear in the alog file). Unclaimed slots will be labeled \code{DYNAMIC\_X} until claimed and will always have \code{NaN} entries.
+Here 30 columns are being reserved for variables that are requested at run time. As dynamic requests are received and processed by the logger, these unclaimed columns are consumed until none remain. At this point any future dynamic logging requests will still be accepted but the logged variables won't appear in the slog file (they will of course appear in the {/it{alog}} file). Unclaimed slots will be labeled \code{DYNAMIC\_X} until claimed and will always have \code{NaN} entries.
 
 
 \subsection{Specifying Log File Names and Locations}\label{Sec:Places}
@@ -133,10 +133,10 @@ Each time the logger starts it creates (if required) a new directory in the logg
 \item{\code{GlobalLogPath}} This is a {\textbf{file scope variable}} (i.e. not in any process configuration block). If it is present in a mission file, then it specifies the root directory in which log files will be created.
 \item{\code{Path}} This specifies the root logging directory but is only used if \code{GlobalLogPath} is not set (see above).
 \item{\code{File}} This is the stem file name given to logged files (alog/slog and ylog).
-\item{\code{FileTimeStamp}} If this is set to true, the name of  each logged file and (created containing directory) will be the concatenation of the \code{File} variable and a time stamp. If \code{FileTimeStamp} is false then each time the logger is run it will write to the same set of log files {\textbf{and destroy the original contents}}. This is by design; when developing, it's often useful to not have useless log files take ever more space on your machine.
+\item{\code{FileTimeStamp}} If this is set to true, the name of  each logged file (and created containing directory) will be the concatenation of the \code{File} variable and a time stamp. If \code{FileTimeStamp} is false then each time the logger is run it will write to the same set of log files {\textbf{and destroy the original contents}}. This is by design; when developing, it's often useful to not have useless log files take ever more space on your machine.
 \end{description}
 
-Note that if the logger is run without a mission file it starts logging to the local directory with file time stamping enabled. See figure \ref{fig:LoggerConfig} for a typical logger configuration block.
+Note that if the logger is run without a mission file it starts logging to the local directory with file time stamping enabled. See Figure \ref{fig:LoggerConfig} for a typical logger configuration block.
 
 If for some reason the logger was unable to start logging to a location specified in the log file it tries, as a last resort, to open a log directory in the current working directory (`.'). If this fall-back fails then all is lost, we are without hope and the logger exits. If you are running a mission from \code{pAntler}, you'll be notified that the logger has quit.
 
@@ -154,7 +154,7 @@ the logging directory. The files extensions are renamed to
 
 \subsubsection{Additional File Backup on Demand}
 It is quite within the bounds of reason that a system using MOOS makes use of
-configuration (or other files) which has content which should not reside inside a *.moos or *.hoof file.
+configuration (especially other files) which has content which should not reside inside a *.moos or *.hoof file.
 \code{pLogger} provides a mechanism to back these files up on request at run time. Post V7.0.1, by writing to the \code{PLOGGER\_CMD}
 variable any MOOS process can instruct the logger to back a local file up and place a copy in the current logging directory. See Section \ref{Sec:Places}. As always, the process \code{\_CMD} message is a string and for dynamic file back up should be formatted as:
 
@@ -172,16 +172,16 @@ would log `` /home/VehicleQ/CameraCalibration.txt'' to a file called ``CameraCal
 
 \subsection{Wildcard Logging}
 
-Post V7.0.1 a new configuration option has been introduced which instructs the logger to log every change made to the MOOSDB to an alog file. \footnote{It does this by using a specialised MOOS IPC call to the DB which is not intended for daily use.} By writing
+Post V7.0.1 a new configuration option has been introduced which instructs the logger to log every change made to the MOOSDB to an {/it{alog}} file. \footnote{It does this by using a specialised MOOS IPC call to the DB which is not intended for daily use.} By writing
 
 \begin{center}
 \code{WildCardLogging} =  true
 \end{center}
 
-asynchronous logging will be turned on (even if \code{AsyncLog = false} is present in the configuration block) and every change to every variable will be logged to the current alog file. Some points to note:
+asynchronous logging will be turned on (even if \code{AsyncLog = false} is present in the configuration block) and every change to every variable will be logged to the current {/it{alog}} file. Some points to note:
 
 \begin{itemize}
-\item Wildcard logging only causes variables to be written to the current alog file. Synchronous logging is not affected.
+\item Wildcard logging only causes variables to be written to the current {/it{alog}} file. Synchronous logging is not affected.
 \item If the log rates for variables have already been been specified at configuration then it is these rates that are used.
 \item If wildcard logging is enabled, when the logger spots that variables that are not already known to it are being written to the DB it registers to be told about every change made (like \code{Log = XXX @ 0}).
 \item By default wildcard logging is disabled. It was designed to be a safety net for situations in which many new variables are being created by a software team in a dynamic environment.
@@ -199,7 +199,7 @@ In Post 7.0.1 releases, by writing a correctly formatted string value to the MOO
 
 
 \subsection{Example Configuration}
-\begin{figure}[ht!]\label{fig:LoggerConfig}
+\begin{figure}[ht!]
 \begin{lstlisting}[]{}
 
 //////////////////////////////////////////////
@@ -244,12 +244,13 @@ ProcessConfig = pLogger
 
 \end{lstlisting}
 \caption{A Typical \code{pLogger} configuration block}
+\label{fig:LoggerConfig}
 \end{figure}
 
 
 \begin{table}[ht!]
   \centering
-  \caption{\code{pLogger} Revision History}\label{Tab:RevisionHistory}
+  \caption{\code{pLogger} Revision History}
   \begin{tabular}{|l|p{10cm}|}
     \hline
     % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
@@ -262,6 +263,7 @@ ProcessConfig = pLogger
      & Log directory creation \\
     \hline
   \end{tabular}
+\label{Tab:RevisionHistory}
 \end{table}
 
 \newpage

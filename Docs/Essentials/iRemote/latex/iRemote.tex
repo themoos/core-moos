@@ -23,37 +23,37 @@
 \maketitle
 
 \begin{center}
-\epsfig{file=images/moose6.eps,width = 0.2\linewidth} 
+\epsfig{file=images/moose6.eps,width = 0.2\linewidth}
 \end{center}
 \begin{abstract}
-This document will give you a description of how to use and configure \code{iRemote} to inject commands into a community and 
+This document will give you a description of how to use and configure \code{iRemote} to inject commands into a community and
 also to query the status of certain commonly used variables from a terminal.
 \end{abstract}
 
-\section{Manual Control - \code{iRemote}}\label{sec:iRemote}
+\section{Manual Control -- \code{iRemote}}\label{sec:iRemote}
 %
 \code{iRemote} was designed to be a control terminal for a
 deployed vehicle. It is really nothing more than a long
 \code{switch} statement based on characters input from the
 keyboard. One of its many functions is to allow remote control of
 the actuators of the vehicle. This is an invaluable asset for land
-and sub-sea vehicles alike. The application is multithreaded. The
+and sub-sea vehicles alike. The application is multi-threaded. The
 primary thread blocks on a read of keyboard input. When a
-character is pressed some action is taken - for example publishing
+character is pressed some action is taken -- for example publishing
 a new value for \code{DESIRED\_THRUST}. The fact that \code{iRemote}
 can take control of a real vehicle presents a safety problem. What
-if the human controller walks away or even worse the vehicle moves
-out of communication range (eg a submarine dives) and the console
+if the human controller walks away or, even worse, the vehicle moves
+out of communication range (e.g. a submarine dives) and the console
 is not available? To prevent the last issued actuator command
-being carried out {\it{ad-infinitum }} a secondary in thread
+being carried out {\it{ad-infinitum }} a secondary thread
 \code{iRemote} prompts the user to hit an acknowledge key (') at
-least every 15 seconds. If the human driver does not respond the
-all actuators are set to the zero position.\footnote{The actuation
+least every 15 seconds. If the human driver does not respond, all
+actuators are set to the zero position.\footnote{The actuation
 driver  in iActuation will also shut down all motors if it does
 not receive control commands for an extended period of time. In
-the Bluefin vehicle the driver class within iActuation sends a
+the Bluefin vehicle, the driver class within iActuation sends a
 message to the Janitor processes which resets a watchdog on the
-power management board - keeping the tail cone powered.}
+power management board -- keeping the tail cone powered.}
 
 \subsection{Summary of Functionality}
 The following (not exhaustive) list describes some of the online
@@ -121,7 +121,7 @@ capture time is 0.\\
 // iRemote config block
 ProcessConfig = iRemote
 {
-    CustomJournal = Name = DESIRED_RUDDER,Key =6, History = 10,Period = 0
+     CustomJournal = Name = DESIRED_RUDDER,Key =6, History = 10,Period = 0
     CustomSummary = DESIRED_THRUST
     CustomKey = 2 : JANITOR_SWITCH @ "ACTUATION:OFF"
 }
@@ -141,11 +141,11 @@ notification on a variable watched by \code{iRemote}. Such
 messages are displayed on the iRemote console at run time along
 with the process making the announcement. Note that this  name is
 somewhat unfortunate as this function should not be used for
-debugging - it is a run-time thing. It is frustrating to have a
-cornucopia of messages flashing on the screen during a mission the
+debugging -- it is a run-time thing. It is frustrating to have a
+cornucopia of messages flashing on the screen during a mission, the
 content of which is meaningless to the pilot. Typical uses of this
 functionality would be a very occasional summary of navigation
-status and system level warning messages - for example
+status and system level warning messages -- for example
 notification of unexpected mission task  termination.
 \end{document}
-%
+% 

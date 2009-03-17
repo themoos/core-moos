@@ -49,7 +49,7 @@ parameter. Figure \ref{Fig:SchedulerExt} shows a more complicated
 configuration block, in which a sequence is constructed from
 several different variables.
 \begin{figure}[ht]
-\label{Fig:Sequences}
+
 \begin{lstlisting}[]{}
 ProcessConfig  = pScheduler
 {
@@ -57,6 +57,7 @@ ProcessConfig  = pScheduler
     SEQUENCE   = LIGHT_CONTROL @ OFF : 4
 }
 \end{lstlisting}\caption{Configuring a sequence with \code{pScheduler}}
+\label{Fig:Sequences}
 \end{figure}
 \item[TIMERS] A ``timer'' allows a variable to be written to the
 database repetitively. A timer can be started and stopped by
@@ -70,7 +71,7 @@ general syntax is as follows\\
 STOP\_VARIABLE,VALUE\_VARIABLE -> VALUE}\\
 Figure \ref{Fig:TIMER} shows a typical configuration block.
 \begin{figure}[ht]
-\label{Fig:TIMER}
+
 \begin{lstlisting}[]{}
 ProcessConfig  = pScheduler
 {
@@ -79,6 +80,7 @@ ProcessConfig  = pScheduler
     TIMER = CAMERA_GRAB @ 4.0,  -> GRAB
 }
 \end{lstlisting}\caption{Configuring a timer with \code{pScheduler}}
+\label{Fig:TIMER}
 \end{figure}
 In this case the variable \code{CAMERA\_CONTROL} will be published
 every 4 seconds after some third-party application writes
@@ -97,7 +99,7 @@ configuration of timers in  \code{pScheduler}.
 publication of one variable with the publication of one or more
 different variables. The syntax is obvious: \code{RESPONSE =
 STIMULUS\_VARIABLE : RESPONSE\_VARIABLE @
-VALUE,RESPONSE\_VARIABLE2 @ VALUE,....  }. Here 
+VALUE,RESPONSE\_VARIABLE2 @ VALUE,....  }. Here
 \code{STIMULUS\_VARIABLE} is the name of the variable we wish
 \code{pScheduler} to respond to, and after the colon comes a
 command-separated list of response variables with the values they
@@ -106,7 +108,7 @@ example configurations of ``responses'' in \code{pScheduler}
 \end{description}
 
 \begin{figure}
-\label{Fig:SchedulerExt}
+
 \begin{lstlisting}[]{}
 ProcessConfig = pScheduler
 {
@@ -141,5 +143,6 @@ ProcessConfig = pScheduler
 
 }
 \end{lstlisting}\caption{An extended \code{pScheduler} configuration block}
+\label{Fig:SchedulerExt}
 \end{figure}
 \end{document}

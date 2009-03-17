@@ -24,7 +24,7 @@
 \epsfig{file=images/moose6.eps,width = 0.2\linewidth}
 \end{center}
 \begin{abstract}
-This document will  describes two  control and navigation processes which are part of the standard
+This document will  describe two  control and navigation processes which are part of the standard
 releases of MOOS, namely \code{pHelm} and \code{pNav}. Both these processes have a marine flavour to them (which speaks to the origins of MOOS); nevertheless, both applications can be used on land vehicles.
 \end{abstract}
 
@@ -91,7 +91,7 @@ fact sharing it with  other active tasks.
 
 
 
-\begin{table}[ht]\label{tab:TaskProps}
+\begin{table}[ht]
 \caption{Base Task Properties}
  \centering
 \begin{tabular}{p{0.2\columnwidth}|p{0.7\columnwidth} } %\hline
@@ -117,6 +117,7 @@ fact sharing it with  other active tasks.
   \code{Priority} & Each task is assigned a priority from 1 to $\infty$ (0 is reserved for the special \code{EndMission} task). The lower
   the value, the more important the task is.    \\ %\hline
 \end{tabular}
+\label{tab:TaskProps}
 \end{table}
 
 All tasks are derived from a common base class that provides all
@@ -175,11 +176,11 @@ Tasks are configured in a similar way to processes --- within a
 named, brace delimited block of text. Any number of tasks can be
 specified in this fashion. A task configuration block always
 begins with \code{Task}={\it{TaskType}}, where {\it{TaskType}} is
-one of the named types in Table \ref{tab:TaskSummaries} followed
+one of the named types in Table \ref{tab:TaskProps} followed
 by the opening brace of the block. Figure \ref{fig:TaskSpec} shows
 typical task configuration blocks for two tasks.
 %
-\begin{figure}[ht]\label{fig:TaskSpec}
+\begin{figure}[ht]
 \begin{lstlisting}[]{}
 Task = ConstantHeading
 {
@@ -205,6 +206,8 @@ Task = ConstantHeading
     LOGPID = true
 }
 \end{lstlisting}
+\caption{A two task example}
+\label{fig:TaskSpec}
 \end{figure}
 %
 In this case two tasks are being configured --- one will drive south
@@ -214,7 +217,7 @@ flags. Each task derived from the base task class is likely to add
 its own specialization parameters (like \code{Heading} in the case
 of \code{ConstantHeading} Tasks). The semantics and specifications
 of these additions are found in the task documentation (see the
-MOOS web-pages http://oceanai.mit.edu/pnewman ).
+MOOS web-pages \url{http://www.robots.ox.ac.uk/~pnewman/TheMOOS}).
 
 
 \subsubsection{Task Specification Redirection} If the Helm
@@ -226,7 +229,7 @@ be loaded into the Helm at any time, simply by changing a single
 line in the Mission file.
 
 
-\begin{table}[ht]\label{tab:TaskSummaries}
+\begin{table}[ht]
 \caption{A summary of common task functionality} \centering
 %
 \begin{tabular}{p{0.3\columnwidth}|p{0.7\columnwidth}}
@@ -299,6 +302,7 @@ StartFlag of an EndMission task.
 is exceeded. A Safety task useful for trapping navigation failure.
 \\%\hline
 \end{tabular}
+\label{tab:TaskSummaries}
 \end{table}
 
 
@@ -406,10 +410,11 @@ Hence three gains and two limits specify the characteristics of
 the controller.
 
 \begin{figure}[ht]
-\label{fig:ScalarPID}
  \centering
 \epsfig{figure = images/ScalarPID.eps,width = 0.8\linewidth} \caption{The
 structure of the scalar PID}
+\label{fig:ScalarPID}
+
 \end{figure}
 
 It is important to note that the controller does not require that
@@ -432,8 +437,9 @@ is in the negative Z direction.}. This topology is shown in Figure
 \ref{fig:ZPID}.
 
 \begin{figure}[ht]
-\label{fig:ZPID} \centering \epsfig{figure = images/ZPID.eps,width =
+ \centering \epsfig{figure = images/ZPID.eps,width =
 \linewidth} \caption{The structure of Z axis dynamic controller}
+\label{fig:ZPID}
 \end{figure}
 
 
@@ -501,7 +507,7 @@ soon as the vehicle surfaces and GPS fixes resume, the stack/queue
 would ``pop'' and NAV\_X would once more derive itself from GPS
 data. Figure \ref{fig:PriorityQueues} gives an example definition
 of navigation priority queues.
-\begin{figure}\label{fig:PriorityQueues}
+\begin{figure}
 \begin{lstlisting}[]{}
 //////////////////////////////////////
 //   routing priority stack
@@ -521,6 +527,7 @@ any output for 2.5 seconds then as a last resort LSQ\_X is used
 (non-linear least squares). However, as soon as GPS data begins to
 be delivered once more the system switches back to using GPS
 -- popping the stack.}
+\label{fig:PriorityQueues}
 \end{figure}
 
 Of course this scenario assumes that the DVL sensor can produce

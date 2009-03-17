@@ -14,8 +14,9 @@
 
 
 % Title Page
-\title{Bridging Communities with \code{pMOOSBridge}ss}
+\title{Bridging Communities with \code{pMOOSBridge}}
 \author{Paul Newman}
+
 
 
 \begin{document}
@@ -39,7 +40,7 @@ works for your own needs.
 \begin{figure}[ht]
 \centering \epsfig{file = images/pMOOSBridge.eps , width = 0.6\linewidth}
 \caption{A possible MOOSBridge
-configuration.One instance of \code{pMOOSBridge} can ``talk'' to a limitless
+configuration. One instance of \code{pMOOSBridge} can ``talk'' to a limitless
 number of communities. The configuration block specifies what
 should be mapped or ``shared'' between communities and how it
 should be done. The \code{SHARE} command specifies precisely what
@@ -56,10 +57,10 @@ syntax is intuitive:\\
 [V1,V2...]}}}\\
 
 The triplet Comm@Host:Port is a description of a community ---  name and hostname/port pair. The community
-description can be omitted on the l.h.s of the arrow, in which case the mission-file-scope defaults are assumed (see the example below).
-Each variable (``V'') on the l.h.s (source) community will be inserted into the community on the r.h.s.
-If no variable names are specified on the r.h.s (destination) community the original names are used, otherwise
-there is a one-to-one mapping between variable names on the l.h.s and new variable names (aliases) on the r.h.s. If however
+description can be omitted on the LHS of the arrow, in which case the mission-file-scope defaults are assumed (see the example below).
+Each variable (``V'') on the LHS (source) community will be inserted into the community on the RHS
+If no variable names are specified on the RHS (destination) community the original names are used, otherwise
+there is a one-to-one mapping between variable names on the LHS and new variable names (aliases) on the RHS. If however
 there are more named shared variables than aliases, the variables for which an alias is not specified retain their original names.
 
 
@@ -67,8 +68,8 @@ For example\\
 \begin{verbatim}
 SHARE= VehA@nym.robots.ox.ac.uk:9000 [GPS_X]->VehB@kayak.mit.edu:9000 [GPS_X]
 \end{verbatim}
-Here the variable \code{GPS\_X} is shared between a community called ``VehA'' running from a \DB on the machine called
-``nym.robots.ox.ac.uk'' listening on port 9000 is being inserted into a community called ``VehB'' using a \DB running on the machine called
+Here the variable \code{GPS\_X} is shared between a community called ``VehA'', running from a \DB on the machine called
+``nym.robots.ox.ac.uk'' listening on port 9000, is being inserted into a community called ``VehB'' using a \DB running on the machine called
 ``VehB@kayak.mit.edu'' also listening on port 9000. In both communities the variable is called ``GPS\_X''. However when viewed with
 something like \code{uMS} (see the document on Graphical Tools) it can be seen that the \code{m\_sOrginatingCommunity} member of the \code{MOOSMsg}
 carrying this data in the ``VehB'' commmunity will be ``VehA''.
