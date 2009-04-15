@@ -28,6 +28,11 @@
 //
 //////////////////////////    END_GPL    //////////////////////////////////
 
+
+/// This class is used in the new massively improved timing protocol added in the summer of
+/// 2008 by Alastair Harrison of MRG arh@robots.ox.ac.uk
+
+
 #include "MOOSSkewFilter.h"
 #include <cmath>
 
