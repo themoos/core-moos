@@ -179,6 +179,11 @@ protected:
         @param sPublishName  if you call PublishFreshMOOSVariables() (and you've written to the dynamic varible since the last call) the variable will be published under this name.
         @param CommsTime - if sSubscribeName is not empty this is the minimum time between updates which you are interested in knowing about, so if CommsTime=0.1 then the maximum update rate you will see on the variable from the DB is 10HZ. */
     bool AddMOOSVariable(std::string sName,std::string sSubscribeName,std::string sPublishName,double dfCommsTime);
+    
+    /** Sets the value of a previously added dynamic variable to the given CMOOSVariable.
+     * @return \c true if the variable's type and value were set, \c false otherwise.   */
+    bool SetMOOSVar(const CMOOSVariable& MOOSVar);
+    
 
     /** return a pointer to a named variable */
     CMOOSVariable * GetMOOSVar(std::string sName);

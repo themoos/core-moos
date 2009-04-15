@@ -117,57 +117,56 @@ bool CMOOSVariable::Set(CMOOSMsg &Msg)
 
 }
 
-bool CMOOSVariable::SetFresh(bool bFresh)
+bool CMOOSVariable::SetFresh(bool bFresh) 
 {
     m_bFresh = bFresh;
 
     return true;
 }
 
-std::string CMOOSVariable::GetSubscribeName()
+std::string CMOOSVariable::GetSubscribeName() const
 {
     return  m_sSubscribeName;
 }
 
-bool CMOOSVariable::IsFresh()
+bool CMOOSVariable::IsFresh() const
 {
     return m_bFresh;
 }
 
-std::string CMOOSVariable::GetName()
+std::string CMOOSVariable::GetName() const
 {
     return m_sName;
 }
 
-std::string CMOOSVariable::GetPublishName()
+std::string CMOOSVariable::GetPublishName() const
 {
     return m_sPublishName;
 }
 
-bool CMOOSVariable::IsDouble()
+bool CMOOSVariable::IsDouble() const
 {
     return m_bDouble;
 }
 
-double CMOOSVariable::GetDoubleVal()
+double CMOOSVariable::GetDoubleVal() const
 {
     return m_dfVal;
 }
 
-double CMOOSVariable::GetTime()
+double CMOOSVariable::GetTime() const
 {
     return m_dfTimeWritten;
 }
 
-std::string CMOOSVariable::GetStringVal()
+std::string CMOOSVariable::GetStringVal()  const
 {
     return m_sVal;
 }
 
-std::string CMOOSVariable::GetAsString(int nFieldWidth)
+std::string CMOOSVariable::GetAsString(int nFieldWidth) const
 {
     ostringstream os;
-    //ostrstream os;
 
     os.setf(ios::left);
 
@@ -190,17 +189,17 @@ std::string CMOOSVariable::GetAsString(int nFieldWidth)
 
     std::string sResult = os.str();
 
-    //os.rdbuf()->freeze(0);
-
     return sResult;
 }
 
-double CMOOSVariable::GetAge(double dfTimeNow)
+double CMOOSVariable::GetAge(double dfTimeNow) const
 {
     return dfTimeNow-m_dfTimeWritten;
 }
 
-std::string CMOOSVariable::GetWriter()
+std::string CMOOSVariable::GetWriter() const
 {
     return m_sSrc;
 }
+
+

@@ -767,8 +767,10 @@ string MOOSGetTimeStampString()
     struct tm *Now;
     time_t aclock;
     time( &aclock );
+ 	
     Now = localtime( &aclock );
-
+    //change suggested by toby schneider April 2009 
+    //Now = gmtime( &aclock );
     char sTmp[1000];
 
     // Print local time as a string

@@ -31,43 +31,74 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MOOSVARIABLE_H__1217416E_1E6F_4435_B92D_14167642F4EF__INCLUDED_)
-#define AFX_MOOSVARIABLE_H__1217416E_1E6F_4435_B92D_14167642F4EF__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef MOOSVARIABLEH
+#define MOOSVARIABLEH
 
 #include "MOOSMsg.h"
-
+#include <iomanip>
+#include <ostream>
 #define DEFAULT_MOOS_VAR_COMMS_TIME 0.2
 
 class CMOOSVariable  
 {
 public:
-    std::string GetWriter();
-    double GetAge(double dfTimeNow);
-    std::string GetAsString(int nFieldWidth = 12);
-    bool Set(const std::string & sVal,double dfTime);
-    bool Set(double dfVal,double dfTime);
 
-    std::string GetName();
-    std::string GetStringVal();
-    double GetTime();
-    double GetDoubleVal();
-    bool IsDouble();
-    std::string GetPublishName();
-    bool IsFresh();
-    std::string GetSubscribeName();
-    bool SetFresh(bool bFresh);
-    bool Set(CMOOSMsg & Msg);
-    double GetCommsTime(){return m_dfCommsTime;};
+    /** construction destruction*/
     CMOOSVariable();
     CMOOSVariable(std::string sName, std::string sSubscribe,std::string sPublish,double dfCommsTime = DEFAULT_MOOS_VAR_COMMS_TIME);
     virtual ~CMOOSVariable();
-
-
     
+    /** get data rendered as a string*/
+    std::string GetAsString(int nFieldWidth = 12) const;
+    
+    /** get name of MOOSClient which wrote this data */
+    std::string GetWriter() const;
+
+    /** get time since write relative to supplied tie*/
+    double 		GetAge(double dfTimeNow) const;
+    
+    /** get name of MOOSClient which wrote this data */
+    bool 		Set(const std::string & sVal,double dfTime);
+    
+    /** get name of MOOSClient which wrote this data */
+    bool 		Set(double dfVal,double dfTime);
+
+    /** get the name of the variable */
+    std::string GetName() const;
+    
+    /** Get string contents if applicable*/
+    std::string GetStringVal() const;
+    
+    /** Get Time corresponding to variable was written */
+    double 		GetTime() const ;
+    
+    /** get numerical contents if applicable */
+    double 		GetDoubleVal() const ;
+    
+    /** return true if type is double */
+    bool 		IsDouble() const;
+    
+    /** get nae this variable will use if data is published into MOOS community */
+    std::string GetPublishName() const;
+    
+    /** returns true if data has been updated (refreshed )*/
+    bool 		IsFresh() const ;
+
+    /** set or clear the IsFresh flag */
+    bool 		SetFresh(bool bFresh);
+
+    /** get the name of a MOOS comms variable this CMOOSVariable will absorb*/
+    std::string GetSubscribeName() const;
+    
+    /** copy in data from a MOOSMsg*/
+    bool 		Set(CMOOSMsg & Msg);
+    
+    /** get max frequency at which this MOOSvariable could refresh */
+    double 		GetCommsTime() const {return m_dfCommsTime;};
+    
+    
+    
+     
 
 
 protected:
@@ -84,4 +115,27 @@ protected:
     std::string m_sPublishName;
 };
 
-#endif // !defined(AFX_MOOSVARIABLE_H__1217416E_1E6F_4435_B92D_14167642F4EF__INCLUDED_)
+////////////////////////////////////////////////////////////////////////
+/** << operator added at bequest of vermeij@nurc.nato.int April 2009  */
+////////////////////////////////////////////////////////////////////////
+template <typename _CharT, typename _Traits>
+static std::basic_ostream <_CharT, _Traits>&
+operator<< (std::basic_ostream <_CharT, _Traits>& OutputStream, const CMOOSVariable& MOOSVar)
+{
+    OutputStream << "name=" << MOOSVar.GetName ();
+    OutputStream << ", ";
+    
+    if (MOOSVar.IsDouble ()) 
+    {
+        OutputStream << "double=" << MOOSVar.GetDoubleVal ();
+    }
+    else 
+    {
+        OutputStream << "string=" << MOOSVar.GetStringVal ();
+    }
+    OutputStream << ", ";
+    OutputStream << std::fixed << std::setprecision (2) << "time=" << MOOSVar.GetTime ();
+    return OutputStream;
+}
+
+#endif 
