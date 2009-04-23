@@ -172,6 +172,11 @@ bool CMOOSInstrument::DoNMEACheckSum(string sNMEA)
     os<<(int)xCheckSum;//<<ends;
     string sExpected = os.str();
     
+    if (sExpected.length() < 2) 
+    {
+        sExpected = "0" + sExpected;
+    }
+    
     ///now compare to what we recived..
 
     return MOOSStrCmp(sExpected,sRxCheckSum);
@@ -199,6 +204,12 @@ string CMOOSInstrument::Message2NMEA(string sMsg)
     os.flags(ios::hex);
     os<<(int)xCheckSum; //<<ends;
     string sChkSum = os.str();
+    
+    if (sChkSum.length() < 2) 
+    {
+        sChkSum = "0" + sChkSum;
+    }
+    
     std::transform(sChkSum.begin(), sChkSum.end(), sChkSum.begin(), \
                    (int(*)(int)) std::toupper);
     
