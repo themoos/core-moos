@@ -204,7 +204,7 @@ asynchronous logging will be turned on (even if \code{AsyncLog = false} is prese
 
 \subsubsection{Wildcard Logging Patterns}
 
-If all you do is set \code{WildCardLogging} to be true then everything will be logged. There is every chance though that you may want finer control by specifying template patterns for variables you want logged and equally, variables you don't want logged. Two optional configuration \code{} and \code{WildCardOmitPattern} achieve this. Each takes a value of a comma separated list of  ``globbing'' expressions each expression containing any character apart from a comma. Only ``*'' and ``?'' wildcards are supported. For example
+If all you do is set \code{WildCardLogging} to be true then everything will be logged. There is every chance though that you may want finer control by specifying template patterns for variables you want logged and equally, variables you don't want logged. Two optional configuration parameters \code{WildCardPattern} and \code{WildCardOmitPattern} achieve this. Each takes a value of a comma separated list of  ``globbing'' expressions; each expression containing any character apart from a comma. Only ``*'' and ``?'' wildcards are supported. For example
 
 \begin{center}
 \code{WildCardPattern} =  DB\_*, *\_LA?
@@ -217,7 +217,7 @@ will only log variables with names that begin ``DB\_'' or end in ``\_LA'' follow
 \code{WildCardOmitPattern} =  *ME,X*
 \end{center}
 
-will only log variables with names that  begin ``DB\_'' or end in ``\_LA'' followed by a single character but do not end with ``ME'' or begin with an ``X''. You can specify these patterns individually or  in tandem, i.e. you can use \code{WildCardOmitPattern}  with out \code{WildCardPattern}  and vice versa.
+will only log variables with names that  begin ``DB\_'' or end in ``\_LA'' followed by a single character but do not end with ``ME'' or begin with an ``X''. You can specify these patterns individually or  in tandem, i.e. you can use \code{WildCardOmitPattern}  without \code{WildCardPattern}  and vice versa.
 
 
 \subsection{Runtime File Backup}
