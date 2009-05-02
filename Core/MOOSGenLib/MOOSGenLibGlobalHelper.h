@@ -105,6 +105,10 @@ bool MOOSIsNumeric(std::string  str);
 /** case insensitive string comparison. returns true if equal */
 bool MOOSStrCmp(std::string s1,std::string s2);
 
+/** pattern matching using * and ?. returns true if sPattern matches sString */
+bool MOOSWildCmp(const std::string & sPattern, const std::string & sString ) ;
+
+
 ////////////////////// TIMING TOOLS  ///////////////////////////////
 
 /**generic timing functions*/

@@ -760,6 +760,66 @@ string MOOSGetDate()
 }
 
 
+bool MOOSWildCmp(const std::string & sPattern, const std::string & sString ) 
+{
+    const char * sWild = sPattern.c_str();
+    const char * sStr = sString.c_str();
+    // Based on code originally written by Jack Handy
+    
+    const char *cp = NULL, *mp = NULL;
+    
+    while ((*sStr) && (*sWild != '*')) 
+    {
+        //no active wild card in place
+        if ((*sWild != *sStr) && (*sWild != '?')) 
+        {
+            //no single char wildcard in place and
+            //differing characters
+            return false;
+        }
+        
+        //step on in lockstep
+        sWild++;
+        sStr++;
+    }
+    
+    while (*sStr) 
+    {
+        
+        //still more of sStr to explore
+        if (*sWild == '*') 
+        {
+            if (!*++sWild) 
+            {
+                //this * was the last character in the wildcard string
+                //any  remaining string is fine... 
+                return true;
+            }
+            
+            //sWild is now one past the *
+            mp = sWild;
+            cp = sStr+1;
+        }
+        else if ((*sWild == *sStr) || (*sWild == '?')) 
+        {
+            //lock step advance
+            sWild++;
+            sStr++;
+        }
+        else 
+        {
+            //wildcard active
+            sWild = mp;
+            sStr = cp++;
+        }
+    }
+    
+    while (*sWild == '*') 
+    {
+        sWild++;
+    }
+    return !*sWild;
+}
 
 
 string MOOSGetTimeStampString()
