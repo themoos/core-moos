@@ -72,6 +72,9 @@ protected:
     bool HandleDynamicLogRequest(std::string sRequest);
     bool HandleCopyFileRequest(std::string sFileToCopy);
     bool HandleWildCardLogging();
+    bool IsWildCardAccepted(const std::string & sVariableName) const;
+    bool IsWildCardRejected(const std::string & sVariableName) const;
+
     bool CopyMissionFile();
     bool ConfigureLogging();
     bool DoAsyncLog(MOOSMSG_LIST & NewMail);
@@ -137,7 +140,17 @@ private:
     //as and when they come in (housekeeping for the header block on
     //slog files)
     std::map< std::string, std::streampos > m_DynamicNameIndex;
+    
+    // collection of strings which specify names (can use wild card * and ? ) which
+    // should be ommited from dynamic logging
+    std::vector< std::string >  m_sWildCardOmitted;
 
+    
+    // collection of strings which specify names (can use wild card * and ? ) which
+    // should be allowed in dynamic logging. If empty all strings are assumed to be wanted
+    // unless they are in m_sDynamicMasked
+    std::list< std::string >  m_sWildCardAccepted;
+    
 };
 
 #endif 

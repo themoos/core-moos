@@ -33,6 +33,8 @@
 
 int main(int argc ,char * argv[])
 {
+
+    
     const char * sMissionFile = "Mission.moos";
     const char * sMOOSName = "pLogger";
     switch(argc)

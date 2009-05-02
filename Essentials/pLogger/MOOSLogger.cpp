@@ -295,6 +295,7 @@ bool CMOOSLogger::ConfigureLogging()
                 std::string sNewVar;
                 HandleLogRequest(sParam,sNewVar);
             }
+            
         }
     }
     else
@@ -334,7 +335,30 @@ bool CMOOSLogger::ConfigureLogging()
 	}
 
     if(m_bWildCardLogging )
+    {
+        //are we being told exactly what accept and what not to accept
+        std::string sWildCardAcceptPattern;
+		if(m_MissionReader.GetConfigurationParam("WildCardPattern",sWildCardAcceptPattern))
+        {
+        	MOOSRemoveChars(sWildCardAcceptPattern, " ");
+	        while(!sWildCardAcceptPattern.empty())
+            {
+    	        m_sWildCardAccepted.push_back(MOOSChomp(sWildCardAcceptPattern));
+            }
+        }
+        
+        std::string sWildcardOmitPattern;
+		if(m_MissionReader.GetConfigurationParam("WildCardOmitPattern",sWildcardOmitPattern))
+        {
+        	MOOSRemoveChars(sWildcardOmitPattern, " ");
+	        while(!sWildcardOmitPattern.empty())
+            {
+    	        m_sWildCardOmitted.push_back(MOOSChomp(sWildcardOmitPattern));
+            }
+        }
+        
         m_bAsynchronousLog = true;
+    }
 
     //ok so now lets register our interest in all these MOOS vars!
     if(!RegisterMOOSVariables())
@@ -469,10 +493,13 @@ bool CMOOSLogger::HandleWildCardLogging()
                 std::string sVar = MOOSChomp(ss);
                 if(GetMOOSVar(sVar)==NULL)
                 {
-                    if(AddMOOSVariable(sVar,sVar,"",0.0))
+                    if(IsWildCardAccepted(sVar) && !IsWildCardRejected(sVar))
                     {
-                        bHit = true;
-                        MOOSTrace("   Added wildcard logging of %s\n",sVar.c_str());
+                        if(AddMOOSVariable(sVar,sVar,"",0.0))
+                        {
+                            bHit = true;
+                            MOOSTrace("   Added wildcard logging of %s\n",sVar.c_str());
+                        }
                     }
                 }
             }
@@ -485,6 +512,42 @@ bool CMOOSLogger::HandleWildCardLogging()
     }
 
     return true;
+}
+
+
+struct StringMatcher
+{
+    std::string m_sString;
+    StringMatcher(const std::string & sStr)
+    {
+        m_sString = sStr;
+    }
+    bool operator () (const std::string & sPattern) const
+    {
+        return MOOSWildCmp(sPattern,m_sString);
+    }
+};
+
+bool CMOOSLogger::IsWildCardRejected(const std::string & sVariableName) const
+{
+    return std::find_if(m_sWildCardOmitted.begin(),
+                        m_sWildCardOmitted.end(), 
+                        StringMatcher(sVariableName)) !=m_sWildCardOmitted.end();
+
+}
+
+bool CMOOSLogger::IsWildCardAccepted(const std::string & sVariableName) const
+{
+    
+    //we assume by default we want everything
+    if(m_sWildCardAccepted.empty())
+        return true;
+    
+    //looks like some masks have been set
+    return std::find_if(m_sWildCardAccepted.begin(),
+                        m_sWildCardAccepted.end(), 
+                        StringMatcher(sVariableName)) !=m_sWildCardAccepted.end();
+    
 }
 
 
