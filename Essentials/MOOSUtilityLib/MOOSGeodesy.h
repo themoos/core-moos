@@ -83,7 +83,7 @@ private:
     double m_dLocalGridX;
     double m_dLocalGridY;
 
-    void SetUTMZone(char * utmZone);
+    void SetUTMZone(const char * utmZone);
     void SetRefEllipsoid(int refEllipsoid);
     void SetOriginEasting(double East);
 

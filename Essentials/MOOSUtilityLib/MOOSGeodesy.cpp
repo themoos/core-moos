@@ -35,6 +35,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 
 /*Reference ellipsoids derived from Peter H. Dana's website- 
 http://www.utexas.edu/depts/grg/gcraft/notes/datum/elist.html
@@ -279,9 +280,10 @@ void CMOOSGeodesy::SetRefEllipsoid(int refEllipsoid)
     m_iRefEllipsoid = refEllipsoid;
 }
 
-void CMOOSGeodesy::SetUTMZone(char * utmZone)
+void CMOOSGeodesy::SetUTMZone(const char * utmZone)
 {
-    sprintf(m_sUTMZone, utmZone);
+    // Better hope the input string is no longer than 4...
+    strcpy(m_sUTMZone, utmZone);
 }
 
 char * CMOOSGeodesy::GetUTMZone()
