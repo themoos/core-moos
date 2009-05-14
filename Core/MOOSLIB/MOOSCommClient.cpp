@@ -942,6 +942,16 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #ifdef MOOS_DETECT_CLOCK_DRIFT
 
+	// This is an experimental and unfinished feature.  It tracks the drift between
+	// clocks on client and server, in order to provide highly accurate time stamps
+	// at the client, which are within about 0.1ms of the server time.
+	//
+	// In its current implementation, the filter begins to suffer from numerical
+	// issues after around 3 or 4 hours of use.  This is known and expected behaviour
+	// and will be fixed soon.
+	//
+	// arh 30/03/2009
+
 	if (!m_pSkewFilter.get())
 	{
 		// Make a fresh skew filter
