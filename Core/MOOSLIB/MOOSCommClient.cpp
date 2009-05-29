@@ -913,7 +913,8 @@ bool CMOOSCommClient::ClearResources()
 
 string CMOOSCommClient::GetDescription()
 {
-	return MOOSFormat("%s@%d",m_sDBHost.c_str(),m_lPort);
+    //pmn makes this more of a standard thing in May 2009  - use of : instead of @
+	return MOOSFormat("%s:%d",m_sDBHost.c_str(),m_lPort);
 }
 
 string CMOOSCommClient::GetLocalIPAddress()

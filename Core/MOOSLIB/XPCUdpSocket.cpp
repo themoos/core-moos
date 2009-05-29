@@ -9,12 +9,72 @@
 
 #include "XPCUdpSocket.h"
 
+
+
+XPCUdpSocket::XPCUdpSocket(long int iPort): XPCSocket("udp", iPort)
+{
+}    
+
+
+bool XPCUdpSocket::GetAddress(long int nPort,const std::string & sHost,sockaddr_in & Address)
+{
+
+    std::map< std::pair< long int , std::string  >, sockaddr_in >::iterator q;
+    
+    std::pair< long int , std::string  > PP(nPort,sHost);
+    
+    q = m_KnownAdresses.find(PP);
+    
+    if(q!=m_KnownAdresses.end())
+    {
+        Address = q->second;
+        return true;
+    }
+    else
+    {
+        
+		Address.sin_family = AF_INET;
+    	Address.sin_port = htons(nPort);
+        
+        hostType HostType;
+        if(sHost.find_first_not_of("0123456789. ")!=std::string::npos)
+        {
+            HostType = NAME;
+            XPCGetHostInfo getHostInfo(sHost.c_str(), HostType);
+            
+            // Store the IP address and socket port number
+            Address.sin_addr.s_addr =inet_addr(getHostInfo.sGetHostAddress());
+            
+        }
+        else
+        {
+            HostType = ADDRESS;
+            // Store the IP address and socket port number
+            Address.sin_addr.s_addr =inet_addr(sHost.c_str());
+        }        
+        
+        //save it
+        m_KnownAdresses[PP] = Address;
+        
+        return true;
+    }
+    
+}
+
+
 // Sends a message to a connected host. The number of bytes sent is returned
-int XPCUdpSocket::iSendMessage(void *_vMessage, int _iMessageSize)
+int XPCUdpSocket::iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPort,const std::string & sHost)
 {
     
+    sockaddr_in  Address;
+    
+    if(!GetAddress(nPort,sHost,Address))
+    {
+        throw XPCException("::iSendMessageTo failed to get destination address\n");
+    }
+    
     int iNumBytes=sendto(iSocket, _vMessage, _iMessageSize,0,
-             (struct sockaddr *) &clientAddress, sizeof(clientAddress) );
+             (struct sockaddr *) &Address, sizeof(Address) );
     
     
     // Sends the message to the connected host
@@ -61,6 +121,7 @@ int XPCUdpSocket::iRecieveMessage(void *_vMessage, int _iMessageSize, int _iOpti
 void XPCUdpSocket::vBindSocket()
 {
     
+    
     // Bind the socket to the given address and port number
     if (bind(iSocket, (struct sockaddr *)&clientAddress,sizeof(clientAddress)) == -1)
     {
@@ -73,8 +134,10 @@ void XPCUdpSocket::vBindSocket()
         
 }
 
+/*
 // allows a read with a timeout to prevent from blocking indefinitely
 int XPCUdpSocket::iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, double dfTimeOut,int _iOption)
 {
     return -1;
 }
+*/

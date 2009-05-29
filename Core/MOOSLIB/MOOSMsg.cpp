@@ -58,6 +58,7 @@ CMOOSMsg::CMOOSMsg()
     m_dfTime = -1;
     m_dfVal = -1;
     m_dfVal2 = -1;
+    m_nID = -1;
 }
 
 CMOOSMsg::~CMOOSMsg()
@@ -73,6 +74,7 @@ CMOOSMsg::CMOOSMsg(char cMsgType,const std::string  & sKey,double dfVal,double d
     m_cDataType = MOOS_DOUBLE;
     m_sKey = sKey;
     m_dfTime = -1;
+    m_nID = -1;
 
     if(dfTime==-1)
     {
@@ -94,6 +96,7 @@ CMOOSMsg::CMOOSMsg(char cMsgType,const std::string & sKey,const std::string &sVa
     m_sKey = sKey;
     m_sVal = sVal;
     m_dfTime = -1;
+    m_nID = -1;
 
     if(dfTime==-1)
     {
