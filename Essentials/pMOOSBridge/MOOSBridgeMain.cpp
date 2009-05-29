@@ -31,10 +31,16 @@
 #include <MOOSLIB/MOOSLib.h>
 #include "MOOSBridge.h"
 
+
+
+
+
 int main(int argc,char* argv[])
 {
+    //Test();
     const char * sMissionFile = "Mission.moos";
     const char * sMOOSName = "pMOOSBridge";
+    
 
     switch(argc)
     {

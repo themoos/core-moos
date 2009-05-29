@@ -43,15 +43,21 @@ public:
     bool Run(const std::string & sMissionFile,const std::string & sMOOSName);
 
 protected:
-    CMOOSCommunity * GetOrMakeCommunity(const std::string & sCommunity,const std::string & sStr, long lPort);
+    CMOOSCommunity * GetOrMakeCommunity(const std::string & sCommunity);
     bool MarshallLoop();
+    bool IsUDPShare(CMOOSCommunity::SP & Index);
+    
     typedef std::map<std::string,CMOOSCommunity*> COMMUNITY_MAP;
     COMMUNITY_MAP m_Communities;
 
     CProcessConfigReader m_MissionReader;
 
     int m_nBridgeFrequency;
+    std::string m_sLocalCommunity;
 
+    CMOOSUDPLink m_UDPLink;
+    
+    std::set< CMOOSCommunity::SP > m_UDPShares;
 };
 
 #endif

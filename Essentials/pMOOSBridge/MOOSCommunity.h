@@ -38,6 +38,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "MOOSUDPLink.h"
 
 
 class CMOOSCommunity  
@@ -47,26 +48,43 @@ public:
 
     std::string GetFormattedName();
     std::string GetCommsName();
+    std::string GetCommunityName();
+    std::string GetUDPHost();
+    
     bool DoRegistration();
-    bool Initialise(const std::string & sCommunityName,
-                    const std::string & sHostName,
-                    long nPort,
-                    const std::string & sMOOSName,
-                    int nFreq);
+    bool Initialise(const std::string & sCommunityName);
+    
+    bool InitialiseMOOSClient( const std::string &sHostName,
+                              long nPort,
+                              const std::string & sMOOSName,
+                              int nFreq);
+    
     bool AddSource(const std::string & sStr);
     bool AddSink(const SP & sIndex,const std::string & sAlias);
     bool WantsToSink(const SP & sIndex);
     std::string GetAlias(const SP & sIndex);
-    CMOOSCommClient m_CommClient;
     CMOOSCommunity();
     virtual ~CMOOSCommunity();
-
+	bool Fetch(MOOSMSG_LIST & Mail) ;
+    bool Post(CMOOSMsg & M);
+    bool SetUDPInfo(const std::string & sHost, int nPort);
+    bool IsMOOSClientRunning();
+    int GetUDPPort();
+    bool HasUDPConfigured() const;
+    
 protected:
-    std::set<std::string> m_Sources;
-    std::map<SP,std::string> m_Sinks;
+    CMOOSCommClient m_CommClient;
+
+    std::set<std::string> 		m_Sources;
+    std::map<SP,std::string> 	m_Sinks;
     
     std::string m_sCommunityName;
     int m_nSharedFreq;
+    
+    bool m_bMOOSClientRunning;
+    
+	std::string	m_sUDPHost;
+    int m_nUDPPort;
 
 };
 

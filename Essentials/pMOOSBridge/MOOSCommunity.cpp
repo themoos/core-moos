@@ -53,6 +53,9 @@ bool gOnCommunityConnect(void * pParam)
 CMOOSCommunity::CMOOSCommunity()
 {
     m_nSharedFreq = DEFAULT_SHARED_FREQ;
+    m_nUDPPort = -1;
+    m_sUDPHost = "";
+    m_bMOOSClientRunning = false;
 }
 
 CMOOSCommunity::~CMOOSCommunity()
@@ -116,24 +119,79 @@ std::string CMOOSCommunity::GetAlias(const SP & sIndex)
 }
 
 
-bool CMOOSCommunity::Initialise(const string &sCommunityName,
-                                const string &sHostName,
-                                long nPort,
-                                const string & sMOOSName,
-                                int nFreq
-                                )
+bool CMOOSCommunity::InitialiseMOOSClient( const string &sHostName,
+                                          long nPort,
+                                          const string & sMOOSName,
+                                          int nFreq)
+{
+
+    m_nSharedFreq = nFreq;
+    
+    m_CommClient.SetOnConnectCallBack(gOnCommunityConnect,this);
+    
+    //we wanna be transparent...
+    m_CommClient.FakeSource(true);
+    
+    
+    m_bMOOSClientRunning =  m_CommClient.Run(sHostName.c_str(),
+                                             nPort,
+                                             sMOOSName.c_str(),
+                                             m_nSharedFreq);
+    
+    return m_bMOOSClientRunning;
+}
+
+
+bool CMOOSCommunity::IsMOOSClientRunning()
+{
+    return m_bMOOSClientRunning;
+}
+
+std::string  CMOOSCommunity::GetCommunityName()
+{
+    return m_sCommunityName;
+}
+
+bool CMOOSCommunity::Initialise(const string &sCommunityName)
 {
 
     m_sCommunityName = sCommunityName;
-    m_nSharedFreq = nFreq;
-
-    m_CommClient.SetOnConnectCallBack(gOnCommunityConnect,this);
-
-    //we wanna be transparent...
-    m_CommClient.FakeSource(true);
-
-    return m_CommClient.Run(sHostName.c_str(),nPort,sMOOSName.c_str(),m_nSharedFreq);
+    return true;
 }
+
+bool CMOOSCommunity::SetUDPInfo(const std::string & sHost, int nPort)
+{
+    //this is the address of the place UDP packets should be sent to
+    m_sUDPHost = sHost;
+    m_nUDPPort = nPort;
+    return true;
+}
+
+bool CMOOSCommunity::HasUDPConfigured() const
+{
+    return m_nUDPPort!=-1;
+}
+
+int CMOOSCommunity::GetUDPPort()
+{
+    return m_nUDPPort;
+}
+
+std::string CMOOSCommunity::GetUDPHost()
+{
+    return m_sUDPHost;
+}
+
+bool CMOOSCommunity::Fetch(MOOSMSG_LIST & Mail)
+{
+	return m_CommClient.Fetch(Mail);
+}
+
+bool CMOOSCommunity::Post(CMOOSMsg & M)
+{
+    return m_CommClient.Post(M);
+}
+
 
 bool CMOOSCommunity::DoRegistration()
 {
@@ -149,10 +207,9 @@ bool CMOOSCommunity::DoRegistration()
     return true;
 }
 
-
 string CMOOSCommunity::GetFormattedName()
 {
-    return MOOSFormat("%s:%s",m_sCommunityName.c_str(),m_CommClient.GetDescription().c_str());
+    return MOOSFormat("%s@%s",m_sCommunityName.c_str(),m_CommClient.GetDescription().c_str());
 }
 
 string CMOOSCommunity::GetCommsName()

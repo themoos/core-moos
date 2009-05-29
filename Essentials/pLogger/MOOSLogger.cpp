@@ -188,16 +188,14 @@ bool CMOOSLogger::OnStartUp()
     AddMOOSVariable("MOOS_DEBUG","MOOS_DEBUG","",0);
     AddMOOSVariable("MOOS_SYSTEM","MOOS_SYSTEM","",0);
 
-
+	m_bSynchronousLog = false;
     //are we required to perform synchronous logs?
     string sTmp;
     if(m_MissionReader.GetConfigurationParam("SYNCLOG",sTmp))
     {
         string sBool = MOOSChomp(sTmp,"@");
-        if(MOOSStrCmp(sBool,"TRUE"))
-        {
-            m_bSynchronousLog = true;
-        }
+        
+        m_bSynchronousLog = MOOSStrCmp(sBool,"TRUE");
 
         //look for an additional parameter saying how often to log...
         if(!sTmp.empty())

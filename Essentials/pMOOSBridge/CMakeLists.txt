@@ -8,7 +8,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #build a list of files to compile
-SET(PMOOSBRIDGE_SRCS MOOSBridgeMain.cpp MOOSCommunity.cpp MOOSBridge.cpp  MOOSCommunity.h MOOSBridge.h ${RESOURCES})
+SET(PMOOSBRIDGE_SRCS MOOSBridgeMain.cpp MOOSCommunity.cpp MOOSBridge.cpp  MOOSCommunity.h MOOSBridge.h MOOSUDPLink.cpp MOOSUDPLink.h ${RESOURCES})
 
 # Add executable
 ADD_EXECUTABLE( pMOOSBridge ${PMOOSBRIDGE_SRCS})
