@@ -36,30 +36,33 @@
 #define _XPCUdpSocket
 
 #include "XPCSocket.h"
+#include <map>
 
 
 class XPCUdpSocket : public XPCSocket
     {
     public:
         
-        // Constructor.  Used to create a new TCP socket given a port
-        XPCUdpSocket(long int _iPort) : XPCSocket("udp", _iPort) { };
+        // Constructor.  Used to create a new udp socket  - it will receive on _iPort
+        XPCUdpSocket(long int _iPort) ;
         
-        // Constructor.  Called when a client connects and a new file descriptor has
-        // be created as a result.    
-        XPCUdpSocket(short int _iSocketFd) : XPCSocket(_iSocketFd) { };
-        
-        // Sends a message to a connected host. The number of bytes sent is returned
-        int iSendMessage(void *_vMessage, int _iMessageSize);
+        // Sends a message to a specified host on a specified port. The number of bytes sent is returned
+        int iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPort,const std::string & sHost);
         
         // Receives a UDP message 
         int iRecieveMessage(void *_vMessage, int _iMessageSize, int _iOption = 0);
         
-        // Binds the socket to an address and port number
+        // Binds the socket to listen on a port number
         void vBindSocket();
                         
         // allows a read with a timeout to prevent from blocking indefinitely
-        int iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, double dfTimeOut,int _iOption=0);
+        //int iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, double dfTimeOut,int _iOption=0);
+        
+    protected:
+        bool GetAddress(long int nPort,const std::string & sHost,sockaddr_in & Address);
+
+        std::map< std::pair< long int , std::string >, sockaddr_in >   m_KnownAdresses ;
+
         
     };
 

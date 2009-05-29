@@ -22,6 +22,7 @@ XPCGetHostInfo.cpp
 XPCGetProtocol.cpp
 XPCSocket.cpp
 XPCTcpSocket.cpp
+XPCUdpSocket.cpp
 MOOSVariable.h
 MOOSCommClient.h
 MOOSCommObject.h
@@ -39,7 +40,9 @@ XPCException.h
 XPCGetHostInfo.h
 XPCGetProtocol.h
 XPCSocket.h
-XPCTcpSocket.h )
+XPCTcpSocket.h
+XPCUdpSocket.h
+ )
 
 ADD_LIBRARY(MOOS ${MOOSLIB_SRCS})
 
