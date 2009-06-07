@@ -22,7 +22,7 @@ class CMOOSUDPLink
         CMOOSUDPLink();
         bool Post(CMOOSMsg & M,const std::string & sRemoteHost,long int nRemotePort);
         bool Fetch(MOOSMSG_LIST & MailIn);
-        bool Run(int nLocalPort);
+        bool Run(int nLocalPort=-1);
         bool ListenLoop();
         
     protected:

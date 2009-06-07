@@ -42,6 +42,7 @@ int main(int argc,char* argv[])
     const char * sMOOSName = "pMOOSBridge";
     
 
+
     switch(argc)
     {
     case 3:
@@ -49,6 +50,9 @@ int main(int argc,char* argv[])
     case 2:
         sMissionFile = argv[1];
     }
+
+    //sMissionFile = "/Users/pnewman/links/MOOS/Essentials/pMOOSBridge/Examples/V1.moos";
+
     CMOOSBridge TheBridge;
 
     TheBridge.Run(sMissionFile,sMOOSName);

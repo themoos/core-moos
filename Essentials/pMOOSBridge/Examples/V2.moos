@@ -10,12 +10,13 @@ Community = V2
 ProcessConfig = pMOOSBridge
 {
 	//this is the port *this* bridge will be listening for incoming UDP packets from other
-	//bridges in other communities.
-	LocalUDP = 9200	
+	//bridges in other communities. If you omit this line then *no* incoming UDP packets
+	//will be inserted into the local community
+	UDPListen = 9200	
 
 	//set up a UDP share of some local variables. Here we are sending DB_TIME and to 
 	//a community called V1 which is receiving UDP on port 9100. So in the mission file for that
-	//community your would expect to see a bridge being configured with LocalUDP=9100
+	//community your would expect to see a bridge being configured with UDPListen =9100
 
 	UDPShare = [DB_CLIENTS] -> V1@localhost:9100 [V2_DB_CLIENTS]
 

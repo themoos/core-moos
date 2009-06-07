@@ -61,6 +61,10 @@ bool XPCUdpSocket::GetAddress(long int nPort,const std::string & sHost,sockaddr_
     
 }
 
+int XPCUdpSocket::iBroadCastMessage(void *_vMessage, int _iMessageSize,long int nPort)
+{
+	return iSendMessageTo(_vMessage, _iMessageSize,nPort,"255.255.255.255");
+}
 
 // Sends a message to a connected host. The number of bytes sent is returned
 int XPCUdpSocket::iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPort,const std::string & sHost)

@@ -1047,15 +1047,15 @@ bool CMOOSLogger::CopyMissionFile()
     //open the original
     ifstream MissionFile;
     MissionFile.open(m_sMissionFile.c_str());
-    if(!MissionFile)
-        return false;
+    if(!MissionFile.is_open())
+        return MOOSFail("\nWarning:\n\tfailed to open copy of mission file - it can't be backed up\n");;
 
 
     //open a copy file
     ofstream MissionCopy;
 
     if(!OpenFile(MissionCopy,m_sMissionCopyName))
-        return MOOSFail("Failed to open a copy of mission file");
+        return MOOSFail("Failed to open a destination copy of mission file");
 
     //write a banner
     DoBanner(MissionCopy,m_sMissionCopyName);

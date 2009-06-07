@@ -118,9 +118,9 @@ bool CMOOSBridge::MarshallLoop()
                                               w->GetCommunity().c_str());
 #endif
                                     
-                                    //Send via UDP - fire and forget...
+                                    //Send via UDP (directed to  single machine and port) - fire and forget...
                                 	m_UDPLink.Post(MsgCopy,pDestCommunity->GetUDPHost(),pDestCommunity->GetUDPPort());
-                                }
+									                                }
                                 else
                                 {
                                     MOOSTrace("cannot send %s via UDP to %s - destination community has no UDP port\n",MsgCopy.m_sKey.c_str(),pDestCommunity->GetFormattedName().c_str());
@@ -142,6 +142,7 @@ bool CMOOSBridge::MarshallLoop()
                     }
                 }
             }
+            //here we could look for broadcasts...
         }
     }
     
@@ -164,7 +165,20 @@ bool CMOOSBridge::MarshallLoop()
 #if(BOUNCE_WITH_GUSTO) 
                 MOOSTrace("Received %s from %s on UDP  - inserting into %s\n",p->GetKey().c_str(), p->GetCommunity().c_str(),pLocalCommunity->GetFormattedName().c_str());
 #endif
-                pLocalCommunity->Post(*p);
+                
+                //now be careful we aren't looking to subscribing for this mail....now that would be some horrible positive
+                //feedback loop! Can alos check as mikerb suggess on source community - it must not
+                //be us!
+                
+                if(!pLocalCommunity->HasMOOSSRegistration(p->GetKey()) && pLocalCommunity->GetCommunityName()!= p->GetCommunity() )
+                {
+                	pLocalCommunity->Post(*p);
+                }
+                else
+                {
+                    
+                	MOOSTrace("no way!\n");
+                }
             }
         }
         
@@ -298,6 +312,13 @@ bool CMOOSBridge::Configure()
                 lDestPort = atoi(sDestCommunityPort.c_str());            
             }
             
+            //we will force all broadcast address directives to be the same "community" called "ALL"
+            if(MOOSStrCmp(sDestCommunityHost, "BROADCAST") || MOOSStrCmp(sDestCommunity, "ALL"))
+            {
+                sDestCommunity="ALL";
+                sDestCommunityHost = "BROADCAST";
+            }
+            
             //make two communities (which will be bridged)
             CMOOSCommunity* pSrcCommunity =  GetOrMakeCommunity(sSrcCommunity);
             
@@ -305,7 +326,7 @@ bool CMOOSBridge::Configure()
             
             if(!bUDP)
             {
-                //depending on what kind of sahre this is we may want to simply specify
+                //depending on what kind of share this is we may want to simply specify
                 //a UDP end point or start a MOOS client
                 
                 //we will register with each DB with a unique name
@@ -334,7 +355,15 @@ bool CMOOSBridge::Configure()
             else
             {
                 //MOOSTrace("Setting UDP port for community %s as %s:%d\n",pDestCommunity->GetCommunityName().c_str(),sDestCommunityHost.c_str(),lDestPort);
-                pDestCommunity->SetUDPInfo(sDestCommunityHost, lDestPort);                
+                if(MOOSStrCmp(sDestCommunityHost,"BROADCAST") && MOOSStrCmp(sDestCommunity,"ALL"))
+                {
+                    //this is special
+                    pDestCommunity->SetUDPInfo("255.255.255.255", lDestPort);                
+                }
+                else
+                {
+                	pDestCommunity->SetUDPInfo(sDestCommunityHost, lDestPort);                
+                }
             }
             
             //populate bridge with variables to be shared (including translation)
@@ -367,14 +396,19 @@ bool CMOOSBridge::Configure()
     //MOOSBridge. If poepl wnat UDP bridging they need on pMOOSBridge per community (ie the 
     //toplogy of N communities and just 1 bridge is not allowed
     int nLocalUDPPort = DEFAULT_UDP_PORT;
-	if(!m_MissionReader.GetConfigurationParam("LocalUDP",nLocalUDPPort)   )
+	if(m_MissionReader.GetConfigurationParam("UDPListen",nLocalUDPPort)   )
     {
-        MOOSTrace("warning no UDP port specified for local community %s assuming %d\n",m_sLocalCommunity.c_str(),nLocalUDPPort);
+        //start the UDP listener
+        m_UDPLink.Run(nLocalUDPPort);
+
     }
-    
-    //start the UDP listener
-    m_UDPLink.Run(nLocalUDPPort);
-    
+	else
+	{
+        MOOSTrace("warning no UDPListen port specified for local community - outgoing UDP comms only\n");
+        
+        //passing run with a -1 port means build the socket but don't bind or start a listen thread
+        m_UDPLink.Run(-1);
+    }
     //ensure we have at least the local MOOS-enabled community in existence - maybe all we want to do is map LocalMOOS->UDP_Out
     CMOOSCommunity * pLocalCommunity  = GetOrMakeCommunity(m_sLocalCommunity);
     

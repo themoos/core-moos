@@ -185,6 +185,9 @@ public:
 
     /** return the list of messages names published*/
     std::set<std::string> GetPublished(){return m_Published;};
+    
+    /** return true if we are registered for named variable */
+    bool IsRegisteredFor(const std::string & sVariable);
 
     /** return the list of messages registered*/
     std::set<std::string> GetRegistered(){return m_Registered;};

@@ -37,18 +37,26 @@ bool CMOOSUDPLink::Run(int nLocalPort)
     //input socket
     m_pUDPSocket = new XPCUdpSocket(m_nLocalPort);
     
-    try
-    {
-    	m_pUDPSocket->vBindSocket();
-    }
-    catch (XPCException e)
-    {
-        MOOSTrace(e.sGetException());
-        return false;
-    }
+    //its likely we want tp broadcast
     
-    m_ListenThread.Initialise(_ListenCB,this);
-    m_ListenThread.Start();
+    m_pUDPSocket->vSetBroadcast(true);
+    
+    if(nLocalPort!=-1)
+    {
+    
+        try
+        {
+            m_pUDPSocket->vBindSocket();
+        }
+        catch (XPCException e)
+        {
+            MOOSTrace(e.sGetException());
+            return false;
+        }
+        
+        m_ListenThread.Initialise(_ListenCB,this);
+        m_ListenThread.Start();
+    }
 
     return true;
 
@@ -77,6 +85,7 @@ bool CMOOSUDPLink::Post(CMOOSMsg & M,const std::string & sHost, long int nPort)
         }
         
         int nSent = m_pUDPSocket->iSendMessageTo(P.m_pStream,P.GetStreamLength(),nPort,sHost);
+        
         
         if(nSent!=P.GetStreamLength())
         {
@@ -127,7 +136,7 @@ bool CMOOSUDPLink::ListenLoop()
             {
             	if(P.Serialize(m_InBox,false))
                 {
-                	//MOOSTrace("%d MOOSMsg's held\n",m_InBox.size());
+                	MOOSTrace("%d MOOSMsg's held\n",m_InBox.size());
                 }
                 else
                 {

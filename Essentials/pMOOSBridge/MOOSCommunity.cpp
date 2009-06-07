@@ -142,6 +142,12 @@ bool CMOOSCommunity::InitialiseMOOSClient( const string &sHostName,
 }
 
 
+bool CMOOSCommunity::HasMOOSSRegistration(const std::string & sVariable)
+{
+    return m_CommClient.IsRegisteredFor(sVariable);
+}
+
+
 bool CMOOSCommunity::IsMOOSClientRunning()
 {
     return m_bMOOSClientRunning;

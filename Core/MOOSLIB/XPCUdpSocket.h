@@ -49,6 +49,9 @@ class XPCUdpSocket : public XPCSocket
         // Sends a message to a specified host on a specified port. The number of bytes sent is returned
         int iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPort,const std::string & sHost);
         
+        //send a telegram to all local network nodes on specified ports
+        int iBroadCastMessage(void *_vMessage, int _iMessageSize,long int nPort);
+        
         // Receives a UDP message 
         int iRecieveMessage(void *_vMessage, int _iMessageSize, int _iOption = 0);
         

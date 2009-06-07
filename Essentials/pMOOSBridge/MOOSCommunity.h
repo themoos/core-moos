@@ -50,7 +50,7 @@ public:
     std::string GetCommsName();
     std::string GetCommunityName();
     std::string GetUDPHost();
-    
+
     bool DoRegistration();
     bool Initialise(const std::string & sCommunityName);
     
@@ -71,6 +71,7 @@ public:
     bool IsMOOSClientRunning();
     int GetUDPPort();
     bool HasUDPConfigured() const;
+    bool HasMOOSSRegistration(const std::string & sVariable);
     
 protected:
     CMOOSCommClient m_CommClient;
