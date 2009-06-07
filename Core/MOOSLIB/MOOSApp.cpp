@@ -124,6 +124,8 @@ CMOOSApp::CMOOSApp()
 	m_bAppError = false;
     m_bQuitOnIterateFail = false;
     
+    SetMOOSTimeWarp(1.0);
+    
     EnableIterateWithoutComms(false);
 }
 
@@ -162,7 +164,8 @@ bool CMOOSApp::Run( const char * sName,
         {
             MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
         }
-        else
+        
+        if(1)
         {
 			//what is the global time warp
             double dfTimeWarp = 1.0;

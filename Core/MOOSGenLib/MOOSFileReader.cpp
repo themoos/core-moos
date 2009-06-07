@@ -63,7 +63,7 @@ CMOOSFileReader::CMOOSFileReader()
 
 CMOOSFileReader::~CMOOSFileReader()
 {
-    if(GetFile()->is_open())
+    if(IsOpen())
     {
         GetFile()->close();
     }
@@ -77,6 +77,10 @@ CMOOSFileReader::~CMOOSFileReader()
 bool CMOOSFileReader::SetFile(const std::string  & sFile)
 {
     m_sFileName = sFile;
+    
+    //quick check that we can open a file
+    if(GetFile()==NULL)
+        return false;
 
     THREAD2FILE_MAP::iterator p;
 
@@ -110,7 +114,7 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
 
     std::string sLine;
 
-    if(GetFile()->eof())
+    if(eof() || !IsOpen())
     {
         return sLine;
     }
@@ -216,7 +220,7 @@ bool CMOOSFileReader::GetValue(std::string sName,std::string & sResult)
 {
 
     
-    if(GetFile()->is_open())
+    if(IsOpen())
     {
         Reset();
      
@@ -288,8 +292,9 @@ bool CMOOSFileReader::Reset()
 {
     bool bResult = true;
 //    m_pLock->Lock();
+    
 
-    if(GetFile()->is_open())
+    if(IsOpen())
     {
         if(GetFile()->eof())
         {
@@ -317,12 +322,13 @@ bool CMOOSFileReader::Reset()
 
 bool CMOOSFileReader::eof()
 {
-    return GetFile()->eof();
+    return IsOpen() && GetFile()->eof();
 }
 
 bool CMOOSFileReader::GoTo(std::string sLine)
 {
-    if(GetFile()->is_open())
+      
+    if(IsOpen())
     {
         MOOSRemoveChars(sLine," \t\r");
 
@@ -374,6 +380,13 @@ std::ifstream * CMOOSFileReader::GetFile()
         if(!pAnswer->is_open() && !m_sFileName.empty())
         {
             pAnswer->open(m_sFileName.c_str());
+        }
+        
+        if(!pAnswer->is_open())
+        {
+            delete pAnswer;
+            pAnswer = NULL;
+            m_FileMap.erase(Me);
         }
     }
 
@@ -540,6 +553,8 @@ bool CMOOSFileReader::MakeOverloadedCopy(const std::string & sCopyName,std::map<
         of.close();
         return true;
     }
+    
+    return false;
     
     
 }

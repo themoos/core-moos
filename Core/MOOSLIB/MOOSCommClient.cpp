@@ -701,6 +701,12 @@ bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 	}
 }
 
+
+bool CMOOSCommClient::IsRegisteredFor(const std::string & sVariable)
+{
+    return !m_Registered.empty() && m_Registered.find(sVariable)!=m_Registered.end();
+}
+
 bool CMOOSCommClient::Notify(const string &sVar, double dfVal, double dfTime)
 {
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),dfVal,dfTime);
