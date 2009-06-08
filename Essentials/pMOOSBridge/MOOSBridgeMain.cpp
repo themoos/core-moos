@@ -41,7 +41,10 @@ int main(int argc,char* argv[])
     const char * sMissionFile = "Mission.moos";
     const char * sMOOSName = "pMOOSBridge";
     
+	std::string s = "Name=MedianResidualSquared,ID=5,min=0.000062,max=0.084717";
 
+    std::string sStr;
+    MOOSValFromString(sStr, s, "ID", true);
 
     switch(argc)
     {

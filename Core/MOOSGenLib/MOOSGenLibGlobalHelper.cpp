@@ -329,7 +329,7 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     
-    /*unsigned int*/ size_t  nPos = string::npos;
+    size_t  nPos = string::npos;
     size_t k = 0;
     while((nPos = MOOSStrFind(sStr.substr(k),sTk,bInsensitive))!=string::npos)
     {
@@ -347,7 +347,8 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
             MOOSTrimWhiteSpace(t);
 			if(!t.empty())
             {
-                k = nEqualsPos;
+                //k = nEqualsPos;
+                k=nPos+1;
                 continue;
             }
             
