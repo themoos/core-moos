@@ -31,10 +31,10 @@ ENDIF()
 
 IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
 	   MESSAGE(STATUS "-- This is a 64 bit machine")
-	   SET(WORD32 1)	
+	   SET(WORD64 1)	
 ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
 	   MESSAGE(STATUS "-- This is a 32 bit machine")
-	   SET(WORD64 1)	
+	   SET(WORD32 1)	
 ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
 
 # Find representative header to define matlab root dir.
