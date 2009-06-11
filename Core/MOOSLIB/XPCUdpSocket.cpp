@@ -102,7 +102,8 @@ int XPCUdpSocket::iRecieveMessage(void *_vMessage, int _iMessageSize, int _iOpti
     
     // Recieves a UDP socket message.  The number of bytes received isreturned
     struct sockaddr SenderInfo;
-    socklen_t SenderInfoLen;
+
+    socklen_t SenderInfoLen = sizeof (SenderInfo);
     
     iNumBytes = recvfrom(iSocket, (char *)_vMessage,
                          _iMessageSize,
