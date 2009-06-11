@@ -33,6 +33,7 @@
 #include <MOOSLIB/MOOSLib.h>
 #include "MOOSCommunity.h"
 
+#define DEFAULT_BRIDGE_COMMS_TICK 20
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -125,6 +126,7 @@ bool CMOOSCommunity::InitialiseMOOSClient( const string &sHostName,
                                           int nFreq)
 {
 
+    //this is used to determine the subscription period.
     m_nSharedFreq = nFreq;
     
     m_CommClient.SetOnConnectCallBack(gOnCommunityConnect,this);
@@ -132,11 +134,13 @@ bool CMOOSCommunity::InitialiseMOOSClient( const string &sHostName,
     //we wanna be transparent...
     m_CommClient.FakeSource(true);
     
+    //
+    
     
     m_bMOOSClientRunning =  m_CommClient.Run(sHostName.c_str(),
                                              nPort,
                                              sMOOSName.c_str(),
-                                             m_nSharedFreq);
+                                             DEFAULT_BRIDGE_COMMS_TICK);
     
     return m_bMOOSClientRunning;
 }

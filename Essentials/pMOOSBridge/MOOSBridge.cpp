@@ -315,8 +315,10 @@ bool CMOOSBridge::Configure()
             //we will force all broadcast address directives to be the same "community" called "ALL"
             if(MOOSStrCmp(sDestCommunityHost, "BROADCAST") || MOOSStrCmp(sDestCommunity, "ALL"))
             {
+                //this is trixksy - need to qualify this generic address with the a port so each Bridge can
+                //UDP broadcast to multiple addresses
                 sDestCommunity="ALL";
-                sDestCommunityHost = "BROADCAST";
+                sDestCommunityHost = "BROADCAST-"+sDestCommunityPort;
             }
             
             //make two communities (which will be bridged)
@@ -355,7 +357,7 @@ bool CMOOSBridge::Configure()
             else
             {
                 //MOOSTrace("Setting UDP port for community %s as %s:%d\n",pDestCommunity->GetCommunityName().c_str(),sDestCommunityHost.c_str(),lDestPort);
-                if(MOOSStrCmp(sDestCommunityHost,"BROADCAST") && MOOSStrCmp(sDestCommunity,"ALL"))
+                if(sDestCommunityHost.find("BROADCAST-")!=std::string::npos  && MOOSStrCmp(sDestCommunity,"ALL"))
                 {
                     //this is special
                     pDestCommunity->SetUDPInfo("255.255.255.255", lDestPort);                
