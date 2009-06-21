@@ -13,6 +13,21 @@
 
 
 
+
+\lstset{ frame = shadowbox,
+ %language=[Visual]{c++},
+ rulesepcolor=\color{black},
+ basicstyle=\small } \lstset{
+backgroundcolor=\color{codecolor},
+keywordstyle=\color{blue}\bfseries,
+commentstyle=\color{commentcolor},
+stringstyle=\color{stringcolor}\ttfamily, linewidth =
+1.2\linewidth,
+breaklines=true} %
+
+\lstset{language=C++}
+
+
 % Title Page
 \title{Bridging Communities with \code{pMOOSBridge}}
 \author{Paul Newman}
@@ -98,8 +113,76 @@ result in pMOOSBridge notifying the \DB in community ``VehA'' that ``GPS\_X'' ha
 0.6\linewidth} \caption{An alternative MOOSBridge Configuration
 --- one bridge per community. This may be preferable; it is undesirable to have one process manage all
 the sharing of data. However it offers no \emph{functional} advantage over the topology shown in Figure
-\ref{fig:MOOSBridge1}.}\label{fig:MOOSBridge2}
+\ref{fig:MOOSBridge1}. That said, this is the only configuration in which UDP sharing can be used --- see section \ref{:Sec:UDPSharing}}\label{fig:MOOSBridge2}
 \end{figure}
+
+
+\subsection{Specifying Sharing Bandwidth}
+
+Recall  that when using the \code{CMOOSCommClient} class or \code{CMOOSApp::Register()}  it is possible to specify the maximum rate at which one wishes to be notified of variable changes. So for example if a variable is actually been changed at 50Hz it is possible to request a notification at no more that 1Hz. Alternatively one can register to receive every notification. The same paradigm exists in code \code{pMOOSBridge} although it cannot be configured on a per variable basis. By setting \code{BridgeFrequency} to be some integer value the maximum frequency of notifications being bridge between communities can be controlled. For example
+\begin{center}
+\code{BridgeFrequency} = 10
+\end{center}
+will mean that no variables are bridge with frequency greater than 10Hz. A special case is
+\begin{center}
+\code{BridgeFrequency} = 0
+\end{center}
+which means that {\textbf{every}} change in bridged variables is sent to destination communities.
+
+
+\section{Sharing by UDP}
+
+It is possible that an application domain requires that the link between distinct MOOS communities by made not with tcp/ip but with udp. An obvious example would be when intermittent wireless communications is available between 
+communities  - using tcp/ip here (the protocol used by standard MOOS comms) will result in poor performance as it is connection oriented substantial time will be expended behind the scenes in reconnecting and blocking read and write calls at various places in the comms architecture \footnote{when a write completes on a tcp/ip socket you are guaranteed that the data has arrived at its destination}. UDP however offers more of a ``fire and forget'' paradigm - if packets can make it across the inter-community link then they will but the sender is oblivious to their fate.
+
+\subsection{Basic Configuration}
+Before describing how UDP sharing can be configured it is important to note the following points.
+\begin{itemize}
+\item  UDP sharing is only possible when using the topology shown in Figure \ref{fig:MOOSBridge2} --- that is with one \code{pMOOSBridge} running in each community.
+\item Any bridge that wants to receive transmissions from other bridges (think ``bridge= community' because of the above point --- one bridge per community for UDP sharing) must be told the port on which it is to listen for incoming UDP packets. This is done with the \code{UDPListen} variable in the configuration block.  For example 
+\begin{center}
+\code{UDPListen} = \code{9100}
+\end{center}
+will cause the Bridge to listen on port 9100.
+\item \code{pMOOSBridge} supports to modes of UDP sharing. The first called ``Directed Sharing'' sends MOOS mail to just one named recipient (another Bridge in another community) . The second mode, called ``Broadcast Sharing''  sends data to all and sundry  - any bridge who is listening on the relevant port will receive the transmission.
+\item Both UDP sharing modes are configured with the \code{UDPShare} keyword.
+ \end{itemize}
+ 
+ 
+\subsection{UDP Directed Sharing}
+
+In this case the syntax is similar to the regular \code{SHARE} already discussed although the source community need not be described because the enforced topology constraint means this is implicit. For example, for  a Bridge running on community ``VehA'' a line such as this
+\begin{verbatim}
+UDPSHARE= [GPS_X]->VehB@kayak.mit.edu:9200 [GPS_X_VEH_A]
+\end{verbatim}
+
+in the pMOOSBridge configuration block will cause the \code{GPS\_X} variable within community ``VehA'' to be sent to a \code{pMOOSBridge} running on Community ``VehB'' which has been configured to listening for incoming UDP packets on port 9200 on a machine called kayak.mit.edu. This data will appear as \code{GPS\_X\_VEH\_A} in the ``VehB'' community.
+
+
+\subsection{UDP Broadcast Sharing}
+
+It is also possible to broadcast messages across the network indiscriminately meaning that every pMOOSBridge listening on the required port will receive the MOOS variable and insert it inot its local community's  \code{MOOSDB}. The required syntax is exactly as for the directed UDP share, the difference comes from specifying the destination address to be ``all@broadcast'' followed by the required port address. So, carrying on with the example above,
+\begin{verbatim}
+UDPSHARE= [GPS_X]->all@broadcast:9200 [GPS_X_VEH_A]
+\end{verbatim}
+
+will mean any \code{pMOOSbridge} listening on port 9200 on the local network will receive \code{GPS\_X\_VEH\_A}  which was originally  \code{GPS\_X}  in community ``VehA'' (assuming of course that the bridge configured with this line is still runing in a community called ``VehA'').
+ 
+
+
+
+\subsection{Example Configurations}
+
+
+
+\lstinputlisting[basicstyle=\footnotesize, caption = {pMOOSBridge configuration block for a community called V1 illustrating two types of UDP sharing ---directed and broadcast },label = {Example:V2}
+]{examples/V1.moos}
+
+\lstinputlisting[basicstyle=\footnotesize, caption = {pMOOSBridge configuration block for a community called V2 publishing  one variable via directed UDP sharing and one via regular tcp/ip},label = {Example:V2}
+]{examples/V2.moos}
+
+
+
 
 
 \end{document} 
