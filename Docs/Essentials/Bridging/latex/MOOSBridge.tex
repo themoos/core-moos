@@ -44,6 +44,9 @@ breaklines=true} %
 This document will give you a description of how to use \code{pMOOSBridge} to link multiple MOOS communities together.
 \end{abstract}
 
+
+\tableofcontents
+
 \section{Introduction}
 
 \code{pMOOSBridge} is a powerful tool in building MOOS-derived
@@ -62,7 +65,10 @@ should be done. The \code{SHARE} command specifies precisely what
 variables should be shared between which communities.}\label{fig:MOOSBridge1}
 \end{figure}
 One instance of \code{pMOOSBridge} can ``talk'' to a limitless
-number of communities. The configuration block specifies what
+number of communities. 
+
+\section{Basic Configuration}
+The configuration block specifies what
 should be mapped or ``shared'' between communities and how it
 should be done. The \code{SHARE} command specifies precisely what
 variables should be shared between which communities and the
@@ -76,10 +82,7 @@ description can be omitted on the LHS of the arrow, in which case the mission-fi
 Each variable (``V'') on the LHS (source) community will be inserted into the community on the RHS
 If no variable names are specified on the RHS (destination) community the original names are used, otherwise
 there is a one-to-one mapping between variable names on the LHS and new variable names (aliases) on the RHS. If however
-there are more named shared variables than aliases, the variables for which an alias is not specified retain their original names.
-
-
-For example\\
+there are more named shared variables than aliases, the variables for which an alias is not specified retain their original names. For example
 \begin{verbatim}
 SHARE= VehA@nym.robots.ox.ac.uk:9000 [GPS_X]->VehB@kayak.mit.edu:9000 [GPS_X]
 \end{verbatim}
@@ -108,14 +111,6 @@ It is important to realise that sharing is not bidirectional. In this case, a pr
 result in pMOOSBridge notifying the \DB in community ``VehA'' that ``GPS\_X'' has changed.
 
 
-\begin{figure}[ht]
-\centering \epsfig{file = images/pMOOSBridge2.eps , width =
-0.6\linewidth} \caption{An alternative MOOSBridge Configuration
---- one bridge per community. This may be preferable; it is undesirable to have one process manage all
-the sharing of data. However it offers no \emph{functional} advantage over the topology shown in Figure
-\ref{fig:MOOSBridge1}. That said, this is the only configuration in which UDP sharing can be used --- see section \ref{:Sec:UDPSharing}}\label{fig:MOOSBridge2}
-\end{figure}
-
 
 \subsection{Specifying Sharing Bandwidth}
 
@@ -130,7 +125,20 @@ will mean that no variables are bridge with frequency greater than 10Hz. A speci
 which means that {\textbf{every}} change in bridged variables is sent to destination communities.
 
 
-\section{Sharing by UDP}
+\section{Topologies}
+The configuration of \code{pMOOSBridge} facilitates many connection topologies. One such topology is show in Figure \label{fig:MOOSBridge1}, here we have one central \code{pMOOSBridge} joining  several communities together. A common alternative is shown in \label{fig:MOOSBridge2} in which each community has its own bridge. Although functionally the two setup are identical the latter offers the opportunity to use UDP sharing as discussed in Section  \ref{Sec:UDP}.
+
+\begin{figure}[ht]
+\centering \epsfig{file = images/pMOOSBridge2.eps , width =
+0.6\linewidth} \caption{An alternative MOOSBridge Configuration
+--- one bridge per community. This may be preferable; it is undesirable to have one process manage all
+the sharing of data. However it offers no \emph{functional} advantage over the topology shown in Figure
+\ref{fig:MOOSBridge1}. That said, this is the only configuration in which UDP sharing can be used --- see section \ref{:Sec:UDPSharing}}\label{fig:MOOSBridge2}
+\end{figure}
+
+
+
+\section{Sharing by UDP}\label{Sec:UDP}
 
 It is possible that an application domain requires that the link between distinct MOOS communities by made not with tcp/ip but with udp. An obvious example would be when intermittent wireless communications is available between 
 communities  - using tcp/ip here (the protocol used by standard MOOS comms) will result in poor performance as it is connection oriented substantial time will be expended behind the scenes in reconnecting and blocking read and write calls at various places in the comms architecture \footnote{when a write completes on a tcp/ip socket you are guaranteed that the data has arrived at its destination}. UDP however offers more of a ``fire and forget'' paradigm - if packets can make it across the inter-community link then they will but the sender is oblivious to their fate.
@@ -165,7 +173,6 @@ It is also possible to broadcast messages across the network indiscriminately me
 \begin{verbatim}
 UDPSHARE= [GPS_X]->all@broadcast:9200 [GPS_X_VEH_A]
 \end{verbatim}
-
 will mean any \code{pMOOSbridge} listening on port 9200 on the local network will receive \code{GPS\_X\_VEH\_A}  which was originally  \code{GPS\_X}  in community ``VehA'' (assuming of course that the bridge configured with this line is still runing in a community called ``VehA'').
  
 
