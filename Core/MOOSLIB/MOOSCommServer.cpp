@@ -171,7 +171,7 @@ bool CMOOSCommServer::TimerLoop()
             ++q;
             if(dfTimeNow-dfLastCalled>dfTimeOut)
             {
-                MOOSTrace("its been %f seconds sinc my last confession:\n",dfTimeNow-dfLastCalled);
+                MOOSTrace("its been %f seconds since my last confession:\n",dfTimeNow-dfLastCalled);
                 MOOSTrace("\tTime Now %f\n\tLastReadTime %f\n",dfTimeNow,dfLastCalled );
                 if(OnAbsentClient(*p))
                 {
