@@ -594,7 +594,7 @@ bool CMOOSCommClient::HandShake()
 	}
 	catch(CMOOSException e)
 	{
-		MOOSTrace("Exception in hand shaking :%s",e.m_sReason);
+		MOOSTrace("Exception in hand shaking : %s",e.m_sReason);
 		return false;
 	}
 	return true;
@@ -962,6 +962,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	if (!m_pSkewFilter.get())
 	{
 		// Make a fresh skew filter
+		//m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSConditionedSkewFilter);
 		m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
 		if (!m_pSkewFilter.get()) return false;
 	}
@@ -991,17 +992,19 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	{
 	    SkewLog->setf(std::ios::fixed);
 	    (*SkewLog) << 
-		"RQ=" << setprecision(6) << dfRqTime << "," <<
-		"TX=" << setprecision(6) << dfTxTime << "," <<
-		"RX=" << setprecision(6) << dfRxTime << "," <<
-		"m=" << setprecision(6) << skewinfo.m << "," <<
-		"c=" << setprecision(6) << skewinfo.c << "," <<
-		"LB=" << setprecision(6) << skewinfo.LB << "," <<
-		"UB=" << setprecision(6) << skewinfo.UB << "," <<
-		"envLB=" << setprecision(6) << skewinfo.envLB << "," <<
-		"envUB=" << setprecision(6) << skewinfo.envUB << "," <<
-		"envEst=" << setprecision(6) << skewinfo.envEst << "," <<
-		"filtEst=" << setprecision(6) << skewinfo.filtEst <<
+		"RQ=" << setprecision(9) << dfRqTime << "," <<
+		"TX=" << setprecision(9) << dfTxTime << "," <<
+		"RX=" << setprecision(9) << dfRxTime << "," <<
+#ifdef MOOS_DETECT_CLOCK_DRIFT
+		"m=" << setprecision(9) << skewinfo.m << "," <<
+		"c=" << setprecision(9) << skewinfo.c << "," <<
+		"LB=" << setprecision(9) << skewinfo.LB << "," <<
+		"UB=" << setprecision(9) << skewinfo.UB << "," <<
+		"envLB=" << setprecision(9) << skewinfo.envLB << "," <<
+		"envUB=" << setprecision(9) << skewinfo.envUB << "," <<
+		"envEst=" << setprecision(9) << skewinfo.envEst << "," <<
+		"filtEst=" << setprecision(9) << skewinfo.filtEst <<
+#endif // MOOS_DETECT_CLOCK_DRIFT
 		std::endl;		
 	}
 */
@@ -1010,3 +1013,4 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 	return true;
 }
+
