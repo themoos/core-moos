@@ -55,7 +55,7 @@ namespace MOOS
 		{
 			double dfPeriod;
 			double dfM, dfC;     // Slope and intersect
-			tPt    p1, p2; // Anchor points through which line passes
+			tPt    p1, p2;       // Anchor points through which line passes
 
 			void DumpState() const
 			{
@@ -98,24 +98,26 @@ namespace MOOS
 
 	private:
 		CConvexEnvelope(const CConvexEnvelope &v); // Not implemented
-		void operator=(const CConvexEnvelope &v); // Not implemented
+		void operator=(const CConvexEnvelope &v);  // Not implemented
 
 	private:
 		std::deque<tSeg> m_segs;
 
-		// Temporarily store first point for each pending segment
+		// Temporarily store first point for each pending segment.
+        // It's a bit messy having to keep this around, given that
+        // we could just store a list of points and make the segments
+        // implicit.  But it's convenient to be able to store segments
+        // explicitly, and keep all the information together in one place.
+        // So this is a necessary evil.
 		bool m_bHaveInitPt;
 		tPt  m_InitPt;
 
-		unsigned int m_uiLongestSegID;
-		double       m_dfLongestSegLen;
-        const        eDirection m_aboveOrBelow;
+		unsigned int     m_uiLongestSegID;
+		double           m_dfLongestSegLen;
+        const eDirection m_aboveOrBelow;
 
         unsigned int m_nMeas;
 	};
-
-
-
 
 
 
@@ -136,9 +138,10 @@ namespace MOOS
 	public:
 		CMOOSSkewFilter();
 
-		void   Reset();
+		virtual void Reset();
 
-		double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo=NULL);
+		// Returns estimated true skew value (TXtime-RXtime)
+        virtual double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo=NULL);
 		        
         unsigned int GetNumMeas() const { return m_nMeas; }
 
@@ -150,10 +153,10 @@ namespace MOOS
 
 	private:
         // These use the envelope estimates to produce
-        // an estimate of the skew at a given time
+        // an estimate of the skew at a given time.
         // They'll return false if either of the
-        // convex envelopes has not stabilized
-        // They are un-smoothing-filtered
+        // convex envelopes has not stabilized.
+        // There's no smoothing filter on these.
         bool   GetSkewAtServerTime(double dfTime, double &dfSkew) const;
         bool   GetSkewAtLocalTime(double dfTime, double &dfSkew) const;
         double GetLBSkewAtServerTime(double dfTime) const;
@@ -176,6 +179,72 @@ namespace MOOS
 
 		unsigned int m_nMeas;
 	};
+
+
+    // This class transforms input measurements and output values
+    // transparently in such a way as to improve the numerical
+    // conditioning of the skew filter
+    class CMOOSConditionedSkewFilter : public CMOOSSkewFilter
+    {
+    public:
+        
+		CMOOSConditionedSkewFilter() :
+		  m_dfBeginTime(0), m_dfSkewOffset(0), m_dfRXOffset(0)
+		{
+		}
+
+        void Reset()
+        {
+            m_dfBeginTime  = 0;
+            m_dfSkewOffset = 0;
+            m_dfRXOffset   = 0;
+            
+            CMOOSSkewFilter::Reset();
+        }
+
+        // Mainly we override the 'update' function
+        double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
+        {
+            // Transform input values
+            // If this is the first call then we need to store offsets
+            if (this->GetNumMeas() == 0)
+            {
+                m_dfBeginTime  = dfRQtime;
+                m_dfSkewOffset = dfTXtime - dfRXtime;
+                m_dfRXOffset   = m_dfSkewOffset - m_dfBeginTime;
+            }
+            
+            dfRQtime = dfRQtime + m_dfRXOffset;
+            dfTXtime = dfTXtime - m_dfBeginTime;
+            dfRXtime = dfRXtime + m_dfRXOffset;
+
+            // Call parent's Update function
+            double dfSkew = CMOOSSkewFilter::Update(dfRQtime, dfTXtime, dfRXtime, skewinfo);
+
+            // Transform output values
+            if (skewinfo)
+            {
+                // Not sure whether we should transform these...
+                // After all, they're just diagnostic
+                // And the transformed values would suffer from the 
+                // numerical precision problems we're trying to avoid
+
+                // Do nothing
+            }
+
+            return dfSkew - m_dfSkewOffset;
+        }
+
+	private:
+		CMOOSConditionedSkewFilter(const CMOOSConditionedSkewFilter &v); // Not implemented
+		void             operator=(const CMOOSConditionedSkewFilter &v); // Not implemented
+
+
+    private:
+        double m_dfBeginTime;
+        double m_dfSkewOffset;
+        double m_dfRXOffset;
+    };
 
 }
 
