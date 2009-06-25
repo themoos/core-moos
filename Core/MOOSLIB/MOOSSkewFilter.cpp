@@ -237,13 +237,13 @@ namespace MOOS
         if (skewinfo)
         {
             // TODO: Output some useful stuff!
-            skewinfo->m = dfM;
-			skewinfo->c = dfC;
-			skewinfo->LB = dfSkewLB;
-			skewinfo->UB = dfSkewUB;
-			skewinfo->envLB = dfEnvSkewLB;
-			skewinfo->envUB = dfEnvSkewUB;
-			skewinfo->envEst = dfSkew;
+            skewinfo->m       = dfM;
+			skewinfo->c       = dfC;
+			skewinfo->LB      = dfSkewLB;
+			skewinfo->UB      = dfSkewUB;
+			skewinfo->envLB   = dfEnvSkewLB;
+			skewinfo->envUB   = dfEnvSkewUB;
+			skewinfo->envEst  = dfSkew;
 			skewinfo->filtEst = dfFiltOut;
         }
 
@@ -309,6 +309,7 @@ namespace MOOS
         }
         else
         {
+            // This probably means that there are no segments
             m = 0.0;
             c = m_InitPt.y;
         }
