@@ -67,7 +67,15 @@ class CAntler
         
         //run in a headless fashion - instructions will be recieved via MOOSComms
         bool Run(const std::string & sHost,  int lPort, const std::string & sAntlerName);
-        
+		
+		enum VERBOSITY_LEVEL
+		{
+			QUIET,
+			TERSE,
+			CHATTY,
+		};
+		bool SetVerbosity(VERBOSITY_LEVEL eLevel);
+						  
     protected:
         
         //top level spawn - all comes from here
@@ -147,6 +155,8 @@ class CAntler
         std::string m_sDBHost;
         int m_nDBPort;
         
+		VERBOSITY_LEVEL m_eVerbosity;
+
 
         
     };

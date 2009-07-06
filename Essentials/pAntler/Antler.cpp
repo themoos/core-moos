@@ -19,6 +19,7 @@ CAntler::CAntler()
     m_sDBHost = "localhost";
     m_nDBPort = 9000;
     m_bQuitCurrentJob = false;
+	m_eVerbosity=CHATTY;
 }
 
 //this is the vanilla version of Run - called to run from a single mission file
@@ -110,7 +111,7 @@ bool CAntler::DoRemoteControl()
                     //suck out the Antler filter line
                     std::string sFilter;
                     std::getline(ss, sFilter);
-		    MOOSTrace("%s\n", sFilter.c_str());
+					MOOSTrace("%s\n", sFilter.c_str());
                     MOOSChomp(sFilter,"ANTLERFILTER:", true);
                     std::stringstream ssF(sFilter);
                     
@@ -164,9 +165,29 @@ bool CAntler::DoRemoteControl()
     }        
 }
 
+bool CAntler::SetVerbosity(VERBOSITY_LEVEL eLevel)
+{
+	m_eVerbosity = eLevel;
+	switch(eLevel)
+	{
+		case CHATTY:
+			break;
+		case TERSE:
+			InhibitMOOSTraceInThisThread(true);
+			break;
+		case QUIET:
+			InhibitMOOSTraceInThisThread(true);
+			if(m_pMOOSComms!=NULL)
+				m_pMOOSComms->SetQuiet(true);
+			
+	}
+	return true;
+}
+
 bool CAntler::ConfigureMOOSComms()
 {
     
+	
     
     //start a monitoring thread
     m_RemoteControlThread.Initialise(_RemoteControlCB, this);
@@ -346,10 +367,16 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             
             if(pNew!=NULL)
             {
-                MOOSTrace("   [%.3d] Process: %-15s ~ %-15s launched successfully\n",
-                    m_nCurrentLaunch,
-                    pNew->m_sApp.c_str(),
-                    pNew->m_sMOOSName.c_str());
+				//this a really important bit of text most folk will want to see it...
+				InhibitMOOSTraceInThisThread(m_eVerbosity==QUIET);
+				{
+					MOOSTrace("   [%.3d] Process: %-15s ~ %-15s launched successfully\n",
+							  m_nCurrentLaunch,
+							  pNew->m_sApp.c_str(),
+							  pNew->m_sMOOSName.c_str());
+				}
+				InhibitMOOSTraceInThisThread(m_eVerbosity!=CHATTY);
+				
                 m_ProcList.push_front(pNew);
 				m_nCurrentLaunch++;
                 PublishProcessLaunch(pNew->m_sApp);
@@ -407,9 +434,15 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             if(    pMOOSProc->pWin32Proc->dwGetExitCode()!=STILL_ACTIVE)
             {
 
-                MOOSTrace("   [%.3d] Process: %-15s has quit\n",
-                    --m_nCurrentLaunch,
-                    pMOOSProc->m_sApp.c_str());
+				//this a really important bit of text most folk will want to see it...
+				InhibitMOOSTraceInThisThread(m_eVerbosity==QUIET);
+				{
+					MOOSTrace("   [%.3d] Process: %-15s has quit\n",
+							  --m_nCurrentLaunch,
+							  pMOOSProc->m_sApp.c_str());
+				}
+				InhibitMOOSTraceInThisThread(m_eVerbosity!=CHATTY);
+
                 
                 PublishProcessQuit(pMOOSProc->m_sApp);
                 delete pMOOSProc->pWin32Attrib;
@@ -432,9 +465,15 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             int nStatus = 0;
             if(waitpid(pMOOSProc->m_ChildPID,&nStatus,WNOHANG)>0)
             {
-                MOOSTrace("   [%.3d] Process: %-15s has quit\n",
-                    --m_nCurrentLaunch,
-                    pMOOSProc->m_sApp.c_str());
+				
+				InhibitMOOSTraceInThisThread(m_eVerbosity==QUIET);
+				{
+					MOOSTrace("   [%.3d] Process: %-15s has quit\n",
+							  --m_nCurrentLaunch,
+							  pMOOSProc->m_sApp.c_str());
+				}
+				InhibitMOOSTraceInThisThread(m_eVerbosity!=CHATTY);
+				
                 
                 PublishProcessQuit(pMOOSProc->m_sApp);
                 

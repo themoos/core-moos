@@ -42,12 +42,9 @@ using namespace std;
 
 int main(int argc ,char *argv[])
 {
+	//this is our main object...everything after this is configuration...
+	CAntler Antler;
       
-    MOOSTrace("*************************************\n");
-    MOOSTrace("*  This is Antler, head of MOOS...  *\n");
-    MOOSTrace("*  P. Newman 2008                   *\n");
-    MOOSTrace("*************************************\n");
-    
     
     //here we look for overloading directoves which are of form --name=value
     std::vector<std::string> vArgv;
@@ -62,9 +59,20 @@ int main(int argc ,char *argv[])
             std::string sVar = MOOSChomp(t,"=");
             if(t.empty())
             {
-                MOOSTrace("error incomplete overloading of parameter  --%s=value (are there extraneous whitespaces?)\n",sVar.c_str());
-                return -1;
-            }
+				if(MOOSStrCmp(sVar, "quiet"))
+				{
+					Antler.SetVerbosity(CAntler::QUIET);
+				}
+				else if(MOOSStrCmp(sVar, "terse"))
+				{
+					Antler.SetVerbosity(CAntler::TERSE);
+				}
+				else
+				{
+					MOOSTrace("error incomplete overloading of parameter  --%s=value (are there extraneous whitespaces?)\n",sVar.c_str());
+					return -1;
+				}
+			}
             else
             {
             	OverLoads[sVar] = t;
@@ -78,6 +86,11 @@ int main(int argc ,char *argv[])
     }
     
       
+	MOOSTrace("*************************************\n");
+    MOOSTrace("*  This is Antler, head of MOOS...  *\n");
+    MOOSTrace("*  P. Newman 2008                   *\n");
+    MOOSTrace("*************************************\n");
+	
     
     switch(vArgv.size())
     {
@@ -101,7 +114,6 @@ int main(int argc ,char *argv[])
             }
             
                     
-            CAntler Antler;
             return Antler.Run(sMissionFile) ? 0 :-1;            
         }
         case 3:
@@ -126,7 +138,6 @@ int main(int argc ,char *argv[])
             }
             
             
-            CAntler Antler;
             
             //make a set of processes we want to launch
             std::stringstream S(vArgv[2]); 
@@ -144,12 +155,13 @@ int main(int argc ,char *argv[])
             std::string sDBHost = vArgv[1]; //where is DB?
             int nPort = atoi(vArgv[2].c_str()); //what port
             std::string sName = vArgv[3]; //what is our Antler name?
-            CAntler Antler;
             return Antler.Run(sDBHost,nPort,sName) ? 0 :-1;
         }
         default:
         {
             MOOSTrace("usage:\n pAntler missionfile.moos\nor\n pAntler missionfile.moos \"P1,P2,P3...\"\nor pAntler DBHost DBPort AntlerName\n");
+			MOOSTrace("\n  --quiet to suppress console output, --terse for limited output\n");
+			
             return -1;
         }
     }
