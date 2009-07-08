@@ -215,7 +215,14 @@ bool  CMOOSCommServer::OnAbsentClient(XPCTcpSocket* pClient)
     if(m_pfnDisconnectCallBack!=NULL)
     {
         MOOSTrace("Invoking user OnDisconnect callback...\n");
-        (*m_pfnDisconnectCallBack)(sWho,m_pDisconnectCallBackParam);
+		
+		if(m_bQuiet)
+			InhibitMOOSTraceInThisThread(false);
+        
+		(*m_pfnDisconnectCallBack)(sWho,m_pDisconnectCallBackParam);
+		
+		if(m_bQuiet)
+			InhibitMOOSTraceInThisThread(true);
     }
 
     MOOSTrace("--------------------------------\n");
@@ -445,12 +452,20 @@ bool CMOOSCommServer::ProcessClient()
             std::string sWho = m_Socket2ClientMap[m_pFocusSocket->iGetSocketFd()];
             //let owner figure out what to do !
             //this is a user supplied call back
+
+			if(m_bQuiet)
+				InhibitMOOSTraceInThisThread(false);
+
             if(!(*m_pfnRxCallBack)(sWho,MsgLstRx,MsgLstTx,m_pRxCallBackParam))
             {
                 //client call back failed!!
                 MOOSTrace(" CMOOSCommServer::ProcessClient()  pfnCallback failed\n");
             }
+			
+			if(m_bQuiet)
+				InhibitMOOSTraceInThisThread(true);
 
+			
             //we must send something back... just to keep the link alive
             //PMN changes this in 2007 as part of the new timing scheme
             //every packet will no begin with a NULL message the double val
@@ -549,8 +564,15 @@ bool CMOOSCommServer::OnClientDisconnect()
     if(m_pfnDisconnectCallBack!=NULL)
     {
         MOOSTrace("Invoking user OnDisconnect callback...\n");
+		if(m_bQuiet)
+			InhibitMOOSTraceInThisThread(false);
+
         (*m_pfnDisconnectCallBack)(sWho,m_pDisconnectCallBackParam);
-    }
+
+		if(m_bQuiet)
+			InhibitMOOSTraceInThisThread(true);
+
+	}
 
     MOOSTrace("--------------------------------\n");
 

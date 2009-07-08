@@ -1013,7 +1013,7 @@ bool MOOSFail(const char * FmtStr,...)
 }
 
 
-//this is library scopt mapping of threadid to a flag
+//this is library scope mapping of threadid to a flag
 //specifying whether or no a thread should allow MOOSTracing.
 THREAD2TRACE_MAP gThread2TraceMap;
 
