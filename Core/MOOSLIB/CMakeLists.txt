@@ -63,7 +63,9 @@ XPCException.h
 XPCGetHostInfo.h
 XPCGetProtocol.h
 XPCSocket.h
-XPCTcpSocket.h )
+XPCTcpSocket.h 
+XPCUdpSocket.h
+)
 
 # install headers
 INSTALL( FILES ${MOOSLIB_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MOOSLIB )
