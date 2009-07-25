@@ -136,7 +136,7 @@ public:
             &m_nThreadID);
         ResumeThread(m_hThread);
 #else
-        int Status = pthread_create( (pthread_t*)&m_nThreadID,NULL,CallbackProc,this);
+        int Status = pthread_create( &m_nThreadID,NULL,CallbackProc,this);
         if(Status!=0) {
             SetRunningFlag(false);
             return false;
@@ -176,7 +176,7 @@ public:
         }
 #else
         void * Result;
-        int retval = pthread_join( (pthread_t)m_nThreadID,&Result);
+        int retval = pthread_join( m_nThreadID,&Result);
         if (retval != 0)
         {
             MOOSTrace("pthread_join returned error: %d\n", retval);
@@ -273,8 +273,12 @@ private:
     
 #ifdef _WIN32
     HANDLE m_hThread;
-#endif
     unsigned long m_nThreadID;
+#endif
+	
+#ifndef _WIN32
+	pthread_t m_nThreadID;
+#endif
 
     ////////////////
     // These are only accessed through Set/Get
