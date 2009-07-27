@@ -136,7 +136,10 @@ public:
             &m_nThreadID);
         ResumeThread(m_hThread);
 #else
-        int Status = pthread_create( &m_nThreadID,NULL,CallbackProc,this);
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        int Status = pthread_create( &m_nThreadID,&attr,CallbackProc,this);
         if(Status!=0) {
             SetRunningFlag(false);
             return false;
@@ -175,12 +178,15 @@ public:
             WaitForSingleObject(m_hThread,INFINITE);
         }
 #else
+        // This should not be necessary... Why was it here again ?
+        /*
         void * Result;
         int retval = pthread_join( m_nThreadID,&Result);
         if (retval != 0)
         {
             MOOSTrace("pthread_join returned error: %d\n", retval);
         }
+        */
 #endif
         
         // There is the potential for a race condition here, if some other
