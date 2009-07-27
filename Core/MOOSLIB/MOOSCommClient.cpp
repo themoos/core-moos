@@ -81,6 +81,7 @@ bool ClientLoopProc( void * pParameter)
 
 CMOOSCommClient::CMOOSCommClient()
 {
+    m_bClientLoopIsRunning = false;
 
 	m_pConnectCallBackParam = NULL;
 	m_pfnConnectCallBack = NULL;
@@ -205,7 +206,7 @@ void CMOOSCommClient::SetOnDisconnectCallBack(bool ( *pfn)( void * pConnectParam
 
 bool CMOOSCommClient::ClientLoop()
 {
-
+    m_bClientLoopIsRunning = true;
 	//MOOSTrace("ClientLoop() Begins\n");s
     double dfTDebug = MOOSLocalTime();
 	while(!m_bQuit)
@@ -254,6 +255,9 @@ bool CMOOSCommClient::ClientLoop()
 	MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
+
+    m_bClientLoopIsRunning = false;
+
 	return true;
 }
 
@@ -867,7 +871,8 @@ bool CMOOSCommClient::Close(bool bNice )
     
     int i = 0;
 
-	while(m_bConnected )
+	//while(m_bConnected )
+	while(m_bClientLoopIsRunning)
 	{
 		MOOSPause(100);
 

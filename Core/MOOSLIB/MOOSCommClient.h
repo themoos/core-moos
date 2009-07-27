@@ -203,8 +203,6 @@ public:
     void SetVerboseDebug(bool bT){m_bVerboseDebug = bT;};
     
     bool SetCommsTick(int nCommsTick);
-    
-
 
 protected:
     bool ClearResources();
@@ -327,7 +325,9 @@ protected:
     
     /** Skew filter keeps track of clock skew with server */
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
-
+    
+    /** Tells us whether the ClientLoop is running. */
+    bool m_bClientLoopIsRunning;
 };
 
 #endif // !defined(MOOSCommClientH)
