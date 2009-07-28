@@ -76,6 +76,12 @@ bool MOOSVectorFromString(const std::string & sStr,std::vector<double> & dfVecVa
 bool MOOSVectorFromString(const std::string & sStr,std::vector<float> & fValVec,int & nRows, int & nCols);
 bool MOOSVectorFromString(const std::string & sStr,std::vector<unsigned int> & dfVecVal,int & nRows,int & nCols);
 
+//the following a sim[lpe line extractor from a file possessing an alog format - see Logger documentation
+bool GetNextAlogLineByMessageName(std::istream & Input,
+								  const std::string & sMessageName,
+								  double & dfTime,
+								  std::string & sSource,
+								  std::string & sPayload);
 
 
 /** write a std::vector<double> to a string (using MOOS Notation) */

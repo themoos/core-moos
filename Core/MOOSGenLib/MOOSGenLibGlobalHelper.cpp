@@ -684,6 +684,39 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
 }
 
 
+
+bool GetNextAlogLineByMessageName(std::istream & Input,
+								  const std::string & sMessageName,
+								  double & dfTime,
+								  std::string & sSource,
+								  std::string & sPayload)
+{
+	
+	while (!Input.eof()) 
+	{
+		std::string sLine;
+		std::getline(Input,sLine);
+		if(!sLine.empty() && sLine[0]!='%')
+		{
+			std::string sWhat,sWho;
+			std::stringstream ss(sLine);
+			
+			ss>>dfTime;
+			
+			ss>>sWhat;
+			
+			if(MOOSStrCmp(sWhat,sMessageName))
+			{
+				ss>>sSource;
+				std::getline(ss,sPayload);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 double MOOS_ANGLE_WRAP(double dfAng)
 {
     if(dfAng<PI && dfAng>-PI)
