@@ -8,6 +8,8 @@
  */
 
 #include "XPCUdpSocket.h"
+#include <map>
+#include <string>
 
 
 
@@ -77,7 +79,7 @@ int XPCUdpSocket::iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPo
         throw XPCException("::iSendMessageTo failed to get destination address\n");
     }
     
-    int iNumBytes=sendto(iSocket, _vMessage, _iMessageSize,0,
+    int iNumBytes=sendto(iSocket, (const char*)_vMessage, _iMessageSize,0,
              (struct sockaddr *) &Address, sizeof(Address) );
     
     
