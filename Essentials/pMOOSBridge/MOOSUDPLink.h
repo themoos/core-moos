@@ -10,10 +10,11 @@
 #ifndef MOOSUDPLINKH
 #define MOOSUDPLINKH
 
+#include <MOOSLIB/XPCUdpSocket.h>
 #include <MOOSGenLib/MOOSThread.h>
 #include <MOOSLIB/MOOSMsg.h>
 #include <MOOSLIB/MOOSCommPkt.h>
-#include <MOOSLIB/XPCUdpSocket.h>
+
 
 
 class CMOOSUDPLink
