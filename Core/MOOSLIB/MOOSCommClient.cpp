@@ -252,7 +252,8 @@ bool CMOOSCommClient::ClientLoop()
 		m_pSocket = NULL;
 	}
 
-	MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
+    if(m_bQuiet)
+        MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
 
