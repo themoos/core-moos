@@ -580,7 +580,6 @@ void iMatlab( int nlhs, mxArray *plhs[], int nrhs, const mxArray  *prhs[] )
                 }
                 else if(Matlab2Double(dfTmp,prhs[2]))
                 {
-                    MOOSTrace("t = %f\n",dfTime);
                     pComms->Notify(sKey,dfTmp,dfTime);
                 }
                 else
