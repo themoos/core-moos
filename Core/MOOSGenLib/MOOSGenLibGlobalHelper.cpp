@@ -1079,13 +1079,17 @@ void MOOSTrace(const char *FmtStr,...)
 #else
     pthread_t Me =  pthread_self();
 #endif
-    THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
+
+    if(!gThread2TraceMap.empty())
     
-    //have we been told to be quiet?
-    if(p!=gThread2TraceMap.end())
-        if(p->second==true)
-            return;
-        
+    {
+        THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
+    
+        //have we been told to be quiet?
+        if(p!=gThread2TraceMap.end())
+            if(p->second==true)
+                return;
+    }
     
     const unsigned int MAX_TRACE_STR = 2048;
 
