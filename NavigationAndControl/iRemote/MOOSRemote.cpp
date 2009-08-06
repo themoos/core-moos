@@ -211,8 +211,8 @@ bool CMOOSRemote::Run( const char * sName,
     {
         if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
         {
-            MOOSTrace("Mission File not found\n");
-            return false;
+            MOOSTrace("Warning Mission File not found\n");
+//            return false;
         }
     }
 

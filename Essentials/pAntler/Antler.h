@@ -152,6 +152,7 @@ class CAntler
         std::string m_sMissionFile;
         bool m_bHeadless;
         bool m_bQuitCurrentJob;
+		bool m_bSupportGentleKill;
         bool m_bRunning;
         bool m_bNewJob;
         std::string m_sMonarchAntler;

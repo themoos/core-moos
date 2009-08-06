@@ -309,33 +309,40 @@ bool CAntler::KillNicely(MOOSProc* pProc)
 {
 #ifndef _WIN32
 		
-	std::string sCmd = "ps -o ppid=,pid=";
-	
-	FILE* In = popen(sCmd.c_str(),"r");
-	
-	if(In!=NULL)
+	if(m_bSupportGentleKill)
 	{
-		bool bFound = false;
-		char Line[256];
-		while(fgets(Line,sizeof(Line),In))
+		std::string sCmd = "ps -o ppid=,pid=";
+		
+		FILE* In = popen(sCmd.c_str(),"r");
+		
+		if(In!=NULL)
 		{
-			std::stringstream L(Line);
-			int ppid,pid;
-			L>>ppid;
-			L>>pid;
-
-			if(pProc->m_ChildPID==ppid)
+			bool bFound = false;
+			char Line[256];
+			while(fgets(Line,sizeof(Line),In))
 			{
-				kill(pid,SIGTERM);
-				bFound = true;
-			}
-		}	
-		pclose(In);
-		return bFound;
+				std::stringstream L(Line);
+				int ppid,pid;
+				L>>ppid;
+				L>>pid;
+				
+				if(pProc->m_ChildPID==ppid)
+				{
+					kill(pid,SIGTERM);
+					bFound = true;
+				}
+			}	
+			pclose(In);
+			return bFound;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{
-		return false;
+		kill(pProc->m_ChildPID,SIGTERM);
 	}
 #else
 	//MOOSTrace("Warning - gentle killing of win32 processes is not implemented\n");
@@ -343,6 +350,7 @@ bool CAntler::KillNicely(MOOSProc* pProc)
     return true;
 
 #endif
+	return true;
 }
 
 
@@ -393,6 +401,17 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
         m_sDefaultExecutablePath="";
     }
     
+	
+	//are we being ask to support gentle process killing?
+#ifdef _WIN32
+	m_bSupportGentleKill= false;
+#else
+	m_bSupportGentleKill = true;
+	m_MissionReader.GetConfigurationParam("GentleKill",m_bSupportGentleKill);
+#endif
+	
+	
+	
 	//no cycle through each line in the configuration block. If it begins with run then it means launch
     for(p = sParams.begin();p!=sParams.end();p++)
     {
@@ -999,7 +1018,8 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
 	//does get sent to all the launched xterms. Instead we will catch ctrl-C ourself
 	//and find the MOOS process running within the sub process, signal it to die
 	//so subprocesses can clean up nicely
-	setpgid(pNewProc->m_ChildPID,0);
+	if(m_bSupportGentleKill)
+		setpgid(pNewProc->m_ChildPID,0);
     
     return true;
 }
