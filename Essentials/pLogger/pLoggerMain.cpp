@@ -31,6 +31,17 @@
 #include <MOOSLIB/MOOSLib.h>
 #include "MOOSLogger.h"
 
+CMOOSLogger gLogger;
+
+
+void CatchMeBeforeDeath(int sig) 
+{
+	gLogger.ShutDown();
+	exit(0);
+}
+
+
+
 int main(int argc ,char * argv[])
 {
 
@@ -45,10 +56,14 @@ int main(int argc ,char * argv[])
         sMissionFile = argv[1];
     }
 
-    CMOOSLogger Logger;
+	//register a handler for shutdown
+	signal(SIGINT, CatchMeBeforeDeath);
+	signal(	SIGQUIT, CatchMeBeforeDeath);
+	signal(	SIGTERM, CatchMeBeforeDeath);
+	
 
     //GO!
-    Logger.Run(sMOOSName,sMissionFile);
+    gLogger.Run(sMOOSName,sMissionFile);
 
     return 0;
 }

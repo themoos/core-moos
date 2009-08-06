@@ -65,6 +65,13 @@ public:
     /** called when  command mesage is recieved  - use this channle for dynamic logging*/
     bool OnCommandMsg(CMOOSMsg Msg);
 
+	/** a endless loop looking to compress data to a zip file (if required) */
+	bool DoZipLogging();
+	
+	/** call to shut everything down and exit cleanly */
+	bool ShutDown();
+
+
 protected:
 
     /** called to set up machinery to log a variable geiven a command string Log = Var @ etc*/
@@ -113,6 +120,12 @@ protected:
     bool    m_bSynchronousLog;
     bool    m_bAsynchronousLog;
     bool    m_bWildCardLogging;
+
+	//variables to do with compressed logging...
+	bool	m_bCompressAlog;
+	CMOOSLock	m_ZipLock;
+	std::list<std::string> m_ZipBuffer;
+	CMOOSThread m_ZipThread;
 
     //how many synline have been written?
     int     m_nSyncLines;

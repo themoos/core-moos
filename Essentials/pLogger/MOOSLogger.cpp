@@ -45,11 +45,17 @@
 #include <MOOSGenLib/MOOSAssert.h>
 #include <cmath>
 #include <cstring>
+#define ZIP_FLUSH_SIZE 2048
+
+#ifdef ZLIB_FOUND
+#include "zlib.h"
+#endif
 
 #ifndef _WIN32
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <signal.h>
 #endif
 
 
@@ -65,12 +71,22 @@ using namespace std;
 #define DYNAMIC_NAME_SPACE 64
 #define DEFAULT_WILDCARD_TIME 1.0 //how often to call into the DB to get a list of all variables if wild card loggin is turned on
 
+
+bool _ZipThreadWorker(void * pParam)
+{
+	CMOOSLogger* pMe = (CMOOSLogger*) pParam;
+	return pMe->DoZipLogging();
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 CMOOSLogger::CMOOSLogger()
 {
+	
+	
     //be default we don't need to be too fast..
     SetAppFreq(5);
 
@@ -111,9 +127,13 @@ CMOOSLogger::CMOOSLogger()
 
 CMOOSLogger::~CMOOSLogger()
 {
-    CloseFiles();
+	ShutDown();
 }
 
+bool CMOOSLogger::ShutDown()
+{
+	return CloseFiles();
+}
 
 
 bool CMOOSLogger::CloseFiles()
@@ -132,6 +152,9 @@ bool CMOOSLogger::CloseFiles()
     {
         m_SystemLogFile.close();
     }
+	
+	//crucially make sure teh zipping thread has stopped
+	m_ZipThread.Stop();
 
     return true;
 
@@ -253,9 +276,18 @@ bool CMOOSLogger::OnStartUp()
     m_MissionReader.GetConfigurationParam("FILE",m_sStemFileName);
 
 
-
-
-
+	//do we want to do zip logging
+	m_bCompressAlog = false;
+	m_MissionReader.GetConfigurationParam("CompressAlogs",m_bCompressAlog);
+	
+	if(m_bCompressAlog)
+	{
+#ifndef ZLIB_FOUND
+		m_bCompressAlog = false;
+		MOOSTrace("WARNING: alogs will not be compressed because zlib was not found at build time");
+#endif
+	}
+	
 
 
 
@@ -977,6 +1009,23 @@ bool CMOOSLogger::OnNewSession()
 
     if(!CopyMissionFile())
         MOOSTrace("Warning:\n\tunable to create a back up of the mission file\n");
+	
+	
+	if(m_bCompressAlog)
+	{
+#ifdef ZLIB_FOUND
+		if(m_ZipThread.IsThreadRunning())
+		{
+			m_ZipThread.Stop();
+		}
+		m_ZipThread.Initialise(_ZipThreadWorker, this);
+		m_ZipThread.Start();
+#else
+		m_bCompressAlog = false;
+		MOOSTrace("WARNING: alogs will not be compressed because zlib was not found at build time");
+#endif
+	}
+	
 
     return true;
 }
@@ -1015,6 +1064,9 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
     if(m_AsyncLogFile.is_open()&& m_bAsynchronousLog)
     {
         MOOSMSG_LIST::iterator q;
+
+		std::stringstream sStream;
+
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
             CMOOSMsg & rMsg = *q;
@@ -1024,20 +1076,37 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             //which is used for the synchronous case..
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
-				m_AsyncLogFile.setf(ios::left);
-                m_AsyncLogFile.setf(ios::fixed);
+				
+				sStream.setf(ios::left);
+				
+                sStream.setf(ios::fixed);
 
-                m_AsyncLogFile<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
+                sStream<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
 
-                m_AsyncLogFile<<setw(20)<<rMsg.GetKey().c_str()<<' ';
+                sStream<<setw(20)<<rMsg.GetKey().c_str()<<' ';
 
-                m_AsyncLogFile<<setw(10)<<rMsg.GetSource().c_str()<<' ';
+                sStream<<setw(10)<<rMsg.GetSource().c_str()<<' ';
 
-                m_AsyncLogFile<<rMsg.GetAsString().c_str()<<' ';
+                sStream<<rMsg.GetAsString().c_str()<<' ';
 
-                m_AsyncLogFile<<endl;
+                sStream<<endl;
+				
+				
             }
         }
+		
+		if(m_bCompressAlog)
+		{
+			//send to the worker thread...
+			m_ZipLock.Lock();
+			m_ZipBuffer.push_back(sStream.str());
+			m_ZipLock.UnLock();
+		}
+		else
+		{
+			//a regular write
+			m_AsyncLogFile<<sStream.str();
+		}
     }
     return true;
 }
@@ -1262,3 +1331,89 @@ bool CMOOSLogger::HandleDynamicLogRequest(std::string sRequest)
 
 
 }
+
+
+
+
+bool CMOOSLogger::DoZipLogging()
+{
+#ifdef ZLIB_FOUND
+	
+	std::string sZipFile = m_sAsyncFileName+".gz";
+	gzFile TheZipFile =  gzopen(sZipFile.c_str(),"wb");
+	
+	
+	int nTotalWritten = 0;
+	int nSinceLastFlush = 0;
+	while(!m_ZipThread.IsQuitRequested())
+	{
+		MOOSPause(1000);
+		
+		std::list<std::string > Work;
+		Work.clear();
+		
+		m_ZipLock.Lock();
+		{
+			Work.splice(Work.begin(),m_ZipBuffer);
+		}
+		m_ZipLock.UnLock();
+		
+				
+		std::list<std::string >::iterator q;
+		
+		for(q = Work.begin();q!=Work.end();q++)
+		{
+			int nWritten = gzwrite(TheZipFile, q->c_str(), q->size() );
+			
+			if(nWritten<=0)
+			{	
+				int Error;
+				gzerror(TheZipFile, &Error);
+				switch(Error)
+				{
+					case Z_ERRNO:
+						MOOSTrace("Z_ERRNO\n");
+						break;
+					case Z_STREAM_ERROR	:
+						MOOSTrace("Z_STREAM_ERROR\n");
+						break;
+					case Z_BUF_ERROR:
+						MOOSTrace("Z_BUF_ERROR\n");
+						break;
+					case Z_MEM_ERROR:
+						MOOSTrace("Z_MEM_ERROR\n");
+						break;
+				}
+			}
+			else
+			{
+				nTotalWritten+=nWritten;
+				nSinceLastFlush+=nWritten;
+				
+				if(nSinceLastFlush>ZIP_FLUSH_SIZE)
+				{	
+					gzflush(TheZipFile, Z_SYNC_FLUSH);
+					nSinceLastFlush = 0;
+				}
+
+			}
+		}
+		Work.clear();
+		
+		
+		
+		
+	}
+	gzflush(TheZipFile, Z_FINISH);
+	gzclose(TheZipFile);
+	MOOSTrace("closed compressed alog file %s \n",sZipFile.c_str());
+	
+#endif
+	return true;
+	
+}
+
+
+
+
+
