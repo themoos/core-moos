@@ -46,23 +46,25 @@ using namespace std;
 //this is our main object...everything after this is configuration...
 CAntler gAntler;
 
-
+#ifndef _WIN32
 //this is a signal handler
 void CatchMeBeforeDeath(int sig) 
 {
 	gAntler.ShutDown();
 	exit(0);
 }
-
+#endif
 
 
 int main(int argc ,char *argv[])
 {
 	
+#ifndef _WIN32
 	//register a handler for shutdown
 	signal(SIGINT, CatchMeBeforeDeath);
 	signal(	SIGQUIT, CatchMeBeforeDeath);
 	signal(	SIGTERM, CatchMeBeforeDeath);
+#endif
 	
       
     

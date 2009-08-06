@@ -31,14 +31,22 @@
 #include <MOOSLIB/MOOSLib.h>
 #include "MOOSLogger.h"
 
+#include <signal.h>
 CMOOSLogger gLogger;
 
-
+#ifdef _WIN32
+BOOL CatchMeBeforeDeath( DWORD fdwCtrlType )
+#else
 void CatchMeBeforeDeath(int sig) 
+#endif
 {
+  
 	gLogger.ShutDown();
-	exit(0);
+    exit(0);
+	
+  
 }
+
 
 
 
@@ -56,12 +64,21 @@ int main(int argc ,char * argv[])
         sMissionFile = argv[1];
     }
 
+
+    //set up some control handling
+#ifndef _WIN32
 	//register a handler for shutdown
 	signal(SIGINT, CatchMeBeforeDeath);
 	signal(	SIGQUIT, CatchMeBeforeDeath);
 	signal(	SIGTERM, CatchMeBeforeDeath);
-	
+#else
+    if( !SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CatchMeBeforeDeath, TRUE ))
+    {
+        MOOSTrace("this is bad");
+    }
+#endif
 
+  
     //GO!
     gLogger.Run(sMOOSName,sMissionFile);
 

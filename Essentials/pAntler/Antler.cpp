@@ -338,8 +338,9 @@ bool CAntler::KillNicely(MOOSProc* pProc)
 		return false;
 	}
 #else
-	MOOSTrace("Warning - gentle killing of win32 processes is not yet tested\n");
-	pMOOSProc->pWin32Proc->vTerminate();                
+	//MOOSTrace("Warning - gentle killing of win32 processes is not implemented\n");
+	pProc->pWin32Proc->vTerminate();   
+    return true;
 
 #endif
 }

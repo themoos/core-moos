@@ -48,7 +48,7 @@
 #define ZIP_FLUSH_SIZE 2048
 
 #ifdef ZLIB_FOUND
-#include "zlib.h"
+#include <zlib.h>
 #endif
 
 #ifndef _WIN32
@@ -154,8 +154,10 @@ bool CMOOSLogger::CloseFiles()
     }
 	
 	//crucially make sure teh zipping thread has stopped
-	m_ZipThread.Stop();
 
+#ifdef ZLIB_FOUND
+	m_ZipThread.Stop();
+#endif
     return true;
 
 }
@@ -284,7 +286,7 @@ bool CMOOSLogger::OnStartUp()
 	{
 #ifndef ZLIB_FOUND
 		m_bCompressAlog = false;
-		MOOSTrace("WARNING: alogs will not be compressed because zlib was not found at build time");
+		MOOSTrace("warning:\n\talogs will not be compressed because zlib was not found at build time");
 #endif
 	}
 	
