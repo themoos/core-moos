@@ -10,9 +10,12 @@ using namespace std;
 
 
 
+
 #define DEBUG_LAUNCH 0
 CAntler::CAntler()
 {
+
+	
 	m_JobLock.UnLock();    
     m_bNewJob = false;
     m_sAntlerName = "Monarch";
@@ -302,6 +305,44 @@ bool CAntler::PublishProcessLaunch(const std::string & sProc)
 }
 
 
+bool CAntler::KillNicely(MOOSProc* pProc)
+{
+#ifndef _WIN32
+		
+	std::string sCmd = "ps -o ppid=,pid=";
+	
+	FILE* In = popen(sCmd.c_str(),"r");
+	
+	if(In!=NULL)
+	{
+		bool bFound = false;
+		char Line[256];
+		while(fgets(Line,sizeof(Line),In))
+		{
+			std::stringstream L(Line);
+			int ppid,pid;
+			L>>ppid;
+			L>>pid;
+
+			if(pProc->m_ChildPID==ppid)
+			{
+				kill(pid,SIGTERM);
+				bFound = true;
+			}
+		}	
+		pclose(In);
+		return bFound;
+	}
+	else
+	{
+		return false;
+	}
+#else
+	MOOSTrace("Warning - gentle killing of win32 processes is not yet tested\n");
+	pMOOSProc->pWin32Proc->vTerminate();                
+
+#endif
+}
 
 
 bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
@@ -426,7 +467,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
 #ifdef _WIN32
             if(m_bQuitCurrentJob)
             {
-				pMOOSProc->pWin32Proc->vTerminate();                
+				KillNicely(pMOOSProc);
             }
             
             
@@ -456,7 +497,7 @@ bool CAntler::Spawn(const std::string &  sMissionFile, bool bHeadless)
             if(m_bQuitCurrentJob)
             {
                 MOOSTrace("   actively killing running child %s\n",pMOOSProc->m_sApp.c_str());
-				kill(pMOOSProc->m_ChildPID,SIGKILL);
+				KillNicely(pMOOSProc);
                 //just give it a little time - for pities sake - no need for this pause
                 MOOSPause(300);
             }
@@ -750,6 +791,37 @@ CAntler::MOOSProc* CAntler::CreateMOOSProcess(string sConfiguration)
 }
 
 
+bool CAntler::ShutDown()
+{
+	
+	MOOSPROC_LIST::iterator q;
+
+	MOOSTrace("\n\n|***** Shutdown *****|\n\n");
+
+	for(q = m_ProcList.begin();q!=m_ProcList.end();q++)
+	{
+		MOOSProc * pMOOSProc = *q;
+		KillNicely(pMOOSProc);
+	 
+		int nStatus = 0;
+#ifndef _WIN32
+	 
+		MOOSTrace("\n   Signalling %-15s ",pMOOSProc->m_sApp.c_str());
+		if(waitpid(pMOOSProc->m_ChildPID,&nStatus,0)>0)
+		{
+			MOOSTrace("[OK]");
+		}		
+#endif
+
+	 }
+	
+	MOOSTrace("\n\n   All spawned processes shutdown.\n\n   That was the MOOS \n\n");
+	 
+	 
+	return true;
+}
+
+
 
 #ifdef _WIN32
 bool CAntler::DoWin32Launch(CAntler::MOOSProc * pNewProc)
@@ -922,7 +994,11 @@ bool CAntler::DoNixOSLaunch(CAntler::MOOSProc * pNewProc)
     }
     
     //Parent execution stream continues here...
-    //with nothing to do
+	//we need to change the process group of the spawned process so that ctrl-C
+	//does get sent to all the launched xterms. Instead we will catch ctrl-C ourself
+	//and find the MOOS process running within the sub process, signal it to die
+	//so subprocesses can clean up nicely
+	setpgid(pNewProc->m_ChildPID,0);
     
     return true;
 }

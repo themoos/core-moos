@@ -75,6 +75,9 @@ class CAntler
 			CHATTY,
 		};
 		bool SetVerbosity(VERBOSITY_LEVEL eLevel);
+		
+		//call this to cause a clean shut down 
+		bool ShutDown();
 						  
     protected:
         
@@ -141,6 +144,9 @@ class CAntler
         bool OnMOOSConnect();
         /** goodby MOOSDB*/
         bool OnMOOSDisconnect();
+		
+		/** Kill a process gently */
+		bool KillNicely(MOOSProc* pProc);
         
         CMOOSLock m_JobLock;
         std::string m_sMissionFile;

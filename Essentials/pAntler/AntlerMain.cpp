@@ -40,10 +40,30 @@
 
 using namespace std;
 
+
+
+
+//this is our main object...everything after this is configuration...
+CAntler gAntler;
+
+
+//this is a signal handler
+void CatchMeBeforeDeath(int sig) 
+{
+	gAntler.ShutDown();
+	exit(0);
+}
+
+
+
 int main(int argc ,char *argv[])
 {
-	//this is our main object...everything after this is configuration...
-	CAntler Antler;
+	
+	//register a handler for shutdown
+	signal(SIGINT, CatchMeBeforeDeath);
+	signal(	SIGQUIT, CatchMeBeforeDeath);
+	signal(	SIGTERM, CatchMeBeforeDeath);
+	
       
     
     //here we look for overloading directoves which are of form --name=value
@@ -61,11 +81,11 @@ int main(int argc ,char *argv[])
             {
 				if(MOOSStrCmp(sVar, "quiet"))
 				{
-					Antler.SetVerbosity(CAntler::QUIET);
+					gAntler.SetVerbosity(CAntler::QUIET);
 				}
 				else if(MOOSStrCmp(sVar, "terse"))
 				{
-					Antler.SetVerbosity(CAntler::TERSE);
+					gAntler.SetVerbosity(CAntler::TERSE);
 				}
 				else
 				{
@@ -114,7 +134,7 @@ int main(int argc ,char *argv[])
             }
             
                     
-            return Antler.Run(sMissionFile) ? 0 :-1;            
+            return gAntler.Run(sMissionFile) ? 0 :-1;            
         }
         case 3:
         {
@@ -147,7 +167,7 @@ int main(int argc ,char *argv[])
                       istream_iterator<string>(),
                       std::inserter(Filter,Filter.begin()));
                        
-            return Antler.Run(sMissionFile,Filter);
+            return gAntler.Run(sMissionFile,Filter);
         }
         case 4:
         {            
@@ -155,7 +175,7 @@ int main(int argc ,char *argv[])
             std::string sDBHost = vArgv[1]; //where is DB?
             int nPort = atoi(vArgv[2].c_str()); //what port
             std::string sName = vArgv[3]; //what is our Antler name?
-            return Antler.Run(sDBHost,nPort,sName) ? 0 :-1;
+            return gAntler.Run(sDBHost,nPort,sName) ? 0 :-1;
         }
         default:
         {
