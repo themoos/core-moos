@@ -637,7 +637,10 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             }
             else
             {
-                PoisonClient(pNewClient,"A client of this name already exists");
+                PoisonClient(pNewClient,
+							 MOOSFormat("A client of this name (\"%s\") already exists",
+										Msg.m_sVal.c_str())
+				);
 
                 return false;
             }
@@ -661,7 +664,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
     }
 }
 
-void CMOOSCommServer::PoisonClient(XPCTcpSocket *pSocket, const char *sReason)
+void CMOOSCommServer::PoisonClient(XPCTcpSocket *pSocket, const std::string & sReason)
 {
     //kill the client...
     CMOOSMsg MsgK(MOOS_POISON,"",sReason);
