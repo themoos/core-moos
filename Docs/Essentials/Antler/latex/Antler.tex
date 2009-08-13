@@ -28,7 +28,7 @@ breaklines=true} %
 
 
 % Title Page
-\title{Launching Processes and Running Mission Scripts with \code{Antler}}
+\title{Launching Processes and Running Mission Scripts with \code{pAntler}}
 \author{Paul Newman}
 
 
@@ -41,7 +41,7 @@ breaklines=true} %
 
 
 \begin{abstract}
-This document tells you how to use the application \code{pAntler} to launch multiple MOOS processes. This is a useful tool for starting up a whole bunch of processes, all of which share a single configuration file.
+This document tells you how to use the application \code{pAntler} to launch multiple MOOS processes. This is a useful tool for starting up a whole bunch of processes, all of which share a single configuration file but which can be distributed over multiple machines and operating systems.
 \end{abstract}
 
 \newpage
@@ -229,6 +229,14 @@ The above would launch a process called \code``iProcA'' in a new console, (with 
 If you want to launch a process with \code{Antler} that has not been designed to handle the mission file name and MOOS name as the first two parameters passed in the command line, then it is possible to tell \code{Antler} not to pass these parameters. This is done using the \code{InhibitMOOSParams}  key word. For example, if you wanted to launch the executable \code{top} in its own window, you would use configuration similar to that in Listing \ref{Code:Top}.
 
 \lstinputlisting[ caption = {Launching a non-MOOS process-like top (here on a 'nix system). Note the use of \code{InhibitMOOSParams}},label = {Code:Top} ]{../code/top.moos}.
+
+\subsection{Controlling Verbosity}
+By default \code{pAntler} gives hearty feedback about what it is launching, this feedback cane be limited or completely removed by launching \code{pAntler} with the  \code{--verbose}, \code{--terse} or \code{---quiet} flags on the command line. For example
+
+
+\begin{lstlisting}
+./pAntler GoToTheMOOS.moos --terse
+\end{lstlisting}
 
 
 

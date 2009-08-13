@@ -137,7 +137,7 @@ protected:
 
     /** Send a Poisoned mesasge to the client on the end of pSocket. This may cause the client
     comms thrad to die */
-    void PoisonClient(XPCTcpSocket* pSocket,const char * sReason);
+    void PoisonClient(XPCTcpSocket* pSocket,const std::string & sReason);
 
     /** Perform handshaling with client just after a connection has been accepted */
     bool HandShake(XPCTcpSocket* pNewSocket);
