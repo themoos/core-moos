@@ -366,28 +366,39 @@ bool CMOOSLogger::ConfigureLogging()
 		m_bWildCardLogging = true;
 	}
 
+	
+	//what sort of things do we want to wild card log
     if(m_bWildCardLogging )
     {
-        //are we being told exactly what accept and what not to accept
-        std::string sWildCardAcceptPattern;
-		if(m_MissionReader.GetConfigurationParam("WildCardPattern",sWildCardAcceptPattern))
-        {
-        	MOOSRemoveChars(sWildCardAcceptPattern, " ");
-	        while(!sWildCardAcceptPattern.empty())
-            {
-    	        m_sWildCardAccepted.push_back(MOOSChomp(sWildCardAcceptPattern));
-            }
-        }
-        
-        std::string sWildcardOmitPattern;
-		if(m_MissionReader.GetConfigurationParam("WildCardOmitPattern",sWildcardOmitPattern))
-        {
-        	MOOSRemoveChars(sWildcardOmitPattern, " ");
-	        while(!sWildcardOmitPattern.empty())
-            {
-    	        m_sWildCardOmitted.push_back(MOOSChomp(sWildcardOmitPattern));
-            }
-        }
+		//there was a request to allow multiple statements of the these patterns...hence the
+		//more  complicated parsing here
+		STRING_LIST sList;
+		if(m_MissionReader.GetConfiguration(GetAppName(), sList))
+		{
+			STRING_LIST::iterator q;
+			for(q = sList.begin();q!=sList.end();q++)
+			{
+				//are we being told exactly what accept and what not to accept
+				if(MOOSStrCmp("WildCardPattern",*q))
+				{
+					std::string sWildCardAcceptPattern = *q;
+					MOOSRemoveChars(sWildCardAcceptPattern, " ");
+					while(!sWildCardAcceptPattern.empty())
+					{
+						m_sWildCardAccepted.push_back(MOOSChomp(sWildCardAcceptPattern));
+					}
+				}
+				else if(MOOSStrCmp("WildCardOmitPattern",*q))
+				{
+					std::string sWildcardOmitPattern = *q;
+					MOOSRemoveChars(sWildcardOmitPattern, " ");
+					while(!sWildcardOmitPattern.empty())
+					{
+						m_sWildCardOmitted.push_back(MOOSChomp(sWildcardOmitPattern));
+					}
+				}
+			}
+		}
         
         m_bAsynchronousLog = true;
     }
