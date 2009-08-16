@@ -370,6 +370,9 @@ bool CMOOSLogger::ConfigureLogging()
 	//what sort of things do we want to wild card log
     if(m_bWildCardLogging )
     {
+		//we never want to log mission files sent between communities - this is done elsewhere
+		m_sWildCardOmitted.push_back("MISSION_FILE");
+		
 		//there was a request to allow multiple statements of the these patterns...hence the
 		//more  complicated parsing here
 		STRING_LIST sList;
