@@ -128,6 +128,7 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
     {
         MOOSTrace("Warning no mission file found - still serving but with trepidation\n");
     }
+	
     
     if(m_MissionReader.GetValue("COMMUNITY",m_sCommunityName))
     {
