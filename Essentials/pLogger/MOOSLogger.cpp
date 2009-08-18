@@ -382,22 +382,22 @@ bool CMOOSLogger::ConfigureLogging()
 			for(q = sList.begin();q!=sList.end();q++)
 			{
 				//are we being told exactly what accept and what not to accept
-				if(MOOSStrCmp("WildCardPattern",*q))
+				std::string sTok,sVal;
+				if(!CMOOSFileReader::GetTokenValPair(*q, sTok,sVal))
+					continue;
+				
+				if(MOOSStrCmp("WildCardPattern",sTok))
 				{
-					std::string sWildCardAcceptPattern = *q;
-					MOOSRemoveChars(sWildCardAcceptPattern, " ");
-					while(!sWildCardAcceptPattern.empty())
+					while(!sVal.empty())
 					{
-						m_sWildCardAccepted.push_back(MOOSChomp(sWildCardAcceptPattern));
+						m_sWildCardAccepted.push_back(MOOSChomp(sVal,","));
 					}
 				}
-				else if(MOOSStrCmp("WildCardOmitPattern",*q))
+				else if(MOOSStrCmp("WildCardOmitPattern",sTok))
 				{
-					std::string sWildcardOmitPattern = *q;
-					MOOSRemoveChars(sWildcardOmitPattern, " ");
-					while(!sWildcardOmitPattern.empty())
+					while(!sVal.empty())
 					{
-						m_sWildCardOmitted.push_back(MOOSChomp(sWildcardOmitPattern));
+						m_sWildCardOmitted.push_back(MOOSChomp(sVal));
 					}
 				}
 			}
@@ -544,7 +544,7 @@ bool CMOOSLogger::HandleWildCardLogging()
                         if(AddMOOSVariable(sVar,sVar,"",0.0))
                         {
                             bHit = true;
-                            MOOSTrace("   Added wildcard logging of %s\n",sVar.c_str());
+                            MOOSTrace("  Added wildcard logging of %s\n",sVar.c_str());
                         }
                     }
                 }
