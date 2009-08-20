@@ -1030,6 +1030,7 @@ bool CMOOSLogger::OnNewSession()
 	if(m_bCompressAlog)
 	{
 #ifdef ZLIB_FOUND
+		MOOSTrace("pLogger: Alog compression is enabled\n");
 		if(m_ZipThread.IsThreadRunning())
 		{
 			m_ZipThread.Stop();

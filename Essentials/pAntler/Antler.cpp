@@ -311,33 +311,43 @@ bool CAntler::KillNicely(MOOSProc* pProc)
 		
 	if(m_bSupportGentleKill)
 	{
-		std::string sCmd = "ps -o ppid=,pid=";
-		
-		FILE* In = popen(sCmd.c_str(),"r");
-		
-		if(In!=NULL)
+		if(pProc->m_bNewConsole)
 		{
-			bool bFound = false;
-			char Line[256];
-			while(fgets(Line,sizeof(Line),In))
+			//we need to be crafty....
+			std::string sCmd = "ps -o ppid=,pid=";
+			
+			FILE* In = popen(sCmd.c_str(),"r");
+			
+			if(In!=NULL)
 			{
-				std::stringstream L(Line);
-				int ppid,pid;
-				L>>ppid;
-				L>>pid;
-				
-				if(pProc->m_ChildPID==ppid)
+				bool bFound = false;
+				char Line[256];
+				while(fgets(Line,sizeof(Line),In))
 				{
-					kill(pid,SIGTERM);
-					bFound = true;
-				}
-			}	
-			pclose(In);
-			return bFound;
+					std::stringstream L(Line);
+					int ppid,pid;
+					L>>ppid;
+					L>>pid;
+					
+					if(pProc->m_ChildPID==ppid)
+					{
+						kill(pid,SIGTERM);
+						bFound = true;
+					}
+				}	
+				pclose(In);
+				return bFound;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		else
 		{
-			return false;
+			//the proc ID we have is of the actuall MOOSProcess and not its parent
+			//we can just kill it...
+			kill(pProc->m_ChildPID,SIGTERM);
 		}
 	}
 	else
