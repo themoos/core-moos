@@ -45,11 +45,7 @@
 #include <MOOSGenLib/MOOSAssert.h>
 #include <cmath>
 #include <cstring>
-#define ZIP_FLUSH_SIZE 2048
 
-#ifdef ZLIB_FOUND
-#include <zlib.h>
-#endif
 
 #ifndef _WIN32
 #include <errno.h>
@@ -70,13 +66,6 @@ using namespace std;
 #define MIN_SYNC_LOG_PERIOD 0.1
 #define DYNAMIC_NAME_SPACE 64
 #define DEFAULT_WILDCARD_TIME 1.0 //how often to call into the DB to get a list of all variables if wild card loggin is turned on
-
-
-bool _ZipThreadWorker(void * pParam)
-{
-	CMOOSLogger* pMe = (CMOOSLogger*) pParam;
-	return pMe->DoZipLogging();
-}
 
 
 //////////////////////////////////////////////////////////////////////
@@ -156,7 +145,14 @@ bool CMOOSLogger::CloseFiles()
 	//crucially make sure teh zipping thread has stopped
 
 #ifdef ZLIB_FOUND
-	m_ZipThread.Stop();
+	
+	m_AlogZipper.Stop();
+	
+	if(m_bUseExcludedLog)
+	{
+	   m_XlogZipper.Stop();
+	}
+
 #endif
     return true;
 
@@ -240,7 +236,11 @@ bool CMOOSLogger::OnStartUp()
 
     //are we required to perform Asynchronous logs?
     m_MissionReader.GetConfigurationParam("ASYNCLOG",m_bAsynchronousLog);
-
+	
+	//are we required to run an exclusion log (which is where wildcard rejections can be sent
+	//for paranoid people
+    m_MissionReader.GetConfigurationParam("WildcardExclusionLog",m_bUseExcludedLog);
+	
     //what sort of file name are we using
     m_MissionReader.GetConfigurationParam("FILETIMESTAMP",m_bAppendFileTimeStamp);
     
@@ -370,6 +370,7 @@ bool CMOOSLogger::ConfigureLogging()
 	//what sort of things do we want to wild card log
     if(m_bWildCardLogging )
     {
+		
 		//we never want to log mission files sent between communities - this is done elsewhere
 		m_sWildCardOmitted.push_back("MISSION_FILE");
 		
@@ -402,7 +403,8 @@ bool CMOOSLogger::ConfigureLogging()
 				}
 			}
 		}
-        
+		
+	    
         m_bAsynchronousLog = true;
     }
 
@@ -539,14 +541,27 @@ bool CMOOSLogger::HandleWildCardLogging()
                 std::string sVar = MOOSChomp(ss);
                 if(GetMOOSVar(sVar)==NULL)
                 {
-                    if(IsWildCardAccepted(sVar) && !IsWildCardRejected(sVar))
-                    {
-                        if(AddMOOSVariable(sVar,sVar,"",0.0))
-                        {
-                            bHit = true;
-                            MOOSTrace("  Added wildcard logging of %s\n",sVar.c_str());
-                        }
-                    }
+					bool bWouldNormallyReject = IsWildCardRejected(sVar);
+					bool bWouldNormallyAccept = IsWildCardAccepted(sVar);
+					
+					if(m_bUseExcludedLog || (bWouldNormallyAccept && ! bWouldNormallyReject ))
+					{
+						//always register if we are using an exclusion lof
+						if(AddMOOSVariable(sVar,sVar,"",0.0))
+						{
+							bHit = true;
+							if(m_bUseExcludedLog && bWouldNormallyReject)
+							{
+								MOOSTrace("  Added wildcard logging of %-20s  (xlog) \n",sVar.c_str());
+							}
+							else
+							{
+								MOOSTrace("  Added wildcard logging of %-20s\n",sVar.c_str());
+							}
+						}
+					}
+					
+					
                 }
             }
 
@@ -787,13 +802,39 @@ bool CMOOSLogger::OpenSystemFile()
 
 
 
-bool CMOOSLogger::OpenAsyncFile()
+bool CMOOSLogger::OpenAsyncFiles()
 {
 
-    if(!OpenFile(m_AsyncLogFile,m_sAsyncFileName))
-        return MOOSFail("Failed to Open alog file");
 
-    DoBanner(m_AsyncLogFile,m_sAsyncFileName);
+		
+	if(m_bCompressAlog)
+	{
+		//we need to write a banner to a compressed stream
+		std::stringstream ss;
+		DoBanner(ss,m_sAsyncFileName);
+		m_AlogZipper.Push(ss.str());
+
+		if(m_bUseExcludedLog)
+		{
+			m_XlogZipper.Push(ss.str());
+		}
+	}
+	else
+	{
+		//usual banner write to a regular alog file
+		if(!OpenFile(m_AsyncLogFile,m_sAsyncFileName))
+			return MOOSFail("Failed to Open alog file");
+
+		DoBanner(m_AsyncLogFile,m_sAsyncFileName);
+				
+		if(m_bUseExcludedLog)
+		{
+			if(!OpenFile(m_ExcludeLogFile, m_sExcludeFileName))
+				return MOOSFail("failed to open xlog log");
+		}
+		
+		
+	}
 
     return true;
 }
@@ -1009,12 +1050,13 @@ bool CMOOSLogger::OnNewSession()
     
 
     m_sAsyncFileName = m_sLogDirectoryName+"/"+sRoot+".alog";
-    m_sSyncFileName = m_sLogDirectoryName+"/"+sRoot+".slog";
+    m_sExcludeFileName = m_sLogDirectoryName+"/"+sRoot+".xlog";    
+	m_sSyncFileName = m_sLogDirectoryName+"/"+sRoot+".slog";
     m_sSystemFileName = m_sLogDirectoryName+"/"+sRoot+".ylog";
     m_sMissionCopyName = m_sLogDirectoryName+"/"+sRoot+"._moos";
     m_sHoofCopyName = m_sLogDirectoryName+"/"+sRoot+"._hoof";
 
-    if(!OpenAsyncFile())
+    if(!OpenAsyncFiles())
         return MOOSFail("Error:\n\tUnable to open Asynchronous log file\n");
 
     if(! OpenSyncFile())
@@ -1030,13 +1072,22 @@ bool CMOOSLogger::OnNewSession()
 	if(m_bCompressAlog)
 	{
 #ifdef ZLIB_FOUND
+		//restart the a log zipper
 		MOOSTrace("pLogger: Alog compression is enabled\n");
-		if(m_ZipThread.IsThreadRunning())
+		if(m_AlogZipper.IsRunning())
 		{
-			m_ZipThread.Stop();
+			m_AlogZipper.Stop();
 		}
-		m_ZipThread.Initialise(_ZipThreadWorker, this);
-		m_ZipThread.Start();
+		m_AlogZipper.Start(m_sAsyncFileName);
+
+		//restart the Xlog zipper
+		if(m_XlogZipper.IsRunning())
+		{
+			m_XlogZipper.Stop();
+		}
+		m_XlogZipper.Start(m_sExcludeFileName);
+		
+
 #else
 		m_bCompressAlog = false;
 		MOOSTrace("WARNING: alogs will not be compressed because zlib was not found at build time");
@@ -1078,11 +1129,11 @@ bool CMOOSLogger::OnLoggerRestart()
 bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 {
     //log asynchronously...
-    if(m_AsyncLogFile.is_open()&& m_bAsynchronousLog)
+    if(m_bAsynchronousLog)
     {
         MOOSMSG_LIST::iterator q;
 
-		std::stringstream sStream;
+		std::stringstream sStream[2];
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
@@ -1093,20 +1144,30 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             //which is used for the synchronous case..
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
+				int i = 0;
+				if(m_bUseExcludedLog)
+				{
+					if(IsWildCardRejected(rMsg.m_sKey))
+					{
+						//we would usually expect to reject this but here we
+						//write it to the xlog stream
+						i = 1;
+					}
+				}
 				
-				sStream.setf(ios::left);
+				sStream[i].setf(ios::left);
 				
-                sStream.setf(ios::fixed);
+                sStream[i].setf(ios::fixed);
 
-                sStream<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
+                sStream[i]<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
 
-                sStream<<setw(20)<<rMsg.GetKey().c_str()<<' ';
+                sStream[i]<<setw(20)<<rMsg.GetKey().c_str()<<' ';
 
-                sStream<<setw(10)<<rMsg.GetSource().c_str()<<' ';
+                sStream[i]<<setw(15)<<rMsg.GetSource().c_str()<<' ';
 
-                sStream<<rMsg.GetAsString().c_str()<<' ';
+                sStream[i]<<rMsg.GetAsString().c_str()<<' ';
 
-                sStream<<endl;
+                sStream[i]<<endl;
 				
 				
             }
@@ -1115,14 +1176,17 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 		if(m_bCompressAlog)
 		{
 			//send to the worker thread...
-			m_ZipLock.Lock();
-			m_ZipBuffer.push_back(sStream.str());
-			m_ZipLock.UnLock();
+			m_AlogZipper.Push(sStream[0].str());
+			m_XlogZipper.Push(sStream[1].str());
 		}
 		else
 		{
 			//a regular write
-			m_AsyncLogFile<<sStream.str();
+			if(m_AsyncLogFile.is_open())
+				m_AsyncLogFile<<sStream[0].str();
+			
+			if(m_ExcludeLogFile.is_open())
+				m_ExcludeLogFile<<sStream[1].str();
 		}
     }
     return true;
@@ -1347,87 +1411,6 @@ bool CMOOSLogger::HandleDynamicLogRequest(std::string sRequest)
     return true;
 
 
-}
-
-
-
-
-bool CMOOSLogger::DoZipLogging()
-{
-#ifdef ZLIB_FOUND
-	
-	std::string sZipFile = m_sAsyncFileName+".gz";
-	gzFile TheZipFile =  gzopen(sZipFile.c_str(),"wb");
-	
-	
-	int nTotalWritten = 0;
-	int nSinceLastFlush = 0;
-	while(!m_ZipThread.IsQuitRequested())
-	{
-		MOOSPause(1000);
-		
-		std::list<std::string > Work;
-		Work.clear();
-		
-		m_ZipLock.Lock();
-		{
-			Work.splice(Work.begin(),m_ZipBuffer);
-		}
-		m_ZipLock.UnLock();
-		
-				
-		std::list<std::string >::iterator q;
-		
-		for(q = Work.begin();q!=Work.end();q++)
-		{
-			int nWritten = gzwrite(TheZipFile, q->c_str(), q->size() );
-			
-			if(nWritten<=0)
-			{	
-				int Error;
-				gzerror(TheZipFile, &Error);
-				switch(Error)
-				{
-					case Z_ERRNO:
-						MOOSTrace("Z_ERRNO\n");
-						break;
-					case Z_STREAM_ERROR	:
-						MOOSTrace("Z_STREAM_ERROR\n");
-						break;
-					case Z_BUF_ERROR:
-						MOOSTrace("Z_BUF_ERROR\n");
-						break;
-					case Z_MEM_ERROR:
-						MOOSTrace("Z_MEM_ERROR\n");
-						break;
-				}
-			}
-			else
-			{
-				nTotalWritten+=nWritten;
-				nSinceLastFlush+=nWritten;
-				
-				if(nSinceLastFlush>ZIP_FLUSH_SIZE)
-				{	
-					gzflush(TheZipFile, Z_SYNC_FLUSH);
-					nSinceLastFlush = 0;
-				}
-
-			}
-		}
-		Work.clear();
-		
-		
-		
-		
-	}
-	gzflush(TheZipFile, Z_FINISH);
-	gzclose(TheZipFile);
-	MOOSTrace("closed compressed alog file %s \n",sZipFile.c_str());
-	
-#endif
-	return true;
-	
 }
 
 

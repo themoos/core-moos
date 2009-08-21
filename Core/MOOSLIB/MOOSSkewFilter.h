@@ -136,6 +136,7 @@ namespace MOOS
 		};
 
 	public:
+		virtual ~CMOOSSkewFilter(){}
 		CMOOSSkewFilter();
 
 		virtual void Reset();

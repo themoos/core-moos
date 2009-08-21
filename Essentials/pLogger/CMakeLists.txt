@@ -9,7 +9,13 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #what files are needed?
-SET(PLOGGER_SRCS MOOSLogger.cpp MOOSLogger.h pLoggerMain.cpp  ${RESOURCES})
+SET(PLOGGER_SRCS
+ MOOSLogger.cpp
+ MOOSLogger.h
+ pLoggerMain.cpp
+ Zipper.cpp
+ Zipper.h
+ ${RESOURCES})
 
 
 FIND_PACKAGE(ZLIB QUIET)

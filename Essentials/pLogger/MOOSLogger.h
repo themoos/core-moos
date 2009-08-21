@@ -37,7 +37,7 @@
 #include <fstream>
 #include <set>
 #include <string>
-
+#include "Zipper.h"
 
 typedef std::vector<std::string> STRING_VECTOR; 
 
@@ -91,7 +91,7 @@ protected:
     bool DoBanner(std::ostream & os,std::string & sFileName);
     bool IsSystemMessage(std::string & sKey);
     bool LogSystemMessages(MOOSMSG_LIST & NewMail);
-    bool OpenAsyncFile();
+    bool OpenAsyncFiles();
     bool OpenSystemFile();
     bool CloseFiles();
     bool OpenSyncFile();
@@ -102,10 +102,12 @@ protected:
     bool CreateDirectory(const std::string & sDirectory);
 
     std::ofstream m_AsyncLogFile;
+    std::ofstream m_ExcludeLogFile;
     std::ofstream m_SyncLogFile;
     std::ofstream m_SystemLogFile;
 
     std::string m_sAsyncFileName;
+	std::string m_sExcludeFileName;
     std::string m_sSyncFileName;
     std::string m_sSystemFileName;
     std::string m_sMissionCopyName;
@@ -120,13 +122,14 @@ protected:
     bool    m_bSynchronousLog;
     bool    m_bAsynchronousLog;
     bool    m_bWildCardLogging;
+	bool    m_bUseExcludedLog;
 
 	//variables to do with compressed logging...
 	bool	m_bCompressAlog;
-	CMOOSLock	m_ZipLock;
-	std::list<std::string> m_ZipBuffer;
-	CMOOSThread m_ZipThread;
-
+	CZipper m_AlogZipper;
+	CZipper m_XlogZipper;
+	
+	
     //how many synline have been written?
     int     m_nSyncLines;
 
