@@ -33,6 +33,9 @@
 
 #include <MOOSGenLib/MOOSLock.h>
 #include <MOOSGenLib/MOOSGenLibGlobalHelper.h>
+#ifndef _WIN32
+#include <errno.h>
+#endif
 
 //! Implements a cross platform thread*/
 class CMOOSThread
@@ -113,7 +116,7 @@ public:
 
 
     //! Starts the thread running (as long as the class has been properly initialised!)
-    bool Start()
+    bool Start(bool bCreatUnixDetached = false)
     {
         m_lock.Lock();
         {
@@ -138,7 +141,10 @@ public:
 #else
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+		if(bCreatUnixDetached)
+		{
+			pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+		}
         int Status = pthread_create( &m_nThreadID,&attr,CallbackProc,this);
         if(Status!=0) {
             SetRunningFlag(false);
@@ -179,14 +185,25 @@ public:
         }
 #else
         // This should not be necessary... Why was it here again ?
-        /*
+		//yes it is needed - we need to wait for the thread!
+        
         void * Result;
         int retval = pthread_join( m_nThreadID,&Result);
         if (retval != 0)
         {
+			switch (retval)
+			{
+				case EINVAL:
+					MOOSTrace("pthread_join returned error: EINVAL\n", retval);					
+				case ESRCH:
+					MOOSTrace("pthread_join returned error: ESRCH\n", retval);
+				case EDEADLK:
+					MOOSTrace("pthread_join returned error: EDEADLK\n", retval);
+			}
+			
             MOOSTrace("pthread_join returned error: %d\n", retval);
         }
-        */
+        
 #endif
         
         // There is the potential for a race condition here, if some other
