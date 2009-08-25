@@ -249,7 +249,22 @@ Not recording the right thing can be expensive so \code{pLogger} can provide a c
 
 to a so called "exclusion log" or \code{xlog}. By setting \code{WildcardExclusionLog=true} in the configuration block any thing sent by any MOOS process that would usually not appear in the \code{alog} will be captured in the \code{xlog}. The following truth table fully specifies the configuration and behaviour of exclusion logging. If a cell in the ''Omit'' column is true it means that a variable name matches a \code{WildCardOmitPattern} and similarly for the ''Accept" column.
 
-\begin{center}  \begin{tabular}{ |c|c|c|l| }    \hline    WildcardExclusionLog & Omit & Accept & Destination \\     \hline    false & false & true & not logged \\     false & false & false & alog\\     false & true & true& not logged\\     false & true & false & not logged \\     true & false & true & xlog\\     true & false & false & alog \\     true & true & true & xlog \\     true & true & false & xlog\\     \hline  \end{tabular}\end{center}
+\begin{center}
+  \begin{tabular}{ |c|c|c|l| }
+    \hline
+    WildcardExclusionLog & Omit & Accept & Destination \\ 
+    \hline
+    false & false & false & not logged \\ 
+    false & false & true & alog\\ 
+    false & true & false& not logged\\ 
+    false & true & true & not logged \\ 
+    true & false & false & xlog\\ 
+    true & false & true & alog \\ 
+    true & true & false & xlog \\ 
+    true & true & true & xlog\\ 
+    \hline
+  \end{tabular}
+\end{center}
 
 
 Note also that if alog compression is enabled both alogs and xlogs are compressed at run time.
