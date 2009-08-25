@@ -554,7 +554,7 @@ bool CMOOSLogger::HandleWildCardLogging()
 					if(m_bUseExcludedLog)
 					{
 						bWanted = true;
-						if( bWouldNormallyAccept )
+						if( bWouldNormallyAccept && !bWouldNormallyReject)
 						{
 							MOOSTrace("  Added wildcard logging of %-20s\n",sVar.c_str());
 							m_LogDestinations[sVar] = ALOG;
