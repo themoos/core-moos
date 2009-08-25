@@ -118,7 +118,7 @@ public:
     std::string GetCommunity()const {return m_sOriginatingCommunity;};
 
     /**format the message as string regardless of type*/
-    std::string GetAsString(int nFieldWidth=12);
+    std::string GetAsString(int nFieldWidth=12, int nNumDP=5);
 
     /**print a summary of the message*/
     void Trace();

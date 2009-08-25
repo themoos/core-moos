@@ -140,6 +140,9 @@ protected:
     double m_dfLastSyncLogTime;
     double m_dfSyncLogPeriod;
     double m_dfLastMonitorTime;
+	
+	//what precision do we log doubles with?
+	int m_nDoublePrecision;
     
     //name of a file where logger summary is written
     std::string     m_sSummaryFile;
@@ -149,6 +152,20 @@ protected:
     //rally are being written to...
     typedef std::map< std::string, double > VARIABLE_TIMER_MAP;
     VARIABLE_TIMER_MAP m_MonitorMap;
+	
+	//house keeping functions and storage to keeptrack of which variable
+	//goes to which log (especially when xlogging is on)
+	enum LogType
+	{
+		XLOG,
+		YLOG,
+		SLOG,
+		ALOG,
+		UNKNOWN
+	};
+	
+	CMOOSLogger::LogType GetDestinationLog(const std::string & sStr);
+	std::map<std::string, LogType> m_LogDestinations;
 
 private:
     //this is a collection of file position pointers which we will use

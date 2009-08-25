@@ -66,6 +66,8 @@ using namespace std;
 #define MIN_SYNC_LOG_PERIOD 0.1
 #define DYNAMIC_NAME_SPACE 64
 #define DEFAULT_WILDCARD_TIME 1.0 //how often to call into the DB to get a list of all variables if wild card loggin is turned on
+#define DEFAULT_DOUBLE_PRECISION  5 //how many DP to use when logging double time stamps
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -247,6 +249,10 @@ bool CMOOSLogger::OnStartUp()
     //where should we write a summary of where we are logging to?
     m_sSummaryFile = "./.LastOpenedMOOSLogDirectory";
     m_MissionReader.GetConfigurationParam("LoggingDirectorySummaryFile",m_sSummaryFile);
+	
+	m_nDoublePrecision = DEFAULT_DOUBLE_PRECISION;
+	m_MissionReader.GetConfigurationParam("DoublePrecision",m_nDoublePrecision);
+	
     
 
     //do we have a path global name?
@@ -543,25 +549,48 @@ bool CMOOSLogger::HandleWildCardLogging()
                 {
 					bool bWouldNormallyReject = IsWildCardRejected(sVar);
 					bool bWouldNormallyAccept = IsWildCardAccepted(sVar);
+					bool bWanted = false;
 					
-					if(m_bUseExcludedLog || (bWouldNormallyAccept && ! bWouldNormallyReject ))
+					if(m_bUseExcludedLog)
 					{
-						//always register if we are using an exclusion lof
-						if(AddMOOSVariable(sVar,sVar,"",0.0))
+						bWanted = true;
+						if( bWouldNormallyAccept )
 						{
-							bHit = true;
-							if(m_bUseExcludedLog && bWouldNormallyReject)
-							{
-								MOOSTrace("  Added wildcard logging of %-20s  (xlog) \n",sVar.c_str());
-							}
-							else
-							{
-								MOOSTrace("  Added wildcard logging of %-20s\n",sVar.c_str());
-							}
+							MOOSTrace("  Added wildcard logging of %-20s\n",sVar.c_str());
+							m_LogDestinations[sVar] = ALOG;
+						}
+						else 
+						{
+							MOOSTrace("  Added wildcard logging of %-20s  (xlog) \n",sVar.c_str());
+							m_LogDestinations[sVar] = XLOG;
+							
+						}
+					}
+				
+					else
+					{
+						if( bWouldNormallyAccept &&	!bWouldNormallyReject )
+						{
+							MOOSTrace("  Added wildcard logging of %-20s\n",sVar.c_str());
+							m_LogDestinations[sVar] = ALOG;
+							bWanted = true;
+						}
+						else if(bWouldNormallyAccept && bWouldNormallyReject)
+						{
+							//MOOSTrace("  denied added wildcard logging of %-20s   (fits Omit pattern as well as Accept pattern)\n",sVar.c_str());	
+							bWanted = false;
 						}
 					}
 					
-					
+					if(bWanted)
+					{
+						//yep we want to know....
+						if(AddMOOSVariable(sVar,sVar,"",0.0))
+						{
+							bHit = true;
+						}		
+					}
+						
                 }
             }
 
@@ -1059,7 +1088,7 @@ bool CMOOSLogger::OnNewSession()
     if(!OpenAsyncFiles())
         return MOOSFail("Error:\n\tUnable to open Asynchronous log file\n");
 
-    if(! OpenSyncFile())
+    if(m_bSynchronousLog && ! OpenSyncFile())
         return MOOSFail("Error:\n\tUnable to open Synchronous log file\n");
 
     if(!OpenSystemFile())
@@ -1126,6 +1155,17 @@ bool CMOOSLogger::OnLoggerRestart()
     return true;
 }
 
+
+CMOOSLogger::LogType CMOOSLogger::GetDestinationLog(const std::string & sMsg)
+{
+	std::map<std::string,LogType>::iterator q =  m_LogDestinations.find(sMsg);
+	if( q==m_LogDestinations.end())
+		return UNKNOWN;
+	else 
+		return q->second;
+	
+}
+
 bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 {
     //log asynchronously...
@@ -1144,10 +1184,22 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             //which is used for the synchronous case..
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
-				int i = 0;
+				
+				int i;
+				switch(GetDestinationLog(rMsg.m_sKey))
+				{
+					case XLOG: i = 1; break;
+					case ALOG: i = 0; break;
+					default:
+						continue;
+				}
+				
+				
+			
+									   
 				if(m_bUseExcludedLog)
 				{
-					if(IsWildCardRejected(rMsg.m_sKey))
+					if(!IsWildCardAccepted(rMsg.m_sKey))
 					{
 						//we would usually expect to reject this but here we
 						//write it to the xlog stream
@@ -1165,7 +1217,7 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 
                 sStream[i]<<setw(15)<<rMsg.GetSource().c_str()<<' ';
 
-                sStream[i]<<rMsg.GetAsString().c_str()<<' ';
+                sStream[i]<<rMsg.GetAsString(12,m_nDoublePrecision).c_str()<<' ';
 
                 sStream[i]<<endl;
 				

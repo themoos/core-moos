@@ -475,7 +475,7 @@ bool CMOOSMsg::IsSkewed(double dfTimeNow, double * pdfSkew)
 
 
 
-string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/)
+string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/, int nNumDP/*=5*/)
 {
     ostringstream os;
 
@@ -485,7 +485,9 @@ string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/)
     {        
         if(IsDataType(MOOS_DOUBLE))
         {
-            os<<setw(nFieldWidth)<<setprecision(12)<<m_dfVal<<ends;       
+			os.setf(ios::fixed);
+
+            os<<setw(nFieldWidth)<<setprecision(nNumDP)<<m_dfVal<<ends;       
         }
         else
         {
