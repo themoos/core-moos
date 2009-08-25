@@ -240,11 +240,11 @@ You can also have multiple instances of these pattern declarations:
 
 \subsubsection{Exclusion Logs - ''xlogs''}
 
-Not recording the right thing can be expensive so \code{pLogger} can provide a safety net for you by logging variables which either
+Not recording the right thing can be expensive so \code{pLogger} can provide a catch all safety net for you by logging (quietly in the background )variables which either
 
 \begin{itemize}
-\item failed to match any  \code{WildCardPattern} patterns
-\item matched a \code{WildCardOmitPattern}
+\item failed to match any  \code{WildCardPattern} patterns (you thought you didn't care about them but actually this was a blunder, you did....)
+\item matched a \code{WildCardOmitPattern} (you thought you explicitly didn't want them but the reality was you did.....)
 \end{itemize}
 
 to a so called "exclusion log" or \code{xlog}. By setting \code{WildcardExclusionLog=true} in the configuration block any thing sent by any MOOS process that would usually not appear in the \code{alog} will be captured in the \code{xlog}. The following truth table fully specifies the configuration and behaviour of exclusion logging. If a cell in the ''Omit'' column is true it means that a variable name matches a \code{WildCardOmitPattern} and similarly for the ''Accept" column.
@@ -252,7 +252,7 @@ to a so called "exclusion log" or \code{xlog}. By setting \code{WildcardExclusio
 \begin{center}  \begin{tabular}{ |c|c|c|l| }    \hline    WildcardExclusionLog & Omit & Accept & Destination \\     \hline    false & false & true & not logged \\     false & false & false & alog\\     false & true & true& not logged\\     false & true & false & not logged \\     true & false & true & xlog\\     true & false & false & alog \\     true & true & true & xlog \\     true & true & false & xlog\\     \hline  \end{tabular}\end{center}
 
 
-
+Note also that if alog compression is enabled both alogs and xlogs are compressed at run time.
 
 
 \subsection{Runtime File Backup}
