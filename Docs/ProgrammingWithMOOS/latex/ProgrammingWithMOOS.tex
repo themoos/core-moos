@@ -646,7 +646,9 @@ By calling \code{CMOOSApp::EnableCommandMessageFiltering(true)} (for example in 
 
 The command message filtering facility can also be turned on in any process's  configuration block by adding the line \code{CatchCommandMessages = true}. By default command message filtering is off.
 
+\subsection{Running a \code{CMOOSApp} in a Separate Thread}
 
+Some folk choose to create and run a \code{CMOOSApp} derived class from a secondary thread. This is of course completely fine but you may find you need to terminate this thread at run time and require \code{CMOOSApp::Run} to return. This can be achieved by calling the \code{CMOOSApp::RequestQuit()} method.
 
 
 \section{MOOSGenLib Functions}\label{Sec:MOOSGenLib}
