@@ -1185,27 +1185,18 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
 				
-				int i;
-				switch(GetDestinationLog(rMsg.m_sKey))
-				{
-					case XLOG: i = 1; break;
-					case ALOG: i = 0; break;
-					default:
-						continue;
-				}
-				
-				
-			
-									   
+				int i=0;
 				if(m_bUseExcludedLog)
 				{
-					if(!IsWildCardAccepted(rMsg.m_sKey))
+					switch(GetDestinationLog(rMsg.m_sKey))
 					{
-						//we would usually expect to reject this but here we
-						//write it to the xlog stream
-						i = 1;
+						case XLOG: i = 1; break;
+						case ALOG: i = 0; break;
+						default:
+							i = 0;
 					}
 				}
+				
 				
 				sStream[i].setf(ios::left);
 				
