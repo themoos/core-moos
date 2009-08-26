@@ -102,7 +102,14 @@ post-mission replay/reprocessing session is simply massive. Turn asynchronous lo
 \end{center}
 in the logger configuration block.
 
-\subsubsection{Compressed Asynchronous Logging}
+\subsubsection{Floating Point Precision}
+You can set the logged precision (number of decimal places) of  floating point data in alogs (ie MOOS messages with a \code{double} data type) by using the \code{DoublePrecision} directive in the configuration block:
+\begin{center}
+\code{DoublePrecision = 2}
+\end{center}
+will record all double precision data with just two decimal points. This can reduce the size of your alogs substantially (as can on-the-fly compression described in Section \ref{Sec:Compression})
+
+\subsubsection{Compressed Asynchronous Logging}\label{Sec:Compression}
 If the the common compression library Zlib is available\footnote{this might be a bit tricky on WIN32 platforms.}  pLogger offers the ability to compress alog files at run time. The CMake build system will search for the correct libraries and headers and set \code{ZLIB\_FOUND} if all is good at compile time. You can turn on compressed logging by adding
 
 \begin{center}
