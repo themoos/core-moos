@@ -124,6 +124,9 @@ protected:
     
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
+	
+	/** requests the MOOSApp to quit (i.e return from Run)*/
+	bool RequestQuit();
     
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -348,6 +351,9 @@ private:
     /** called before starting the Application running. If parameters have not beedn set correctly
     it prints a help statement and returns false */
     bool CheckSetUp();
+	
+	/** ::Run continues forever or until this variable is false*/
+	bool m_bQuitRequested;
     
     
 };

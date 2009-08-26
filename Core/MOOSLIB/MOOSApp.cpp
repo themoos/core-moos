@@ -123,6 +123,7 @@ CMOOSApp::CMOOSApp()
     m_bSortMailByTime = true;
 	m_bAppError = false;
     m_bQuitOnIterateFail = false;
+	m_bQuitRequested = false;
     
     SetMOOSTimeWarp(1.0);
     
@@ -261,7 +262,7 @@ bool CMOOSApp::Run( const char * sName,
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/
 
-    while(1)
+    while(!m_bQuitRequested)
     {
         if(!m_Comms.HasMailCallBack())
         {
@@ -279,6 +280,15 @@ bool CMOOSApp::Run( const char * sName,
     /***************************   END OF MOOS APP LOOP ***************************************/
 
     return true;
+}
+
+
+/*called by a third party to request a MOOS App to quit - only useful for 
+ example if a MOOSApp is run in a secondary thread */
+bool CMOOSApp::RequestQuit()
+{
+	m_bQuitRequested = true;
+	return true;
 }
 
 bool CMOOSApp::DoRunWork()
