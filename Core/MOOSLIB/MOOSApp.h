@@ -84,6 +84,10 @@ public:
 
     /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
     virtual bool OnDisconnectFromServer();
+	
+	/** requests the MOOSApp to quit (i.e return from Run)*/
+	bool RequestQuit();
+    
 
 protected:
     /** called when the application should iterate. Overload this function in a derived class
@@ -125,9 +129,7 @@ protected:
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
 	
-	/** requests the MOOSApp to quit (i.e return from Run)*/
-	bool RequestQuit();
-    
+	
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //                       UTITLITY  METHODS
