@@ -74,7 +74,7 @@ bool CMOOSUDPLink::Post(CMOOSMsg & M,const std::string & sHost, long int nPort)
 
     CMOOSCommPkt P;
     
-    P.Serialize(OutBox, true, NULL);
+    P.Serialize(OutBox, true, false);
     
     try
     {
