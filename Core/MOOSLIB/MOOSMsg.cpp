@@ -59,6 +59,8 @@ CMOOSMsg::CMOOSMsg()
     m_dfVal = -1;
     m_dfVal2 = -1;
     m_nID = -1;
+	m_sSrc = "";
+	m_sSrcAux = "";
 }
 
 CMOOSMsg::~CMOOSMsg()
@@ -305,6 +307,9 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             //from whence does it come
             (*this)<<m_sSrc;
+			
+			//extra source info
+			(*this)<<m_sSrcAux;
 
             //and from which community?
             (*this)<<m_sOriginatingCommunity;
@@ -366,10 +371,12 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //what type of data is this?
             (*this)>>m_cDataType;
 
-
             //from whence does it come
             (*this)>>m_sSrc;
 
+			//extra source info
+			(*this)>>m_sSrcAux;
+			
             //and from which community?
             (*this)>>m_sOriginatingCommunity;
 
