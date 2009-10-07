@@ -113,6 +113,8 @@ public:
     /**return the name of the process (as registered with the DB) which
     posted this notification*/
     std::string GetSource()const {return m_sSrc;};
+    std::string GetSourceAux()const {return m_sSrcAux;};
+	void SetSourceAux(const std::string & sSrcAux){m_sSrcAux = sSrcAux;}
 
     /**return the name of the MOOS community in which the orginator lives*/
     std::string GetCommunity()const {return m_sOriginatingCommunity;};
@@ -152,6 +154,9 @@ public:
 
     //who sent this message?
     std::string m_sSrc;
+	
+	//extra info on source (optional payload)
+	std::string m_sSrcAux;
 
     //what community did it originate in?
     std::string m_sOriginatingCommunity;
