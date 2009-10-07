@@ -135,6 +135,9 @@ protected:
 
     ///true if we want fancy date appended to file name
     bool    m_bAppendFileTimeStamp;
+	
+	///true if we want to create log directories with UTC time stamps
+	bool m_bUseUTCLogNames;
 
     //housekeeping  variables for performing tasks
     double m_dfLastSyncLogTime;

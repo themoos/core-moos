@@ -110,6 +110,10 @@ CMOOSLogger::CMOOSLogger()
 
     //and append a time ot the stem
     m_bAppendFileTimeStamp = true;
+	
+	//by default use local time for directory names
+	m_bUseUTCLogNames = false;
+
     
     //lets always sort mail by time...
     SortMailByTime(true);
@@ -245,13 +249,18 @@ bool CMOOSLogger::OnStartUp()
 	
     //what sort of file name are we using
     m_MissionReader.GetConfigurationParam("FILETIMESTAMP",m_bAppendFileTimeStamp);
-    
+	
+	//do we want to use UTC times in directory names
+    m_MissionReader.GetConfigurationParam("UTCLogDirectories",m_bUseUTCLogNames);
+	
     //where should we write a summary of where we are logging to?
     m_sSummaryFile = "./.LastOpenedMOOSLogDirectory";
     m_MissionReader.GetConfigurationParam("LoggingDirectorySummaryFile",m_sSummaryFile);
 	
 	m_nDoublePrecision = DEFAULT_DOUBLE_PRECISION;
 	m_MissionReader.GetConfigurationParam("DoublePrecision",m_nDoublePrecision);
+	
+	
 	
     
 
@@ -646,7 +655,15 @@ std::string CMOOSLogger::MakeLogName(string sStem)
     struct tm *Now;
     time_t aclock;
     time( &aclock );
-    Now = localtime( &aclock );
+	
+	if(m_bUseUTCLogNames)
+	{
+		Now = gmtime(&aclock);
+    }
+	else
+	{
+		Now = localtime( &aclock );
+	}
 
     std::string  sTmp;
 
