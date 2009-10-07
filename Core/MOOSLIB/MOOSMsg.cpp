@@ -308,8 +308,10 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //from whence does it come
             (*this)<<m_sSrc;
 			
+#ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)<<m_sSrcAux;
+#endif
 
             //and from which community?
             (*this)<<m_sOriginatingCommunity;
@@ -374,9 +376,10 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //from whence does it come
             (*this)>>m_sSrc;
 
+#ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)>>m_sSrcAux;
-			
+#endif			
             //and from which community?
             (*this)>>m_sOriginatingCommunity;
 
