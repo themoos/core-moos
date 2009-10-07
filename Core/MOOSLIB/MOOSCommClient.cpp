@@ -722,6 +722,19 @@ bool CMOOSCommClient::Notify(const string &sVar, double dfVal, double dfTime)
 
 }
 
+bool CMOOSCommClient::Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime)
+{
+	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),dfVal,dfTime);
+
+	Msg.SetSourceAux(sSrcAux);
+	
+	m_Published.insert(sVar);
+	
+	return Post(Msg);
+}
+
+
+
 bool CMOOSCommClient::Notify(const string &sVar, const string & sVal, double dfTime)
 {
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),sVal.c_str(),dfTime);
@@ -730,6 +743,20 @@ bool CMOOSCommClient::Notify(const string &sVar, const string & sVal, double dfT
 
 	return Post(Msg);
 }
+
+
+
+bool CMOOSCommClient::Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime)
+{
+	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),sVal.c_str(),dfTime);
+	
+	Msg.SetSourceAux(sSrcAux);
+	
+	m_Published.insert(sVar);
+	
+	return Post(Msg);
+}
+
 
 bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList, double dfTimeOut, bool bClear)
 {

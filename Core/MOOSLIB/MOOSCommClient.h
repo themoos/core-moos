@@ -81,9 +81,11 @@ public:
 
     /** notify the MOOS community that something has changed (string)*/
     bool Notify(const std::string &sVar, const std::string & sVal, double dfTime=-1);
+    bool Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime=-1);
 
     /** notify the MOOS community that something has changed (double)*/
     bool Notify(const std::string & sVar,double dfVal, double dfTime=-1);
+    bool Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime=-1);
     
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
