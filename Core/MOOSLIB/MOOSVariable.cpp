@@ -90,7 +90,7 @@ bool CMOOSVariable::Set(const std::string & sVal,double dfTime)
 
 }
 
-bool CMOOSVariable::Set(CMOOSMsg &Msg)
+bool CMOOSVariable::Set(const CMOOSMsg &Msg)
 {
     switch(Msg.m_cDataType)
     {

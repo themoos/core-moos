@@ -37,6 +37,10 @@
 #include <stdlib.h>
 #include <cstring>
 
+#ifdef _WIN32
+#include <float.h>
+#endif
+
 /*Reference ellipsoids derived from Peter H. Dana's website- 
 http://www.utexas.edu/depts/grg/gcraft/notes/datum/elist.html
 Department of Geography, University of Texas at Austin
