@@ -39,7 +39,10 @@
 
 #ifdef _WIN32
 #include <float.h>
+#define isnan _isnan
 #endif
+
+
 
 /*Reference ellipsoids derived from Peter H. Dana's website- 
 http://www.utexas.edu/depts/grg/gcraft/notes/datum/elist.html
@@ -494,6 +497,14 @@ bool CMOOSGeodesy::UTM2LatLong(double dfX, double dfY, double& dfLat, double& df
         if (!LatLong2LocalUTM(dflat,dflon,dfnew_y,dfnew_x))
             return(false);
         
+		// fix to segfault issue if you get diverging values
+		if(isnan(dflat) || isnan(dflon))
+		{
+			dflat = 91;
+			dflon = 181;
+			return(false);
+		}
+		
         // how different
         double dfdiff_x = dfnew_x -dfX;
         double dfdiff_y = dfnew_y -dfY;
