@@ -116,6 +116,9 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
 
 #endif
 
+	if(m_nPortFD!=0)
+		m_sPort = sPort;
+	
     return  m_nPortFD!=0;
 }
 

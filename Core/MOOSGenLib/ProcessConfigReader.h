@@ -81,9 +81,6 @@ public:
     /** read a unsigned integer parameter for a named process*/
     bool GetConfigurationParam(std::string sAppName, std::string sParam, unsigned int & nVal);
 
-    /** read a vector<double> parameter for a named process*/
-    bool GetConfigurationParam(std::string sAppName, std::string sParam,std::vector<double> & Vec,int & nRows,int & nCols);
-
     /** read a string parameter for a Process "m_sName" */
     bool GetConfigurationParam(std::string sParam,std::string &sVal);
 

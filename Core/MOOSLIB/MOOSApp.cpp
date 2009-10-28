@@ -613,6 +613,18 @@ bool CMOOSApp::SetMOOSVar(const string &sVarName,const  string &sVal, double dfT
 
 }
 
+bool CMOOSApp::SetMOOSVar(const CMOOSVariable& Var)
+{
+    MOOSVARMAP::iterator p = m_MOOSVars.find(Var.GetName ());
+	
+    if(p==m_MOOSVars.end())
+        return false;
+	
+    p->second = Var;
+    p->second.SetFresh (true);
+    return true;
+}
+
 bool CMOOSApp::UpdateMOOSVariables(MOOSMSG_LIST &NewMail)
 {
     //we only subscribe to things if we are in simulator mode

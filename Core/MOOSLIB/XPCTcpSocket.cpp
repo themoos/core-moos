@@ -141,8 +141,13 @@ int XPCTcpSocket::iSendMessage(void *_vMessage, int _iMessageSize)
     int iNumBytes;  // Stores the number of bytes sent
     
     // Sends the message to the connected host
+#ifdef _WIN32
     if ((iNumBytes = send(iSocket, (char *)_vMessage, _iMessageSize, 0)) ==
         -1)
+#else
+		if ((iNumBytes = send(iSocket, _vMessage, _iMessageSize, 0)) ==
+			-1)
+#endif		
     {
         char sMsg[512];        
         sprintf(sMsg, "Error sending socket message: %s", sGetError());

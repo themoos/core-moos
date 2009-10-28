@@ -137,12 +137,34 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
 
     // jckerken 8-12-2004 (MIT)
     // remove comments made in line not at beginning
-    int nC = (int)sLine.find("//");
-
-    if (nC >= 0 && nC <= (int)sLine.size())
+    size_t nC = sLine.find("//");
+		
+	//better check its not inside a quoted section...(PMN oct 2009)
+	size_t nS1 = sLine.find("\"");
+	if(nS1!=std::string::npos)
+	{
+		size_t nS2 = sLine.find("\"",nS1+1);
+		if(nS2!=std::string::npos)
+		{
+	
+			std::string sF = sLine.substr(nS1+1,nS2-nS1-1);
+	
+			sLine.replace(nS1,nS2-nS1+1,sF);
+		
+			if(nS1<nC && nC<<nS2)
+			{
+				//remove quotes
+				nC = sLine.find("//",nS2-1);			
+			}
+		}
+	}
+	
+    if (nC >= 0 && nC <= sLine.size() && nC!=std::string::npos)
     {
         if (nC > 0)
+		{
             sLine = sLine.substr(0, nC);
+		}
         else
             sLine = "";
     } // end jckerken

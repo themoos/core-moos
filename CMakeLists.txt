@@ -5,11 +5,13 @@
 ###########################################################
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-IF(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-ENDIF(COMMAND cmake_policy)
+if(COMMAND cmake_policy)
+   cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+
 
 ###########################################################
 		    PROJECT(MOOS)
@@ -162,6 +164,12 @@ IF(PLATFORM_DARWIN)
     SET(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib: /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
   ENDIF(OSX_LEOPARD_GL_FIX)	
 ENDIF(PLATFORM_DARWIN)
+
+#####################################################
+# Toby Schneiders request for fPIC on amd64
+IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
+ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
 
 

@@ -91,7 +91,7 @@ public:
     std::string GetSubscribeName() const;
     
     /** copy in data from a MOOSMsg*/
-    bool 		Set(CMOOSMsg & Msg);
+    bool 		Set(const CMOOSMsg & Msg);
     
     /** get max frequency at which this MOOSvariable could refresh */
     double 		GetCommsTime() const {return m_dfCommsTime;};
