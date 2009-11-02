@@ -793,7 +793,7 @@ std::string CMOOSApp::MakeStatusString()
 
     ssStatus<<"Publishing=\"";
     std::copy(Published.begin(),Published.end(),std::ostream_iterator<string>(ssStatus,","));
-	ssStatus<<"\"";
+	ssStatus<<"\",";
 
     ssStatus<<"Subscribing=\"";
     std::copy(Registered.begin(),Registered.end(),std::ostream_iterator<string>(ssStatus,","));
