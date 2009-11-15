@@ -39,3 +39,5 @@ class CMOOSUDPLink
         long m_nLocalPort;
     };
 #endif
+
+
