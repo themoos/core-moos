@@ -171,6 +171,11 @@ IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
+# An option to disable names lookup in MOOS server. 
+SET(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB") 
+IF(DISABLE_NAMES_LOOKUP) 
+	ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP) 
+ENDIF(DISABLE_NAMES_LOOKUP) 
 
 
 #####################################################

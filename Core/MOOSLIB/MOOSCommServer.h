@@ -108,7 +108,7 @@ public:
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
     @param lPort port number to listen on
     */
-    bool Run(long lPort,const std::string  & sCommunityName);
+    bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
     
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
@@ -216,6 +216,8 @@ protected:
     /// called from init to start the listen and server threads up
     bool    StartThreads();
 
+	/// flag to say don't bother with name look up
+	bool m_bDisableNameLookUp;
 
     /// name of community being served
     std::string  m_sCommunityName;
