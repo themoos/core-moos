@@ -140,8 +140,12 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
     {
 		SetMOOSTimeWarp(dfWarp);
     }
-    
-    
+
+    //is there a network - default  - true
+	bool bNoNetwork = false;
+    m_MissionReader.GetValue("NoNetwork",bNoNetwork);
+	
+	
     string sPort;
     
     if(m_MissionReader.GetValue("SERVERPORT",sPort))
@@ -160,7 +164,7 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
     
     LogStartTime();
     
-    m_CommServer.Run(m_nPort,m_sCommunityName);
+    m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
         
     return true;
 }

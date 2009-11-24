@@ -111,6 +111,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_pfnDisconnectCallBack = NULL;
     m_sCommunityName = "!£";
     m_bQuiet  = false;
+	m_bDisableNameLookUp = false;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
@@ -119,12 +120,14 @@ CMOOSCommServer::~CMOOSCommServer()
 }
 
 
-bool CMOOSCommServer::Run(long lPort, const string & sCommunityName)
+bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisableNameLookUp)
 {
 
     m_sCommunityName = sCommunityName;
 
     m_lListenPort = lPort;
+	
+	m_bDisableNameLookUp = bDisableNameLookUp;
 
     if(!m_bQuiet)
     	DoBanner();
@@ -279,12 +282,26 @@ bool CMOOSCommServer::ListenLoop()
 
         try
         {
-            char sClientName[200];
+            char sClientName[255];
 
             m_pListenSocket->vListen();
-
-            XPCTcpSocket * pNewSocket = m_pListenSocket->Accept(sClientName);
-
+			XPCTcpSocket * pNewSocket = NULL;
+			#ifdef MOOS_DISABLE_NAMES_LOOKUP
+				pNewSocket = m_pListenSocket->Accept(); 
+				sClientName[0]='\0'; 
+			#else 
+				if(!m_bDisableNameLookUp)
+				{
+					pNewSocket = m_pListenSocket->Accept(sClientName);
+				}
+				else 
+				{
+					MOOSTrace("not waiting for name lookup\n");
+					pNewSocket = m_pListenSocket->Accept(); 
+					sClientName[0]='\0'; 
+				}
+			#endif 
+			
             m_SocketListLock.Lock();
 
             if(OnNewClient(pNewSocket,sClientName))

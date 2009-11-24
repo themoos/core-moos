@@ -314,7 +314,7 @@ bool CAntler::KillNicely(MOOSProc* pProc)
 		if(pProc->m_bNewConsole)
 		{
 			//we need to be crafty....
-			std::string sCmd = "ps -e -o ppid= -o,pid=";
+			std::string sCmd = "ps -e -o ppid= -o pid=";
 			
 			FILE* In = popen(sCmd.c_str(),"r");
 			
