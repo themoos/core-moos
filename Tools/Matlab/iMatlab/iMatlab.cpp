@@ -242,7 +242,7 @@ void DoRegistrations()
 
 bool OnMOOSConnect(void * pParam)
 {
-    //MOOSTrace("DB connection established.\n");
+    MOOSTrace("DB connection established.\n");
     DoRegistrations();
     return true;
 }
@@ -610,7 +610,7 @@ void iMatlab( int nlhs, mxArray *plhs[], int nrhs, const mxArray  *prhs[] )
             //make a struct array
 
                         DIM_TYPE  DimArray[2];
-            DimArray[0] = 1;DimArray[1] = nMsgs;
+			            DimArray[0] = 1;DimArray[1] = nMsgs;
                         
                         const char * FieldNames[] = {"KEY","TYPE","TIME","STR","DBL","SRC","ORIGINATING_COMMUNITY"};
                         plhs[0] = mxCreateStructArray(2, DimArray, sizeof(FieldNames)/sizeof(char*),FieldNames);
