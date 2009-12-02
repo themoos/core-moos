@@ -100,6 +100,14 @@ public:
     /** returns a string of the next non comment line (and removs trailing comments)*/
     std::string  GetNextValidLine(bool bDoShellSubstitution = true);
 
+	    
+    bool DoVariableExpansion(std::string & sVal);
+    bool BuildLocalShellVars();
+    bool MakeOverloadedCopy(const std::string & sCopyName,std::map<std::string, std::string> & OverLoads);
+	void EnableVerbatimQuoting(bool bEnable=true){m_bEnableVerbatimQuoting = bEnable;};
+
+
+protected:
 	/** iterates through filemap freeing up resources then calls filemap's clear method */
 	void ClearFileMap()
 	{
@@ -111,13 +119,8 @@ public:
 		}
 		m_FileMap.clear();
 	}
-    
-    bool DoVariableExpansion(std::string & sVal);
-    bool BuildLocalShellVars();
-    bool MakeOverloadedCopy(const std::string & sCopyName,std::map<std::string, std::string> & OverLoads);
-
-
-protected:
+	
+	
     std::ifstream * GetFile();
     CMOOSLock *m_pLock;
     static bool    IsComment(std::string & sLine);
@@ -127,7 +130,10 @@ protected:
     std::map<std::string,std::string> m_LocalShellVariables;
     /** every thread get its own pointer to a stream*/
     THREAD2FILE_MAP m_FileMap;
-    
+
+    //true if quoted strings are treated as literals - quotes will be removed and comment "//"
+	//characters not treated as comments
+	bool m_bEnableVerbatimQuoting;
 
 };
 

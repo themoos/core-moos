@@ -58,6 +58,9 @@ using namespace std;
 
 CMOOSFileReader::CMOOSFileReader()
 {
+	//by default we want to use quotes to allow verbatim
+	//strings
+	EnableVerbatimQuoting(true);
     m_pLock = new CMOOSLock();
 }
 
@@ -141,7 +144,7 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
 		
 	//better check its not inside a quoted section...(PMN oct 2009)
 	size_t nS1 = sLine.find("\"");
-	if(nS1!=std::string::npos)
+	if(nS1!=std::string::npos && m_bEnableVerbatimQuoting)
 	{
 		size_t nS2 = sLine.find("\"",nS1+1);
 		if(nS2!=std::string::npos)
