@@ -66,36 +66,36 @@ Fl_Group * MakeCommunityPane(int x ,int y, int w, int h,const std::string &  Nam
 void OnSave(Fl_Widget* pWidget,void * pParam)
 {
     Fl_Tabs* pTab = (Fl_Tabs*)(pParam);
-        std::ostringstream os;
-        for(int i = 0;i<pTab->children();i++)
-        {
-                CScopeTabPane * pTabPane = (CScopeTabPane*)(pTab->child(i));
-                std::string sHost;
-                int nPort;
-                pTabPane->GetMOOSInfo(sHost,nPort);
-                os<<pTabPane->label()<<":"<<nPort<<"@"<<sHost<<",";
-        }
-
-        //here we try to load previous preferences
-        Fl_Preferences app( Fl_Preferences::USER, "MOOS", "uMS" );
-        app.set("Communities",os.str().c_str());
+    std::ostringstream os;
+    for(int i = 0;i<pTab->children();i++)
+    {
+        CScopeTabPane * pTabPane = (CScopeTabPane*)(pTab->child(i));
+        std::string sHost;
+        int nPort;
+        pTabPane->GetMOOSInfo(sHost,nPort);
+        os<<pTabPane->label()<<":"<<nPort<<"@"<<sHost<<",";
+    }
+    
+    //here we try to load previous preferences
+    Fl_Preferences app( Fl_Preferences::USER, "MOOS", "uMS" );
+    app.set("Communities",os.str().c_str());
 }
 
 //callback for delete
 void OnRemoveCommunity(Fl_Widget* pWidget,void * pParam)
 {
     Fl_Tabs* pTab = (Fl_Tabs*)(pParam);
-
+    
     if(pTab->children()>1)
     {       
-    if(fl_ask(MOOSFormat("Really delete Scope of \"%s\" ?",pTab->value()->label()).c_str()))
-    {
-        Fl_Group* pG = (Fl_Group*)pTab->value();
-        pG->clear();
-        pTab->remove(pG);
-        pTab->value(pTab->child(0));
-        delete pG;
-    }
+        if(fl_choice("Really delete Scope of \"%s\" ?", "No", "Yes", NULL, pTab->value()->label()))
+        {
+            Fl_Group* pG = (Fl_Group*)pTab->value();
+            pG->clear();
+            pTab->remove(pG);
+            pTab->value(pTab->child(0));
+            delete pG;
+        }
     }
 }
 
@@ -106,7 +106,7 @@ void OnRenameCommunity(Fl_Widget* pWidget,void * pParam)
     Fl_Tabs* pTab = (Fl_Tabs*)(pParam);
     const char * scName=fl_input("Enter a new name", "");
     if(scName==NULL)
-    return ;
+        return ;
     
     char * sName = new char[strlen(scName)*2];
     strcpy(sName,scName);
@@ -121,14 +121,14 @@ void OnAddCommunity(Fl_Widget* pWidget,void * pParam)
 {
     const char * scName=fl_input("New Community Name", "");
     if(scName==NULL)
-    return ;
+        return ;
     
     char * sName = new char[strlen(scName)*2];
     strcpy(sName,scName);
     
     Fl_Tabs* pTab = (Fl_Tabs*)(pParam);
     Fl_Group* pG = (Fl_Group*)pTab->value();
-
+    
     pTab->begin();
     MakeCommunityPane(10,30,pG->w()-20,pG->h()-10,sName);
     pTab->end();
@@ -146,58 +146,58 @@ int main(int argc, char* argv[])
     //OK - lets build a whole set of panes
     std::string sWho;
     {
-    //note scoping
-    Fl_Preferences app( Fl_Preferences::USER, "MOOS", "uMS" );
-    char Space[2048];
-    app.get("Communities",Space,"Unnamed:9000@LOCALHOST",sizeof(Space));
-    sWho = std::string(Space);
+        //note scoping
+        Fl_Preferences app( Fl_Preferences::USER, "MOOS", "uMS" );
+        char Space[2048];
+        app.get("Communities",Space,"Unnamed:9000@LOCALHOST",sizeof(Space));
+        sWho = std::string(Space);
     }
     
     Fl_Tabs* pTab = new Fl_Tabs(10, 10, 800, 400);
     
     while(!sWho.empty())
     {
-    std::string sChunk = MOOSChomp(sWho,",");
-    std::string sName = MOOSChomp(sChunk,":");
-    int nPort = atoi(MOOSChomp(sChunk,"@").c_str());
-    std::string sHost = sChunk;
-    if(!sChunk.empty() && nPort>0)
-    {
-        Fl_Group *pG  = MakeCommunityPane(10,30,800,390,(char*)sName.c_str());
-        CScopeTabPane * pTabPane = (CScopeTabPane*)(pG);
-        pTabPane->SetMOOSInfo(sHost,nPort);
-        Fl_Group::current()->resizable(pG);
-    }
+        std::string sChunk = MOOSChomp(sWho,",");
+        std::string sName = MOOSChomp(sChunk,":");
+        int nPort = atoi(MOOSChomp(sChunk,"@").c_str());
+        std::string sHost = sChunk;
+        if(!sChunk.empty() && nPort>0)
+        {
+            Fl_Group *pG  = MakeCommunityPane(10,30,800,390,(char*)sName.c_str());
+            CScopeTabPane * pTabPane = (CScopeTabPane*)(pG);
+            pTabPane->SetMOOSInfo(sHost,nPort);
+            Fl_Group::current()->resizable(pG);
+        }
     }
     if(pTab->children()==0)
     {
-    Fl_Group *pG  = MakeCommunityPane(10,30,800,390,"Unnamed");             
+        Fl_Group *pG  = MakeCommunityPane(10,30,800,390,"Unnamed");             
     }
     
     w->end();
-
-
+    
+    
     //and add some buttons to control them....
     w->begin();
     {
-    //add
-    Fl_Button * pNewCommunityButton = new Fl_Button(10,420,160,30,"Add Community");
-    pNewCommunityButton->callback(OnAddCommunity,pTab);
-    
-    //delete
-    Fl_Button * pDelCommunityButton = new Fl_Button(180,420,160,30,"Remove Community");
-    pDelCommunityButton->callback(OnRemoveCommunity,pTab);
-    
-    //save
-    Fl_Button * pSaveButton = new Fl_Button(350,420,160,30,"Save Layout");
-    pSaveButton->callback(OnSave,pTab);
-    pSaveButton->callback();
-    
-    //rename
-    Fl_Button * pRenameButton = new Fl_Button(520,420,160,30,"Rename");
-    pRenameButton->callback(OnRenameCommunity,pTab);
-    pRenameButton->callback();
-    
+        //add
+        Fl_Button * pNewCommunityButton = new Fl_Button(10,420,160,30,"Add Community");
+        pNewCommunityButton->callback(OnAddCommunity,pTab);
+        
+        //delete
+        Fl_Button * pDelCommunityButton = new Fl_Button(180,420,160,30,"Remove Community");
+        pDelCommunityButton->callback(OnRemoveCommunity,pTab);
+        
+        //save
+        Fl_Button * pSaveButton = new Fl_Button(350,420,160,30,"Save Layout");
+        pSaveButton->callback(OnSave,pTab);
+        pSaveButton->callback();
+        
+        //rename
+        Fl_Button * pRenameButton = new Fl_Button(520,420,160,30,"Rename");
+        pRenameButton->callback(OnRenameCommunity,pTab);
+        pRenameButton->callback();
+        
     }
     w->end();
     
