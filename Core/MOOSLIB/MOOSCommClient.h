@@ -105,14 +105,15 @@ public:
     bool Fetch(MOOSMSG_LIST  & MsgList);
 
     /** place a single message in the out box and return immediately. Completion of this method
-    does not infer transmission. However transmission will occur at the next available oppurtunity.
-    Inpractice the apparent speed of message transmission will be very fast indeed. This model howver prevents
-    wayward user software bring down the MOOSComms by way of denial of service. (ie hogging the network)
-    @param Msg reference to CMOOSMsg which user whishes to send*/
+    does not imply transmission. However transmission will occur at the next available oppurtunity.
+    In practice the apparent speed of message transmission will be very fast indeed. This model
+    however prevents wayward user software bring down the MOOSComms by way of denial of service.
+    (ie hogging the network)
+    @param Msg reference to CMOOSMsg which user wishes to send*/
     bool Post(CMOOSMsg  & Msg);
 
-    /** internal method which runs in a seperate thread and manges the input and output
-    of messages from thser server. DO NOT CALL THIS METHOD.*/
+    /** internal method which runs in a seperate thread and manages the input and output
+    of messages from the server. DO NOT CALL THIS METHOD.*/
     bool ClientLoop();
 
     /** called by the above to do the client mail box shuffling **/
@@ -150,7 +151,8 @@ public:
     /** return true if a mail callback is installed */
     bool HasMailCallBack();
     
-    /** Directly and asynhrounously make a request to the server (use this very rarely if ever. Its not meant for public consumption)
+    /** Directly and asynchronously make a request to the server (use this very rarely if ever. It's not
+    meant for public consumption)
     @param sWhat string specifying what request to make - ALL, DB_CLEAR, PROCESS_SUMMARY or VAR_SUMMARY
     @param MsgList List of messages returned by server
     @param dfTimeOut TimeOut
@@ -179,7 +181,7 @@ public:
     /** describe this client in a string */
     std::string GetDescription();
     
-    /** call with "true" if you want thsi client to fake its own outgoing name. This is rarely used but very useful when it is*/
+    /** call with "true" if you want this client to fake its own outgoing name. This is rarely used but very useful when it is */
     bool FakeSource(bool bFake);
 
     /** make the client shut down */
