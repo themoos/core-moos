@@ -87,7 +87,7 @@ protected:
     /** some legacy stuff that should be removed...*/
     double GetMagneticOffset();
 
-        void SetInstrumentErrorMessage(std::string sError);
+    void SetInstrumentErrorMessage(std::string sError);
     void SetPrompt(std::string sPrompt);
 
     std::string m_sPrompt;
