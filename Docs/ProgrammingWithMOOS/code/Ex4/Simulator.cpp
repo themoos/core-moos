@@ -118,7 +118,7 @@ bool CSimulator::OnStartUp()
     MOOSTrace("\tVehicle is called : %s\n",m_sVehicleName.c_str());
     MOOSTrace("\tInitial Location is  : %s\n",DoubleVector2String(vInitialLocation).c_str());
     MOOSTrace("\tHeading is  : %f\n",m_dfHeading);
-    MOOSTrace("\tBatteryVoltage is  : %s\n",m_sBilge.c_str());
+    MOOSTrace("\tBatteryVoltage is  : %f\n",m_dfBatteryVoltage);
 
 
 
