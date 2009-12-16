@@ -8,18 +8,39 @@
     #include "signal.h"
 #endif
 
-#define WEBSERVER_PORT 9080L
+#define DEFAULT_WEBSERVER_PORT 9080L
 #define WEBSERVER_COMMCLIENT_TICK 5
 
 bool _DUMMYMOOSCB(void *){return true;}
 
-CMOOSDBHTTPServer::CMOOSDBHTTPServer(long lPort)
+CMOOSDBHTTPServer::CMOOSDBHTTPServer(long lDBPort)
 {
+    Initialise(lDBPort, DEFAULT_WEBSERVER_PORT);
+}
+
+CMOOSDBHTTPServer::CMOOSDBHTTPServer(long lDBPort, long lWebServerPort)
+{
+    Initialise(lDBPort, lWebServerPort);
+}
+
+CMOOSDBHTTPServer::~CMOOSDBHTTPServer(void)
+{
+    //clean up
+    m_pMOOSComms->Close();
+    delete m_pMOOSComms;
+    delete m_pMOOSCommsLock;
+}
+
+
+void CMOOSDBHTTPServer::Initialise(long lDBPort, long lWebServerPort)
+{
+    m_lWebServerPort = lWebServerPort;
+
     //make a new comms client to reach the DB   
     m_pMOOSComms = new CMOOSCommClient;
     m_pMOOSComms->SetOnConnectCallBack(_DUMMYMOOSCB,NULL);
     m_pMOOSComms->SetQuiet(true);
-    m_pMOOSComms->Run("localhost",lPort,"DBWebServer",WEBSERVER_COMMCLIENT_TICK);
+    m_pMOOSComms->Run("localhost",lDBPort,"DBWebServer",WEBSERVER_COMMCLIENT_TICK);
 
     //we'll be accessing the same DB interface from lots of threads (one for each connected browser
     //so we had better be safe
@@ -34,22 +55,13 @@ CMOOSDBHTTPServer::CMOOSDBHTTPServer(long lPort)
 #ifndef _WIN32
     signal(SIGPIPE,SIG_IGN);
 #endif
-    
-
 }
 
-CMOOSDBHTTPServer::~CMOOSDBHTTPServer(void)
-{
-    //clean up
-    m_pMOOSComms->Close();
-    delete m_pMOOSComms;
-    delete m_pMOOSCommsLock;
-}
 
 void CMOOSDBHTTPServer::DoBanner()
 {
     MOOSTrace("\n*****************************************************\n");
-    MOOSTrace("  serving webpages HTTP on http://%s:%d\n" ,m_pMOOSComms->GetLocalIPAddress().c_str(),int(WEBSERVER_PORT));
+    MOOSTrace("  serving webpages HTTP on http://%s:%d\n" ,m_pMOOSComms->GetLocalIPAddress().c_str(),int(m_lWebServerPort));
     MOOSTrace("*****************************************************\n");
 }
 
@@ -66,7 +78,7 @@ bool CMOOSDBHTTPServer::Listen()
     
     DoBanner();
     
-    m_pListenSocket = new XPCTcpSocket(WEBSERVER_PORT);
+    m_pListenSocket = new XPCTcpSocket(m_lWebServerPort);
     
     try
     {
