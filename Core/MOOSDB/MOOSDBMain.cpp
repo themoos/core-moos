@@ -34,6 +34,8 @@
 #include <MOOSLIB/MOOSLib.h>
 #include "MOOSDB.h"
 #include <iostream>
+#include <string>
+#include <memory>
 
 #include "MOOSDBHTTPServer.h"
 
@@ -53,9 +55,27 @@ int main(int argc , char * argv[])
 
     //this is a webserver object which allows you
     //to access and prod the MOOSDB via HTTP
-    #ifdef MOOSDB_HAS_WEBSERVER
-        CMOOSDBHTTPServer HTTPS(DB.GetDBPort());
-    #endif
+#ifdef MOOSDB_HAS_WEBSERVER
+    long lWebServerPort = 0;    
+
+    CMOOSFileReader missionReader;
+    if(missionReader.SetFile(sMissionFile))
+    {
+        std::string sWebServerPort;        
+        if(missionReader.GetValue("WEBSERVERPORT",sWebServerPort))
+        {
+            lWebServerPort = atoi(sWebServerPort.c_str());
+        }
+    }
+
+    // Fire off the web server
+    std::auto_ptr<CMOOSDBHTTPServer> pWebServer;
+    if (lWebServerPort > 0)
+        pWebServer = std::auto_ptr<CMOOSDBHTTPServer> (new CMOOSDBHTTPServer(DB.GetDBPort(), lWebServerPort));
+    else
+        pWebServer = std::auto_ptr<CMOOSDBHTTPServer> (new CMOOSDBHTTPServer(DB.GetDBPort()));
+
+#endif
 
     //nothing to do - all the threads in the DB object
     //do the work
