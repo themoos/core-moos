@@ -27,6 +27,7 @@
 //   02111-1307, USA. 
 //
 //////////////////////////    END_GPL    //////////////////////////////////
+
 #ifdef _WIN32
     #pragma warning(disable : 4786)
     #pragma warning(disable : 4503)

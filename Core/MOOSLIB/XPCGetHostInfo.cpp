@@ -9,7 +9,7 @@
 //   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
 //   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
 //      
-//   This file is part of a  MOOS CORE Component. 
+//   This file is part of a  MOOS Core Component. 
 //        
 //   This program is free software; you can redistribute it and/or 
 //   modify it under the terms of the GNU General Public License as 
