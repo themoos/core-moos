@@ -25,7 +25,7 @@
 
 
 
-inline void MOOSAssert(bool cond, char *msg=NULL, const char *filename=NULL, int line=0)
+inline void MOOSAssert(bool cond, const char *msg=NULL, const char *filename=NULL, int line=0)
 {
 #if (defined(_DEBUG) || defined(ALLOW_RELEASE_ASSERTS))
 #if (MOOS_ASSERT_LEVEL > 0)
