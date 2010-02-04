@@ -197,6 +197,19 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
 ###############################################################################
 # Create the MOOSConfig.cmake file for the build tree.
+SET( MOOS_INCLUDE_DIRS
+         ${MOOS_SOURCE_DIR}/Core
+         ${MOOS_SOURCE_DIR}/Essentials
+         ${MOOS_SOURCE_DIR}/NavigationAndControl
+         ${MOOS_SOURCE_DIR}/Instruments
+         ${MOOS_SOURCE_DIR}/Tools
+         ${MOOS_SOURCE_DIR}/Thirdparty
+)
+
+SET( MOOS_LIBRARIES ${MOOSLIBS} )
+
+SET( MOOS_LIBRARY_DIRS ${LIBRARY_OUTPUT_PATH} )
+
 CONFIGURE_FILE( ${MOOS_SOURCE_DIR}/MOOSConfig.cmake.in
                ${MOOS_BINARY_DIR}/MOOSConfig.cmake @ONLY IMMEDIATE )
 
