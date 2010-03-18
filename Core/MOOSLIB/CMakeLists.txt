@@ -6,7 +6,15 @@ IF (DETECT_CLOCK_DRIFT)
     ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
 ENDIF (DETECT_CLOCK_DRIFT)
 
-SET(MOOSLIB_SRCS 
+# Removed the extra field that was added to the MOOS message protocol in October 2009.
+OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
+IF (DISABLE_AUX_SOURCE)
+  ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
+ENDIF (DISABLE_AUX_SOURCE)
+MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
+
+
+SET(MOOSLIB_SRCS
 MOOSVariable.cpp
 MOOSCommClient.cpp
 MOOSCommObject.cpp
@@ -63,7 +71,7 @@ XPCException.h
 XPCGetHostInfo.h
 XPCGetProtocol.h
 XPCSocket.h
-XPCTcpSocket.h 
+XPCTcpSocket.h
 XPCUdpSocket.h
 )
 
