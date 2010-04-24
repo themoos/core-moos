@@ -90,6 +90,7 @@ CMOOSCommClient::CMOOSCommClient()
 	m_pDisconnectCallBackParam = NULL;
     
     m_pfnMailCallBack = NULL;
+	m_pSocket = NULL;
 
 	m_nOutPendingLimit = OUTBOX_PENDING_LIMIT;
 	m_nInPendingLimit = INBOX_PENDING_LIMIT;
