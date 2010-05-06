@@ -435,7 +435,7 @@ bool CMOOSFileReader::IsOpen()
 bool CMOOSFileReader::BuildLocalShellVars()
 {
     
-    if(GetFile()->is_open())
+    if(IsOpen())
     {
         Reset();
         
@@ -527,7 +527,7 @@ bool CMOOSFileReader::DoVariableExpansion(std::string & sVal)
 
 bool CMOOSFileReader::MakeOverloadedCopy(const std::string & sCopyName,std::map<std::string, std::string> & OverLoads)
 {
-    if(GetFile()->is_open())
+    if(IsOpen())
     {
         //open a file to copy to
         std::ofstream of(sCopyName.c_str());
