@@ -52,6 +52,7 @@
 #include <limits>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
 
 #include <MOOSGenLib/MOOSGenLib.h>
 #include "XPCTcpSocket.h"
@@ -60,6 +61,10 @@
 #include "MOOSGlobalHelper.h"
 #include "MOOSException.h"
 #include "MOOSSkewFilter.h"
+
+
+
+#define MOOS_SERVER_REQUEST_ID  -2
 
 
 using namespace std;
@@ -267,12 +272,13 @@ bool CMOOSCommClient::ClientLoop()
 bool CMOOSCommClient::DoClientWork()
 {
 	//this is the IO Loop
-	try
+	//try
 	{
 
 		//note the symmetry here... a warm feeling
 
 		CMOOSCommPkt PktTx,PktRx;
+		
         
         bool bNullPacket  = false;
 
@@ -291,7 +297,18 @@ bool CMOOSCommClient::DoClientWork()
 
 
 			//convert our out box to a single packet
-			PktTx.Serialize(m_OutBox,true);
+			try 
+			{
+				PktTx.Serialize(m_OutBox,true);
+				
+			}
+			catch (CMOOSException e) 
+			{
+				//clear the outbox
+				m_OutBox.clear();
+				m_OutLock.UnLock();
+				throw CMOOSException("Serialisation Failed - this must be a lot of mail..."); 
+			}
 
 			//clear the outbox
 			m_OutBox.clear();
@@ -359,12 +376,12 @@ bool CMOOSCommClient::DoClientWork()
         
         
 	}
-	catch(CMOOSException e)
+	/*catch(CMOOSException e)
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
 		return false;//jump out to connect loop....				
-	}
+	}*/
 
 	return true;
 }
@@ -498,8 +515,18 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg)
 			Msg.m_sSrc = m_sMyName;
 		}
 	}
-	//set up Message ID;
-	Msg.m_nID=m_nNextMsgID++;
+	
+
+	if(Msg.IsType(MOOS_SERVER_REQUEST))
+	{
+		Msg.m_nID=MOOS_SERVER_REQUEST_ID;	
+	}
+	else 
+	{
+		//set up Message ID;
+		Msg.m_nID=m_nNextMsgID++;
+	}
+
 
 	m_OutBox.push_front(Msg);
 
@@ -766,10 +793,11 @@ bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList,
     
 	CMOOSMsg Msg(MOOS_SERVER_REQUEST,sWhat.c_str(),"");
 	Post(Msg);
-
-	//now the ID of the transaction  is now in Msg as we passed a reference
-
-	int nIDRequired = Msg.m_nID;
+	
+	if(Msg.m_nID != MOOS_SERVER_REQUEST_ID)
+	{
+		return MOOSFail("Logical Error in ::ServerRequest");
+	}
 
 	int nSleep = 100;
 
@@ -777,7 +805,7 @@ bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList,
 
 	while(dfWaited<dfTimeOut)
 	{
-		if (Peek(MsgList, nIDRequired, bClear)) 
+		if (Peek(MsgList, MOOS_SERVER_REQUEST_ID, bClear)) 
 		{
 			//OK we have our reply...
 			return true;            
