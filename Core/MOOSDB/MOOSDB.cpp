@@ -687,6 +687,7 @@ bool CMOOSDB::OnServerAllRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
         MsgVar.m_sSrc       = rVar.m_sWhoChangedMe;
         MsgVar.m_sKey       = rVar.m_sName;
         MsgVar.m_sVal       = rVar.m_sVal;
+		MsgVar.m_sSrcAux    = rVar.m_sSrcAux;
         MsgVar.m_dfVal      = rVar.m_dfVal;
         MsgVar.m_dfVal2     = rVar.m_dfWriteFreq;
         MsgVar.m_sOriginatingCommunity = rVar.m_sOriginatingCommunity;

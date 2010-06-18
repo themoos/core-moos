@@ -61,6 +61,7 @@ CMOOSDBVar::CMOOSDBVar(const string & sName)
     m_dfVal = -1.0;
     m_dfTime = -1.0;
     m_sVal = "";
+	m_sSrcAux = "";
     m_sWhoChangedMe = "";
     m_nWrittenTo = 0;
     m_dfWriteFreq = 0;

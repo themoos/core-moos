@@ -74,6 +74,7 @@ public:
     double m_dfWrittenTime;
     string m_sVal;
     string m_sWhoChangedMe;
+	string m_sSrcAux;
 
     int     m_nWrittenTo;
     string m_sName;

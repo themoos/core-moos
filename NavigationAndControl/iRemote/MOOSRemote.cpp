@@ -897,10 +897,11 @@ bool CMOOSRemote::MakeCustomKeys()
                 MOOSRemoveChars(sVal," ");
                 string sChar = MOOSChomp(sVal,":");
                 string sKey = MOOSChomp(sVal,"@");
-                bool  bIsNumeric = sVal[0]!='\"';
                 MOOSRemoveChars(sVal,"\"");
                 string sTx = MOOSChomp(sVal,"$");
-                bool bAskToConfirm = (sVal == "confirm");
+
+                bool  bIsNumeric = MOOSIsNumeric(sTx);						
+				bool bAskToConfirm = (sVal == "confirm");
 
                 if(!sChar.empty())
                 {
