@@ -37,8 +37,8 @@ ELSE(CMAKE_COMPILER_IS_GNUCXX)
 	        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 		ENDIF(WALL_ON)
 	ELSE(MSVC)
-        # Other compilers go here	
-	
+        # Other compilers go here
+
 	ENDIF(MSVC)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
@@ -62,7 +62,7 @@ ENDIF(BUILD_CONTROL_AND_NAV)
 ############# TOOLS ? ################
 SET( BUILD_TOOLS OFF CACHE BOOL "Build GUI tools, simulators and matlab access")
 IF(BUILD_TOOLS)
-    #here we tell CMake to descend into the tools directory. More 
+    #here we tell CMake to descend into the tools directory. More
     #decisions will be made in there
     SET(BUILD_DIRS ${BUILD_DIRS} Tools)
 ENDIF(BUILD_TOOLS)
@@ -119,11 +119,11 @@ IF(UNIX)
     ADD_DEFINITIONS(-DUNIX)
 	IF("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 		ADD_DEFINITIONS( -DPLATFORM_DARWIN )
-		SET( PLATFORM_DARWIN 1 ) 
+		SET( PLATFORM_DARWIN 1 )
 	ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 	IF("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 		ADD_DEFINITIONS( -DPLATFORM_LINUX )
-		SET( PLATFORM_LINUX 1 ) 
+		SET( PLATFORM_LINUX 1 )
 	ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 ENDIF(UNIX)
 
@@ -138,7 +138,7 @@ IF(UNIX)
 
   IF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
 	SET(PLATFORM_LIBS ${PLATFORM_LIBS} socket nsl rt)
-  ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")	
+  ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
 
 ENDIF(UNIX)
 
@@ -158,11 +158,11 @@ ENDIF(UNIX)
 
 #####################################################
 #OSX Leopard has a cyclic linking issue this is a fix
-IF(PLATFORM_DARWIN)	
+IF(PLATFORM_DARWIN)
   OPTION(OSX_LEOPARD_GL_FIX "Adds linker fix for openGL in Leopard" FALSE)
   IF(OSX_LEOPARD_GL_FIX)
     SET(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib: /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-  ENDIF(OSX_LEOPARD_GL_FIX)	
+  ENDIF(OSX_LEOPARD_GL_FIX)
 ENDIF(PLATFORM_DARWIN)
 
 #####################################################
@@ -171,11 +171,11 @@ IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
-# An option to disable names lookup in MOOS server. 
-SET(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB") 
-IF(DISABLE_NAMES_LOOKUP) 
-	ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP) 
-ENDIF(DISABLE_NAMES_LOOKUP) 
+# An option to disable names lookup in MOOS server.
+SET(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB")
+IF(DISABLE_NAMES_LOOKUP)
+	ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP)
+ENDIF(DISABLE_NAMES_LOOKUP)
 
 
 #####################################################
@@ -220,4 +220,9 @@ SET( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules" )
 
 # GO FORTH!
 SUBDIRS(${BUILD_DIRS})
+
+# Add MOOS build directory to local CMake Pacakge cache, to help the find scripts
+if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+  export(PACKAGE MOOS)
+endif()
 
