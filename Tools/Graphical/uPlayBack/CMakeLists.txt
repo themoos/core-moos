@@ -29,6 +29,11 @@ IF(FLTK_FOUND)
    # Link the executable
    TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
+    INSTALL(TARGETS
+    uPlayBack
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    )
+
 ELSE(FLTK_FOUND)
     
    MESSAGE("uPB won't be built as FLTK was not found.")

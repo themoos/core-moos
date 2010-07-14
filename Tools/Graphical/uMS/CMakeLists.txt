@@ -42,6 +42,10 @@ IF(FLTK_FOUND)
    # Link the executable
    TARGET_LINK_LIBRARIES( uMS ${MOOSLIBS} ${PLATFORM_LIBS} fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
+    INSTALL(TARGETS
+    uMS
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    )
 ELSE(FLTK_FOUND)
     
    MESSAGE("uMS won't be built as FLTK was not found.")
