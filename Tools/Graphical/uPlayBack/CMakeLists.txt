@@ -12,6 +12,8 @@ MOOSPlayBackV2.cpp)
 #look for FLTK ourselves
 FIND_PACKAGE( FLTK REQUIRED )
 
+#fltk has OpenGL dependancy
+FIND_PACKAGE( OpenGL REQUIRED )
 
 IF(FLTK_FOUND)
 
@@ -22,10 +24,10 @@ IF(FLTK_FOUND)
    #this prevents fltk app from producing an annoying console aswell
    #ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
    # However, this does not work under windows in release mode
- ADD_EXECUTABLE( uPlayBack MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
+   ADD_EXECUTABLE( uPlayBack MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
 
    # Link the executable
-   TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} )
+   TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
 ELSE(FLTK_FOUND)
     
