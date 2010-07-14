@@ -12,6 +12,9 @@ SET(UMS_SRCS ScopeGrid.cpp uMS.cpp ScopeTabPane.cpp DBImage.cpp ScopeGrid.h Scop
 #look for FLTK ourselves
 FIND_PACKAGE( FLTK REQUIRED )
 
+#fltk has OpenGL dependancy
+FIND_PACKAGE( OpenGL REQUIRED )
+
 IF(FLTK_FOUND)
 
    INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
@@ -37,7 +40,7 @@ IF(FLTK_FOUND)
 
 
    # Link the executable
-   TARGET_LINK_LIBRARIES( uMS ${MOOSLIBS} ${PLATFORM_LIBS} fltkvw ${FLTK_LIBRARIES} )
+   TARGET_LINK_LIBRARIES( uMS ${MOOSLIBS} ${PLATFORM_LIBS} fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
 ELSE(FLTK_FOUND)
     
