@@ -10,7 +10,7 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 PROJECT(uPlayBackIndex)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 SET(UPLAYBACK_SRCS 
     uPlayBackMain.cpp

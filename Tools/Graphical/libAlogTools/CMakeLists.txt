@@ -10,7 +10,7 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 project(alogTools)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 add_subdirectory(alogTools)
 add_subdirectory(bin)
