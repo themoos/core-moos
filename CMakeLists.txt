@@ -224,5 +224,5 @@ SUBDIRS(${BUILD_DIRS})
 # Add MOOS build directory to local CMake Pacakge cache, to help the find scripts
 if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
   export(PACKAGE MOOS)
-endif()
+endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
 
