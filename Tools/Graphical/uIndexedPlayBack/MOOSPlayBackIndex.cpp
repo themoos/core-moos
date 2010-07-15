@@ -76,9 +76,7 @@ bool CMOOSPlayBackIndex::Initialise(const string &sFileName)
     m_dfLastClientProcessedTime = -1;
     m_sFileName = sFileName;
 
-    m_ALog.Open(sFileName);
-    
-    return m_ALog.IsOpen();
+    return m_ALog.Open(sFileName);
 
 }
 

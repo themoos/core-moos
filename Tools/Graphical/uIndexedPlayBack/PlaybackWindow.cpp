@@ -46,6 +46,8 @@
 #include <string>
 #include "PlaybackWindow.h"
 
+#include <alogTools/indexWriter.h>
+
 #define DEFAULT_COMMS_TICK 40
 #define DEFAULT_TIMER_INTERVAL 0.01
 #define _USE_32BIT_TIME_T
@@ -362,6 +364,8 @@ bool CPlaybackWindow::OnFile()
     app.get("LastFile",LastFile,"*",sizeof(LastFile));
 
     const char * pFile = fl_file_chooser("Select an alog file", "*.alog", LastFile);
+
+    bool bInitialised = false;
     if(pFile)
     {
         //CWaitCursor Cursor;
@@ -375,7 +379,8 @@ bool CPlaybackWindow::OnFile()
 
         Fl::wait();
 
-
+        while (!bInitialised)
+        {
         if(m_PlayBack.Initialise(pFile))
         {
             m_sFileName = std::string(pFile);
@@ -401,18 +406,34 @@ bool CPlaybackWindow::OnFile()
             //static char sFileSize[128];
             //sprintf(sFileSize,"%.2f KB loaded",(double)m_PlayBack.m_ALog.GetSize()/1024);
             //GetByID(ID_SOURCE)->label(sFileSize);
-
+            
+            bInitialised = true;
         }
         else
         {
-            fl_alert("Failed to initialise playback");
+            int v = fl_choice("Cannot find index file for this alog.  Would you like to create one?",
+              "No", "Yes", NULL);
+            
+            if (v == 0)
+              break;
+            else
+            {
+              indexWriter idxWriter;
+              idxWriter.parseAlogFile(string(pFile));
+              idxWriter.writeIndexFile(string(pFile)+string(".idx"));
+            }
+              
         }
+        
+        }
+        
+               
         GetRootWindow()->cursor(FL_CURSOR_DEFAULT );
 
     }    
 
     take_focus();
-    return true;
+    return bInitialised;
 }
 
 Fl_Window * CPlaybackWindow::GetRootWindow()
