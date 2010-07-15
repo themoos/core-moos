@@ -202,6 +202,11 @@ CScopeGrid::CScopeGrid( int X, int Y, int W, int H, const char *l ) :        Flv
 
     strcpy(m_csTitle,"Not connected");
     label(m_csTitle);
+
+    // remove mouseover <-> on column/row separators
+    // as these should not be adjustable
+    for(int i = 0; i < 7; ++i)
+    {col_resizable(false , i);}
 };
 
 
