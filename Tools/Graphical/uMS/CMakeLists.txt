@@ -32,7 +32,7 @@ IF(FLTK_FOUND)
 #      SET( MACOSX_BUNDLE_ICON_FILE xanthos.icns)
       FILE(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents)
 
-	
+
    #   ADD_CUSTOM_COMMAND( TARGET ${PROGNAME} POST_BUILD
    #   COMMAND cp ARGS Mac/${MACOSX_BUNDLE_ICON_FILE} ${EXECUTABLE_OUTPUT_PATH}/${PROGNAME}.app/Contents/Resources
    #   COMMENT Setting up translations & resources ) 
@@ -42,10 +42,6 @@ IF(FLTK_FOUND)
    # Link the executable
    TARGET_LINK_LIBRARIES( uMS ${MOOSLIBS} ${PLATFORM_LIBS} fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
-    INSTALL(TARGETS
-    uMS
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    )
 ELSE(FLTK_FOUND)
     
    MESSAGE("uMS won't be built as FLTK was not found.")
