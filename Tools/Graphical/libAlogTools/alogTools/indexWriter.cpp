@@ -72,11 +72,25 @@ void indexWriter::parseAlogFile( string alogFileName )
     size_t pos = line.find_first_not_of(" \t\r\n");
     bool blankLine = ( pos == string::npos );
 
-    if( !blankLine && !line.empty() && line.at(0) != '%')
+
+    if( !blankLine && !line.empty())
     {
+
+      // Check for comment
+      if (line.at(pos) == '%')
+      {
+        // is it the global time offset?
+        size_t logstartpos = line.find("LOGSTART");
+        if (logstartpos != string::npos)
+        {
+          m_alogHeader.startTime = atof(line.substr(logstartpos).c_str());
+        }
+        
+        continue;
+      }
+
       // Wrap a stream around the string, to allow easier parsing
-      std::istringstream stm;
-      stm.str( line );
+      std::istringstream stm(line);
 
       double timeStamp;
       string varName;
