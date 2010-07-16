@@ -13,6 +13,11 @@ alogLineReader::~alogLineReader()
 
 bool alogLineReader::Open( std::string alogFilename )
 {
+    if( m_alogFileStream.is_open() )
+    {
+        m_alogFileStream.close();
+    }
+
     m_alogFileStream.open( alogFilename.c_str() );
     if(!m_alogFileStream.is_open())
     {

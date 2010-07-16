@@ -43,7 +43,6 @@ void indexedAlogReader::GetPrevLine(std::string & line)
 void indexedAlogReader::GetLine( int lineNum, std::string & line)
 {
     aloglib::idxRec curRec = m_indexReader.GetLineRecord( lineNum );
-    //std::string alogData;
     m_alogLineReader.Read( curRec, line );
 }
 
