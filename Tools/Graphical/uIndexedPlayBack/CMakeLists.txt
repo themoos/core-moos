@@ -10,7 +10,6 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 PROJECT(uPlayBackIndex)
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 SET(UPLAYBACK_SRCS 
     uPlayBackMain.cpp
@@ -40,6 +39,11 @@ IF(FLTK_FOUND)
     ADD_EXECUTABLE( uPlayBackIndex MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
 
     TARGET_LINK_LIBRARIES(uPlayBackIndex ${MOOS_LIBRARIES} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} ${alogTools_LIBRARIES} )
+
+    INSTALL(TARGETS
+    uPlayBackIndex
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    )
 
 ELSE(FLTK_FOUND)
     MESSAGE("uPlayBackIndex won't be built as FLTK was not found.")

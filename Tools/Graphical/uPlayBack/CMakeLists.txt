@@ -1,3 +1,14 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+# --------------------------------------------------------------
+# Indicate CMake 2.7 and above that we don't want to mix relative
+#  and absolute paths in linker lib lists.
+# Run "cmake --help-policy CMP0003" for more information.
+# --------------------------------------------------------------
+if(COMMAND cmake_policy)
+      cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 PROJECT(uPlayBack)
 
 #build a list of files to compile
@@ -26,7 +37,6 @@ IF(FLTK_FOUND)
    # However, this does not work under windows in release mode
    ADD_EXECUTABLE( uPlayBack MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
 
-   # Link the executable
    TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
     INSTALL(TARGETS
@@ -35,7 +45,5 @@ IF(FLTK_FOUND)
     )
 
 ELSE(FLTK_FOUND)
-    
    MESSAGE("uPB won't be built as FLTK was not found.")
-
 ENDIF(FLTK_FOUND)
