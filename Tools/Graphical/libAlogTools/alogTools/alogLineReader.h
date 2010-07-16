@@ -1,16 +1,8 @@
 #ifndef _alogLineReader_h_
 #define _alogLineReader_h_
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-
-#include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <sstream>
-#include <algorithm>
 
 #include "recordTypes.h"
 

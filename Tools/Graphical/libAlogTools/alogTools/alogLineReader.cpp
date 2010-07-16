@@ -1,16 +1,17 @@
 #include "alogLineReader.h"
 #include "FileNotFoundException.h"
 
-#include <iostream>
-
+////////////////////////////////////////////////////////////////////////////////
 alogLineReader::alogLineReader() : m_alogFileStream()
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////
 alogLineReader::~alogLineReader()
 {
 }
 
+////////////////////////////////////////////////////////////////////////////////
 bool alogLineReader::Open( std::string alogFilename )
 {
     if( m_alogFileStream.is_open() )
@@ -27,6 +28,7 @@ bool alogLineReader::Open( std::string alogFilename )
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void alogLineReader::Read( aloglib::idxRec alogRec, std::string &line )
 {
     m_alogFileStream.seekg( alogRec.lineBegin, std::ios_base::beg );

@@ -11,6 +11,7 @@
 
 using namespace std;
 
+////////////////////////////////////////////////////////////////////////////////
 void indexWriter::writeIndexFile( string alogIndexName )
 {
   // sort the lines by timestamp and then write to index file
@@ -46,7 +47,6 @@ void indexWriter::writeIndexFile( string alogIndexName )
 
   outfile.close();
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 void indexWriter::parseAlogFile( string alogFileName )

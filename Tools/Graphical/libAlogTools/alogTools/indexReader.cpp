@@ -9,6 +9,7 @@
 
 using namespace std;
 
+////////////////////////////////////////////////////////////////////////////////
 indexReader::indexReader():
     m_alogHeader(),
     m_alogMsgList(),
@@ -16,9 +17,11 @@ indexReader::indexReader():
     m_alogRecords()
 {}
 
+////////////////////////////////////////////////////////////////////////////////
 indexReader::~indexReader()
 {}
 
+////////////////////////////////////////////////////////////////////////////////
 void indexReader::clear()
 {
   m_alogHeader.clear();
@@ -27,7 +30,7 @@ void indexReader::clear()
   m_alogRecords.clear();
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 void indexReader::GetMsgTypes(vector<string> &msgTypes)
 {
   msgTypes.clear();
@@ -35,7 +38,7 @@ void indexReader::GetMsgTypes(vector<string> &msgTypes)
   std::copy(m_alogMsgList.begin(), m_alogMsgList.end(), inserter(msgTypes, msgTypes.begin()));
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
 void indexReader::ReadIndexFile( std::string alogIndexFilename )
 {
     clear();
@@ -69,37 +72,44 @@ void indexReader::ReadIndexFile( std::string alogIndexFilename )
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
 const aloglib::idxRec& indexReader::GetLineRecord(unsigned int lineNum ) const
 { 
     return m_alogRecords.at(lineNum);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 double indexReader::GetTime( int i ) const
 {
     const aloglib::idxRec &rec = GetLineRecord( i );
     return rec.time;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 double indexReader::GetStartTime() const
 {
     return m_alogHeader.startTime;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 int indexReader::GetNumRecords() const
 {
     return m_alogRecords.size();
 }
 
+////////////////////////////////////////////////////////////////////////////////
 const aloglib::idxMsgList& indexReader::GetMsgList() const
 {
     return m_alogMsgList;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 const aloglib::idxSrcList& indexReader::GetSrcList() const
 {
     return m_alogSrcList;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 const std::vector<aloglib::idxRec>& indexReader::GetRecordList() const
 {
     return m_alogRecords;

@@ -1,16 +1,8 @@
 #ifndef _indexedAlogReader_h_
 #define _indexedAlogReader_h_
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <algorithm>
 
 #include "recordTypes.h"
 #include "alogLineReader.h"
