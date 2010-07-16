@@ -75,15 +75,18 @@ void indexWriter::parseAlogFile( string alogFileName )
 
     if( !blankLine && !line.empty())
     {
-
       // Check for comment
       if (line.at(pos) == '%')
       {
-        // is it the global time offset?
         size_t logstartpos = line.find("LOGSTART");
-        if (logstartpos != string::npos)
+        if( logstartpos != string::npos )
         {
-          m_alogHeader.startTime = atof(line.substr(logstartpos).c_str());
+        	size_t startTimePos = line.find_first_of("0123456789.");
+        	if (startTimePos != string::npos)
+        	{
+				double dfTime = atof( line.substr(startTimePos).c_str() );
+				m_alogHeader.startTime = dfTime;
+        	}
         }
         
         continue;
