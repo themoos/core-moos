@@ -134,7 +134,7 @@ CPlaybackWindow::CPlaybackWindow( int X, int Y, int W, int H,  const char *l ) :
     pSourceCheck->tooltip("Select which processes to replay");
     pSourceCheck->align(FL_ALIGN_TOP| FL_ALIGN_LEFT);
       pSourceCheck->labelsize(10);
-    pSourceCheck->label("0 KB Loaded");
+    pSourceCheck->label("");
     SetID(pSourceCheck,ID_SOURCE);
 
 
@@ -371,8 +371,6 @@ bool CPlaybackWindow::OnFile()
         //CWaitCursor Cursor;
         GetRootWindow()->cursor(FL_CURSOR_WAIT );
 
-
-
         GetByID(ID_PROGRESS)->label("LOADING AND PARSING ALOG...PLEASE WAIT");
 
         redraw();
@@ -381,55 +379,53 @@ bool CPlaybackWindow::OnFile()
 
         while (!bInitialised)
         {
-        if(m_PlayBack.Initialise(pFile))
-        {
-            m_sFileName = std::string(pFile);
-            pSourceCheck->clear();
-
-            STRING_SET Sources = m_PlayBack.GetSources();
-            STRING_SET::iterator p;
-            int i =0;
-            for(p = Sources.begin();p!= Sources.end();p++)
+            if(m_PlayBack.Initialise(pFile))
             {
-                pSourceCheck->add(p->c_str(),1);
+                m_sFileName = std::string(pFile);
+                pSourceCheck->clear();
+
+                STRING_SET Sources = m_PlayBack.GetSources();
+                STRING_SET::iterator p;
+                int i =0;
+                for(p = Sources.begin();p!= Sources.end();p++)
+                {
+                    pSourceCheck->add(p->c_str(),1);
+                }
+
+                GetByID(ID_SOURCE)->activate();
+                GetByID(ID_CLOCK)->activate();
+
+                //here we save the last file we opened
+                app.set( "LastFile",pFile );
+
+                GetByID(ID_PROGRESS)->label(pFile);
+
+                //lets tell the user how much data has been loaded
+                static char sNumRecords[128];
+                sprintf(sNumRecords,"%d records",m_PlayBack.m_ALog.GetLineCount());
+                GetByID(ID_SOURCE)->label(sNumRecords);
+
+                bInitialised = true;
             }
-
-            GetByID(ID_SOURCE)->activate();
-            GetByID(ID_CLOCK)->activate();
-
-            //here we save the last file we opened
-            app.set( "LastFile",pFile );
-            
-            GetByID(ID_PROGRESS)->label(pFile);
-
-            //lets tell th user how mucg data has been loaded
-            //static char sFileSize[128];
-            //sprintf(sFileSize,"%.2f KB loaded",(double)m_PlayBack.m_ALog.GetSize()/1024);
-            //GetByID(ID_SOURCE)->label(sFileSize);
-            
-            bInitialised = true;
-        }
-        else
-        {
-            int v = fl_choice("Cannot find index file for this alog.  Would you like to create one?",
-              "No", "Yes", NULL);
-            
-            if (v == 0)
-              break;
             else
             {
-              indexWriter idxWriter;
-              idxWriter.parseAlogFile(string(pFile));
-              idxWriter.writeIndexFile(string(pFile)+string(".idx"));
-            }
-              
-        }
-        
-        }
-        
-               
-        GetRootWindow()->cursor(FL_CURSOR_DEFAULT );
+                int v = fl_choice("Cannot find index file for this alog.  Would you like to create one?",
+                        "No", "Yes", NULL);
 
+                if (v == 0)
+                    break;
+                else
+                {
+                    indexWriter idxWriter;
+                    idxWriter.parseAlogFile(string(pFile));
+                    idxWriter.writeIndexFile(string(pFile)+string(".idx"));
+                }
+
+            }
+
+        }
+
+        GetRootWindow()->cursor(FL_CURSOR_DEFAULT );
     }    
 
     take_focus();
