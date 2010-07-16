@@ -27,22 +27,25 @@ FIND_PACKAGE( FLTK REQUIRED )
 FIND_PACKAGE( OpenGL REQUIRED )
 
 IF(FLTK_FOUND)
+    INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
 
-   INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
+    # Add executable
+    #(note the WIN32 bit says under windows use /subsystem:windows not console
+    #this prevents fltk app from producing an annoying console aswell
+    #ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
+    # However, this does not work under windows in release mode
+    if( APPLE )
+        ADD_EXECUTABLE( uPlayBack MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
+    else( APPLE )
+        ADD_EXECUTABLE( uPlayBack ${UPLAYBACK_SRCS})   
+    endif( APPLE )
 
-   # Add executable
-   #(note the WIN32 bit says under windows use /subsystem:windows not console
-   #this prevents fltk app from producing an annoying console aswell
-   #ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
-   # However, this does not work under windows in release mode
-   ADD_EXECUTABLE( uPlayBack MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
+    TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 
-   TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
-
-    INSTALL(TARGETS
-    uPlayBack
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    )
+    INSTALL(TARGETS uPlayBack
+            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+            BUNDLE DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+           )
 
 ELSE(FLTK_FOUND)
    MESSAGE("uPB won't be built as FLTK was not found.")

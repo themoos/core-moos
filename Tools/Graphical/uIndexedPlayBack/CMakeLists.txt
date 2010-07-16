@@ -28,7 +28,6 @@ FIND_PACKAGE( FLTK REQUIRED )
 FIND_PACKAGE( OpenGL REQUIRED )
 
 IF(FLTK_FOUND)
-
     INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR} ${alogTools_INCLUDE_DIRS})
 
     # Add executable
@@ -36,14 +35,18 @@ IF(FLTK_FOUND)
     #this prevents fltk app from producing an annoying console aswell
     #ADD_EXECUTABLE( uPlayBack WIN32 ${UPLAYBACK_SRCS})   
     # However, this does not work under windows in release mode
-    ADD_EXECUTABLE( uPlayBackIndex MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
+    if( APPLE )
+        ADD_EXECUTABLE( uPlayBackIndex MACOSX_BUNDLE ${UPLAYBACK_SRCS})   
+    else( APPLE )
+        ADD_EXECUTABLE( uPlayBackIndex ${UPLAYBACK_SRCS})   
+    endif( APPLE )
 
     TARGET_LINK_LIBRARIES(uPlayBackIndex ${MOOS_LIBRARIES} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} ${alogTools_LIBRARIES} )
 
-    INSTALL(TARGETS
-    uPlayBackIndex
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    )
+    INSTALL(TARGETS uPlayBackIndex
+            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+            BUNDLE DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+           ) 
 
 ELSE(FLTK_FOUND)
     MESSAGE("uPlayBackIndex won't be built as FLTK was not found.")
