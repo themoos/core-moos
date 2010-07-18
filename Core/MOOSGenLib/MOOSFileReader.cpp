@@ -219,6 +219,9 @@ bool CMOOSFileReader::GetValue(std::string sName,double  & dfResult)
 
     if(GetValue(sName,sTmp))
     {
+		if(!MOOSIsNumeric(sTmp))
+			return false;
+		
         dfResult = atof(sTmp.c_str());
         return true;
     }
@@ -233,6 +236,9 @@ bool CMOOSFileReader::GetValue(std::string sName,int  & nResult)
 
     if(GetValue(sName,sTmp))
     {
+		if(!MOOSIsNumeric(sTmp))
+			return false;
+		
         nResult = atoi(sTmp.c_str());
         return true;
     }
