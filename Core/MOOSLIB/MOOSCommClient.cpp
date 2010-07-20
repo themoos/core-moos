@@ -376,12 +376,12 @@ bool CMOOSCommClient::DoClientWork()
         
         
 	}
-	/*catch(CMOOSException e)
+	catch(CMOOSException e)
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
 		return false;//jump out to connect loop....				
-	}*/
+	}
 
 	return true;
 }
