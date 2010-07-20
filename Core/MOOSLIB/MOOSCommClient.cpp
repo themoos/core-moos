@@ -272,7 +272,7 @@ bool CMOOSCommClient::ClientLoop()
 bool CMOOSCommClient::DoClientWork()
 {
 	//this is the IO Loop
-	//try
+	try
 	{
 
 		//note the symmetry here... a warm feeling
