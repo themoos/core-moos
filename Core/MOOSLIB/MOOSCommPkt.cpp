@@ -43,6 +43,25 @@
 #include <assert.h>
 #include <cstring>
 #include <iostream>
+#include "MOOSException.h"
+
+
+//this is the default size of memory allocated tfor a COmms Packet
+//if needs dictate it will be automatically expanded. However no one MOOSMsg should be 
+//bigger than this...if you are getting Serialisation errors about being out of space
+//increase this message size.
+#define PKT_TMP_BUFFER_SIZE 80000
+
+
+#ifdef COMPRESSED_MOOS_PROTOCOL
+	
+	#define MAX_BELIEVABLE_ZLIB_COMPRESSION 256  //if we look like we are getting a compression ration of more than this then bail - there is an error.
+
+	#define COMPRESSION_PACKET_SIZE_THRESHOLD 128 //packets below this size won't be compressed.
+
+	#include <zlib.h>
+#endif
+
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////
@@ -121,6 +140,9 @@ int CMOOSCommPkt::GetStreamLength()
 /** This function stuffs messages in/from a packet */
 bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, double * pdfPktTime)
 {
+	//note +1 is for indicator regarding compressed or not compressed
+	unsigned int nHeaderSize = 2*sizeof(int)+1;
+	
     if(bToStream)
     {
 
@@ -130,11 +152,11 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
         //we need to leave space at the start of the packet for total
         //length and number of include messages
-        m_pNextData+=2*sizeof(int);
-        m_nByteCount+= 2* sizeof(int);
+		
+        m_pNextData+=nHeaderSize; 
+        m_nByteCount+= nHeaderSize;
 
 
-        #define PKT_TMP_BUFFER_SIZE 40000
         unsigned char TmpBuffer[PKT_TMP_BUFFER_SIZE];
         unsigned char * pTmpBuffer = TmpBuffer;
 
@@ -161,6 +183,48 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
         }
 
+		unsigned char bCompressed = 0;
+#ifdef COMPRESSED_MOOS_PROTOCOL
+		
+		//we only compress if it is worth it
+		if(m_nByteCount>COMPRESSION_PACKET_SIZE_THRESHOLD)
+		{
+			
+			unsigned long int nDataLength = m_nByteCount-nHeaderSize;
+			
+			//we require .1% extra and 12 bytes
+			unsigned long int nZBSize = (unsigned int) ((float)nDataLength*1.01+13);
+			unsigned char * ZipBuffer = new unsigned char[nZBSize];		
+			
+			int nZipResult = compress(ZipBuffer,&nZBSize,m_pStream+nHeaderSize,nDataLength);
+			
+			
+			switch (nZipResult) {
+				case Z_OK:
+					break;
+				case Z_BUF_ERROR:
+					throw CMOOSException("failed to compress outgoing data - looks like compression actually expanded data!");
+					break;
+				case Z_MEM_ERROR:
+					throw CMOOSException("zlib memory error!");
+					break;
+				default:
+					break;
+			}
+			
+			//MOOSTrace("Compressed out going buffer is %d bytes and original is %d\n",nZBSize,nDataLength);
+			
+			memcpy(m_pStream+nHeaderSize,ZipBuffer,nZBSize);
+			
+			m_nByteCount = nZBSize+nHeaderSize;
+			
+			delete ZipBuffer;
+			
+			bCompressed = 1;
+		}
+		
+#endif
+
         //finally write how many bytes we have written at the start
         //look for need to swap byte order if required
         m_pNextData = m_pStream;
@@ -175,6 +239,10 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         nMessages = IsLittleEndian() ? nMessages : SwapByteOrder<int>(nMessages);
         memcpy((void*)m_pNextData,(void*)(&nMessages),sizeof(nMessages));
         m_pNextData+=sizeof(nMessages);
+		
+		//and is this a compressed message or not?
+		*m_pNextData = bCompressed;
+		m_pNextData+=1;
 
 
     }
@@ -194,7 +262,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
         int nSpaceFree=m_nMsgLen - sizeof(m_nMsgLen);
 
-        //no figure out how many messages are packed in this packet
+        //now figure out how many messages are packed in this packet
         //look to swap byte order as required
         int nMessages = 0;
         memcpy((void*)(&nMessages),(void*)m_pNextData,sizeof(nMessages));
@@ -202,6 +270,94 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         m_pNextData+=sizeof(nMessages);
         nSpaceFree-=sizeof(nMessages);
         m_nByteCount+=sizeof(nMessages);
+		
+		//now account for one byet of compression indication
+		m_pNextData+=sizeof(unsigned char);
+        nSpaceFree-=sizeof(unsigned char);
+        m_nByteCount+=sizeof(unsigned char);
+		
+		
+		
+#ifdef COMPRESSED_MOOS_PROTOCOL		
+		unsigned char bCompressed = m_pStream[nHeaderSize-1];
+		//we will only have compressed if it is worth it
+		
+		//MOOSTrace("Message is %s compressed\n",bCompressed? "":"not");
+		if(bCompressed)
+		{
+			
+			unsigned long int nDataLength = m_nMsgLen-nHeaderSize;
+			
+			//we'd be surprised if we had more tha 90% compression
+			int nCompressionFactor = 10;
+			unsigned char * ZipBuffer = NULL;
+			unsigned long int nZBSize;
+			
+			int nZipResult = -1;
+			
+			do
+			{
+				
+				nZBSize = nCompressionFactor*nDataLength;
+				
+				ZipBuffer = new unsigned char[nZBSize];
+				
+				nZipResult = uncompress(ZipBuffer,&nZBSize,m_pStream+nHeaderSize,nDataLength);
+				
+				switch (nZipResult) 
+				{
+					case Z_MEM_ERROR:
+						throw CMOOSException("ZLIB out of memory");
+						break;
+						
+					case Z_BUF_ERROR:
+					{
+						//if we get here we need more space
+						delete ZipBuffer;
+						nCompressionFactor *=8;
+						
+						if(nCompressionFactor>MAX_BELIEVABLE_ZLIB_COMPRESSION)
+						{
+							//this is very suspcious
+							throw CMOOSException("error in decompressing CMOOSPkt stream");
+						}
+					}
+						break;
+						
+					case Z_DATA_ERROR:
+						throw CMOOSException("ZLIB received corrupted data - this is really bad news.");
+						break;
+						
+						
+					default:
+						break;
+				}
+			}while(nZipResult!=Z_OK);
+			
+			
+			//MOOSTrace("received %d data bytes and uncompressed them to %d  bytes\n",nDataLength,nZBSize);
+			
+			//we have a new message length
+			m_nMsgLen = nZBSize+nHeaderSize;
+			
+			//check we have allocated enough memory
+			if(m_nMsgLen>m_nStreamSpace)
+			{
+				//interesting case we are out of memory - we need some more
+				InflateTo(m_nMsgLen);
+			}
+			
+			//copy the uncompressed data into our stream
+			memcpy(m_pStream+nHeaderSize,ZipBuffer,nZBSize);
+			
+			//recalculate space free
+			nSpaceFree= m_nMsgLen-nHeaderSize;
+			
+			//be a good citizen
+			delete ZipBuffer;
+		}
+#endif
+		
 
         for(int i = 0; i<nMessages;i++)
         {
