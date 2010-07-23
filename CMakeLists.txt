@@ -45,6 +45,28 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 
 
+############# COMPRESSED COMMS? ################
+SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
+
+IF(COMPRESSED_MOOS_PROTOCOL)
+	FIND_PACKAGE(ZLIB QUIET)
+	IF (ZLIB_FOUND)
+		ADD_DEFINITIONS(-DZLIB_FOUND)
+    		ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
+    
+		MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
+    		MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
+
+		SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
+		
+	ELSE(ZLIB_FOUND)
+		SET(ZLIB_LIBRARIES "")
+	ENDIF (ZLIB_FOUND)
+ENDIF(COMPRESSED_MOOS_PROTOCOL)
+
+
+
+
 ############# ESSENTIAL APPS ? ################
 SET( BUILD_ESSENTIAL_MOOS ON CACHE BOOL "Build Essential MOOS Processes (like pLogger pAntler etc)")
 IF(BUILD_ESSENTIAL_MOOS)
@@ -131,10 +153,10 @@ ENDIF(UNIX)
 #####################################################
 # some platform libs are always required...
 IF(WIN32)
-  SET(PLATFORM_LIBS wsock32 comctl32)
+  SET(PLATFORM_LIBS   ${PLATFORM_LIBS} wsock32 comctl32)
 ENDIF(WIN32)
 IF(UNIX)
-  SET(PLATFORM_LIBS m pthread)
+  SET(PLATFORM_LIBS   ${PLATFORM_LIBS} m pthread)
 
   IF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
 	SET(PLATFORM_LIBS ${PLATFORM_LIBS} socket nsl rt)
