@@ -172,6 +172,9 @@ bool CMOOSPlayBackV2::Iterate(MOOSMSG_LIST &Output)
                         Output.push_front(NewMsg);
                     }
                 }                             
+
+                CMOOSMsg timeMsg( MOOS_NOTIFY, "PLAYBACK_DB_TIME", dfTNext );
+                Output.push_front( timeMsg );
 				
 				// arh moved this out of the loop above, because a failed
 				// call to MessageFromLine would make uPlayback hang in

@@ -167,9 +167,12 @@ bool CMOOSPlayBackIndex::Iterate(MOOSMSG_LIST &Output)
                     }
                 }                             
 				
-				// arh moved this out of the loop above, because a failed
-				// call to MessageFromLine would make uPlayback hang in
-				// an infinite loop
+                CMOOSMsg timeMsg( MOOS_NOTIFY, "PLAYBACK_DB_TIME", dfTNext, dfTNext );
+                Output.push_front( timeMsg );
+
+                // arh moved this out of the loop above, because a failed
+                // call to MessageFromLine would make uPlayback hang in
+                // an infinite loop
 				m_nCurrentLine++;
             }
             else
