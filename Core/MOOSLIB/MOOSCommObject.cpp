@@ -153,6 +153,7 @@ bool CMOOSCommObject::SendMsg(XPCTcpSocket *pSocket,CMOOSMsg &Msg)
     CMOOSCommPkt Pkt;
 
     Pkt.Serialize(MsgList,true);
+	
 
     return SendPkt(pSocket,Pkt);
 }

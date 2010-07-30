@@ -31,19 +31,25 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MOOSCOMMPKT_H__2645E53D_479F_4F8D_9020_B5C8DBCF4789__INCLUDED_)
-#define AFX_MOOSCOMMPKT_H__2645E53D_479F_4F8D_9020_B5C8DBCF4789__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#if !defined(MOOSCOMMPKTH)
+#define MOOSCOMMPKTH
 
 #include <list>
 //using namespace std;
 
 #include "MOOSMsg.h"
 
-#define MOOS_PKT_DEFAULT_SPACE 4096
+#define MOOS_PKT_DEFAULT_SPACE 32768
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//Here we define the current protocol string for this version of the library
+//if and when the wire protocol changes change the MOOS_PROTOCOL_STRING name
+//keeping it below MOOS_PROTOCOL_STRING_BUFFER_SIZE
+#define MOOS_PROTOCOL_STRING_BUFFER_SIZE 32
+#define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 30/7/10"
+
 
 typedef std::list<CMOOSMsg> MOOSMSG_LIST;
 
@@ -54,9 +60,10 @@ class CMOOSCommPkt
 {
 public:
     bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
-    int        GetStreamLength();
+    int     GetStreamLength();
     bool    Fill(unsigned char * InData,int nData);
-    int        GetBytesRequired();
+    int     GetBytesRequired();
+	double	GetCompression();
 
     CMOOSCommPkt();
     virtual ~CMOOSCommPkt();
@@ -74,6 +81,7 @@ protected:
     /**true is the packet has been infated to increase capicity and m_pStream no longer
     points to DefaultStream but to heap space allocated with new */
     bool    m_bAllocated;
+	double m_dfCompression;
 
 };
 
