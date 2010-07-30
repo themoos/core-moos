@@ -634,6 +634,28 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
     return true;
 }
 
+
+//here we can check that the client is speaking the correct wire protocol
+//we begin by reading a string and checking it is what we are expecting
+//note we are only reading a few bytes so this lets us catch the case where
+//an old client that doesn't send a string simpy sends a COmmPkt first
+//chances of a comm packete spelling at a ptotocl name are pretty damns slim.....
+bool CheckProtocol(XPCTcpSocket *pNewClient)
+{
+	char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1];
+	sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE]='\0';
+	int nRead = pNewClient->iRecieveMessage(sProtocol, MOOS_PROTOCOL_STRING_BUFFER_SIZE );
+	if (nRead <=0 || !MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
+	{
+		//this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
+		return MOOSFail("Incompatible wire protocol between DB and Client:\n  Expecting protocol named \"%s\".\n  Client is using a protocol called  \"%s\"\n\n  Make sure the client and MOOSDB are linking against a MOOSLIB which uses the same protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
+	}
+	
+	return true;
+		
+}
+
+
 bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 {
     CMOOSMsg Msg;
@@ -642,6 +664,12 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
     try
     {
+		
+		if(!CheckProtocol(pNewClient))
+		{
+			throw CMOOSException("protocol error");
+		}
+		
         if(ReadMsg(pNewClient,Msg,5))
         {
             double dfClientTime = Msg.m_dfTime;

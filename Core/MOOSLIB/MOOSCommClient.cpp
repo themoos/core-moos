@@ -326,6 +326,11 @@ bool CMOOSCommClient::DoClientWork()
 
         SendPkt(m_pSocket,PktTx);
 		ReadPkt(m_pSocket,PktRx);
+		
+#ifdef DEBUG_PROTOCOL_COMPRESSION
+		MOOSTrace("Outgoing Compression = %.3f\n",PktTx.GetCompression());
+		MOOSTrace("Incoming Compression = %.3f\n",PktRx.GetCompression());
+#endif
 
 		//quick! grab this time
 		double dfLocalPktRxTime = MOOSLocalTime();
@@ -588,6 +593,9 @@ bool CMOOSCommClient::HandShake()
 
         if(m_bDoLocalTimeCorrection)
 		    SetMOOSSkew(0);
+		
+		//announce the protocl we will be talking...
+		m_pSocket->iSendMessage((void*)MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
 
 		//a little bit of handshaking..we need to say who we are
 		CMOOSMsg Msg(MOOS_DATA,"",(char *)m_sMyName.c_str());

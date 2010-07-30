@@ -57,7 +57,7 @@
 	
 	#define MAX_BELIEVABLE_ZLIB_COMPRESSION 256  //if we look like we are getting a compression ration of more than this then bail - there is an error.
 
-	#define COMPRESSION_PACKET_SIZE_THRESHOLD 128 //packets below this size won't be compressed.
+	#define COMPRESSION_PACKET_SIZE_THRESHOLD 1024 //packets below this size won't be compressed.
 
 	#include <zlib.h>
 #endif
@@ -76,6 +76,7 @@ CMOOSCommPkt::CMOOSCommPkt()
     m_bAllocated = false;
     m_nByteCount = 0;
     m_nMsgLen = 0;
+	m_dfCompression = 1.0;
 
 
 }
@@ -88,6 +89,10 @@ CMOOSCommPkt::~CMOOSCommPkt()
     }
 }
 
+double CMOOSCommPkt::GetCompression()
+{
+	return m_dfCompression;
+}
 
 int CMOOSCommPkt::GetBytesRequired()
 {
@@ -215,12 +220,17 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 			//MOOSTrace("Compressed out going buffer is %d bytes and original is %d\n",nZBSize,nDataLength);
 			
 			memcpy(m_pStream+nHeaderSize,ZipBuffer,nZBSize);
-			
+
+			//maybe useful to record what compression ration we are getting
+			m_dfCompression = (double)m_nByteCount/nZBSize;
+
+			//now we have a new byte count 			
 			m_nByteCount = nZBSize+nHeaderSize;
 			
 			delete ZipBuffer;
 			
 			bCompressed = 1;
+			
 		}
 		
 #endif
@@ -336,6 +346,10 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 			
 			
 			//MOOSTrace("received %d data bytes and uncompressed them to %d  bytes\n",nDataLength,nZBSize);
+			
+			//maybe useful to record what compression ration we are getting
+			m_dfCompression = (double)nZBSize/nDataLength;
+
 			
 			//we have a new message length
 			m_nMsgLen = nZBSize+nHeaderSize;
