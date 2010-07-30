@@ -1,5 +1,8 @@
 #include "ALogIndexWrapper.h"
 
+#include <vector>
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////////////////
 ALogIndexWrapper::ALogIndexWrapper() : m_bInitialized(false), m_nLineCount(-1)
 { }
