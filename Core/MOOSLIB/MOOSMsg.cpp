@@ -164,6 +164,7 @@ void  CMOOSMsg::operator << (double & dfVal)
 
 void  CMOOSMsg::operator >> (double & dfVal)
 {
+	
     int nSize = sizeof(dfVal);
 
     if(CanSerialiseN(nSize))
@@ -182,7 +183,7 @@ void  CMOOSMsg::operator >> (double & dfVal)
 
 void  CMOOSMsg::operator << (string &   sVal)
 {
-
+/*
     int nSize = sVal.size()+1;
 
     if(CanSerialiseN(nSize))
@@ -194,10 +195,24 @@ void  CMOOSMsg::operator << (string &   sVal)
     {
         throw CMOOSException("CMOOSMsg::operator << Out Of Space");
     }
+ */
+	int nSize = sVal.size();
+	*this<<nSize;
+	
+	if(CanSerialiseN(nSize))
+    {
+        memcpy((char *)m_pSerializeBuffer,sVal.data(),nSize);
+        m_pSerializeBuffer+=nSize;
+    }
+    else
+    {
+        throw CMOOSException("CMOOSMsg::operator << Out Of Space");
+    }
+	
 }
 
 void  CMOOSMsg::operator >> (string & sVal)
-{
+{/*
     int nSize = strlen((char*)m_pSerializeBuffer)+1;
 
     if(CanSerialiseN(nSize))
@@ -209,6 +224,20 @@ void  CMOOSMsg::operator >> (string & sVal)
     {
         throw CMOOSException("CMOOSMsg::operator >> Out Of Space");
     }
+  */
+	int nSize;
+	*this>>nSize;
+	
+    if(CanSerialiseN(nSize))
+    {
+        sVal.insert(0,(char*)m_pSerializeBuffer,nSize);
+        m_pSerializeBuffer+=nSize;
+    }
+    else
+    {
+        throw CMOOSException("CMOOSMsg::operator >> Out Of Space");
+    }
+	
 }
 
 
@@ -348,6 +377,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
         catch(CMOOSException e)
         {
             MOOSTrace("exception : CMOOSMsg::Serialize failed: %s\n ",e.m_sReason);
+			MOOSTrace("perhaps accummulated messages exceeded available buffer space of %d bytes\n", m_nSerializeBufferLen);
             return -1;
         }
     }

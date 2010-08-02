@@ -50,7 +50,7 @@
 //if needs dictate it will be automatically expanded. However no one MOOSMsg should be 
 //bigger than this...if you are getting Serialisation errors about being out of space
 //increase this message size.
-#define PKT_TMP_BUFFER_SIZE 80000
+#define MAX_MOOS_MSG_SIZE 100110
 
 
 #ifdef COMPRESSED_MOOS_PROTOCOL
@@ -162,7 +162,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         m_nByteCount+= nHeaderSize;
 
 
-        unsigned char TmpBuffer[PKT_TMP_BUFFER_SIZE];
+        unsigned char TmpBuffer[MAX_MOOS_MSG_SIZE];
         unsigned char * pTmpBuffer = TmpBuffer;
 
 
@@ -172,7 +172,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         {
         
             //MOOSTrace("Sending %s \n",p->m_sKey.c_str());
-            int nTmpSize = PKT_TMP_BUFFER_SIZE;
+            int nTmpSize = MAX_MOOS_MSG_SIZE;
 
             int nCopied = (*p).Serialize(pTmpBuffer,nTmpSize);
 
