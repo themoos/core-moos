@@ -48,7 +48,9 @@
 //if and when the wire protocol changes change the MOOS_PROTOCOL_STRING name
 //keeping it below MOOS_PROTOCOL_STRING_BUFFER_SIZE
 #define MOOS_PROTOCOL_STRING_BUFFER_SIZE 32
-#define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 30/7/10"
+//#define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 30/7/10"
+#define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 2/8/10"
+
 
 
 typedef std::list<CMOOSMsg> MOOSMSG_LIST;
