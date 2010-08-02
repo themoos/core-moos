@@ -668,7 +668,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 		if(!CheckProtocol(pNewClient))
 		{
 			throw CMOOSException("protocol error");
-		}
+		}	
 		
         if(ReadMsg(pNewClient,Msg,5))
         {

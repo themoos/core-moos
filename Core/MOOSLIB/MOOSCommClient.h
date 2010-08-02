@@ -86,7 +86,12 @@ public:
     /** notify the MOOS community that something has changed (double)*/
     bool Notify(const std::string & sVar,double dfVal, double dfTime=-1);
     bool Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime=-1);
-    
+
+	/** notify the MOOS community that something has changed binary data. These are experimental - don't use them until I say so*/
+    bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, double dfTime=-1);
+    bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
+	
+	
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
     @param dfInterval minimum time between notifications*/
