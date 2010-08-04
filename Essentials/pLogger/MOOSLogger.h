@@ -97,7 +97,7 @@ protected:
     bool OpenSyncFile();
     bool DoSyncLog(double dfTimeNow);
     std::string MakeLogName(std::string sStem);
-    bool OpenFile(std::ofstream & of,const std::string & sName);
+    bool OpenFile(std::ofstream & of,const std::string & sName, bool bBinary = false);
     bool OnNewSession();
     bool CreateDirectory(const std::string & sDirectory);
 
@@ -105,11 +105,16 @@ protected:
     std::ofstream m_ExcludeLogFile;
     std::ofstream m_SyncLogFile;
     std::ofstream m_SystemLogFile;
+    std::ofstream m_BinaryLogFile;
 
+	
+	std::string m_sLogRootName;
     std::string m_sAsyncFileName;
 	std::string m_sExcludeFileName;
     std::string m_sSyncFileName;
     std::string m_sSystemFileName;
+    std::string m_sBinaryFileName;
+
     std::string m_sMissionCopyName;
     std::string m_sHoofCopyName;
 
@@ -149,6 +154,9 @@ protected:
     
     //name of a file where logger summary is written
     std::string     m_sSummaryFile;
+	
+	//current position of bianry file pointer
+	std::streampos m_BinaryCursor;
 
 
     //housekeeping variables for checking that monotired messages

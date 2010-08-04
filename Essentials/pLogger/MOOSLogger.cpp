@@ -768,9 +768,15 @@ bool CMOOSLogger::DoSyncLog(double dfTimeNow)
 }
 
 
-bool CMOOSLogger::OpenFile(std::ofstream & of,const std::string & sName)
+bool CMOOSLogger::OpenFile(std::ofstream & of,const std::string & sName,bool bBinary)
 {
-    of.open(sName.c_str());
+	if(!bBinary)
+	    of.open(sName.c_str());
+	else 
+	{
+		of.open(sName.c_str(),std::ios::binary);
+	}
+
 
     if(!of.is_open())
     {
@@ -872,6 +878,14 @@ bool CMOOSLogger::OpenAsyncFiles()
 			return MOOSFail("Failed to Open alog file");
 
 		DoBanner(m_AsyncLogFile,m_sAsyncFileName);
+		
+		
+		//also open a binary log file
+		if(!OpenFile(m_BinaryLogFile,m_sBinaryFileName))
+			return MOOSFail("Failed to Open blog file");
+		
+		m_BinaryCursor = m_BinaryLogFile.tellp();
+
 				
 		if(m_bUseExcludedLog)
 		{
@@ -1058,17 +1072,18 @@ bool CMOOSLogger::CreateDirectory(const std::string & sDirectory)
 
 bool CMOOSLogger::OnNewSession()
 {
+
+	//what is the root name of all log files?
+	m_sLogRootName = MakeLogName(m_sStemFileName);
+
     //Make a directory to hold the new files
-
-    std::string sRoot = MakeLogName(m_sStemFileName);
-
-    std::string sLogDirectory = m_sPath+"/"+sRoot;
+    std::string sLogDirectory = m_sPath+"/"+m_sLogRootName;
 
     if(!CMOOSLogger::CreateDirectory(sLogDirectory))
     {
         MOOSTrace("Warning:\n\tFailed to create directory %s\n",sLogDirectory.c_str());
 
-        sLogDirectory = "./"+sRoot;
+        sLogDirectory = "./"+m_sLogRootName;
         MOOSTrace("\tfalling back to creating %s...",sLogDirectory.c_str());
         if(!CMOOSLogger::CreateDirectory(sLogDirectory))
         {
@@ -1095,13 +1110,14 @@ bool CMOOSLogger::OnNewSession()
     }
     
 
-    m_sAsyncFileName = m_sLogDirectoryName+"/"+sRoot+".alog";
-    m_sExcludeFileName = m_sLogDirectoryName+"/"+sRoot+".xlog";    
-	m_sSyncFileName = m_sLogDirectoryName+"/"+sRoot+".slog";
-    m_sSystemFileName = m_sLogDirectoryName+"/"+sRoot+".ylog";
-    m_sMissionCopyName = m_sLogDirectoryName+"/"+sRoot+"._moos";
-    m_sHoofCopyName = m_sLogDirectoryName+"/"+sRoot+"._hoof";
-
+    m_sAsyncFileName = m_sLogDirectoryName+"/"+m_sLogRootName+".alog";
+    m_sExcludeFileName = m_sLogDirectoryName+"/"+m_sLogRootName+".xlog";    
+	m_sSyncFileName = m_sLogDirectoryName+"/"+m_sLogRootName+".slog";
+    m_sSystemFileName = m_sLogDirectoryName+"/"+m_sLogRootName+".ylog";
+    m_sMissionCopyName = m_sLogDirectoryName+"/"+m_sLogRootName+"._moos";
+    m_sHoofCopyName = m_sLogDirectoryName+"/"+m_sLogRootName+"._hoof";
+	m_sBinaryFileName = m_sLogDirectoryName+"/"+m_sLogRootName+".blog";
+	
     if(!OpenAsyncFiles())
         return MOOSFail("Error:\n\tUnable to open Asynchronous log file\n");
 
@@ -1202,6 +1218,41 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
             if(m_MOOSVars.find(rMsg.m_sKey)!=m_MOOSVars.end())
             {
 				
+				
+				std::stringstream sEntry;
+				
+				sEntry.setf(ios::left);
+				
+				sEntry.setf(ios::fixed);
+
+				sEntry<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
+
+				sEntry<<setw(20)<<rMsg.GetKey().c_str()<<' ';
+
+				sEntry<<setw(15)<<rMsg.GetSource().c_str()<<' ';
+
+				if(rMsg.IsDataType(MOOS_STRING) || rMsg.IsDataType(MOOS_DOUBLE))
+				{
+					sEntry<<rMsg.GetAsString(12,m_nDoublePrecision).c_str()<<' ';
+				}
+				else if(rMsg.IsDataType(MOOS_BINARY_STRING))
+				{
+					//here we append to the binary log and begin each line with a summary....
+					m_BinaryLogFile<<sEntry.str();
+					
+					//write in coordinates in the alog
+					sEntry<<"<MOOS_BINARY>File="<<(m_sLogRootName+".blog")<<",Offset="<<m_BinaryLogFile.tellp()<<",Bytes="<<rMsg.m_sVal.size()<<"</MOOS_BINARY>";
+					
+					//write the binary data to file
+					m_BinaryLogFile.write(rMsg.m_sVal.data(), rMsg.m_sVal.size());
+					
+					//add a new line so even the binary log file is broadly human readable
+					m_BinaryLogFile<<std::endl;
+					
+				}
+				
+				
+				
 				int i=0;
 				if(m_bUseExcludedLog)
 				{
@@ -1213,21 +1264,7 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 							i = 0;
 					}
 				}
-				
-				
-				sStream[i].setf(ios::left);
-				
-                sStream[i].setf(ios::fixed);
-
-                sStream[i]<<setw(15)<<setprecision(3)<<rMsg.GetTime()-GetAppStartTime()<<' ';
-
-                sStream[i]<<setw(20)<<rMsg.GetKey().c_str()<<' ';
-
-                sStream[i]<<setw(15)<<rMsg.GetSource().c_str()<<' ';
-
-                sStream[i]<<rMsg.GetAsString(12,m_nDoublePrecision).c_str()<<' ';
-
-                sStream[i]<<endl;
+                sStream[i]<<sEntry.str()<<endl;
 				
 				
             }

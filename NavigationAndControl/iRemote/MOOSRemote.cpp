@@ -800,6 +800,10 @@ bool CMOOSRemote::FetchDB()
             case MOOS_NOT_SET:
                 os<<"*";
                 break;
+			case MOOS_BINARY_STRING:
+				os<<rMsg.GetAsString().c_str();
+				break;
+					
             default:
                 os<<" ";
                 break;
