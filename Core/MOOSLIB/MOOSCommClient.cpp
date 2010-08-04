@@ -800,6 +800,7 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	std::string BinaryPayload((char*)pData,nSize);
 	
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
+	Msg.MarkAsBinary();
 	
 	m_Published.insert(sVar);
 	
@@ -813,6 +814,7 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	std::string BinaryPayload((char*)pData,nSize);
 	
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
+	Msg.MarkAsBinary();
 	
 	Msg.SetSourceAux(sSrcAux);
 	

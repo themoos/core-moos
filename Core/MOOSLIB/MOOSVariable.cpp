@@ -100,6 +100,7 @@ bool CMOOSVariable::Set(const CMOOSMsg &Msg)
     
         break;
     case MOOS_STRING:
+	case MOOS_BINARY_STRING:
         m_bDouble = false;
         m_sVal = Msg.m_sVal;
         break;

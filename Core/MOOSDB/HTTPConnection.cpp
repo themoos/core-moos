@@ -528,6 +528,9 @@ bool CHTTPConnection::BuildFullDBWebPageContents( std::ostringstream & wp,MOOSMS
                 case MOOS_DOUBLE:
                     sT = "double";
                     break;
+				case MOOS_BINARY_STRING:
+					sT = "binary";
+					break;
                 case MOOS_NOT_SET:
                     sT = "pending";
                     break;

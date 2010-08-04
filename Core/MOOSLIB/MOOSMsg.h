@@ -56,6 +56,7 @@
 //MESSAGE DATA TYPES
 #define MOOS_DOUBLE 'D'
 #define MOOS_STRING    'S'
+#define MOOS_BINARY_STRING 'B'
 
 //5 seconds time difference between client clock and MOOSDB clock will be allowed
 #define SKEW_TOLERANCE 5
@@ -76,6 +77,9 @@ public:
 
     /** specialised construction*/
     CMOOSMsg(char cMsgType,const std::string &sKey,const std::string & sVal,double dfTime=-1);
+	
+	/** Mark string payload as binary*/
+	void MarkAsBinary();
 
 
     /**check data type (MOOS_STRING or MOOS_DOUBLE) */
@@ -85,7 +89,7 @@ public:
     bool IsDouble()const{return IsDataType(MOOS_DOUBLE);}
 
     /**check data type is string*/
-    bool IsString()const{return IsDataType(MOOS_STRING);}    
+    bool IsString()const{return IsDataType(MOOS_STRING) || IsDataType(MOOS_BINARY_STRING);}    
 
     /**return true if mesage is substantially (SKEW_TOLERANCE) older than dfTimeNow
        if pdfSkew is not NULL, the time skew is returned in *pdfSkew*/
