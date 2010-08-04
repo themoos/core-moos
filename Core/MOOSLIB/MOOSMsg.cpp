@@ -110,6 +110,12 @@ CMOOSMsg::CMOOSMsg(char cMsgType,const std::string & sKey,const std::string &sVa
     }
 }
 
+
+void CMOOSMsg::MarkAsBinary()
+{
+	m_cDataType=MOOS_BINARY_STRING;
+}
+
 /** copies data to a buffer reversing byte order if needed */
 template<class T> void CopyToBufferAsLittleEndian(T Var,unsigned char* pBuffer)
 {
@@ -470,6 +476,10 @@ void CMOOSMsg::Trace()
     case MOOS_STRING:
         MOOSTrace("Data=%s ",m_sVal.c_str());
         break;
+	case MOOS_BINARY_STRING:
+			MOOSTrace("Data=%.3f KB of binary	data ",m_sVal.size()/1000.0);
+			break;
+			
     }
 
 
@@ -529,7 +539,11 @@ string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/, int nNumDP/*=5*/)
 
             os<<setw(nFieldWidth)<<setprecision(nNumDP)<<m_dfVal<<ends;       
         }
-        else
+		else if(IsDataType(MOOS_BINARY_STRING))
+		{
+			os<<"BINARY DATA ["<<m_sVal.size()/1000.0<<" kB]"<<ends;
+		}
+        else 
         {
             os<<m_sVal.c_str()<<ends;
         }

@@ -343,6 +343,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
             rVar.m_dfVal = Msg.m_dfVal;
             break;
         case MOOS_STRING:
+		case MOOS_BINARY_STRING:
             rVar.m_sVal = Msg.m_sVal;
             break;
         }
@@ -831,6 +832,7 @@ void CMOOSDB::Var2Msg(CMOOSDBVar &Var, CMOOSMsg &Msg)
         Msg.m_dfVal = Var.m_dfVal;
         break;
     case MOOS_STRING:
+	case MOOS_BINARY_STRING:
         Msg.m_sVal = Var.m_sVal;
         break;
     }
