@@ -88,6 +88,8 @@ protected:
     bool m_bWaitingForClientCatchup;
     double m_dfLogStart;
 
+    std::string m_sBinaryFileName;
+    std::ifstream m_BinaryFile;
     bool MessageFromLine(const std::string & sLine,CMOOSMsg & Msg);    
     STRING_SET m_SourceFilter;
 

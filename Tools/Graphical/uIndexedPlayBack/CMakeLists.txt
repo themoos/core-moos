@@ -29,6 +29,8 @@ FIND_PACKAGE( OpenGL REQUIRED )
 
 IF(FLTK_FOUND)
     INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR} ${alogTools_INCLUDE_DIRS})
+    
+    LINK_DIRECTORIES(${CMAKE_LIBRARY_PATH})
 
     # Add executable
     #(note the WIN32 bit says under windows use /subsystem:windows not console

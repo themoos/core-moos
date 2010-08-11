@@ -23,11 +23,14 @@ MOOSPlayBackV2.cpp)
 #look for FLTK ourselves
 FIND_PACKAGE( FLTK REQUIRED )
 
+
 #fltk has OpenGL dependancy
 FIND_PACKAGE( OpenGL REQUIRED )
 
 IF(FLTK_FOUND)
     INCLUDE_DIRECTORIES(${FLTK_INCLUDE_DIR})
+    
+    LINK_DIRECTORIES(${CMAKE_LIBRARY_PATH})
 
     # Add executable
     #(note the WIN32 bit says under windows use /subsystem:windows not console
@@ -39,6 +42,8 @@ IF(FLTK_FOUND)
     else( APPLE )
         ADD_EXECUTABLE( uPlayBack ${UPLAYBACK_SRCS})   
     endif( APPLE )
+   
+   LINK_DIRECTORIES(${CMAKE_LIBRARY_PATH})
 
     TARGET_LINK_LIBRARIES(uPlayBack ${MOOSLIBS} ${PLATFORM_LIBS}  fltkvw ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
 

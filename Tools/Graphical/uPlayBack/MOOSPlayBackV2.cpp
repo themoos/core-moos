@@ -173,8 +173,6 @@ bool CMOOSPlayBackV2::Iterate(MOOSMSG_LIST &Output)
                     }
                 }                             
 
-                CMOOSMsg timeMsg( MOOS_NOTIFY, "PLAYBACK_DB_TIME", dfTNext );
-                Output.push_front( timeMsg );
 				
 				// arh moved this out of the loop above, because a failed
 				// call to MessageFromLine would make uPlayback hang in
@@ -188,6 +186,15 @@ bool CMOOSPlayBackV2::Iterate(MOOSMSG_LIST &Output)
 
         }                         
     }
+
+    //post a playback time
+    if(!Output.empty())
+    {
+        CMOOSMsg timeMsg( MOOS_NOTIFY, "PLAYBACK_DB_TIME", dfStopTime );
+        timeMsg.m_sSrc = "uPlayback";
+        Output.push_front( timeMsg );
+    }
+
 
     m_dfLastMessageTime = dfStopTime;
 
@@ -274,9 +281,87 @@ bool CMOOSPlayBackV2::MessageFromLine(const std::string & sLine, CMOOSMsg &Msg)
     else
     {
         Msg.m_dfVal = 0.0;
-        Msg.m_cDataType  = MOOS_STRING;
-        Msg.m_sVal = sData;
+
+
+        if(sData.find("<MOOS_BINARY>") !=std::string::npos)
+        {
+            //Msg.MarkAsBinary();
+            int nOffset;
+            if(!MOOSValFromString(nOffset,sData,"Offset"))
+                return MOOSFail("badly formed MOOS_BINARY indicator - missing \"Offset=xyz\"");
+
+            std::string sFile;
+            if(!MOOSValFromString(sFile,sData,"File"))
+                return MOOSFail("badly formed MOOS_BINARY indicator - missing \"File=XYZ\"");
+
+            int nBytes;
+            if(!MOOSValFromString(nBytes,sData,"Bytes"))
+                return MOOSFail("badly formed MOOS_BINARY indicator - missing \"Bytes=xyz\"");
+
+
+            //corner case of binary file changing half way through a log....(Why this might happen
+            //I don't know but catch it anyway....
+            if(sFile != m_sBinaryFileName && m_BinaryFile.is_open() )
+            {
+                m_BinaryFile.close();
+            }
+            m_sBinaryFileName = sFile;
+
+            if(!m_BinaryFile.is_open())
+            {
+                //open the file with the correct name
+                //here we need to point the file towards the full path - the blog file should be sitting next
+                //to teh alog being played
+
+                /** splits a fully qualified path into parts -path, filestem and extension */
+                std::string sPath,sFileName,sExtension;
+
+                if(!MOOSFileParts(m_ALog.GetFileName(),sPath,sFileName,sExtension))
+                    return MOOSFail("failed to parse alog file into file parts %s",MOOSHERE);
+
+                std::string sFullBinaryLogPath = sPath+"/"+m_sBinaryFileName;
+
+                MOOSTrace("opening binary file %s\n",sFullBinaryLogPath.c_str());
+
+                m_BinaryFile.open(sFullBinaryLogPath.c_str(),std::ios::binary);
+                if(!m_BinaryFile)
+                {
+                    return MOOSFail("unable to open binary file called %s", m_sBinaryFileName.c_str());
+                }
+
+            }
+
+
+            //move to the right place in the file
+            m_BinaryFile.seekg(nOffset);
+
+            //make space
+            char * pBD = new char[nBytes];
+
+            //read the right number of bytes
+            m_BinaryFile.read(pBD,nBytes);
+
+            //copy data
+            Msg.m_sVal.assign(pBD,nBytes);
+
+            //delete temporary space
+            delete [] pBD;
+
+            Msg.MarkAsBinary();
+
+
+
+        }
+        else
+        {
+            Msg.m_cDataType  = MOOS_STRING;
+            Msg.m_sVal = sData;
+
+        }
+
     }
+
+    //fill in standard aspects
     Msg.m_sSrc = sSrc;
     Msg.m_sKey = sKey;
     Msg.m_cMsgType = MOOS_NOTIFY;

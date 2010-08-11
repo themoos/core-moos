@@ -50,8 +50,6 @@
 #include <string>
 #include <map>
 #include <vector>
-//dfgdfgljdsfg
-//dfgdfglkj
 
 
 class CDBImage
@@ -93,6 +91,9 @@ public:
             case MOOS_DOUBLE:
                 m_eType = DBL;
                 break;
+            case MOOS_BINARY_STRING:
+                m_eType = BIN;
+                break;
             default:
                 m_eType = UNKNOWN;
             }
@@ -121,6 +122,8 @@ public:
                 return "$";
             case DBL:
                 return "D";
+            case BIN:
+                return "B";
             default:
                 return "?";
             }
@@ -130,7 +133,7 @@ public:
     protected:
         double m_dfTime;
         std::string m_sStr;
-        enum Type{ STR,DBL,UNKNOWN};
+        enum Type{ STR,DBL,BIN,UNKNOWN};
         Type m_eType;
         std::string m_sCommunity;
         std::string m_sSrc;

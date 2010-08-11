@@ -43,6 +43,11 @@ public:
         m_nSize = -1;
     }
     
+    std::string  GetFileName()
+    {
+        return m_sName;
+    }
+
     bool Open(const std::string & sfName)
     {
         m_hMapHandle = 0;
