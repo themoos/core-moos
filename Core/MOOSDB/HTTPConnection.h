@@ -14,6 +14,8 @@ class CMOOSLock;
 
 
 
+
+
 class CHTTPConnection
 {
 public:

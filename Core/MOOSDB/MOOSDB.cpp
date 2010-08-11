@@ -360,20 +360,22 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         {
             //this looks a little hookey - the numbers are arbitrary to give sensible
             //looking frequencies when timing is coarse
-            if(dfDT>5.0)
+            if(dfDT>10.0)
             {
                 //MIN
                 rVar.m_dfWriteFreq = 0.0;
             }
-            else if(dfDT<0.01)
-            {
+            //else if(dfDT<0.005)
+            //{
                 //MAX OUT
-                rVar.m_dfWriteFreq = 100.0;
-            }
+                //this is almost certainly two of tge same mesages arrive in the same commpkt - ignore...
+                //MOOSTrace("Msg %s was last updated at %f and its now %f\n", Msg.GetKey().c_str(),dfTimeNow,dfLastWrittenTime);
+                //rVar.m_dfWriteFreq = 200.0;
+            //}
             else
             {
                 //IIR FILTER COOEFFICENT
-                double dfAlpha = 0.7;                
+                double dfAlpha = 0.95;
                 rVar.m_dfWriteFreq = dfAlpha*rVar.m_dfWriteFreq + (1.0-dfAlpha)/(dfDT/++rVar.m_nOverTicks);
                 rVar.m_nOverTicks=0;
             }
