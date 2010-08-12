@@ -354,6 +354,7 @@ bool CMOOSPlayBackV2::MessageFromLine(const std::string & sLine, CMOOSMsg &Msg)
         }
         else
         {
+            Msg.m_dfVal = 0.0;
             Msg.m_cDataType  = MOOS_STRING;
             Msg.m_sVal = sData;
 

@@ -20,10 +20,17 @@ bool ALogIndexWrapper::Open(const std::string & sfName)
         return false;
     }
 
+    m_sFileName = sfName;
     m_nLineCount = m_ALog.GetNumRecords();
 
     m_bInitialized = true;
     return true;
+}
+
+
+std::string ALogIndexWrapper::GetFileName()
+{
+    return m_sFileName;
 }
        
 ////////////////////////////////////////////////////////////////////////////////

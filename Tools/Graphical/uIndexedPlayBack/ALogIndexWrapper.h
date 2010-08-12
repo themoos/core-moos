@@ -13,10 +13,12 @@ class ALogIndexWrapper
         bool m_bInitialized;
         int m_nLineCount;
         indexedAlogReader m_ALog;
+        std::string m_sFileName;
 
         ALogIndexWrapper();
         ~ALogIndexWrapper();
         bool Open(const std::string & sfName);
+        std::string GetFileName();
         bool IsOpen();
         void Close();
         std::string GetLine(int nLine);

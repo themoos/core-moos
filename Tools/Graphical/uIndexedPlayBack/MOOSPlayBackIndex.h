@@ -87,6 +87,8 @@ public:
     double m_dfClientLagTime;
 
 protected:
+    std::string m_sBinaryFileName;
+    std::ifstream m_BinaryFile;
     bool m_bWaitingForClientCatchup;
     double m_dfLogStart;
 
