@@ -59,7 +59,7 @@ CMOOSCommObject::~CMOOSCommObject()
 
 bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
 {
-#define CHUNK_READ 1024
+    #define CHUNK_READ 8192
     unsigned char Buffer[CHUNK_READ];
     unsigned char *pBuffer = Buffer;
 
