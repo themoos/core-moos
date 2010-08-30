@@ -171,6 +171,10 @@ public:
     //comparsion operator for sorting and storing
     bool operator <(const CMOOSMsg & Msg) const{ return m_dfTime<Msg.m_dfTime;};
 
+    //return size of Msg in bytes when serialised
+    unsigned int GetSizeInBytesWhenSerialised() const;
+
+
 
 private:
     //private things which you have no business knowing about
@@ -188,6 +192,7 @@ private:
     void  operator >> (std::string & sVal);
     void  operator >> (int & nVal);
     
+
     bool CanSerialiseN(int N);
 
 };

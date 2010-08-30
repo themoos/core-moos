@@ -46,11 +46,7 @@
 #include "MOOSException.h"
 
 
-//this is the default size of memory allocated tfor a COmms Packet
-//if needs dictate it will be automatically expanded. However no one MOOSMsg should be 
-//bigger than this...if you are getting Serialisation errors about being out of space
-//increase this message size.
-#define MAX_MOOS_MSG_SIZE 100110
+#define DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE 4000
 
 
 #ifdef COMPRESSED_MOOS_PROTOCOL
@@ -162,8 +158,10 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         m_nByteCount+= nHeaderSize;
 
 
-        unsigned char TmpBuffer[MAX_MOOS_MSG_SIZE];
-        unsigned char * pTmpBuffer = TmpBuffer;
+        //assume to start with that mesages are reasonably sized -if they aren't we'll make an adjustment
+        unsigned int nWorkingMemoryCurrentSize = DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE;
+        unsigned char * pTmpBuffer =new unsigned char[nWorkingMemoryCurrentSize] ;
+
 
 
         MOOSMSG_LIST::iterator p;
@@ -171,10 +169,27 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         for(p = List.begin();p!=List.end();p++,nCount++)
         {
         
-            //MOOSTrace("Sending %s \n",p->m_sKey.c_str());
-            int nTmpSize = MAX_MOOS_MSG_SIZE;
+            unsigned int nRequiredSize = p->GetSizeInBytesWhenSerialised();
 
-            int nCopied = (*p).Serialize(pTmpBuffer,nTmpSize);
+            if(nRequiredSize>nWorkingMemoryCurrentSize)
+            {
+                std::cerr<<"making more space "<<nWorkingMemoryCurrentSize<<" -> "<<nRequiredSize<<std::endl;
+                nWorkingMemoryCurrentSize = nRequiredSize;
+                delete [] pTmpBuffer;
+
+                pTmpBuffer = new unsigned  char [nWorkingMemoryCurrentSize];
+            }
+
+            //MOOSTrace("Sending %s \n",p->m_sKey.c_str());
+            //int nTmpSize = MAX_MOOS_MSG_SIZE;
+
+            int nCopied = (*p).Serialize(pTmpBuffer,nWorkingMemoryCurrentSize);
+
+            if(nCopied !=nRequiredSize )
+            {
+                std::cerr<<"bad news expected "<<nWorkingMemoryCurrentSize<<" but serialisation took "<<nCopied<<std::endl;
+                p->Trace();
+            }
 
             if(nCopied!=-1)
             {
@@ -183,10 +198,17 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
             }
             else
             {
+                delete [] pTmpBuffer;
                 return false;
             }
 
         }
+
+        delete [] pTmpBuffer;
+
+
+
+
 
 		unsigned char bCompressed = 0;
 #ifdef COMPRESSED_MOOS_PROTOCOL

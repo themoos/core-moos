@@ -313,6 +313,24 @@ void  CMOOSMsg::operator >> (char & cVal)
 
 }
 
+unsigned int CMOOSMsg::GetSizeInBytesWhenSerialised() const
+{
+    unsigned int nInt = 2*sizeof(int);
+    unsigned int nChar = 2*sizeof(char);
+    unsigned int nString = sizeof(int)+m_sSrc.size()+
+#ifndef DISABLE_AUX_SOURCE
+            sizeof(int)+m_sSrcAux.size()+
+#endif
+            sizeof(int)+m_sOriginatingCommunity.size()+
+            sizeof(int)+m_sKey.size()+
+            sizeof(int)+m_sVal.size();
+
+    unsigned int nDouble = 3*sizeof(double);
+
+    return nInt+nChar+nString+nDouble;
+
+}
+
 
 int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 {
