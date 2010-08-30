@@ -71,9 +71,9 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
 
         try
         {
-        if(nRqd<CHUNK_READ)
-        {
-        //read in in chunks of 1k
+            if(nRqd<CHUNK_READ)
+            {
+                //read in in chunks of 1k
                 if(nSecondsTimeout<0)
                 {
                     nRxd  = pSocket->iRecieveMessage(pBuffer,nRqd);
@@ -82,10 +82,10 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
                 {
                     nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,nRqd,(double)nSecondsTimeout);
                 }
-        }
-        else
-        {
-        //read in in chunks of 1k
+            }
+            else
+            {
+                //read in in chunks of 1k
                 if(nSecondsTimeout<0)
                 {
                     nRxd  = pSocket->iRecieveMessage(pBuffer,CHUNK_READ);
@@ -94,14 +94,14 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
                 {
                     nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,CHUNK_READ,(double)nSecondsTimeout);
                 }
-        }
+            }
         }
         catch(XPCException e)
         {
             MOOSTrace("Exception %s\n",e.sGetException());
             throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");
         }
-        
+
         switch(nRxd)
         {
         case -1:
