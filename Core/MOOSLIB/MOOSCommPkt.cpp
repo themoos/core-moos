@@ -46,7 +46,7 @@
 #include "MOOSException.h"
 
 
-#define DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE 4000
+#define DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE 40000
 
 
 #ifdef COMPRESSED_MOOS_PROTOCOL
@@ -173,7 +173,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
             if(nRequiredSize>nWorkingMemoryCurrentSize)
             {
-                std::cerr<<"making more space "<<nWorkingMemoryCurrentSize<<" -> "<<nRequiredSize<<std::endl;
+                //std::cerr<<"making more space "<<nWorkingMemoryCurrentSize<<" -> "<<nRequiredSize<<std::endl;
                 nWorkingMemoryCurrentSize = nRequiredSize;
                 delete [] pTmpBuffer;
 

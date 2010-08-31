@@ -260,8 +260,6 @@ bool CMOOSPlayBackIndex::MessageFromLine(const std::string & sLine,
     {
         Msg.m_dfVal = 0.0;
 
-        MOOSTrace("yep");
-
         if (sData.find("<MOOS_BINARY>") != std::string::npos)
         {
             //Msg.MarkAsBinary();
