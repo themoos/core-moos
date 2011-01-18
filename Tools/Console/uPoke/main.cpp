@@ -86,8 +86,11 @@ int main(int argc, char * argv[])
             return MOOSFail("second argument (port number) is not numeric");
 
         nPort = atoi(Arguments[k++].c_str());
-
-
+    }
+    else
+    {
+        PrintHelp();
+        exit(1);
     }
 
 
