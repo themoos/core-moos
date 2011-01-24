@@ -1,7 +1,15 @@
-
 #include <MOOSLIB/MOOSApp.h>
-
 #include <iostream>
+
+
+//a very simple example on using MOOS's binary data transport.
+// to run as a publisher pushing 1MB of data:
+//   ./binary_comms_example 1000000
+//
+// to run a a consumer of this data:
+//  ./binary_comms_example
+//
+
 
 class CMessager: public CMOOSApp
 {
@@ -20,25 +28,21 @@ public:
     {
         if(_bPublisher &&_nSize>0)
         {
+            //make a big vector and send it...
             std::vector<char> VastMessage(_nSize);
             m_Comms.Notify("BigThing",(VastMessage.data()),_nSize);
         }
-
         return true;
     }
     bool OnConnectToServer()
     {
         if(!_bPublisher)
             m_Comms.Register("BigThing",0);
-
         return true;
     }
 
-    bool OnStartup()
+   bool OnStartup()
    {
-       SetAppFreq(1);
-       SetCommsFreq(20);
-
        if(!_bPublisher)
            m_Comms.Register("BigThing",0);
    }
