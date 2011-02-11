@@ -263,7 +263,7 @@ bool CMOOSPlayBackV2::MessageFromLine(const std::string & sLine, CMOOSMsg &Msg)
     m_ALog.GetNextToken(sLine,n,sKey);
     m_ALog.GetNextToken(sLine,n,sSrc);
 
-    int nData = sLine.find_first_not_of(" \t",n);
+    size_t nData = sLine.find_first_not_of(" \t",n);
     if(nData==string::npos)
         return false;
 
