@@ -186,7 +186,6 @@ bool CMOOSLogger::OnNewMail(MOOSMSG_LIST &NewMail)
 
     LogSystemMessages(NewMail);
 
-
     //here we look for more unusual things
     MOOSMSG_LIST::iterator q;
 
@@ -879,22 +878,23 @@ bool CMOOSLogger::OpenAsyncFiles()
 
 		DoBanner(m_AsyncLogFile,m_sAsyncFileName);
 		
-		
-		//also open a binary log file
-		if(!OpenFile(m_BinaryLogFile,m_sBinaryFileName))
-			return MOOSFail("Failed to Open blog file");
-		
-		m_BinaryCursor = m_BinaryLogFile.tellp();
-
-				
 		if(m_bUseExcludedLog)
 		{
 			if(!OpenFile(m_ExcludeLogFile, m_sExcludeFileName))
 				return MOOSFail("failed to open xlog log");
 		}
-		
-		
 	}
+
+	//also open a binary log file - this is always created
+
+    //*note* that the binary file is _not_ compressed
+    //no matter what flags you set - this is so that
+    //we can jump around in it using memory offsets
+
+	if(!OpenFile(m_BinaryLogFile,m_sBinaryFileName))
+		return MOOSFail("Failed to Open blog file");
+	
+	m_BinaryCursor = m_BinaryLogFile.tellp();
 
     return true;
 }
