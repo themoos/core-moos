@@ -242,7 +242,9 @@ bool CMOOSPlayBackIndex::MessageFromLine(const std::string & sLine,
     m_ALog.GetNextToken(sLine, n, sKey);
     m_ALog.GetNextToken(sLine, n, sSrc);
 
-    unsigned int nData = sLine.find_first_not_of(" \t", n);
+    // this needs to be size_t and _not_ unsigned int to avoid segfaults on
+    // 64-bit machines: size_t is 64-bit, unsigned int is 32-bit
+    size_t nData = sLine.find_first_not_of(" \t", n);
     if (nData == string::npos)
         return false;
 
