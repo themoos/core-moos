@@ -286,8 +286,8 @@ bool CMOOSPlayBackV2::MessageFromLine(const std::string & sLine, CMOOSMsg &Msg)
         if(sData.find("<MOOS_BINARY>") !=std::string::npos)
         {
             //Msg.MarkAsBinary();
-            std::streamoff streamOffset;
-            if(!MOOSValFromString(streamOffset,sData,"Offset"))
+            long long nOffset;
+            if(!MOOSValFromString(nOffset,sData,"Offset"))
                 return MOOSFail("badly formed MOOS_BINARY indicator - missing \"Offset=xyz\"");
 
             std::string sFile;
@@ -333,7 +333,7 @@ bool CMOOSPlayBackV2::MessageFromLine(const std::string & sLine, CMOOSMsg &Msg)
 
 
             //move to the right place in the file
-            m_BinaryFile.seekg(streamOffset);
+            m_BinaryFile.seekg(nOffset);
 
             //make space
             char * pBD = new char[nBytes];
