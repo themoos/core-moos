@@ -70,7 +70,7 @@ bool MOOSValFromString(bool   &  bVal,const std::string & sStr,const std::string
 bool MOOSValFromString(unsigned int &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(std::vector<double> &dfValVec,int &nRows,int &nCols, const std::string & sStr, const std::string & sToken,bool bInsensitive=false);
 bool MOOSValFromString(std::vector<unsigned int> &nValVec, int &nRows, int &nCols, const std::string & sStr, const std::string & sToken,bool bInsensitive=false);
-bool MOOSValFromString(std::streamoff & streamOffset, const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
+bool MOOSValFromString(long long & nVal, const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 
 //the following simply parse a MOOSFormated vector [nxm]{a,b,c...}
 bool MOOSVectorFromString(const std::string & sStr,std::vector<double> & dfVecVal,int & nRows,int & nCols);

@@ -685,20 +685,17 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
 
 
 
-
-bool MOOSValFromString(std::streamoff & streamOffset, const std::string & sStr,const std::string & sTk,bool bInsensitive)
+bool MOOSValFromString(long long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     std::string sVal;
 
     if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
     {
-        std::stringstream(sVal) >> streamOffset;
+        return (std::stringstream(sVal) >> nVal);
     }
 
     return false;
 }
-
-
 
 
 
