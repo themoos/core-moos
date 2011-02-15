@@ -685,6 +685,23 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
 
 
 
+
+bool MOOSValFromString(std::streamoff & streamOffset, const std::string & sStr,const std::string & sTk,bool bInsensitive)
+{
+    std::string sVal;
+
+    if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
+    {
+        std::stringstream(sVal) >> streamOffset;
+    }
+
+    return false;
+}
+
+
+
+
+
 bool GetNextAlogLineByMessageName(std::istream & Input,
 								  const std::string & sMessageName,
 								  double & dfTime,
