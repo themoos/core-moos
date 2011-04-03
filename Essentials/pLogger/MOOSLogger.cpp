@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 //
 //   MOOS - Mission Oriented Operating Suite
 //
@@ -113,6 +113,9 @@ CMOOSLogger::CMOOSLogger()
 	
 	//by default use local time for directory names
 	m_bUseUTCLogNames = false;
+
+	//by default we do not log aux src field
+	m_bLogAuxSrc = false;
 
     
     //lets always sort mail by time...
@@ -259,8 +262,9 @@ bool CMOOSLogger::OnStartUp()
 	m_nDoublePrecision = DEFAULT_DOUBLE_PRECISION;
 	m_MissionReader.GetConfigurationParam("DoublePrecision",m_nDoublePrecision);
 	
+    m_MissionReader.GetConfigurationParam("LogAuxSrc",m_bLogAuxSrc);
 	
-	
+
     
 
     //do we have a path global name?
@@ -1229,7 +1233,15 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 
 				sEntry<<setw(20)<<rMsg.GetKey().c_str()<<' ';
 
-				sEntry<<setw(15)<<rMsg.GetSource().c_str()<<' ';
+				if(!m_bLogAuxSrc)
+				{
+				    sEntry<<setw(15)<<rMsg.GetSource().c_str()<<' ';
+				}
+				else
+				{
+				    std::string sT = ":"+rMsg.GetSourceAux().empty() ? "NO_AUX_SRC" : rMsg.GetSourceAux();
+                    sEntry<<setw(15)<<sT<<' ';
+				}
 
 				if(rMsg.IsDataType(MOOS_STRING) || rMsg.IsDataType(MOOS_DOUBLE))
 				{
@@ -1508,6 +1520,14 @@ bool CMOOSLogger::HandleDynamicLogRequest(std::string sRequest)
     return true;
 
 
+}
+
+std::string CMOOSLogger::MakeStatusString()
+{
+    std::stringstream ss;
+    ss<<CMOOSApp::MakeStatusString()<<",";
+    ss<<"LogAuxSrc="<<std::boolalpha<<m_bLogAuxSrc;
+    return ss.str();
 }
 
 

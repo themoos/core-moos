@@ -1,4 +1,4 @@
-SET(CORE_DIRS  MOOSGenLib MOOSLIB MOOSDB )
+SET(CORE_DIRS  MOOSGenLib MOOSLIB MOOSDB MOOSThirdparty)
 
 IF(UNIX)
 	#this is a new addition allowing added for gcc to build

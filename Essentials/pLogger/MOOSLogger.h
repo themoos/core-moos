@@ -100,6 +100,7 @@ protected:
     bool OpenFile(std::ofstream & of,const std::string & sName, bool bBinary = false);
     bool OnNewSession();
     bool CreateDirectory(const std::string & sDirectory);
+    std::string MakeStatusString();
 
     std::ofstream m_AsyncLogFile;
     std::ofstream m_ExcludeLogFile;
@@ -143,6 +144,9 @@ protected:
 	
 	///true if we want to create log directories with UTC time stamps
 	bool m_bUseUTCLogNames;
+
+	//.true if we want to log AuxSrc varaibles
+	bool m_bLogAuxSrc;
 
     //housekeeping  variables for performing tasks
     double m_dfLastSyncLogTime;
