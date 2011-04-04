@@ -134,7 +134,19 @@ bool CMOOSPlayBackIndex::Iterate(MOOSMSG_LIST &Output)
     while (!bDone && !IsEOF())
     {
         CMOOSMsg NewMsg;
+
         double dfTNext = m_ALog.GetEntryTime(m_nCurrentLine);
+        double dfTStart = m_ALog.GetStartTime();
+
+        // rjs: to produce same behaviour as uPlayBack we don't
+        // want to publish any messages with negative timestamps
+        // see uPlayBack/MOOSPlayBackV2.cpp line 172
+        if( dfTNext < dfTStart )
+        {
+            m_nCurrentLine++;
+            //fprintf(stderr, "dfTNext= %f  dfTStartTime= %f\n", dfTNext,dfTStart);
+            continue;
+        }
 
         //are we in a mode in which we are slaved to a client
         //via its publishing of MOOS_CHOKE?
