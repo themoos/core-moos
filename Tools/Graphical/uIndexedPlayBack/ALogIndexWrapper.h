@@ -26,6 +26,7 @@ class ALogIndexWrapper
         int GetLineCount();
         int SeekToFindTime(double dfT);
         double GetEntryTime(int i);
+        double GetStartTime();
         const std::set<std::string>& GetSourceNames();
 };
 

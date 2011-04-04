@@ -104,6 +104,12 @@ double ALogIndexWrapper::GetEntryTime(int i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+double ALogIndexWrapper::GetStartTime()
+{
+    return m_ALog.GetStartTime();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 const std::set<std::string>& ALogIndexWrapper::GetSourceNames()
 {
     return m_ALog.GetSrcList();
