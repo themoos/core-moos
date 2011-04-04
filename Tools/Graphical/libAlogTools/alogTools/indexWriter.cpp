@@ -90,6 +90,14 @@ void indexWriter::parseAlogFile(string alogFileName)
                 continue;
             }
 
+            // ignore negative timestamps
+            // isdigit checks for [0-9] so will fail on -x.x
+            if (isdigit(line.at(pos)) == 0)
+            {
+                continue;
+            }
+
+
             // Wrap a stream around the string, to allow easier parsing
             std::istringstream stm(line);
 
