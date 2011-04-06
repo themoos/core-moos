@@ -1239,7 +1239,7 @@ bool CMOOSLogger::DoAsyncLog(MOOSMSG_LIST &NewMail)
 				}
 				else
 				{
-				    std::string sT = ":"+rMsg.GetSourceAux().empty() ? "NO_AUX_SRC" : rMsg.GetSourceAux();
+				    std::string sT = rMsg.GetSource()+":"+(rMsg.GetSourceAux().empty() ? "NO_AUX_SRC" : rMsg.GetSourceAux());
                     sEntry<<setw(15)<<sT<<' ';
 				}
 
