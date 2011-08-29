@@ -93,11 +93,11 @@ public:
 
     /** This function is the listen loop called from one of the two server threads. It is responsible
     for accepting a coonection and creating a new client socket.    */
-    bool ListenLoop();
+    virtual bool ListenLoop();
 
     /** This function is the server loop called from one of the two server threads. It listens to all presently connected
     sockets and when a call is received invokes thse user supplied callback */
-    bool ServerLoop();
+    virtual bool ServerLoop();
 
     /** This function is the timer loop called from one of the three
     server threads. It makes sure all clients speak occasionally*/
@@ -108,7 +108,7 @@ public:
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
     @param lPort port number to listen on
     */
-    bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
+    virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
     
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */

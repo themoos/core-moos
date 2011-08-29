@@ -14,6 +14,8 @@ SET(MOOSGENLIB_SRCS
    MOOSLinuxSerialPort.h
    MOOSSerialPort.h
    MOOSThread.h
+   MOOSSafeList.h
+   MOOSScopedLock.h
    )
 
 IF(WIN32)

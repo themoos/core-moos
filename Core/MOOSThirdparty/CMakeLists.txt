@@ -1,1 +1,2 @@
-subdirs(GetPot)
+add_subdirectory(GetPot)
+add_subdirectory(PocoBits)
