@@ -4,6 +4,7 @@ set(SOURCES
   src/Event.cpp
   src/Mutex.cpp
   src/Timestamp.cpp
+  src/Exception.cpp
 )
 
 set(HEADER_DIR include/PocoBits)
@@ -12,7 +13,7 @@ set(PUBLIC_HEADERS
   ${HEADER_DIR}/Event.h
   ${HEADER_DIR}/Mutex.h
   ${HEADER_DIR}/ScopedLock.h
-  
+  ${HEADER_DIR}/Exception.h
 )
 
 ##########################

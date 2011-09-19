@@ -158,13 +158,17 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
         }
     }
     
+    m_ThreadedCommServer.SetOnRxCallBack(OnRxPktCallBack,this);
+    m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+
+
     m_CommServer.SetOnRxCallBack(OnRxPktCallBack,this);
     
     m_CommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
     
     LogStartTime();
     
-    m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+    //m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
         
     return true;
 }

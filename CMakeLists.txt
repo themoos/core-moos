@@ -69,7 +69,7 @@ ENDIF(COMPRESSED_MOOS_PROTOCOL)
 
 
 ############# ESSENTIAL APPS ? ################
-SET( BUILD_ESSENTIAL_MOOS ON CACHE BOOL "Build Essential MOOS Processes (like pLogger pAntler etc)")
+SET( BUILD_ESSENTIAL_MOOS OFF CACHE BOOL "Build Essential MOOS Processes (like pLogger pAntler etc)")
 IF(BUILD_ESSENTIAL_MOOS)
     #here we name all the things we want built as part of the Essential MOOS
     SET(BUILD_DIRS ${BUILD_DIRS} Essentials)
@@ -213,15 +213,20 @@ ENDIF(DISABLE_NAMES_LOOKUP)
 SET(MOOSBIN ${MOOS_BINARY_DIR}/MOOSBin)
 
 #dump libs and executables in the same place
-SET( LIBRARY_OUTPUT_PATH ${MOOSBIN} CACHE PATH
-     "Output directory for the MOOS libraries" )
-SET( EXECUTABLE_OUTPUT_PATH ${MOOSBIN} CACHE PATH
-     "Output directory for the MOOS executables" )
+#SET( LIBRARY_OUTPUT_PATH ${MOOSBIN} CACHE PATH
+#     "Output directory for the MOOS libraries" )
+#SET( EXECUTABLE_OUTPUT_PATH ${MOOSBIN} CACHE PATH
+#     "Output directory for the MOOS executables" )
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
 
 
 ###############################################################################
 # be helpful and let all projects look for libraries here
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
+#LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 
 ###############################################################################

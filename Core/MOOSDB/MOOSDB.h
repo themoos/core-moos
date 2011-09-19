@@ -38,6 +38,7 @@
 #include "MOOSDBVar.h"
 #include <string>
 #include <map>
+#include "MOOSLIB/ThreadedCommServer.h"
 using namespace std;
 
 typedef map<string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
@@ -101,6 +102,7 @@ protected:
     double GetStartTime(){return m_dfStartTime;}
 private:
     CMOOSCommServer m_CommServer;
+    MOOS::ThreadedCommServer m_ThreadedCommServer;
     string m_sDBName;
     string m_sCommunityName;
     CMOOSFileReader m_MissionReader;

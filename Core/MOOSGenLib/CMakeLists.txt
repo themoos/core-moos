@@ -1,6 +1,8 @@
 PROJECT(MOOSGenLib)
 
-SET(MOOSGENLIB_SRCS
+set(LIBNAME MOOSGenLib)
+
+SET(SOURCES
    MOOSLock.cpp
    MOOSFileReader.cpp
    MOOSGenLibGlobalHelper.cpp
@@ -19,7 +21,7 @@ SET(MOOSGENLIB_SRCS
    )
 
 IF(WIN32)
-    SET(MOOSGENLIB_SRCS ${MOOSGENLIB_SRCS} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
+    SET(SOURCES ${SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
 ENDIF(WIN32)
 
 
@@ -38,28 +40,74 @@ ELSE (MOOS_ASSERT_LEVEL MATCHES "OFF")
 ENDIF (MOOS_ASSERT_LEVEL MATCHES "OFF")
 
 
+##########################
+# Packages / Dependencies
 
-ADD_LIBRARY(MOOSGen ${MOOSGENLIB_SRCS})
+set(${LIBNAME}_DEPEND_INCLUDE_DIRS
+   ""
+    CACHE INTERNAL
+    "List of include dirs for the dependencies of ${LIBNAME}"    
+)
+list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
-SET( INSTALL_HEADERS
-MOOSLock.h
-MOOSFileReader.h
-MOOSGenLib.h
-MOOSGenLibGlobalHelper.h
-ProcessConfigReader.h
-MOOSLinuxSerialPort.h
-MOOSSerialPort.h
-MOOSAssert.h
-MOOSThread.h )
+set(${LIBNAME}_DEPEND_LIBRARIES
+    ""
+    CACHE INTERNAL
+    "List of libraries which are dependencies of ${LIBNAME}"    
+)
+list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_LIBRARIES)
+
+#######################################
+# Export include and library locations
+# This is essentially boilerplate.  Shouldn't need to change it.
+
+set(${LIBNAME}_INCLUDE_DIRS
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    CACHE INTERNAL
+    "Where to find ${LIBNAME} include directories"
+)
+list(REMOVE_DUPLICATES ${LIBNAME}_INCLUDE_DIRS)
+
+set(${LIBNAME}_LIBRARIES
+    ${LIBNAME}
+    CACHE INTERNAL
+    "List of libraries needed to link ${LIBNAME} library"
+)
+list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
+
+
+
+#####################
+# Create the library
+# This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
+# variables
+include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS})
+add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
+target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
+
+
+
+
+
+#SET( INSTALL_HEADERS
+#MOOSLock.h
+#MOOSFileReader.h
+#MOOSGenLib.h
+#MOOSGenLibGlobalHelper.h
+#ProcessConfigReader.h
+#MOOSLinuxSerialPort.h
+#MOOSSerialPort.h
+#MOOSAssert.h
+#MOOSThread.h )
 
 # install headers
-INSTALL( FILES ${INSTALL_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MOOSGenLib )
+#INSTALL( FILES ${INSTALL_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MOOSGenLib )
 
 # install libraries
-INSTALL(TARGETS
-MOOSGen
-RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-)
+#INSTALL(TARGETS
+#MOOSGen
+#RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+#LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+#ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+#)
 

@@ -54,7 +54,7 @@
 #include <iomanip>
 #include <cassert>
 
-#include <MOOSGenLib/MOOSGenLib.h>
+#include "MOOSGenLib/MOOSGenLib.h"
 #include "XPCTcpSocket.h"
 #include "MOOSCommClient.h"
 #include "MOOSCommPkt.h"

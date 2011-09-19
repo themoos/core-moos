@@ -109,7 +109,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_nMaxSocketFD = 0;
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
-    m_sCommunityName = "!£";
+    m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = false;
 }
@@ -551,6 +551,8 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 
     return true;
 }
+
+
 
 bool CMOOSCommServer::OnClientDisconnect()
 {

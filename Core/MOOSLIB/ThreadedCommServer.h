@@ -63,6 +63,7 @@ protected:
     class ClientThread : public CMOOSCommObject
     {
     public:
+        virtual ~ClientThread();
         /**
          *
          * @param sName name of client this object is encapsulating
@@ -70,13 +71,8 @@ protected:
          * @param SharedData a sae list of ClientThreadSharedData object
          * @return
          */
-        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming ):
-            _sClientName(sName),
-            _ClientSocket(ClientSocket),
-            _SharedDataIncoming(SharedDataIncoming)
-        {
+        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming );
 
-        }
 
         /**
          * standard trick to get around c++ issue an threads
@@ -103,7 +99,7 @@ protected:
 
         bool OnClientDisconnect();
 
-
+        XPCTcpSocket & GetSocket(){return _ClientSocket;};
 
 
         bool Kill();
@@ -112,9 +108,6 @@ protected:
 
     protected:
 
-
-
-        virtual bool ProcessClient();
 
         //a thread object which will start the Run() method
         CMOOSThread _Worker;
@@ -140,11 +133,18 @@ protected:
     @see ListenLoop*/
     virtual bool OnNewClient(XPCTcpSocket * pNewClient,char * sName);
 
+    virtual bool OnAbsentClient(XPCTcpSocket* pClient);
+
+    virtual bool OnClientDisconnect(ClientThreadSharedData &SD);
+
     virtual bool ServerLoop();
 
     virtual bool AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName);
 
     virtual bool ProcessClient(ClientThreadSharedData &SD);
+
+    bool StopAndCleanUpClientThread(std::string sName);
+
 
 
 

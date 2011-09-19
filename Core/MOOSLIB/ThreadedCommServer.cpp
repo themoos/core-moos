@@ -8,6 +8,7 @@
 #include "MOOSLIB/ThreadedCommServer.h"
 #include "MOOSLIB/MOOSException.h"
 #include "XPCTcpSocket.h"
+#include <algorithm>
 
 
 
@@ -64,21 +65,31 @@ bool ThreadedCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
  */
 bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName)
 {
+
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
 
-    if(q == m_ClientThreads.end() )
+
+    if(q != m_ClientThreads.end() )
     {
         ClientThread* pExistingClientThread = q->second;
-        MOOSTrace("worrying condition ::AddAndStartClientThread() killing an existing client thread");
 
-        //stop the thread
-        pExistingClientThread->Kill();
+        if(pExistingClientThread)
+        {
+            MOOSTrace("worrying condition ::AddAndStartClientThread() killing an existing client thread");
 
-        //free up the heap (old skool - good grief)
-        delete pExistingClientThread;
+            //stop the thread
+            pExistingClientThread->Kill();
 
-        //remove from map
-        m_ClientThreads.erase(q);
+            //free up the heap (old skool - good grief)
+            delete pExistingClientThread;
+
+            //remove from map
+            m_ClientThreads.erase(q);
+        }
+        else
+        {
+            return MOOSFail("logical error ::AddAndStartClientThread() NULL thread pointer");
+        }
     }
 
     //make a new client - and show it where to put data and how to talk to a client
@@ -115,6 +126,7 @@ bool ThreadedCommServer::ServerLoop()
             break;
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
+            OnClientDisconnect(SD);
             break;
 
         default:
@@ -126,6 +138,7 @@ bool ThreadedCommServer::ServerLoop()
     return true;
 
 }
+
 
 
 /**
@@ -212,6 +225,91 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
 
 }
 
+bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
+{
+    //lock the base socket list
+    m_SocketListLock.Lock();
+
+
+    //we need to get the socket this thread is working on
+    std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(SD._sClientName);
+
+    //we need to point the base class focus socket at this
+    m_pFocusSocket = &(q->second->GetSocket());
+
+    //now we can stop and clean up the thread
+    StopAndCleanUpClientThread(SD._sClientName);
+
+
+    SOCKETLIST::iterator p = std::find(m_ClientSocketList.begin(),m_ClientSocketList.end(),m_pFocusSocket);
+
+
+    //now call the base class operation - this cleans down the socket from the
+    //base class select
+    BASE::OnClientDisconnect();
+
+    if(p!=m_ClientSocketList.end())
+        m_ClientSocketList.erase(p);
+
+    m_SocketListLock.UnLock();
+
+    return true;
+}
+
+
+bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
+{
+    //use this name to get the thread which is doing our work
+    std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
+
+    if(q==m_ClientThreads.end())
+        return MOOSFail("runtime error ThreadedCommServer::OnAbsentClient - cannot figure out worker thread");
+
+    //stop the thread and wait for it to return
+    ClientThread* pWorker = q->second;
+    pWorker->Kill();
+
+    //remove any reference to this worker thread
+    m_ClientThreads.erase(q);
+    delete pWorker;
+}
+
+///called when a client goes quiet...
+bool ThreadedCommServer::OnAbsentClient(XPCTcpSocket* pClient)
+{
+    SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
+
+    //get the name of the client connected
+    p = m_Socket2ClientMap.find(pClient->iGetSocketFd());
+
+    if(p==m_Socket2ClientMap.end())
+        return MOOSFail("runtime error ThreadedCommServer::OnAbsentClient - cannot figure out client name");
+
+    std::string sName = p->second;
+
+    StopAndCleanUpClientThread(sName);
+
+    //do base class work
+    return BASE::OnAbsentClient(pClient);
+}
+
+
+
+ThreadedCommServer::ClientThread::~ClientThread()
+{
+
+}
+
+
+ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming ):
+            _sClientName(sName),
+            _ClientSocket(ClientSocket),
+            _SharedDataIncoming(SharedDataIncoming)
+{
+    _Worker.Initialise(RunEntry,this);
+}
+
+
 
 bool ThreadedCommServer::ClientThread::Run()
 {
@@ -259,11 +357,7 @@ bool ThreadedCommServer::ClientThread::Run()
         case -1:
             if(XPCSocket::iGetLastError()==INVALID_SOCKET_SELECT)
             {
-                //this can be caused by absenteeism between set up of fdset and select
-                //prefer to catch and tolerate than block other threads for duration
-                //of select and processing - added by PMN in Jan 2008 to address a
-                //race condition which took a long time to show up...
-                break;
+                return false;
             }
             else
             {
@@ -281,8 +375,7 @@ bool ThreadedCommServer::ClientThread::Run()
                 if(!HandleClient())
                 {
                     //client disconnected!
-                    OnClientDisconnect();
-                    break;
+                    return OnClientDisconnect();
                 }
             }
             else
@@ -303,7 +396,15 @@ bool ThreadedCommServer::ClientThread::Run()
 
 bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 {
-    MOOSTrace("CMOOSCommServer::ClientThread::OnClientDisconnect() -? Write me...");
+
+    //prepare to send it up the chain
+    CMOOSCommPkt PktRx,PktTx;
+    ClientThreadSharedData SD(_sClientName, &PktRx,&PktTx);
+    SD._Status = ClientThreadSharedData::CONNECTION_CLOSED;
+
+    //push this data back to the central thread
+    _SharedDataIncoming.Push(SD);
+
     return true;
 }
 
@@ -311,6 +412,18 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 bool ThreadedCommServer::ClientThread::Kill()
 {
     return _Worker.Stop();
+}
+
+bool ThreadedCommServer::ClientThread::Start()
+{
+    return _Worker.Start();
+}
+
+
+bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & OutGoing)
+{
+    _SharedDataOutgoing.Push(OutGoing);
+    return true;
 }
 
 bool ThreadedCommServer::ClientThread::HandleClient()
@@ -347,6 +460,8 @@ bool ThreadedCommServer::ClientThread::HandleClient()
 
         //send packet to client
         SendPkt(&_ClientSocket,*SD._pPktTx);
+
+        MOOSTrace("thread tick\n");
     }
     catch (CMOOSException e)
     {

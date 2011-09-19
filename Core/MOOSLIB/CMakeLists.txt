@@ -70,6 +70,8 @@ ${HEADER_DIR}/XPCUdpSocket.h
 # Packages / Dependencies
 
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
+    ${MOOS_SOURCE_DIR}/Core
+    ${MOOSGenLib_INCLUDE_DIRS}
     ${PocoBits_INCLUDE_DIRS}
     CACHE INTERNAL
     "List of include dirs for the dependencies of ${LIBNAME}"    
@@ -77,6 +79,7 @@ set(${LIBNAME}_DEPEND_INCLUDE_DIRS
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
 set(${LIBNAME}_DEPEND_LIBRARIES
+    ${MOOSGenLib_LIBRARIES}
     ${PocoBits_LIBRARIES}
     CACHE INTERNAL
     "List of libraries which are dependencies of ${LIBNAME}"    
@@ -103,6 +106,7 @@ set(${LIBNAME}_LIBRARIES
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
 
+MESSAGE(STATUS "MOOSLIB include path: ${${LIBNAME}_DEPEND_INCLUDE_DIRS}")
 
 
 #####################

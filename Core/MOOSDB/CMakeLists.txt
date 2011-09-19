@@ -1,4 +1,5 @@
-PROJECT(MOOSDB)
+#PROJECT(MOOSDB)
+set(EXECNAME MOOSDB)
 
 # next few lines are simply to insert icons into
 # the console application on windows
@@ -7,7 +8,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #what files are needed?
-SET(MOOSDB_SRCS MOOSDB.cpp MOOSDBMain.cpp MOOSDBVar.cpp MOOSRegisterInfo.cpp
+SET(SRCS MOOSDB.cpp MOOSDBMain.cpp MOOSDBVar.cpp MOOSRegisterInfo.cpp
     MOOSDB.h MOOSDBVar.h MOOSRegisterInfo.h MOOSDBHTTPServer.cpp MOOSDBHTTPServer.h HTTPConnection.cpp HTTPConnection.h
     ${RESOURCES})
 
@@ -17,15 +18,9 @@ IF (DB_HAS_HTTP)
     ADD_DEFINITIONS(-DMOOSDB_HAS_WEBSERVER)
 ENDIF (DB_HAS_HTTP)
 
+include_directories( ${${EXECNAME}_INCLUDE_DIRS} ${MOOSLib_INCLUDE_DIRS} ${MOOSLib_DEPEND_INCLUDE_DIRS})
+add_executable(${EXECNAME} ${SRCS} )
+target_link_libraries(${EXECNAME} ${MOOSLib_LIBRARIES} ${MOOSLib_DEPEND_LIBRARIES})
 
-# Add executable called MOOSDB
-ADD_EXECUTABLE( MOOSDB ${MOOSDB_SRCS})
 
-# indicate how to link
-TARGET_LINK_LIBRARIES(MOOSDB ${MOOSLIBS} ${PLATFORM_LIBS} )
-
-INSTALL(TARGETS
-MOOSDB
-RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-)
-
+add_subdirectory(testing)

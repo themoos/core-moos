@@ -1,4 +1,3 @@
-SET(CORE_DIRS  MOOSGenLib MOOSLIB MOOSDB MOOSThirdparty)
 
 IF(UNIX)
 	#this is a new addition allowing added for gcc to build
@@ -6,4 +5,7 @@ IF(UNIX)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ENDIF(UNIX)
 
-SUBDIRS(${CORE_DIRS})
+add_subdirectory(MOOSGenLib)
+add_subdirectory(MOOSLIB)
+add_subdirectory(MOOSDB)
+add_subdirectory(MOOSThirdparty)

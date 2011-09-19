@@ -204,6 +204,13 @@ protected:
     invokes the user supplied callback function */
     virtual bool    ProcessClient();
 
+    /**
+     * remove a socket from list of sockets that have open connections
+     * @param pSocket
+     * @return
+     */
+    bool RemoveSocketFromClientSocketList(XPCTcpSocket * pSocket);
+
     /// port listen socket is bound to
     long    m_lListenPort;
 
