@@ -159,6 +159,7 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
     }
     
     m_ThreadedCommServer.SetOnRxCallBack(OnRxPktCallBack,this);
+    m_ThreadedCommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
     m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
 
 
@@ -221,7 +222,7 @@ void CMOOSDB::UpdateDBTimeVars()
 /**this will be called each time a new packet is recieved*/
 bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx)
 {
-    
+    //MOOSTrace("\nClient %s::OnRxPkt:\n",sClient.c_str());
 
     MOOSMSG_LIST::iterator p;
     
@@ -264,6 +265,8 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         
         if(q!=m_HeldMailMap.end())
         {
+            MOOSTrace("%f OnRxPkt %d messages held for client %s\n",MOOSTime(),q->second.size(),sClient.c_str());
+
             if(!q->second.empty())
             {
                 //copy all the held mail to MsgListTx
@@ -454,6 +457,8 @@ bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
     
     q->second.push_front(Msg);
     
+    //MOOSTrace("%d messages held for client %s\n",q->second.size(),sClient.c_str());
+
     return true;
 }
 

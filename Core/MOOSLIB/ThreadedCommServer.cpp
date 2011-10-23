@@ -52,8 +52,11 @@ bool ThreadedCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         return false;
     }
 
+    //after handshaking we will know what this client is called
+    std::string sClientName = GetClientName(pNewClient);
+
     //here we need to start a new thread to handle our comms...
-    return AddAndStartClientThread(*pNewClient,sName);
+    return AddAndStartClientThread(*pNewClient,sClientName);
 
 }
 
@@ -112,11 +115,16 @@ bool ThreadedCommServer::ServerLoop()
 {
 
     //eternally look at our incoming work list....
+    int i = 0;
     while(1)
     {
         ClientThreadSharedData SD;
 
-        m_SharedDataListFromClient.WaitForPush();
+        //MOOSTrace("ThreadedCommServer::ServerLoop[%d]-  %d items to handle\n",i++,m_SharedDataListFromClient.Size());
+
+        if(m_SharedDataListFromClient.Size()==0)
+            m_SharedDataListFromClient.WaitForPush();
+
         m_SharedDataListFromClient.Pull(SD);
 
         switch(SD._Status)
@@ -165,6 +173,8 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
             //convert to list of messages
             SD._pPktRx->Serialize(MsgLstRx,false);
 
+//            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++) q->Trace();
+
             std::string sWho = SD._sClientName;
 
             //let owner figure out what to do !
@@ -193,6 +203,8 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
                 NullMsg.m_dfVal = MOOSLocalTime();
                 MsgLstTx.push_front(NullMsg);
             }
+
+            //MOOSTrace("sending %d message back to client\n",MsgLstTx.size());
 
             //stuff reply message into a packet
             SD._pPktTx->Serialize(MsgLstTx,true);
@@ -375,7 +387,9 @@ bool ThreadedCommServer::ClientThread::Run()
                 if(!HandleClient())
                 {
                     //client disconnected!
-                    return OnClientDisconnect();
+                    OnClientDisconnect();
+                    MOOSTrace("socket thread for %s quits after disconnect",_sClientName.c_str());
+                    return true;
                 }
             }
             else
@@ -391,6 +405,7 @@ bool ThreadedCommServer::ClientThread::Run()
         FD_ZERO(&fdset);
 
     }
+    MOOSTrace("socket thread for %s quits",_sClientName.c_str());
     return 0;
 }
 
@@ -461,7 +476,6 @@ bool ThreadedCommServer::ClientThread::HandleClient()
         //send packet to client
         SendPkt(&_ClientSocket,*SD._pPktTx);
 
-        MOOSTrace("thread tick\n");
     }
     catch (CMOOSException e)
     {
