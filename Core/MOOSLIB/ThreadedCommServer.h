@@ -133,11 +133,11 @@ protected:
     @see ListenLoop*/
     virtual bool OnNewClient(XPCTcpSocket * pNewClient,char * sName);
 
-    virtual bool OnAbsentClient(XPCTcpSocket* pClient);
-
     virtual bool OnClientDisconnect(ClientThreadSharedData &SD);
 
     virtual bool ServerLoop();
+
+    virtual bool TimerLoop();
 
     virtual bool AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName);
 
