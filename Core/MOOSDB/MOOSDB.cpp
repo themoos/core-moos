@@ -166,6 +166,19 @@ bool CMOOSDB::Run(const std::string  & sMissionFile, int argc, char * argv[] )
     GetPot cl(argc,argv);
     bool bSingleThreaded = cl.search(2,"-s","--single_threaded");
 
+    //what port are we serving on?
+    m_nPort = cl.follow((int)m_nPort,2,"-p","--server_port");
+
+    //what is our time warp?
+    dfWarp = cl.follow(-1.0,2,"-w","--time_warp");
+    if(dfWarp>0.0)
+        SetMOOSTimeWarp(dfWarp);
+
+    //are we using a network?
+    if(cl.search(1,"-nnw","--no_network"))
+        bNoNetwork = true;
+
+
 
 
     m_ThreadedCommServer.SetOnRxCallBack(OnRxPktCallBack,this);
