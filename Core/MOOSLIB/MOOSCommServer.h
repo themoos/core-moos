@@ -102,7 +102,7 @@ public:
     /** This function is the timer loop called from one of the three
     server threads. It makes sure all clients speak occasionally*/
 
-    bool TimerLoop();
+    virtual bool TimerLoop();
 
 
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.

@@ -54,13 +54,36 @@ public:
 protected:
     bool SendPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktTx);
     bool ReadPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktRx,int nSecondsTimeOut = -1);
-       bool SendMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg);
-       bool ReadMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg, int nSecondsTimeOut = -1);
+    bool SendMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg);
+    bool ReadMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg, int nSecondsTimeOut = -1);
 
-    /// called to intialise system socket services. Only does something useful in Win32 land
+
 public:
+    /**
+     * called to initialise system socket services. Only does something useful in Win32 land
+     */
     static bool SocketsInit();
 
+    /**
+     * Configure the simulation of sick communications - only useful in stress testing - not usually used.
+     * @param dfDodgeyCommsProbability prob a delay in communications
+     * @param dfDodgeyCommsDelay length of delay
+     * @param dfTerminateProbability probability of application termination during comms
+     * @return
+     */
+    bool ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay,double dfTerminateProbability = 0.0);
+
+private:
+    //these are just here to help us test aspects of the communications
+    bool m_bFakeDodgyComms;
+    double m_dfDodgeyCommsProbability;
+    double m_dfDodgeyCommsDelay;
+    double m_dfTerminateProbability;
+
+    /**
+     * simulate poorly and terminally ill comms
+     */
+    void SimulateCommsError();
 
 
 };

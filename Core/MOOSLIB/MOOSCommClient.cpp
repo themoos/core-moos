@@ -454,36 +454,30 @@ bool CMOOSCommClient::ConnectToServer()
 
 	if(HandShake())
 	{
+	    if(!m_bQuiet)
+	        MOOSTrace("--------------------------------------------------\n\n");
+
 		//suggestion to move this to here accpted by PMN on 21st Jan 2009
         //we must be connected for user callback to work..
         m_bConnected = true;
 
         if(m_pfnConnectCallBack!=NULL)
 		{
-
-
-			if(!m_bQuiet)
-                MOOSTrace("  Invoking User OnConnect() callback...");
-
 			//invoke user defined callback
 			bool bUserResult = (*m_pfnConnectCallBack)(m_pConnectCallBackParam);
-			if(bUserResult)
+			if(!bUserResult)
 			{
-    			if(!m_bQuiet)
-	    			MOOSTrace("ok\n");
-			}
-			else
-			{
-		    	if(!m_bQuiet)
-			    	MOOSTrace("fail\n");
-                else
-                    MOOSTrace("failed User OnConnect() callback\n");
+	            if(!m_bQuiet)
+	                MOOSTrace("  Invoking User OnConnect() callback...FAIL");
 			}
 
 		}
 	}
 	else
 	{
+	    if(!m_bQuiet)
+	        MOOSTrace("--------------------------------------------------\n\n");
+
 		m_bQuit = true;
 
 		if(m_pSocket)
@@ -493,8 +487,6 @@ bool CMOOSCommClient::ConnectToServer()
 		return false;
 	}
 
-    if(!m_bQuiet)
-        MOOSTrace("--------------------------------------------------\n\n");
 	return true;
 }
 
@@ -692,11 +684,8 @@ void CMOOSCommClient::DoBanner()
 	MOOSTrace("****************************************************\n");
 	MOOSTrace("*                                                  *\n");
 	MOOSTrace("*       This is MOOS Client                        *\n");
-	MOOSTrace("*       c. P Newman 2001                           *\n");
+	MOOSTrace("*       c. P Newman 2001-2011                      *\n");
 	MOOSTrace("*                                                  *\n");
-#ifdef _WIN32
-	//MOOSTrace("*       built on %s\n",__TIMESTAMP__);             
-#endif
 	MOOSTrace("****************************************************\n");
 
 }

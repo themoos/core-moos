@@ -10,7 +10,28 @@
 #include "MOOSGenLib/ConsoleColours.h"
 #include <queue>
 
+void PrintHelp()
+{
 
+    MOOSTrace("\n\nGeneral MOOS settings:\n");
+    MOOSTrace("  -n (--name)                       : MOOS name\n");
+    MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
+    MOOSTrace("  -c (--commstick)                  : MOOSCommsTick in Hz\n");
+    MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
+    MOOSTrace("  -p var1@t1 [var2@t2,var3@t3....]  : list of publciations in form var_name@period eg x@0.5 y@2.0\n");
+
+    MOOSTrace("\n\nNetwork failure simulation:\n");
+    MOOSTrace("  -n (--simulate_network_failure)   : enable simulation of network/app failure\n");
+    MOOSTrace("  -P (--network_failure_prob)       : probability of each DB interaction having network failure [0.1]\n");
+    MOOSTrace("  -t (--network_failure_time)       : duration of network failure [3s]\n");
+    MOOSTrace("  -k (--application_failure_prob)   : probability of application failing during DB-communication [0]\n");
+
+    MOOSTrace("\n\nExample Usage:\n");
+    MOOSTrace("  ./uDBTestClient --name C1 -s x -p y@0.5 z@2.0 --apptick 10 --commstick 20 \n");
+    MOOSTrace("  ./uDBTestClient --name C2 -s z --simulate_network_failure -P 0.05 -t 10.0 --application_failure_prob 0.05 \n");
+
+
+}
 
 class DBTestClient : public CMOOSApp
 {
@@ -24,10 +45,23 @@ public:
         _AppTick = cl.follow(10.0,2,"-a","--apptick");
         _CommsTick = cl.follow(10.0,2,"-c","--commstick");
 
+
         _vSubscribe = cl.nominus_followers("-s");
         std::vector<std::string> vPublish = cl.nominus_followers("-p");
 
-        MOOSTrace("I have %d jobs\n",vPublish.size());
+        _SimulateNetworkFailure = cl.search(2,"-n","--simulate_network_failure");
+        _NetworkStallProb = cl.follow(0.1,2,"-P","--network_failure_prob");
+        _NetworkStallTime = cl.follow(3.0,2,"-t","--network_failure_time");
+        _ApplicationExitProb = cl.follow(0.0,2,"-k","--application_failure_prob");
+
+
+        if(cl.search(2,"-h","--help"))
+        {
+            PrintHelp();
+            exit(0);
+        }
+
+
 
         std::vector<std::string>::iterator q;
 
@@ -53,6 +87,12 @@ public:
     {
         SetAppFreq(_AppTick);
         SetCommsFreq(_CommsTick);
+        if(_SimulateNetworkFailure)
+        {
+            MOOSTrace("%f %f\n\n",_NetworkStallProb,_NetworkStallTime);
+            m_Comms.ConfigureCommsTesting(_NetworkStallProb,_NetworkStallTime,_ApplicationExitProb);
+        }
+
         return true;
     }
     bool OnNewMail(MOOSMSG_LIST & NewMail)
@@ -106,6 +146,11 @@ private:
     std::vector<std::string> _vSubscribe;
     double _AppTick;
     double _CommsTick;
+
+    bool _SimulateNetworkFailure ;
+    double _NetworkStallProb ;
+    double _NetworkStallTime ;
+    double _ApplicationExitProb;
 
     struct Job
     {

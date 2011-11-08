@@ -51,7 +51,7 @@ int main(int argc , char * argv[])
 
     //this is a main MOOS DB Object
     CMOOSDB DB;
-    DB.Run(sMissionFile);
+    DB.Run(sMissionFile,argc,argv);
 
     //this is a webserver object which allows you
     //to access and prod the MOOSDB via HTTP

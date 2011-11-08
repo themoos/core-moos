@@ -36,12 +36,14 @@
     #pragma warning(disable : 4503)
 #endif
 
-#include <MOOSGenLib/MOOSGenLib.h>
+#include "MOOSGenLib/MOOSGenLib.h"
+#include "MOOSGenLib/ConsoleColours.h"
 #include "MOOSGlobalHelper.h"
 #include "MOOSCommServer.h"
 #include "MOOSCommPkt.h"
 #include "MOOSException.h"
 #include "XPCTcpSocket.h"
+
 #include <iostream>
 
 using namespace std;
@@ -166,6 +168,7 @@ bool CMOOSCommServer::TimerLoop()
         m_SocketListLock.Lock();
 
         p = m_ClientSocketList.begin();
+
         while(p!=m_ClientSocketList.end())
         {
 
@@ -515,35 +518,37 @@ bool CMOOSCommServer::ProcessClient()
 
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
-    MOOSTrace("\n------------CONNECT-------------\n");
+    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
 
-    MOOSTrace("New client connected from machine \"%s\"\n",sName);
-    MOOSTrace("Handshaking....");
+    MOOSTrace("New client connected:\n");
 
 
+    std::cerr<<"  Host          :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
 
     if(HandShake(pNewClient))
     {
-        MOOSTrace("done\n");
+        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
 
         string sName = GetClientName(pNewClient);
 
         if(!sName.empty())
         {
-            MOOSTrace("clients name is \"%s\"\n",sName.c_str());
+            std::cerr<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
         }
     }
     else
     {
-        MOOSTrace("Handshaking failed - client is spurned\n");
+        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
+
+        std::cerr<<MOOS::ConsoleColours::Red()<<"Handshaking failed - client is spurned\n"<<MOOS::ConsoleColours::reset();
         pNewClient->vCloseSocket();
         delete pNewClient;
         MOOSTrace("--------------------------------\n");
         return false;
     }
+        std::cerr<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
 
-    MOOSTrace("There are now %d clients connected.\n",m_ClientSocketList.size()+1);
 
     MOOSTrace("--------------------------------\n");
 
@@ -557,8 +562,8 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
+    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
-    MOOSTrace("\n------------DISCONNECT-------------\n");
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
 

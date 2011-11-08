@@ -40,6 +40,7 @@
 #include "XPCTcpSocket.h"
 #include "MOOSCommObject.h"
 #include "MOOSException.h"
+#include "MOOSGenLib/ConsoleColours.h"
 #include <iostream>
 
 //////////////////////////////////////////////////////////////////////
@@ -48,7 +49,10 @@
 
 CMOOSCommObject::CMOOSCommObject()
 {
-
+    m_bFakeDodgyComms = false;
+    m_dfDodgeyCommsDelay = 1.0;
+    m_dfDodgeyCommsProbability = 0.5;
+    m_dfTerminateProbability = 0.0;
 }
 
 CMOOSCommObject::~CMOOSCommObject()
@@ -56,6 +60,36 @@ CMOOSCommObject::~CMOOSCommObject()
 
 }
 
+bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay, double dfTerminateProbability)
+{
+    m_bFakeDodgyComms = true;
+    m_dfDodgeyCommsProbability = dfDodgeyCommsProbability;
+    m_dfDodgeyCommsDelay = dfDodgeyCommsDelay;
+    m_dfTerminateProbability = dfTerminateProbability;
+    return true;
+}
+
+void CMOOSCommObject::SimulateCommsError()
+{
+    if(MOOSUniformRandom(0.0,1.0)<m_dfDodgeyCommsProbability)
+    {
+        std::cerr<<MOOS::ConsoleColours::Yellow();
+        std::cerr<<"faking slow connection..."<<m_dfDodgeyCommsDelay<<"s sleep\n";
+        std::cerr<<MOOS::ConsoleColours::reset();
+
+        MOOSPause((int)(m_dfDodgeyCommsDelay*1000));
+
+
+    }
+
+    if(MOOSUniformRandom(0.0,1.0)<m_dfTerminateProbability)
+    {
+       std::cerr<<MOOS::ConsoleColours::Red();
+       std::cerr<<"faking application-abort mid transaction\n";
+       std::cerr<<MOOS::ConsoleColours::reset();
+       exit(-1);
+    }
+}
 
 bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
 {
@@ -68,6 +102,11 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
     while((nRqd=PktRx.GetBytesRequired())!=0)
     {
         int nRxd = 0;
+
+        if(m_bFakeDodgyComms)
+           SimulateCommsError();
+
+
 
         try
         {
