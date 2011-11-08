@@ -38,6 +38,10 @@
 
 #include <MOOSLIB/MOOSLib.h>
 #include <MOOSGenLib/MOOSGenLib.h>
+#include "MOOSThirdparty/GetPot/getpot"
+#include "MOOSGenLib/ConsoleColours.h"
+
+
 
 #include "MOOSDB.h"
 #include "assert.h"
@@ -122,7 +126,7 @@ CMOOSDB::~CMOOSDB()
     
 }
 
-bool CMOOSDB::Run(const std::string  & sMissionFile )
+bool CMOOSDB::Run(const std::string  & sMissionFile, int argc, char * argv[] )
 {
     if(!m_MissionReader.SetFile(sMissionFile))
     {
@@ -158,18 +162,34 @@ bool CMOOSDB::Run(const std::string  & sMissionFile )
         }
     }
     
+    //here we look for command line overrides
+    GetPot cl(argc,argv);
+    bool bSingleThreaded = cl.search(2,"-s","--single_threaded");
+
+
+
     m_ThreadedCommServer.SetOnRxCallBack(OnRxPktCallBack,this);
     m_ThreadedCommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
-    m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
 
 
     m_CommServer.SetOnRxCallBack(OnRxPktCallBack,this);
-    
     m_CommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
     
     LogStartTime();
     
-    //m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+    if(bSingleThreaded)
+    {
+        std::cerr<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
+
+        m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+    }
+    else
+    {
+        std::cerr<<MOOS::ConsoleColours::green()<<"running in multi-threaded mode\n"<<MOOS::ConsoleColours::reset();
+        m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+    }
+
+
         
     return true;
 }
@@ -265,7 +285,7 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         
         if(q!=m_HeldMailMap.end())
         {
-            MOOSTrace("%f OnRxPkt %d messages held for client %s\n",MOOSTime(),q->second.size(),sClient.c_str());
+            //MOOSTrace("%f OnRxPkt %d messages held for client %s\n",MOOSTime(),q->second.size(),sClient.c_str());
 
             if(!q->second.empty())
             {

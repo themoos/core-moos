@@ -67,7 +67,7 @@ public:
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
-    bool Run(const std::string & sMissionFile="" );
+    bool Run(const std::string  & sMissionFile="", int argc = 0, char * argv[] =0);
 
     /** returns the port on which this DB is listening */
     long GetDBPort(){return m_nPort;};
