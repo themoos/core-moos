@@ -286,23 +286,11 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
     delete pWorker;
 }
 
-///called when a client goes quiet...
-bool ThreadedCommServer::OnAbsentClient(XPCTcpSocket* pClient)
+bool ThreadedCommServer::TimerLoop()
 {
-    SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
-
-    //get the name of the client connected
-    p = m_Socket2ClientMap.find(pClient->iGetSocketFd());
-
-    if(p==m_Socket2ClientMap.end())
-        return MOOSFail("runtime error ThreadedCommServer::OnAbsentClient - cannot figure out client name");
-
-    std::string sName = p->second;
-
-    StopAndCleanUpClientThread(sName);
-
-    //do base class work
-    return BASE::OnAbsentClient(pClient);
+    //we don't run absent client checks in the threaded version
+    //simply quit this thread..
+    return true;
 }
 
 
