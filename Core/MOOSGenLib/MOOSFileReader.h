@@ -94,6 +94,12 @@ public:
 
     /** tell the class what file to read */
     bool SetFile(const std::string  & sFile);
+
+    /**
+     * return the name of the underlying file being parsed
+     */
+    std::string GetFileName(){return m_sFileName;};
+
     /**static helper which splits a line into token = value and by deafult removes white space*/
     static bool    GetTokenValPair(std::string  sLine, std::string &sTok, std::string & sVal,bool bPreserveWhiteSpace = false);
 

@@ -39,6 +39,10 @@
 #include <string>
 #include <map>
 #include "MOOSLIB/ThreadedCommServer.h"
+#include <memory>
+#include "MOOSDBHTTPServer.h"
+
+
 using namespace std;
 
 typedef map<string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
@@ -67,10 +71,16 @@ public:
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
-    bool Run(const std::string  & sMissionFile="", int argc = 0, char * argv[] =0);
+    bool Run(int argc = 0, char * argv[] =0);
 
     /** returns the port on which this DB is listening */
     long GetDBPort(){return m_nPort;};
+
+    /**
+     * return the mission file that is being read
+     */
+    std::string GetMissionFile(){return m_MissionReader.GetFileName();};
+
 
     CMOOSDB();
     virtual ~CMOOSDB();
@@ -106,7 +116,7 @@ private:
     string m_sDBName;
     string m_sCommunityName;
     CMOOSFileReader m_MissionReader;
-    long m_nPort;
+    int m_nPort;
     double m_dfStartTime;
 
 
@@ -114,6 +124,10 @@ private:
     the next time a client calls in*/
     MOOSMSG_LIST_STRING_MAP m_HeldMailMap;
     DBVAR_MAP    m_VarMap;
+
+    //pointer to a webserver if one is needed
+    std::auto_ptr<CMOOSDBHTTPServer> m_pWebServer;
+
 
 private:
     void LogStartTime();
