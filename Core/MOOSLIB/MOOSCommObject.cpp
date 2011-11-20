@@ -103,11 +103,6 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
     {
         int nRxd = 0;
 
-        if(m_bFakeDodgyComms)
-           SimulateCommsError();
-
-
-
         try
         {
             if(nRqd<CHUNK_READ)
@@ -167,7 +162,21 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
 
     try
     {
-        nSent = pSocket->iSendMessage(PktTx.m_pStream,PktTx.GetStreamLength());
+
+
+        if(m_bFakeDodgyComms)
+        {
+            //this is some very low level cruft that is only hear to provide
+        	//some gruesome testing - normal programmers should ignore this
+        	//block of code
+        	nSent+=pSocket->iSendMessage(PktTx.m_pStream,sizeof(int));
+        	SimulateCommsError();
+        	nSent+=pSocket->iSendMessage(&(PktTx.m_pStream[sizeof(int)]),PktTx.GetStreamLength()-sizeof(int));
+        }
+        else
+        {
+        	nSent = pSocket->iSendMessage(PktTx.m_pStream,PktTx.GetStreamLength());
+        }
     }
     catch(XPCException e)
     {

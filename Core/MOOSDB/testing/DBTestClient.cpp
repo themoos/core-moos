@@ -21,7 +21,7 @@ void PrintHelp()
     MOOSTrace("  -p var1@t1 [var2@t2,var3@t3....]  : list of publciations in form var_name@period eg x@0.5 y@2.0\n");
 
     MOOSTrace("\n\nNetwork failure simulation:\n");
-    MOOSTrace("  -n (--simulate_network_failure)   : enable simulation of network/app failure\n");
+    MOOSTrace("  -N (--simulate_network_failure)   : enable simulation of network/app failure\n");
     MOOSTrace("  -P (--network_failure_prob)       : probability of each DB interaction having network failure [0.1]\n");
     MOOSTrace("  -t (--network_failure_time)       : duration of network failure [3s]\n");
     MOOSTrace("  -k (--application_failure_prob)   : probability of application failing during DB-communication [0]\n");
@@ -49,7 +49,7 @@ public:
         _vSubscribe = cl.nominus_followers("-s");
         std::vector<std::string> vPublish = cl.nominus_followers("-p");
 
-        _SimulateNetworkFailure = cl.search(2,"-n","--simulate_network_failure");
+        _SimulateNetworkFailure = cl.search(2,"-N","--simulate_network_failure");
         _NetworkStallProb = cl.follow(0.1,2,"-P","--network_failure_prob");
         _NetworkStallTime = cl.follow(3.0,2,"-t","--network_failure_time");
         _ApplicationExitProb = cl.follow(0.0,2,"-k","--application_failure_prob");
@@ -108,6 +108,7 @@ public:
     }
     bool Iterate()
     {
+    	std::string sLargePayload('A',10000);
         while(_Jobs.size() && _Jobs.top().isActive())
         {
             Job Active = _Jobs.top();

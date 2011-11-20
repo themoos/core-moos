@@ -744,15 +744,9 @@ string CMOOSCommServer::GetClientName(XPCTcpSocket *pSocket)
 void CMOOSCommServer::DoBanner()
 {
     MOOSTrace("***************************************************\n");
-    MOOSTrace("*       This is MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
-    MOOSTrace("*       c. P Newman 2001                           \n");
-    MOOSTrace("*                                                  \n");
-    MOOSTrace("*       Binding on %d                              \n",m_lListenPort);
-#ifdef _WIN32
-    MOOSTrace("*       built on %s\n",__TIMESTAMP__);
-#endif
-    MOOSTrace("*                                                  \n");
-    MOOSTrace("*       This machine is %s endian                 \n",IsLittleEndian()?"Little":"Big");
+    MOOSTrace("*  This is a MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
+    MOOSTrace("*  Connect to this server on port %d               \n",m_lListenPort);
+    //MOOSTrace("*  This machine is %s endian                 \n",IsLittleEndian()?"Little":"Big");
     MOOSTrace("***************************************************\n");
 
 }

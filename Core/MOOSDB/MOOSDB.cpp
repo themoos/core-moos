@@ -161,7 +161,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     //is the first argument an option? if not it is the mission file
     std::string sMissionFile="mission.moos";
 
-    if(cl[1][0]!='-')
+    if(argc>1 && cl[1][0]!='-')
     {
     	//first arg is starting wuth "-" so it cannot be a file name
     	sMissionFile = cl[1];
@@ -174,7 +174,9 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     //set up mission file
     if(!m_MissionReader.SetFile(sMissionFile))
-        MOOSTrace("no mission file called \"%s\" found - will use defaults or command line switches\n",sMissionFile.c_str());
+    {
+        //MOOSTrace("no mission file called \"%s\" found \n- will use defaults or command line switches\n",sMissionFile.c_str());
+    }
 	
     ///////////////////////////////////////////////////////////
     //what is our community name?
@@ -261,7 +263,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     }
     else
     {
-        std::cerr<<MOOS::ConsoleColours::green()<<"running in multi-threaded mode\n"<<MOOS::ConsoleColours::reset();
+        //std::cerr<<MOOS::ConsoleColours::green()<<"running in multi-threaded mode\n"<<MOOS::ConsoleColours::reset();
         m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
     }
 
