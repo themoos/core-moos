@@ -1,4 +1,5 @@
-#PROJECT(MOOSDB)
+#this builds a test application which can be used
+#to test and stress the MOOSDB
 set(EXECNAME uDBTestClient)
 
 #what files are needed?

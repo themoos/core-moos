@@ -17,6 +17,10 @@ endif(COMMAND cmake_policy)
 		    PROJECT(MOOS)
 ###########################################################
 
+INCLUDE(CTest)
+
+
+
 ############# CORE ? ################
 SET( BUILD_CORE_MOOS ON CACHE BOOL "Build Core MOOS")
 IF(BUILD_CORE_MOOS)
