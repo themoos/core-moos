@@ -10,7 +10,9 @@
 #include "XPCTcpSocket.h"
 #include <algorithm>
 
-
+#ifndef _WIN32
+    #include <sys/signal.h>
+#endif
 
 #ifdef _WIN32
 #define INVALID_SOCKET_SELECT WSAEINVAL
