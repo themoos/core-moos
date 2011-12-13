@@ -108,7 +108,6 @@ public:
     }
     bool Iterate()
     {
-    	std::string sLargePayload('A',10000);
         while(_Jobs.size() && _Jobs.top().isActive())
         {
             Job Active = _Jobs.top();

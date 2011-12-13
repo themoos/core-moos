@@ -1,13 +1,12 @@
-#PROJECT(MOOSLib)
-set(LIBNAME MOOSLib)
-
+set(LIBNAME MOOS)
 
 
 #do we want to turn on the experimental clock skew detection?
-SET(DETECT_CLOCK_DRIFT FALSE CACHE BOOL "MOOSCommClient<->MOOSDB Clock drift detection (experimental)")
+OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
 IF (DETECT_CLOCK_DRIFT)
     ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
 ENDIF (DETECT_CLOCK_DRIFT)
+MARK_AS_ADVANCED(DETECT_CLOCK_DRIFT)
 
 # Removed the extra field that was added to the MOOS message protocol in October 2009.
 OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
@@ -15,8 +14,6 @@ IF (DISABLE_AUX_SOURCE)
   ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
 ENDIF (DISABLE_AUX_SOURCE)
 MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
-
-
 
 SET(SOURCES
 MOOSVariable.cpp
@@ -38,40 +35,12 @@ XPCTcpSocket.cpp
 XPCUdpSocket.cpp
 )
 
-
-
-set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-set(PUBLIC_HEADERS
-${HEADER_DIR}/MOOSVariable.h
-${HEADER_DIR}/MOOSCommClient.h
-${HEADER_DIR}/MOOSCommObject.h
-${HEADER_DIR}/MOOSCommPkt.h
-${HEADER_DIR}/MOOSCommServer.h
-${HEADER_DIR}/MOOSException.h
-${HEADER_DIR}/MOOSGlobalHelper.h
-${HEADER_DIR}/MOOSLib.h
-${HEADER_DIR}/MOOSMsg.h
-${HEADER_DIR}/MOOSApp.h
-${HEADER_DIR}/MOOSInstrument.h
-${HEADER_DIR}/XPCEndian.h
-${HEADER_DIR}/XPCException.h
-${HEADER_DIR}/XPCGetHostInfo.h
-${HEADER_DIR}/XPCGetProtocol.h
-${HEADER_DIR}/XPCSocket.h
-${HEADER_DIR}/XPCTcpSocket.h
-${HEADER_DIR}/XPCUdpSocket.h
-)
-
-
-
-
 ##########################
 # Packages / Dependencies
 
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
     ${MOOS_SOURCE_DIR}/Core
-    ${MOOSGenLib_INCLUDE_DIRS}
+    ${MOOSGen_INCLUDE_DIRS}
     ${PocoBits_INCLUDE_DIRS}
     CACHE INTERNAL
     "List of include dirs for the dependencies of ${LIBNAME}"    
@@ -79,7 +48,7 @@ set(${LIBNAME}_DEPEND_INCLUDE_DIRS
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
 set(${LIBNAME}_DEPEND_LIBRARIES
-    ${MOOSGenLib_LIBRARIES}
+    ${MOOSGen_LIBRARIES}
     ${PocoBits_LIBRARIES}
     CACHE INTERNAL
     "List of libraries which are dependencies of ${LIBNAME}"    
@@ -117,19 +86,11 @@ include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS}
 add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
-
-
-
-
-
+#####################
 # install headers
-#INSTALL( FILES ${MOOSLIB_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/MOOSLIB )
+FILE(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+INSTALL( FILES ${headers} DESTINATION include/MOOS/${LIBNAME} )
 
 # install libraries
-#INSTALL(TARGETS
-#MOOS
-#RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-#LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-#ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-#)
+INSTALL(TARGETS ${LIBNAME} DESTINATION lib)
 
