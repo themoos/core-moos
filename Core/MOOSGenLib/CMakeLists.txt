@@ -68,8 +68,13 @@ set(${LIBNAME}_INCLUDE_DIRS
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_INCLUDE_DIRS)
 
+IF(UNIX)
+    SET(PLATFORM_LIBS m pthread  )
+ENDIF(UNIX)
+
 set(${LIBNAME}_LIBRARIES
     ${LIBNAME}
+    ${PLATFORM_LIBS}
     CACHE INTERNAL
     "List of libraries needed to link ${LIBNAME} library"
 )
