@@ -33,8 +33,8 @@
 #ifndef _XPCSocket
 #define _XPCSocket
 
-#include "XPCGetProtocol.h"
-#include "XPCGetHostInfo.h"
+#include "MOOS/libMOOS/Comms/XPCGetProtocol.h"
+#include "MOOS/libMOOS/Comms/XPCGetHostInfo.h"
 #include <stdio.h>
 //#include <string.h>
 

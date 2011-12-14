@@ -36,8 +36,8 @@
 #pragma warning(disable : 4503)
 #endif
 
-#include "MOOSGlobalHelper.h"
-#include "MOOSApp.h"
+#include "MOOS/libMOOS/Comms/MOOSGlobalHelper.h"
+#include "MOOS/libMOOS/Apps/MOOSApp.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>

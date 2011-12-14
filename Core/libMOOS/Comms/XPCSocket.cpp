@@ -30,7 +30,7 @@
 //   in "Making UNIX and Windows NT Talk" by Mark Nadelson and Thomas Haga
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-#include "XPCSocket.h"
+#include "MOOS/libMOOS/Comms/XPCSocket.h"
 
 XPCSocket::XPCSocket(const char *_sProtocol, int _iPort)
 {

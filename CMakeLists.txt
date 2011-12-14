@@ -116,7 +116,7 @@ SET(THIRDPARTY_DIR ${MOOS_SOURCE_DIR}/Thirdparty)
 
 
 ############# UTILITY LIBRARY ? ################
-SET( BUILD_UTILITY_LIBRARY ON CACHE BOOL "Build MOOSUtility Library")
+SET( BUILD_UTILITY_LIBRARY OFF CACHE BOOL "Build MOOSUtility Library")
 IF(BUILD_UTILITY_LIBRARY)
     #here we build a goody box that many folk will want to use
     SET(BUILD_DIRS ${BUILD_DIRS} Essentials/MOOSUtilityLib)

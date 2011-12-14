@@ -35,12 +35,12 @@
     #pragma warning(disable : 4503)
 #endif
 
-#include <MOOSGenLib/MOOSGenLib.h>
-#include "MOOSCommPkt.h"
-#include "XPCTcpSocket.h"
-#include "MOOSCommObject.h"
-#include "MOOSException.h"
-#include "MOOSGenLib/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
+#include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/MOOSCommObject.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <iostream>
 
 //////////////////////////////////////////////////////////////////////

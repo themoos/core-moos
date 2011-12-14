@@ -15,41 +15,77 @@ IF (DISABLE_AUX_SOURCE)
 ENDIF (DISABLE_AUX_SOURCE)
 MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
 
-SET(SOURCES
-MOOSVariable.cpp
-MOOSCommClient.cpp
-MOOSCommObject.cpp
-MOOSCommPkt.cpp
-MOOSCommServer.cpp
-ThreadedCommServer.cpp
-MOOSException.cpp
-MOOSGlobalHelper.cpp
-MOOSMsg.cpp
-MOOSApp.cpp
-MOOSInstrument.cpp
-MOOSSkewFilter.cpp
-XPCGetHostInfo.cpp
-XPCGetProtocol.cpp
-XPCSocket.cpp
-XPCTcpSocket.cpp
-XPCUdpSocket.cpp
+SET(COMMS_SOURCES
+    Comms/MOOSVariable.cpp
+    Comms/MOOSCommClient.cpp
+    Comms/MOOSCommObject.cpp
+    Comms/MOOSCommPkt.cpp
+    Comms/MOOSCommServer.cpp
+    Comms/ThreadedCommServer.cpp
+    Comms/MOOSGlobalHelper.cpp
+    Comms/MOOSMsg.cpp
+    Comms/MOOSSkewFilter.cpp
+    Comms/XPCGetHostInfo.cpp
+    Comms/XPCGetProtocol.cpp
+    Comms/XPCSocket.cpp
+    Comms/XPCTcpSocket.cpp
+    Comms/XPCUdpSocket.cpp
 )
+
+SET(APP_SOURCES
+    App/MOOSApp.cpp
+    App/MOOSInstrument.cpp
+)
+
+
+
+SET(UTIL_SOURCES
+   Utils/MOOSException.cpp
+   Utils/MOOSLock.cpp
+   Utils/MOOSFileReader.cpp
+   Utils/MOOSGenLibGlobalHelper.cpp
+   Utils/ProcessConfigReader.cpp
+   Utils/MOOSLinuxSerialPort.cpp
+   Utils/MOOSSerialPort.cpp
+   )
+
+IF(WIN32)
+    SET(UTIL_SOURCES ${UTIL_SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
+ENDIF(WIN32)
+
+
+
+set(THIRDPARTY_SOURCES
+  Thirdparty/PocoBits/src/Event.cpp
+  Thirdparty/PocoBits/src/Mutex.cpp
+  Thirdparty/PocoBits/src/Timestamp.cpp
+  Thirdparty/PocoBits/src/Exception.cpp
+)
+
+
+set(SOURCES ${THIRDPARTY_SOURCES} ${UTIL_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
+
+
+
+
 
 ##########################
 # Packages / Dependencies
 
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
-    ${MOOS_SOURCE_DIR}/Core
-    ${MOOSGen_INCLUDE_DIRS}
-    ${PocoBits_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
     CACHE INTERNAL
     "List of include dirs for the dependencies of ${LIBNAME}"    
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
 set(${LIBNAME}_DEPEND_LIBRARIES
-    ${MOOSGen_LIBRARIES}
-    ${PocoBits_LIBRARIES}
+#    ${MOOSGen_LIBRARIES}
+#    ${PocoBits_LIBRARIES}
     CACHE INTERNAL
     "List of libraries which are dependencies of ${LIBNAME}"    
 )

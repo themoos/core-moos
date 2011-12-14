@@ -49,8 +49,8 @@
 #define MOOS_SERIAL_INBOX_MAX_SIZE 1000
 
 
-#include "MOOSGenLibGlobalHelper.h"
-#include "MOOSSerialPort.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSSerialPort.h"
 
 
 

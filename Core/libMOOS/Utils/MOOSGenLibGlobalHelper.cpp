@@ -32,8 +32,8 @@
 #endif
 
 
-#include "MOOSGenLibGlobalHelper.h"
-#include "MOOSGenLib/MOOSAssert.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSAssert.h"
 
 #include <algorithm>
 #include <iterator>

@@ -34,9 +34,9 @@
 #pragma warning(disable : 4786)
 #endif
 
-#include <MOOSGenLib/MOOSGenLib.h>
-#include "MOOSMsg.h"
-#include "MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOSGlobalHelper.h"
 #include <iostream>
 #include <sstream>

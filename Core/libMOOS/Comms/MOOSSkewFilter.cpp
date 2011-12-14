@@ -33,7 +33,7 @@
 /// 2008 by Alastair Harrison of MRG arh@robots.ox.ac.uk
 
 
-#include "MOOSSkewFilter.h"
+#include "MOOS/libMOOS/Comms/MOOSSkewFilter.h"
 #include <cmath>
 
 namespace MOOS

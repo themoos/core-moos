@@ -8,8 +8,8 @@
 #ifndef THREADEDCOMMSERVER_H_
 #define THREADEDCOMMSERVER_H_
 
-#include "MOOSCommServer.h"
-#include "MOOSGenLib/MOOSSafeList.h"
+#include "MOOS/libMOOS/Comms/MOOSCommServer.h"
+#include "MOOS/libMOOS/Utils/MOOSSafeList.h"
 
 
 namespace MOOS

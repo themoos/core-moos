@@ -5,9 +5,9 @@
  *      Author: pnewman
  */
 
-#include "MOOSLIB/ThreadedCommServer.h"
-#include "MOOSLIB/MOOSException.h"
-#include "XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include <algorithm>
 
 #ifndef _WIN32

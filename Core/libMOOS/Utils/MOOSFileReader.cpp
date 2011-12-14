@@ -44,10 +44,10 @@
 #endif
 
 
-#include "MOOSGenLibGlobalHelper.h"
-#include "MOOSFileReader.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSFileReader.h"
 #include "assert.h"
-#include "MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
 
 #define MAXLINESIZE 2000
 using namespace std;

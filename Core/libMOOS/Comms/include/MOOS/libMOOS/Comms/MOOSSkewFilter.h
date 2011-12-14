@@ -36,7 +36,7 @@
 #ifndef __MOOSSkewFilter_h
 #define __MOOSSkewFilter_h
 
-#include <MOOSGenLib/MOOSGenLib.h>
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
 #include <deque>
 
 namespace MOOS

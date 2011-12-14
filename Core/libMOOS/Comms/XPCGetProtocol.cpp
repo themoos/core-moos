@@ -30,7 +30,7 @@
 //   in "Making UNIX and Windows NT Talk" by Mark Nadelson and Thomas Haga 
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-#include "XPCGetProtocol.h"
+#include "MOOS/libMOOS/Comms/XPCGetProtocol.h"
 
 XPCGetProtocol::XPCGetProtocol(const char *_sName)
 {

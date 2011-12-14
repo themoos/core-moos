@@ -31,7 +31,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "MOOSVariable.h"
+#include "MOOS/libMOOS/Comms/MOOSVariable.h"
 //#include <sstream>
 #include <sstream>
 #include <iomanip>

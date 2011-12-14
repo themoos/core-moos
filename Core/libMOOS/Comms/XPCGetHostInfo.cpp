@@ -30,7 +30,7 @@
 //   in "Making UNIX and Windows NT Talk" by Mark Nadelson and Thomas Haga 
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-#include "XPCGetHostInfo.h"
+#include "MOOS/libMOOS/Comms/XPCGetHostInfo.h"
 
 
 XPCGetHostInfo::XPCGetHostInfo(const char *_sHost, hostType _type)

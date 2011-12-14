@@ -34,7 +34,7 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
-#include <MOOSGenLib/MOOSGenLib.h>
+#include <Utils/enLib.h>
 #include "MOOSCommClient.h"
 
 

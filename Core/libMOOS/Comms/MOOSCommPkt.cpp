@@ -36,14 +36,14 @@
 #endif
 
 
-#include <MOOSGenLib/MOOSGenLib.h>
-#include "MOOSCommPkt.h"
-#include "MOOSMsg.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOSGlobalHelper.h"
 #include <assert.h>
 #include <cstring>
 #include <iostream>
-#include "MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
 
 
 #define DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE 40000

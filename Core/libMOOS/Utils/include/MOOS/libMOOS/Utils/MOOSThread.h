@@ -31,8 +31,8 @@
 #ifndef MOOSThreadh
 #define MOOSThreadh
 
-#include <MOOSGenLib/MOOSLock.h>
-#include <MOOSGenLib/MOOSGenLibGlobalHelper.h>
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
 #ifndef _WIN32
 #include <errno.h>
 #endif

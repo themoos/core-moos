@@ -49,16 +49,14 @@
     #include <pthread.h>
 #endif
 
-#include "MOOSCommObject.h"
-#include "MOOSCommPkt.h"
-#include <MOOSGenLib/MOOSLock.h>
-
-#include <MOOSGenLib/MOOSThread.h>
+#include "MOOS/libMOOS/Comms/MOOSCommObject.h"
+#include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSThread.h"
 
 class XPCTcpSocket;
 #include <list>
 #include <map>
-//using namespace std;
 
 /** This class is the MOOS Comms Server. It lies at the heart of the communications
 architecture and typically is of no interest to the component developer. It maintains a list of all

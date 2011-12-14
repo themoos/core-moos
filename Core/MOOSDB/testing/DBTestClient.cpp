@@ -7,7 +7,7 @@
 #include <iostream>
 #include "MOOSLIB/MOOSApp.h"
 #include "MOOSThirdparty/GetPot/getpot"
-#include "MOOSGenLib/ConsoleColours.h"
+#include "Utils/leColours.h"
 #include <queue>
 
 void PrintHelp()

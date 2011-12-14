@@ -37,7 +37,7 @@
  *
  */
 
-#include "XPCUdpSocket.h"
+#include "MOOS/libMOOS/Comms/XPCUdpSocket.h"
 #include <map>
 #include <string>
 

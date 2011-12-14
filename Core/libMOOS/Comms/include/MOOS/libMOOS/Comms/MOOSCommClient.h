@@ -34,11 +34,11 @@
 #if !defined(MOOSCommClientH)
 #define MOOSCommClientH
 
-#include <MOOSGenLib/MOOSLock.h>
-#include <MOOSGenLib/MOOSThread.h>
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include <iostream>
 #include <iomanip>
-#include "MOOSCommObject.h"
 #include <set>
 #include <string>
 #include <memory>

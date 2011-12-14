@@ -54,13 +54,13 @@
 #include <iomanip>
 #include <cassert>
 
-#include "MOOSGenLib/MOOSGenLib.h"
-#include "XPCTcpSocket.h"
-#include "MOOSCommClient.h"
-#include "MOOSCommPkt.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
+#include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOSGlobalHelper.h"
-#include "MOOSException.h"
-#include "MOOSSkewFilter.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Comms/MOOSSkewFilter.h"
 
 
 
