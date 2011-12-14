@@ -37,7 +37,7 @@
 #include "MOOS/libMOOS/Utils/MOOSGenLib.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
-#include "MOOSGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSGlobalHelper.h"
 #include <iostream>
 #include <sstream>
 #include <iomanip>

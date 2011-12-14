@@ -34,13 +34,13 @@
     #pragma warning(disable : 4786)
     #pragma warning(disable : 4503)
 #endif
-#include <MOOSLIB/MOOSLib.h>
+
 #include <iostream> 
 #include <sstream>
 #include <iomanip>
 #include <cctype>
 using namespace std;
-#include "MOOSInstrument.h"
+#include "MOOS/libMOOS/App/MOOSInstrument.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

@@ -34,8 +34,12 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
-#include <Utils/enLib.h>
-#include "MOOSCommClient.h"
+#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
+#include "MOOS/libMOOS/Comms/MOOSVariable.h"
+
+#include <set>
+#include <map>
 
 
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
@@ -44,9 +48,6 @@
 #define MOOS_MAX_COMMS_FREQ 200
 #define STATUS_PERIOD 2
 
-#include "MOOSVariable.h"
-#include <set>
-#include <map>
 
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
 

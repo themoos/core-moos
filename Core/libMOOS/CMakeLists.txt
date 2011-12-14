@@ -22,7 +22,6 @@ SET(COMMS_SOURCES
     Comms/MOOSCommPkt.cpp
     Comms/MOOSCommServer.cpp
     Comms/ThreadedCommServer.cpp
-    Comms/MOOSGlobalHelper.cpp
     Comms/MOOSMsg.cpp
     Comms/MOOSSkewFilter.cpp
     Comms/XPCGetHostInfo.cpp
@@ -39,7 +38,7 @@ SET(APP_SOURCES
 
 
 
-SET(UTIL_SOURCES
+SET(UTILS_SOURCES
    Utils/MOOSException.cpp
    Utils/MOOSLock.cpp
    Utils/MOOSFileReader.cpp
@@ -47,10 +46,12 @@ SET(UTIL_SOURCES
    Utils/ProcessConfigReader.cpp
    Utils/MOOSLinuxSerialPort.cpp
    Utils/MOOSSerialPort.cpp
+   Utils/MOOSGlobalHelper.cpp
+
    )
 
 IF(WIN32)
-    SET(UTIL_SOURCES ${UTIL_SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
+    SET(UTIL_SOURCES ${UTILS_SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
 ENDIF(WIN32)
 
 
@@ -73,7 +74,7 @@ set(SOURCES ${THIRDPARTY_SOURCES} ${UTIL_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES
 # Packages / Dependencies
 
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include

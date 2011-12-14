@@ -49,13 +49,16 @@
     #include "winnt.h"
 #endif
 
-#include "MOOSCommServer.h"
-#include "MOOSGlobalHelper.h"
-#include "MOOSCommClient.h"
-#include "MOOSMsg.h"
-#include "MOOSApp.h"
-#include "MOOSInstrument.h"
-#include "MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSGlobalHelper.h"
+
+#include "MOOS/libMOOS/Comms/MOOSCommServer.h"
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
+
+#include "MOOS/libMOOS/App/MOOSApp.h"
+#include "MOOS/libMOOS/App/MOOSInstrument.h"
+
 #endif
 
 

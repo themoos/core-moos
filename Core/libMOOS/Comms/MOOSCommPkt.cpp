@@ -37,13 +37,14 @@
 
 
 #include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Utils/MOOSGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
-#include "MOOSGlobalHelper.h"
 #include <assert.h>
 #include <cstring>
 #include <iostream>
-#include "MOOS/libMOOS/Utils/MOOSException.h"
 
 
 #define DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE 40000
