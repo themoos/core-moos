@@ -2,7 +2,7 @@
 #define MOOSHTTPSERVERH
 
 
-#include <MOOSUtilityLib/MOOSThread.h>
+#include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include <map>
 class XPCTcpSocket;
 class CHTTPConnection;

@@ -4,7 +4,7 @@
 
 #ifndef CHTTPCONNECTIONH
 
-#include <MOOSUtilityLib/MOOSThread.h>
+#include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include <map>
 
 //forward decalarations

@@ -28,9 +28,10 @@
 //
 //////////////////////////    END_GPL    //////////////////////////////////
 
-#include "Utils/enLibGlobalHelper.h"
-#include "MOOSLIB/XPCTcpSocket.h"
-#include "MOOSLIB/MOOSCommClient.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
+
 #include "MOOSDBHTTPServer.h"
 #include "HTTPConnection.h"
 

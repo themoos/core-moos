@@ -5,9 +5,9 @@
  *      Author: pnewman
  */
 #include <iostream>
-#include "MOOSLIB/MOOSApp.h"
-#include "MOOSThirdparty/GetPot/getpot"
-#include "Utils/leColours.h"
+#include "MOOS/libMOOS/App/MOOSApp.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <queue>
 
 void PrintHelp()

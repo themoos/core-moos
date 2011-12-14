@@ -31,7 +31,8 @@
 #pragma warning(disable : 4786)
 #endif
 
-#include <MOOSLIB/MOOSLib.h>
+#include "MOOS/libMOOS/MOOSLib.h"
+
 #include "MOOSDB.h"
 #include <iostream>
 #include <string>

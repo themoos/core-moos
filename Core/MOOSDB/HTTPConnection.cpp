@@ -28,11 +28,11 @@
 //
 //////////////////////////    END_GPL    //////////////////////////////////
 
-#include "Utils/enLibGlobalHelper.h"
-#include "UtilsUtils/.h"
-#include "MOOSLIB/XPCTcpSocket.h"
-#include "MOOSLIB/MOOSCommClient.h"
-#include "Utils/MOOSUtils/clude "MOOSLIB/MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
+#include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSAssert.h"
 
 
 #ifndef _WIN32

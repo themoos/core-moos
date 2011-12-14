@@ -36,10 +36,9 @@
 #endif
 
 
-#include <MOOSLIB/MOOSLib.h>
-#include <Utils/enLib.h>
-#include "MOOSThirdparty/GetPot/getpot"
-#include "UtilsUtils/ours.h"
+#include "MOOS/libMOOS/MOOSLib.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 
 

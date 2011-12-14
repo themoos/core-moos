@@ -50,7 +50,7 @@
 #endif
 
 #include "MOOS/libMOOS/Utils/MOOSException.h"
-#include "MOOS/libMOOS/Utils/MOOSGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 
 #include "MOOS/libMOOS/Comms/MOOSCommServer.h"

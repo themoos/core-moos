@@ -54,7 +54,6 @@ set(THIRDPARTY_SOURCES
 set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
 
 
-
 #do we want to turn on the experimental clock skew detection?
 OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
 IF (DETECT_CLOCK_DRIFT)
@@ -77,7 +76,8 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include)
     
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
@@ -127,7 +127,6 @@ target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
 #######################################
 # install headers
-
 install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
 
 # install libraries

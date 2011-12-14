@@ -34,7 +34,7 @@
 #pragma warning(disable : 4786)
 #endif
 
-#include <Utils/enLib.h>
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOSDBVar.h"
 #include <iostream>
 

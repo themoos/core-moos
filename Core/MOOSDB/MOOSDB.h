@@ -35,10 +35,10 @@
 #define MOOSDBH
 
 
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOSDBVar.h"
 #include <string>
 #include <map>
-#include "MOOSLIB/ThreadedCommServer.h"
 #include <memory>
 #include "MOOSDBHTTPServer.h"
 
