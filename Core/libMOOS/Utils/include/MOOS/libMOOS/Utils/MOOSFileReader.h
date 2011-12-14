@@ -42,11 +42,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//#include "MOOSLock.h"
 #include <fstream>
 #include <string>
 #include <map>
-//using namespace std;
 
 #ifdef _WIN32
     typedef std::map<int,std::ifstream*> THREAD2FILE_MAP;

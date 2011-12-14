@@ -34,8 +34,8 @@
 //
 
 
-#include "PocoBits/Mutex_POSIX.h"
-#include "PocoBits/Timestamp.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_POSIX.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
 #if !defined(POCO_NO_SYS_SELECT_H)
 #include <sys/select.h>
 #endif

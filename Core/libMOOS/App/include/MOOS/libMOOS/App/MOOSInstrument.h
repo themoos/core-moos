@@ -31,14 +31,12 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MOOSINSTRUMENT_H__D81A485B_B5F7_49C9_8A24_F9B5B94447C6__INCLUDED_)
-#define AFX_MOOSINSTRUMENT_H__D81A485B_B5F7_49C9_8A24_F9B5B94447C6__INCLUDED_
+#ifndef moosinstrumenth
+#define moosinstrumenth
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#include "MOOS/libMOOS/Utils/MOOSUtils.h"
+#include "MOOS/libMOOS/App/MOOSApp.h"
 
-#include "MOOSApp.h"
 /** Class that derives from CMOOSApp and adds functionality of cross platform serial ports*/
 class CMOOSInstrument : public CMOOSApp  
 {
@@ -95,4 +93,4 @@ protected:
 
 };
 
-#endif // !defined(AFX_MOOSINSTRUMENT_H__D81A485B_B5F7_49C9_8A24_F9B5B94447C6__INCLUDED_)
+#endif

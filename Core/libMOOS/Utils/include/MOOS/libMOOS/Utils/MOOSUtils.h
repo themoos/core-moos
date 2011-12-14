@@ -27,12 +27,16 @@
 //   02111-1307, USA. 
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-#ifndef MOOSGlobalHelperh
-#define MOOSGlobalHelperh
+#ifndef MOSSGENLIBH
+#define MOSSGENLIBH
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Utils/MOOSFileReader.h"
+#include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+#ifdef _WIN32
+    #include "MOOS/libMOOS/Utils/MOOSNTSerialPort.h"
+#else
+    #include "MOOS/libMOOS/Utils/MOOSLinuxSerialPort.h"
+#endif
 
-#include <string>
-//using namespace std;
-void SetMOOSPlayBack(bool bPlayBack);
-bool IsMOOSPlayBack();
 #endif
 

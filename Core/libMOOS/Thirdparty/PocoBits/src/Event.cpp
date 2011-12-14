@@ -34,7 +34,7 @@
 //
 
 
-#include "PocoBits/Event.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
 
 
 #if defined(POCO_OS_FAMILY_WINDOWS)

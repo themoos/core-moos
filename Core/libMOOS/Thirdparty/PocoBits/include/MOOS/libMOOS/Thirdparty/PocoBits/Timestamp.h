@@ -40,7 +40,7 @@
 #define Foundation_Timestamp_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 #include <ctime>
 
 

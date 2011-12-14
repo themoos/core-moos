@@ -35,7 +35,7 @@
     #pragma warning(disable : 4503)
 #endif
 
-#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"

@@ -5,7 +5,6 @@ IF(UNIX)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ENDIF(UNIX)
 
-#add_subdirectory(MOOSGenLib)
 add_subdirectory(libMOOS)
 #add_subdirectory(MOOSDB)
 #add_subdirectory(MOOSThirdparty)

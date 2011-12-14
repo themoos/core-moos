@@ -51,7 +51,7 @@
 //
 // Include library configuration
 //
-#include "PocoBits/Config.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Config.h"
 
 
 //
@@ -110,13 +110,13 @@
 //
 // Include platform-specific definitions
 //
-#include "PocoBits/Platform.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform.h"
 #if defined(_WIN32)
-	#include "PocoBits/Platform_WIN32.h"
+	#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform_WIN32.h"
 #elif defined(__VMS)
-	#include "PocoBits/Platform_VMS.h"
+	#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform_VMS.h"
 #elif defined(POCO_OS_FAMILY_UNIX)
-	#include "PocoBits/Platform_POSIX.h"
+	#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform_POSIX.h"
 #endif
 
 
@@ -137,8 +137,8 @@
 //
 // Pull in basic definitions
 //
-#include "PocoBits/Bugcheck.h"
-#include "PocoBits/Types.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Bugcheck.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Types.h"
 #include <string>
 
 

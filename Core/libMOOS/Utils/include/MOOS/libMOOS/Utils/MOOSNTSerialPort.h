@@ -38,7 +38,7 @@
     #include "winnt.h"
 #endif
 
-#include "NTSerial.h"
+#include "MOOS/libMOOS/Utils/NTSerial.h"
 
 //! Implements windows specialisations of MOOSSerialPort
 class CMOOSNTSerialPort :  public CNTSerial

@@ -40,14 +40,14 @@
 #define Foundation_Event_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
-#include "PocoBits/Exception.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
-#include "PocoBits/Event_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event_WIN32.h"
 #else
-#include "PocoBits/Event_POSIX.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event_POSIX.h"
 #endif
 
 

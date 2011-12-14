@@ -11,9 +11,9 @@
 
 
 #include <list>
-#include "PocoBits/ScopedLock.h"
-#include "PocoBits/Event.h"
-#include "PocoBits/Mutex.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"
 
 namespace MOOS
 {

@@ -40,15 +40,15 @@
 #define Foundation_Mutex_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
-#include "PocoBits/Exception.h"
-#include "PocoBits/ScopedLock.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
 
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
-#include "PocoBits/Mutex_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_WIN32.h"
 #else
-#include "PocoBits/Mutex_POSIX.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_POSIX.h"
 #endif
 
 

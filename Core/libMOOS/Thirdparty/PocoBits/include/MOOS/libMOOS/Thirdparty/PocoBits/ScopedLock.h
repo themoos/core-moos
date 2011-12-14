@@ -1,15 +1,15 @@
 //
-// Mutex_POSIX.h
+// ScopedLock.h
 //
-// $Id: //poco/svn/Foundation/include/Poco/Mutex_POSIX.h#3 $
+// $Id: //poco/1.4/Foundation/include/Poco/ScopedLock.h#1 $
 //
 // Library: Foundation
 // Package: Threading
 // Module:  Mutex
 //
-// Definition of the MutexImpl and FastMutexImpl classes for POSIX Threads.
+// Definition of the ScopedLock template class.
 //
-// Copyright (c) 2004-2008, Applied Informatics Software Engineering GmbH.
+// Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
 // and Contributors.
 //
 // Permission is hereby granted, free of charge, to any person or organization
@@ -36,74 +36,82 @@
 //
 
 
-#ifndef Foundation_Mutex_POSIX_INCLUDED
-#define Foundation_Mutex_POSIX_INCLUDED
+#ifndef Foundation_ScopedLock_INCLUDED
+#define Foundation_ScopedLock_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
-#include "PocoBits/Exception.h"
-#include <pthread.h>
-#include <errno.h>
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 
 
 namespace Poco {
 
 
-class Foundation_API MutexImpl
+template <class M>
+class ScopedLock
+	/// A class that simplifies thread synchronization
+	/// with a mutex.
+	/// The constructor accepts a Mutex and locks it.
+	/// The destructor unlocks the mutex.
 {
-protected:
-	MutexImpl();
-	MutexImpl(bool fast);
-	~MutexImpl();
-	void lockImpl();
-	bool tryLockImpl();
-	bool tryLockImpl(long milliseconds);
-	void unlockImpl();
+public:
+	ScopedLock(M& mutex): _mutex(mutex)
+	{
+		_mutex.lock();
+	}
 	
+	~ScopedLock()
+	{
+		_mutex.unlock();
+	}
+
 private:
-	pthread_mutex_t _mutex;
+	M& _mutex;
+
+	ScopedLock();
+	ScopedLock(const ScopedLock&);
+	ScopedLock& operator = (const ScopedLock&);
 };
 
 
-class Foundation_API FastMutexImpl: public MutexImpl
+template <class M>
+class ScopedLockWithUnlock
+	/// A class that simplifies thread synchronization
+	/// with a mutex.
+	/// The constructor accepts a Mutex and locks it.
+	/// The destructor unlocks the mutex.
+	/// The unlock() member function allows for manual
+	/// unlocking of the mutex.
 {
-protected:
-	FastMutexImpl();
-	~FastMutexImpl();
+public:
+	ScopedLockWithUnlock(M& mutex): _pMutex(&mutex)
+	{
+		_pMutex->lock();
+	}
+	
+	~ScopedLockWithUnlock()
+	{
+		unlock();
+	}
+	
+	void unlock()
+	{
+		if (_pMutex)
+		{
+			_pMutex->unlock();
+			_pMutex = 0;
+		}
+	}
+
+private:
+	M* _pMutex;
+
+	ScopedLockWithUnlock();
+	ScopedLockWithUnlock(const ScopedLockWithUnlock&);
+	ScopedLockWithUnlock& operator = (const ScopedLockWithUnlock&);
 };
-
-
-//
-// inlines
-//
-inline void MutexImpl::lockImpl()
-{
-	if (pthread_mutex_lock(&_mutex)) 
-		throw SystemException("cannot lock mutex");
-}
-
-
-inline bool MutexImpl::tryLockImpl()
-{
-	int rc = pthread_mutex_trylock(&_mutex);
-	if (rc == 0)
-		return true;
-	else if (rc == EBUSY)
-		return false;
-	else
-		throw SystemException("cannot lock mutex");
-
-}
-
-
-inline void MutexImpl::unlockImpl()
-{
-	if (pthread_mutex_unlock(&_mutex))
-		throw SystemException("cannot unlock mutex");
-}
 
 
 } // namespace Poco
 
 
-#endif // Foundation_Mutex_POSIX_INCLUDED
+#endif // Foundation_ScopedLock_INCLUDED

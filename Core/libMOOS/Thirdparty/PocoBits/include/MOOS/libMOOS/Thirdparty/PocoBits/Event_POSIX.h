@@ -1,13 +1,13 @@
 //
-// ScopedLock.h
+// Event_POSIX.h
 //
-// $Id: //poco/1.4/Foundation/include/Poco/ScopedLock.h#1 $
+// $Id: //poco/svn/Foundation/include/Poco/Event_POSIX.h#2 $
 //
 // Library: Foundation
 // Package: Threading
-// Module:  Mutex
+// Module:  Event
 //
-// Definition of the ScopedLock template class.
+// Definition of the EventImpl class for POSIX Threads.
 //
 // Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
 // and Contributors.
@@ -36,82 +36,64 @@
 //
 
 
-#ifndef Foundation_ScopedLock_INCLUDED
-#define Foundation_ScopedLock_INCLUDED
+#ifndef Foundation_Event_POSIX_INCLUDED
+#define Foundation_Event_POSIX_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
+#include <pthread.h>
+#include <errno.h>
 
 
 namespace Poco {
 
 
-template <class M>
-class ScopedLock
-	/// A class that simplifies thread synchronization
-	/// with a mutex.
-	/// The constructor accepts a Mutex and locks it.
-	/// The destructor unlocks the mutex.
+class Foundation_API EventImpl
 {
-public:
-	ScopedLock(M& mutex): _mutex(mutex)
-	{
-		_mutex.lock();
-	}
+protected:
+	EventImpl(bool autoReset);		
+	~EventImpl();
+	void setImpl();
+	void waitImpl();
+	bool waitImpl(long milliseconds);
+	void resetImpl();
 	
-	~ScopedLock()
-	{
-		_mutex.unlock();
-	}
-
 private:
-	M& _mutex;
-
-	ScopedLock();
-	ScopedLock(const ScopedLock&);
-	ScopedLock& operator = (const ScopedLock&);
+	bool            _auto;
+	volatile bool   _state;
+	pthread_mutex_t _mutex;
+	pthread_cond_t  _cond;
 };
 
 
-template <class M>
-class ScopedLockWithUnlock
-	/// A class that simplifies thread synchronization
-	/// with a mutex.
-	/// The constructor accepts a Mutex and locks it.
-	/// The destructor unlocks the mutex.
-	/// The unlock() member function allows for manual
-	/// unlocking of the mutex.
+//
+// inlines
+//
+inline void EventImpl::setImpl()
 {
-public:
-	ScopedLockWithUnlock(M& mutex): _pMutex(&mutex)
+	if (pthread_mutex_lock(&_mutex))	
+		throw SystemException("cannot signal event (lock)");
+	_state = true;
+	if (pthread_cond_broadcast(&_cond))
 	{
-		_pMutex->lock();
+		pthread_mutex_unlock(&_mutex);
+		throw SystemException("cannot signal event");
 	}
-	
-	~ScopedLockWithUnlock()
-	{
-		unlock();
-	}
-	
-	void unlock()
-	{
-		if (_pMutex)
-		{
-			_pMutex->unlock();
-			_pMutex = 0;
-		}
-	}
+	pthread_mutex_unlock(&_mutex);
+}
 
-private:
-	M* _pMutex;
 
-	ScopedLockWithUnlock();
-	ScopedLockWithUnlock(const ScopedLockWithUnlock&);
-	ScopedLockWithUnlock& operator = (const ScopedLockWithUnlock&);
-};
+inline void EventImpl::resetImpl()
+{
+	if (pthread_mutex_lock(&_mutex))	
+		throw SystemException("cannot reset event");
+	_state = false;
+	pthread_mutex_unlock(&_mutex);
+}
 
 
 } // namespace Poco
 
 
-#endif // Foundation_ScopedLock_INCLUDED
+#endif // Foundation_Event_POSIX_INCLUDED

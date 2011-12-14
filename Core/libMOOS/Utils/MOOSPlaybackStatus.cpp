@@ -27,16 +27,31 @@
 //   02111-1307, USA. 
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-#ifndef MOSSGENLIBH
-#define MOSSGENLIBH
-#include "MOOSGenLibGlobalHelper.h"
-#include "MOOSFileReader.h"
-#include "ProcessConfigReader.h"
+
 #ifdef _WIN32
-    #include "MOOSNTSerialPort.h"
-#else
-    #include "MOOSLinuxSerialPort.h"
+    #pragma warning(disable : 4786)
+    #pragma warning(disable : 4503)
 #endif
 
-#endif
+
+#include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
+#include <iostream>
+
+bool    gbPlayBack = false;
+
+void SetMOOSPlayBack(bool bPlayBack)
+{
+    if(bPlayBack)
+    {
+        printf("PLAY BACK MODE IS ON\n");
+    }
+    gbPlayBack = bPlayBack;
+}
+bool IsMOOSPlayBack()
+{
+    return gbPlayBack;
+}
+
+
+
 

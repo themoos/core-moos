@@ -28,8 +28,7 @@
 //
 //////////////////////////    END_GPL    //////////////////////////////////
 
-#include "MOOSGenLibGlobalHelper.h"
-#include "MOOSNTSerialPort.h"
+#include "MOOSUtilityFunctions.h#include "MOOSNTSerialPort.h"
 #include <iostream>
 using namespace std;
 #include <assert.h>

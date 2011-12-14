@@ -34,7 +34,9 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
-#include "MOOS/libMOOS/Utils/MOOSGenLib.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSVariable.h"
 

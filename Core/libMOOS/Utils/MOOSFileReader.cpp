@@ -44,7 +44,7 @@
 #endif
 
 
-#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/MOOSFileReader.h"
 #include "assert.h"
 #include "MOOS/libMOOS/Utils/MOOSLock.h"

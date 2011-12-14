@@ -32,7 +32,7 @@
 #endif
 
 
-#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/MOOSAssert.h"
 
 #include <algorithm>

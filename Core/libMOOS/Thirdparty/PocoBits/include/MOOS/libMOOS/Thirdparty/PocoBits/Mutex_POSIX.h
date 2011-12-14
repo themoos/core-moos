@@ -1,15 +1,15 @@
 //
-// Event_POSIX.h
+// Mutex_POSIX.h
 //
-// $Id: //poco/svn/Foundation/include/Poco/Event_POSIX.h#2 $
+// $Id: //poco/svn/Foundation/include/Poco/Mutex_POSIX.h#3 $
 //
 // Library: Foundation
 // Package: Threading
-// Module:  Event
+// Module:  Mutex
 //
-// Definition of the EventImpl class for POSIX Threads.
+// Definition of the MutexImpl and FastMutexImpl classes for POSIX Threads.
 //
-// Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
+// Copyright (c) 2004-2008, Applied Informatics Software Engineering GmbH.
 // and Contributors.
 //
 // Permission is hereby granted, free of charge, to any person or organization
@@ -36,12 +36,12 @@
 //
 
 
-#ifndef Foundation_Event_POSIX_INCLUDED
-#define Foundation_Event_POSIX_INCLUDED
+#ifndef Foundation_Mutex_POSIX_INCLUDED
+#define Foundation_Mutex_POSIX_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
-#include "PocoBits/Exception.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 #include <pthread.h>
 #include <errno.h>
 
@@ -49,51 +49,61 @@
 namespace Poco {
 
 
-class Foundation_API EventImpl
+class Foundation_API MutexImpl
 {
 protected:
-	EventImpl(bool autoReset);		
-	~EventImpl();
-	void setImpl();
-	void waitImpl();
-	bool waitImpl(long milliseconds);
-	void resetImpl();
+	MutexImpl();
+	MutexImpl(bool fast);
+	~MutexImpl();
+	void lockImpl();
+	bool tryLockImpl();
+	bool tryLockImpl(long milliseconds);
+	void unlockImpl();
 	
 private:
-	bool            _auto;
-	volatile bool   _state;
 	pthread_mutex_t _mutex;
-	pthread_cond_t  _cond;
+};
+
+
+class Foundation_API FastMutexImpl: public MutexImpl
+{
+protected:
+	FastMutexImpl();
+	~FastMutexImpl();
 };
 
 
 //
 // inlines
 //
-inline void EventImpl::setImpl()
+inline void MutexImpl::lockImpl()
 {
-	if (pthread_mutex_lock(&_mutex))	
-		throw SystemException("cannot signal event (lock)");
-	_state = true;
-	if (pthread_cond_broadcast(&_cond))
-	{
-		pthread_mutex_unlock(&_mutex);
-		throw SystemException("cannot signal event");
-	}
-	pthread_mutex_unlock(&_mutex);
+	if (pthread_mutex_lock(&_mutex)) 
+		throw SystemException("cannot lock mutex");
 }
 
 
-inline void EventImpl::resetImpl()
+inline bool MutexImpl::tryLockImpl()
 {
-	if (pthread_mutex_lock(&_mutex))	
-		throw SystemException("cannot reset event");
-	_state = false;
-	pthread_mutex_unlock(&_mutex);
+	int rc = pthread_mutex_trylock(&_mutex);
+	if (rc == 0)
+		return true;
+	else if (rc == EBUSY)
+		return false;
+	else
+		throw SystemException("cannot lock mutex");
+
+}
+
+
+inline void MutexImpl::unlockImpl()
+{
+	if (pthread_mutex_unlock(&_mutex))
+		throw SystemException("cannot unlock mutex");
 }
 
 
 } // namespace Poco
 
 
-#endif // Foundation_Event_POSIX_INCLUDED
+#endif // Foundation_Mutex_POSIX_INCLUDED

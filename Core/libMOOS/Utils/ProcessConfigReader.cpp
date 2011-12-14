@@ -33,7 +33,7 @@
 #ifdef _WIN32
 #pragma warning(disable : 4786)
 #endif
-#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 #include <iostream>
 

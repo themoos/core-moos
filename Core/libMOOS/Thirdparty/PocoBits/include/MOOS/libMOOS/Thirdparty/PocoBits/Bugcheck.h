@@ -40,7 +40,7 @@
 #define Foundation_Bugcheck_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 #include <string>
 #if defined(_DEBUG)
 #	include <iostream>

@@ -31,14 +31,11 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_MOOSEXCEPTION_H__2EC1612C_E571_4BD9_BD5A_15473203F0D1__INCLUDED_)
-#define AFX_MOOSEXCEPTION_H__2EC1612C_E571_4BD9_BD5A_15473203F0D1__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef CMOOSExceptionH
+#define CMOOSExceptionH
 
 #include <string>
+
 /** A trivial Exception class */
 class CMOOSException  
 {

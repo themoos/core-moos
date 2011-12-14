@@ -30,7 +30,7 @@
 // Moosserialport.cpp: implementation of the CMOOSLinuxSerialPort class.
 //
 //////////////////////////////////////////////////////////////////////
-#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/MOOSLinuxSerialPort.h"
 
 #include <cstring>

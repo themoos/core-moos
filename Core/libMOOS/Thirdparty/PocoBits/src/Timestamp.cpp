@@ -34,8 +34,8 @@
 //
 
 
-#include "PocoBits/Timestamp.h"
-#include "PocoBits/Exception.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 #include <algorithm>
 #if defined(POCO_OS_FAMILY_UNIX)
 #include <time.h>
@@ -43,7 +43,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #elif defined(POCO_OS_FAMILY_WINDOWS)
-#include "PocoBits/UnWindows.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 #endif
 
 

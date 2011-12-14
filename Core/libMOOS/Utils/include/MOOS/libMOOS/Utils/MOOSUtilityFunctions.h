@@ -27,11 +27,11 @@
 //   02111-1307, USA.
 //
 //////////////////////////    END_GPL    //////////////////////////////////
-/*! \file MOOSGenLibGlobalHelper.h */
+/*! \file MOOSUtilityFunctions.h */
 
 
-#ifndef MOOSGenLibGlobalHelperh
-#define MOOSGenLibGlobalHelperh
+#ifndef MOOSUtilityFunctionsh
+#define MOOSUtilityFunctionsh
 
 #ifndef PI
 #define PI 3.141592653589
@@ -46,8 +46,6 @@
 
 
 
-
-//
 
 
 ////////////////////// STRING MANIPULATION/EXTRATION TOOLS ///////////////////////////////

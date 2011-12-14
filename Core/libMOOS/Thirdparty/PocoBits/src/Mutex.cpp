@@ -34,7 +34,7 @@
 //
 
 
-#include "PocoBits/Mutex.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"
 
 
 #if defined(POCO_OS_FAMILY_WINDOWS)

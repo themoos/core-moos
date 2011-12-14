@@ -40,7 +40,7 @@
 #define Foundation_Exception_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 #include <stdexcept>
 
 

@@ -49,11 +49,10 @@
 #define DEFAULT_BAUDRATE 9600
 #define TELEGRAM_LEN 1000
 
-#include "MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
 
 #include <string>
 #include <list>
-//using namespace std;
 
 typedef std::list<std::string> STRING_LIST;
 

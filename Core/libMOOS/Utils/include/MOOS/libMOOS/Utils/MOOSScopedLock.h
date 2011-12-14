@@ -8,7 +8,7 @@
 #ifndef MOOSSCOPEDLOCK_H_
 #define MOOSSCOPEDLOCK_H_
 
-#include "MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
 
 namespace MOOS
 {

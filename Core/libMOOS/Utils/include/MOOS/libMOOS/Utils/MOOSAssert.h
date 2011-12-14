@@ -8,7 +8,7 @@
 // ALLOW_RELEASE_ASSERTS
 // If not defined then assert statements are tested ONLY in debug builds.
 
-#include "MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 
 #ifndef MOOS_ASSERT_LEVEL
 #define MOOS_ASSERT_LEVEL 1

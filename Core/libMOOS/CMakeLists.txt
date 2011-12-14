@@ -1,19 +1,6 @@
 set(LIBNAME MOOS)
 
 
-#do we want to turn on the experimental clock skew detection?
-OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
-IF (DETECT_CLOCK_DRIFT)
-    ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
-ENDIF (DETECT_CLOCK_DRIFT)
-MARK_AS_ADVANCED(DETECT_CLOCK_DRIFT)
-
-# Removed the extra field that was added to the MOOS message protocol in October 2009.
-OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
-IF (DISABLE_AUX_SOURCE)
-  ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
-ENDIF (DISABLE_AUX_SOURCE)
-MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
 
 SET(COMMS_SOURCES
     Comms/MOOSVariable.cpp
@@ -42,11 +29,11 @@ SET(UTILS_SOURCES
    Utils/MOOSException.cpp
    Utils/MOOSLock.cpp
    Utils/MOOSFileReader.cpp
-   Utils/MOOSGenLibGlobalHelper.cpp
+   Utils/MOOSUtilityFunctions.cpp
    Utils/ProcessConfigReader.cpp
    Utils/MOOSLinuxSerialPort.cpp
    Utils/MOOSSerialPort.cpp
-   Utils/MOOSGlobalHelper.cpp
+   Utils/MOOSPlaybackStatus.cpp
 
    )
 
@@ -64,21 +51,36 @@ set(THIRDPARTY_SOURCES
 )
 
 
-set(SOURCES ${THIRDPARTY_SOURCES} ${UTIL_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
+set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
 
 
 
+#do we want to turn on the experimental clock skew detection?
+OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
+IF (DETECT_CLOCK_DRIFT)
+    ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
+ENDIF (DETECT_CLOCK_DRIFT)
+MARK_AS_ADVANCED(DETECT_CLOCK_DRIFT)
+
+# Removed the extra field that was added to the MOOS message protocol in October 2009.
+OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
+IF (DISABLE_AUX_SOURCE)
+  ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
+ENDIF (DISABLE_AUX_SOURCE)
+MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
 
 
 ##########################
 # Packages / Dependencies
-
-set(${LIBNAME}_DEPEND_INCLUDE_DIRS
+set(INCLUDE_ROOTS  
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include)
+    
+set(${LIBNAME}_DEPEND_INCLUDE_DIRS
+    ${INCLUDE_ROOTS}
     CACHE INTERNAL
     "List of include dirs for the dependencies of ${LIBNAME}"    
 )
@@ -115,7 +117,7 @@ list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
 MESSAGE(STATUS "MOOSLIB include path: ${${LIBNAME}_DEPEND_INCLUDE_DIRS}")
 
 
-#####################
+#######################################
 # Create the library
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
@@ -123,10 +125,10 @@ include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS}
 add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
-#####################
+#######################################
 # install headers
-FILE(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL( FILES ${headers} DESTINATION include/MOOS/${LIBNAME} )
+
+install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
 
 # install libraries
 INSTALL(TARGETS ${LIBNAME} DESTINATION lib)

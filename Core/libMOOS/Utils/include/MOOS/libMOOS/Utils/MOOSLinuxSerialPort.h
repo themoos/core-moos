@@ -42,7 +42,6 @@
 #endif // _MSC_VER > 1000
 
 #include <string>
-//using namespace std;
 
 #ifndef _WIN32
     #include <fcntl.h>
@@ -53,7 +52,8 @@
 
         #include <stdio.h>
 #endif
-#include "MOOSSerialPort.h"
+
+#include "MOOS/libMOOS/Utils/MOOSSerialPort.h"
 
 //! Implements linux aspects of CMOOSSerialPort
 class CMOOSLinuxSerialPort :public CMOOSSerialPort

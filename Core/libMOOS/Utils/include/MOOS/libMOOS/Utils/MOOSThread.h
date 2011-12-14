@@ -32,7 +32,7 @@
 #define MOOSThreadh
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
-#include "MOOS/libMOOS/Utils/MOOSGenLibGlobalHelper.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #ifndef _WIN32
 #include <errno.h>
 #endif
