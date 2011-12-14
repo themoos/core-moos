@@ -21,6 +21,7 @@ SET(APP_SOURCES
     App/MOOSInstrument.cpp
 )
 
+
 SET(UTILS_SOURCES
    Utils/MOOSException.cpp
    Utils/MOOSLock.cpp
@@ -82,8 +83,11 @@ set(${LIBNAME}_DEPEND_INCLUDE_DIRS
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
+if(UNIX)
+    set(DEPENDENCIES pthread m)
+endif(UNIX)
 set(${LIBNAME}_DEPEND_LIBRARIES
-    ""
+    ${DEPENDENCIES}
     CACHE INTERNAL
     "List of libraries which are dependencies of ${LIBNAME}"    
 )
