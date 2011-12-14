@@ -1,7 +1,5 @@
 set(LIBNAME MOOS)
 
-
-
 SET(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
@@ -22,8 +20,6 @@ SET(APP_SOURCES
     App/MOOSApp.cpp
     App/MOOSInstrument.cpp
 )
-
-
 
 SET(UTILS_SOURCES
    Utils/MOOSException.cpp
@@ -87,8 +83,7 @@ set(${LIBNAME}_DEPEND_INCLUDE_DIRS
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
 set(${LIBNAME}_DEPEND_LIBRARIES
-#    ${MOOSGen_LIBRARIES}
-#    ${PocoBits_LIBRARIES}
+    ""
     CACHE INTERNAL
     "List of libraries which are dependencies of ${LIBNAME}"    
 )
