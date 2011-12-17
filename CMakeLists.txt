@@ -12,13 +12,9 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 
-
 ###########################################################
 		    PROJECT(MOOS)
 ###########################################################
-
-INCLUDE(CTest)
-
 
 
 ############# CORE ? ################
@@ -108,33 +104,9 @@ IF(BUILD_EXAMPLES)
 ENDIF(BUILD_EXAMPLES)
 
 
-
-############## Thirdparty ?######################
-#we'll always descend into thirdparty but don't always build stuff there
-SET(BUILD_DIRS ${BUILD_DIRS} Thirdparty)
-SET(THIRDPARTY_DIR ${MOOS_SOURCE_DIR}/Thirdparty)
-
-
-############# UTILITY LIBRARY ? ################
-SET( BUILD_UTILITY_LIBRARY OFF CACHE BOOL "Build MOOSUtility Library")
-IF(BUILD_UTILITY_LIBRARY)
-    #here we build a goody box that many folk will want to use
-    SET(BUILD_DIRS ${BUILD_DIRS} Essentials/MOOSUtilityLib)
-    INCLUDE_DIRECTORIES(${MOOS_SOURCE_DIR}/Essentials )
-    SET(MOOSLIBS ${MOOSLIBS} MOOSUtility)
-ENDIF(BUILD_UTILITY_LIBRARY)
-
-
 ############# OTHER BRANCHES ? ################
 SET( ALSO_BUILD  CACHE STRING "Specify other directories you want to include in the build (semicolon separated list)")
 SET(BUILD_DIRS ${BUILD_DIRS} ${ALSO_BUILD})
-
-
-
-#####################################################
-# some includes are always needed...
-INCLUDE_DIRECTORIES(${MOOS_SOURCE_DIR}/Core )
-
 
 
 #####################################################
@@ -211,17 +183,6 @@ IF(DISABLE_NAMES_LOOKUP)
 ENDIF(DISABLE_NAMES_LOOKUP)
 
 
-#####################################################
-#default set up for location of built files
-#NB user can change this through UI
-SET(MOOSBIN ${MOOS_BINARY_DIR}/MOOSBin)
-
-#dump libs and executables in the same place
-#SET( LIBRARY_OUTPUT_PATH ${MOOSBIN} CACHE PATH
-#     "Output directory for the MOOS libraries" )
-#SET( EXECUTABLE_OUTPUT_PATH ${MOOSBIN} CACHE PATH
-#     "Output directory for the MOOS executables" )
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
@@ -229,20 +190,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 
 ###############################################################################
-# be helpful and let all projects look for libraries here
-#LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-
-###############################################################################
 # Create the MOOSConfig.cmake file for the build tree.
-SET( MOOS_INCLUDE_DIRS
-         ${MOOS_SOURCE_DIR}/Core
-         ${MOOS_SOURCE_DIR}/Essentials
-         ${MOOS_SOURCE_DIR}/NavigationAndControl
-         ${MOOS_SOURCE_DIR}/Instruments
-         ${MOOS_SOURCE_DIR}/Tools
-         ${MOOS_SOURCE_DIR}/Thirdparty
-)
+#SET( MOOS_INCLUDE_DIRS
+#         ${MOOS_SOURCE_DIR}/Core
+#         ${MOOS_SOURCE_DIR}/Essentials
+#         ${MOOS_SOURCE_DIR}/NavigationAndControl
+#         ${MOOS_SOURCE_DIR}/Instruments
+#         ${MOOS_SOURCE_DIR}/Tools
+#         ${MOOS_SOURCE_DIR}/Thirdparty
+#)
 
 SET( MOOS_LIBRARIES ${MOOSLIBS} )
 

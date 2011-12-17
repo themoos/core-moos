@@ -7,4 +7,3 @@ ENDIF(UNIX)
 
 add_subdirectory(libMOOS)
 add_subdirectory(MOOSDB)
-#add_subdirectory(MOOSThirdparty)
