@@ -11,6 +11,16 @@ SET(SRCS MOOSDB.cpp MOOSDBMain.cpp MOOSDBVar.cpp MOOSRegisterInfo.cpp
     MOOSDB.h MOOSDBVar.h MOOSRegisterInfo.h MOOSDBHTTPServer.cpp MOOSDBHTTPServer.h HTTPConnection.cpp HTTPConnection.h
     ${RESOURCES})
 
+include(PlatformDefines)
+
+# An option to disable names lookup in MOOS server.
+SET(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB")
+IF(DISABLE_NAMES_LOOKUP)
+    ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP)
+ENDIF(DISABLE_NAMES_LOOKUP)
+
+
+
 include_directories( ${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME} ${SRCS} )
 target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})

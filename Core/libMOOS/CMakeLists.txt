@@ -50,6 +50,8 @@ set(THIRDPARTY_SOURCES
 
 set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
 
+include(PlatformDefines)
+
 
 #do we want to turn on the experimental clock skew detection?
 OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
@@ -116,6 +118,14 @@ list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
 MESSAGE(STATUS "MOOSLIB include path: ${${LIBNAME}_DEPEND_INCLUDE_DIRS}")
 
 
+######################################
+#export the library
+cache_internal_append_unique(PROJECT_EXPORT_LIBS 
+    ${LIBNAME}
+)
+
+
+
 #######################################
 # Create the library
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
@@ -128,6 +138,9 @@ target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 # install headers
 install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
 
+
 # install libraries
 INSTALL(TARGETS ${LIBNAME} DESTINATION lib)
+
+
 

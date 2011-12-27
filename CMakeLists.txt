@@ -5,48 +5,54 @@
 ###########################################################
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 if(COMMAND cmake_policy)
    cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+set(PROJECTNAME MOOS)
+project(${PROJECTNAME})
 
-###########################################################
-		    PROJECT(MOOS)
-###########################################################
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
+
+set(CMakeScripts_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
+
+
+# Turn on all compiler warnings
+include(EnableAllWarnings)
+
+# Bring in helper functions for dealing with CACHE INTERNAL variables
+include(CacheInternalHelpers)
+
+# We want to create dynamic libraries
+set(BUILD_SHARED_LIBS true)
+
+# Enable Doxygen build with 'make doxygen'
+option(ENABLE_DOXYGEN "Enable a 'make doc' target for Doxygen documentation")
+if (ENABLE_DOXYGEN)
+    include(UseDoxygen)
+endif()
+
+
 
 
 ############# CORE ? ################
 SET( BUILD_CORE_MOOS ON CACHE BOOL "Build Core MOOS")
 IF(BUILD_CORE_MOOS)
-    #here we name all the things we want built as part of the core MOOS
-    SET(BUILD_DIRS ${BUILD_DIRS} Core)
+    add_subdirectory(Core)
 ENDIF(BUILD_CORE_MOOS)
-
-
-IF(CMAKE_COMPILER_IS_GNUCXX)
-    SET( WALL_ON OFF CACHE BOOL "tell me about all compiler warnings (-Wall) ")
-    IF(WALL_ON)
-	    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-    ENDIF( WALL_ON)
-ELSE(CMAKE_COMPILER_IS_GNUCXX)
-    IF(MSVC)
-	    SET( WALL_ON OFF CACHE BOOL "tell me about all compiler warnings (-Wall) ")
-	    IF(WALL_ON)
-	        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-		ENDIF(WALL_ON)
-	ELSE(MSVC)
-        # Other compilers go here
-
-	ENDIF(MSVC)
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-
-
 
 
 ############# COMPRESSED COMMS? ################
 SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
+
+### PMN - this should not be here! ####
+MESSAGE(STATUS "FIX ME ZLIB DETECTION IS TOO HIGH LEVEL")
 
 IF(COMPRESSED_MOOS_PROTOCOL)
 	FIND_PACKAGE(ZLIB QUIET)
@@ -66,20 +72,18 @@ IF(COMPRESSED_MOOS_PROTOCOL)
 ENDIF(COMPRESSED_MOOS_PROTOCOL)
 
 
-
-
 ############# ESSENTIAL APPS ? ################
 SET( BUILD_ESSENTIAL_MOOS OFF CACHE BOOL "Build Essential MOOS Processes (like pLogger pAntler etc)")
 IF(BUILD_ESSENTIAL_MOOS)
     #here we name all the things we want built as part of the Essential MOOS
-    SET(BUILD_DIRS ${BUILD_DIRS} Essentials)
+    add_subdirectory(Essentials)
 ENDIF(BUILD_ESSENTIAL_MOOS)
 
 ############# CONTROL AND NAV ? ################
 SET( BUILD_CONTROL_AND_NAV OFF CACHE BOOL "Build control and navigation Apps iRemote pHelm pNav")
 IF(BUILD_CONTROL_AND_NAV)
     #here we name all the things we want built under the navigation and control heading
-    SET(BUILD_DIRS ${BUILD_DIRS} NavigationAndControl )
+    add_subdirectory(NavigationAndControl)
 ENDIF(BUILD_CONTROL_AND_NAV)
 
 ############# TOOLS ? ################
@@ -87,26 +91,22 @@ SET( BUILD_TOOLS OFF CACHE BOOL "Build GUI tools, simulators and matlab access")
 IF(BUILD_TOOLS)
     #here we tell CMake to descend into the tools directory. More
     #decisions will be made in there
-    SET(BUILD_DIRS ${BUILD_DIRS} Tools)
+    add_subdirectory(Tools)
 ENDIF(BUILD_TOOLS)
 
 
 ############# INSTRUMENTS ? ################
 SET( BUILD_INSTRUMENTS OFF CACHE BOOL "Build Instruments ")
 IF(BUILD_INSTRUMENTS)
-    SET(BUILD_DIRS ${BUILD_DIRS} Instruments)
+    add_subdirectory(Instruments)
 ENDIF(BUILD_INSTRUMENTS)
 
 ############# EXAMPLES ? ################
 SET( BUILD_EXAMPLES OFF CACHE BOOL "Build Documentation Examples ")
 IF(BUILD_EXAMPLES)
-    SET(BUILD_DIRS ${BUILD_DIRS} Docs/ProgrammingWithMOOS/code Docs/Essentials/Antler/code )
+    add_subdirectory(Docs/ProgrammingWithMOOS/code)
+    add_subdirectory(Docs/Essentials/Antler/code)
 ENDIF(BUILD_EXAMPLES)
-
-
-############# OTHER BRANCHES ? ################
-SET( ALSO_BUILD  CACHE STRING "Specify other directories you want to include in the build (semicolon separated list)")
-SET(BUILD_DIRS ${BUILD_DIRS} ${ALSO_BUILD})
 
 
 #####################################################
@@ -147,76 +147,51 @@ IF(UNIX)
 
 ENDIF(UNIX)
 
-#name the MOOSLIBS
-SET(MOOSLIBS ${MOOSLIBS} MOOS MOOSGen)
 
 #####################################################
-#name OPENGL LIBS (useful for child projects)
-IF(WIN32)
-  SET(OPENGL_LIBS glu32 opengl32 )
-ENDIF(WIN32)
-
-IF(UNIX)
-  SET(OPENGL_LIBS GL GLU)
-ENDIF(UNIX)
-
-
-#####################################################
-#OSX Leopard has a cyclic linking issue this is a fix
-IF(PLATFORM_DARWIN)
-  OPTION(OSX_LEOPARD_GL_FIX "Adds linker fix for openGL in Leopard" FALSE)
-  IF(OSX_LEOPARD_GL_FIX)
-    SET(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib: /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
-  ENDIF(OSX_LEOPARD_GL_FIX)
-ENDIF(PLATFORM_DARWIN)
-
-#####################################################
-# Toby Schneiders request for fPIC on amd64
+# Toby Schneider's request for fPIC on amd64
 IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
-# An option to disable names lookup in MOOS server.
-SET(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB")
-IF(DISABLE_NAMES_LOOKUP)
-	ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP)
-ENDIF(DISABLE_NAMES_LOOKUP)
 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+#########################
+# Config Script Creation
+#########################
+
+# Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
+# (This is a CACHE INTERNAL variable)
+if (PROJECT_EXPORT_LIBS)
+    
+    message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
+    
+    # Provide a cmake config script for the build directory
+    export(TARGETS
+        ${PROJECT_EXPORT_LIBS}
+        FILE
+        Use${PROJECTNAME}.cmake
+    )
+
+    set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
+    configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
+    
+    # Append libary specific lines to the generated config script
+    foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
+        file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_LIBRARIES \"${${EXPORT_LIB}_LIBRARIES}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_INCLUDE_DIRS \"${${EXPORT_LIB}_INCLUDE_DIRS}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
+    endforeach()
+
+endif()
 
 
-
-###############################################################################
-# Create the MOOSConfig.cmake file for the build tree.
-#SET( MOOS_INCLUDE_DIRS
-#         ${MOOS_SOURCE_DIR}/Core
-#         ${MOOS_SOURCE_DIR}/Essentials
-#         ${MOOS_SOURCE_DIR}/NavigationAndControl
-#         ${MOOS_SOURCE_DIR}/Instruments
-#         ${MOOS_SOURCE_DIR}/Tools
-#         ${MOOS_SOURCE_DIR}/Thirdparty
-#)
-
-SET( MOOS_LIBRARIES ${MOOSLIBS} )
-
-SET( MOOS_LIBRARY_DIRS ${LIBRARY_OUTPUT_PATH} )
-
-CONFIGURE_FILE( ${MOOS_SOURCE_DIR}/MOOSConfig.cmake.in
-               ${MOOS_BINARY_DIR}/MOOSConfig.cmake @ONLY IMMEDIATE )
-
-
-###############################################################################
-# Tell CMake where to look for find moduleXYZ files
-SET( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules" )
-
-# GO FORTH!
-SUBDIRS(${BUILD_DIRS})
-
-# Add MOOS build directory to local CMake Pacakge cache, to help the find scripts
+# Stick build location in the central CMake user package registry, so that it may be easily found
 if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-  export(PACKAGE MOOS)
-endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+  export(PACKAGE ${PROJECTNAME})
+endif()
+
+
 
