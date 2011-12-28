@@ -183,7 +183,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
             int nCopied = (*p).Serialize(pTmpBuffer,nWorkingMemoryCurrentSize);
 
-            if(nCopied !=nRequiredSize )
+            if(nCopied !=(int)nRequiredSize )
             {
                 std::cerr<<"bad news expected "<<nWorkingMemoryCurrentSize<<" but serialisation took "<<nCopied<<std::endl;
                 p->Trace();

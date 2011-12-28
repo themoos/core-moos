@@ -221,7 +221,7 @@ void CHTTPConnection::SendLine(std::string sLine)
 {
     sLine+="\r\n";
     int nSent = m_pSocket->iSendMessage((void*)(sLine.c_str()),sLine.size());
-    if(nSent!=sLine.size())
+    if(nSent!=(int)sLine.size())
 	MOOSTrace("Failed tcp/ip send\n");
 }
 

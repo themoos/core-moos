@@ -112,14 +112,15 @@ protected:
         //a thread object which will start the Run() method
         CMOOSThread _Worker;
 
+
+        //what is the name of the client we are representing?
+        std::string _sClientName;
+
         //we are simply given a reference to the socket via which the client is talking at constr
         XPCTcpSocket & _ClientSocket;
 
         //note that this a reference to a list given to us (we don't own it) at construction
         ThreadedCommServer::SHARED_PKT_LIST &  _SharedDataIncoming;
-
-        //what is the name of teh client we are representing?
-        std::string _sClientName;
 
         //note that this one we own - its private to us
         ThreadedCommServer::SHARED_PKT_LIST _SharedDataOutgoing;

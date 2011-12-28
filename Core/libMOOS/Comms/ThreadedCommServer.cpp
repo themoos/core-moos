@@ -103,7 +103,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     //add to map
     m_ClientThreads[sName] = pNewClientThread;
 
-    pNewClientThread->Start();
+    return pNewClientThread->Start();
 
 
 }
@@ -117,7 +117,6 @@ bool ThreadedCommServer::ServerLoop()
 {
 
     //eternally look at our incoming work list....
-    int i = 0;
     while(1)
     {
         ClientThreadSharedData SD;
@@ -286,6 +285,7 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
     //remove any reference to this worker thread
     m_ClientThreads.erase(q);
     delete pWorker;
+    return true;
 }
 
 bool ThreadedCommServer::TimerLoop()

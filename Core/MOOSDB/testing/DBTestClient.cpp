@@ -138,6 +138,8 @@ public:
             std::cerr<<"  "<<*q<<"\n";
         }
         std::cerr<<MOOS::ConsoleColours::reset();
+
+        return true;
     }
 
 
@@ -177,8 +179,8 @@ private:
 
         double _dfPeriod;
         double _dfTimeScheduled;
-        int _nCount;
         std::string _sName;
+        int _nCount;
     };
     std::priority_queue<Job> _Jobs;
 
