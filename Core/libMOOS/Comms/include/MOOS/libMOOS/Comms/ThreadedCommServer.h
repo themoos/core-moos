@@ -9,7 +9,7 @@
 #define THREADEDCOMMSERVER_H_
 
 #include "MOOS/libMOOS/Comms/MOOSCommServer.h"
-#include "MOOS/libMOOS/Utils/MOOSSafeList.h"
+#include "MOOS/libMOOS/Utils/SafeList.h"
 
 
 namespace MOOS

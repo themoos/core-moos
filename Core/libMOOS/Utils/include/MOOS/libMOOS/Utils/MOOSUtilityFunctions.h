@@ -45,6 +45,11 @@
 #include <algorithm>
 
 
+//namespaced versions of common functions
+namespace MOOS
+{
+	double Time();
+};
 
 
 

@@ -97,6 +97,15 @@ typedef std::map<pthread_t,bool> THREAD2TRACE_MAP;
 double gdfMOOSTimeWarp = 1.0;
 double gdfMOOSSkew =0.0;
 
+namespace MOOS
+{
+	double Time()
+	{
+		return MOOSTime();
+	}
+};
+
+
 void    SetMOOSSkew(double dfSkew)
 {
     //printf("Clock Skew = %f seconds\n",dfSkew);
@@ -239,7 +248,6 @@ double GetMOOSTimeWarp()
 {
     return gdfMOOSTimeWarp;
 }
-
 
 bool SetMOOSTimeWarp(double dfWarp)
 {
