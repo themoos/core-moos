@@ -37,13 +37,14 @@
 #include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
 #include <iostream>
 
+
 bool    gbPlayBack = false;
 
 void SetMOOSPlayBack(bool bPlayBack)
 {
     if(bPlayBack)
     {
-        printf("PLAY BACK MODE IS ON\n");
+        std:cerr<<"PLAY BACK MODE IS ON\n";
     }
     gbPlayBack = bPlayBack;
 }
