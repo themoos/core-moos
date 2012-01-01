@@ -44,7 +44,7 @@ void SetMOOSPlayBack(bool bPlayBack)
 {
     if(bPlayBack)
     {
-        std:cerr<<"PLAY BACK MODE IS ON\n";
+        std::cerr<<"PLAY BACK MODE IS ON\n";
     }
     gbPlayBack = bPlayBack;
 }
