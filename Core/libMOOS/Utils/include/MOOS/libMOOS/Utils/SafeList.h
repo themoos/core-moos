@@ -36,15 +36,26 @@ public:
     bool Pull(T & Element)
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
+        _PushEvent.reset();
         if (!_List.empty())
         {
             Element = _List.front();
             _List.pop_front();
 
             return true;
-        } else
+        }
+        else
+        {
             return false;
+        }
 
+    }
+
+    void Pop()
+    {
+        Poco::FastMutex::ScopedLock Lock(_mutex);
+        _PushEvent.reset();
+        _List.pop_front();
     }
 
     bool PeekLatest(T & Element)
@@ -91,6 +102,7 @@ public:
     void Clear()
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
+        _PushEvent.reset();
         _List.clear();
     }
 
