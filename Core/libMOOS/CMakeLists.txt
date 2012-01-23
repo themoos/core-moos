@@ -45,6 +45,7 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Mutex.cpp
   Thirdparty/PocoBits/src/Timestamp.cpp
   Thirdparty/PocoBits/src/Exception.cpp
+  Thirdparty/PocoBits/src/AtomicCounter.cpp
 )
 
 
