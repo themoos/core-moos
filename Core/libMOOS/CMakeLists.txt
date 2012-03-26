@@ -102,8 +102,7 @@ list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_LIBRARIES)
 # This is essentially boilerplate.  Shouldn't need to change it.
 
 set(${LIBNAME}_INCLUDE_DIRS
-    #${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${INCLUDE_ROOTS}
     CACHE INTERNAL
     "Where to find ${LIBNAME} include directories"
 )
