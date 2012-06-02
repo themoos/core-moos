@@ -274,11 +274,15 @@ bool CMOOSCommClient::DoClientWork()
 	try
 	{
 
+		if(!IsConnected())
+			return false;
+
+		m_WorkLock.Lock();
+
 		//note the symmetry here... a warm feeling
 
 		CMOOSCommPkt PktTx,PktRx;
 		
-        
         bool bNullPacket  = false;
 
 		m_OutLock.Lock();         
@@ -384,8 +388,12 @@ bool CMOOSCommClient::DoClientWork()
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
+		m_WorkLock.UnLock();
+
 		return false;//jump out to connect loop....				
 	}
+
+	m_WorkLock.UnLock();
 
 	return true;
 }
@@ -821,8 +829,13 @@ bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList,
         return false;
     
 	CMOOSMsg Msg(MOOS_SERVER_REQUEST,sWhat.c_str(),"");
-	Post(Msg);
+
+	if(!Post(Msg))
+		return false;
 	
+	if(!Flush())
+		return false;
+
 	if(Msg.m_nID != MOOS_SERVER_REQUEST_ID)
 	{
 		return MOOSFail("Logical Error in ::ServerRequest");
@@ -1023,6 +1036,11 @@ string CMOOSCommClient::GetLocalIPAddress()
 		return "unknown";
 	}
 	return std::string(Name);
+}
+
+bool CMOOSCommClient::Flush()
+{
+	return DoClientWork();
 }
 
 

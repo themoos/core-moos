@@ -213,6 +213,13 @@ public:
     
     bool SetCommsTick(int nCommsTick);
 
+    /**
+     * Flush the comms client (force it to talk to the Server now).
+     * It is rare that you will need this...
+     * @return true on success;
+     */
+    bool Flush();
+
 protected:
     bool ClearResources();
     
@@ -252,6 +259,12 @@ protected:
     @see CMOOSLock
     */
     CMOOSLock m_InLock;
+
+    /** Mutex around incoming DoClientWork method
+    @see CMOOSLock
+    */
+    CMOOSLock m_WorkLock;
+
 
     /** Connect to the server process using info supplied to Init
     @see Init*/
