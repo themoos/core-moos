@@ -18,7 +18,7 @@ void PrintHelp()
     MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
     MOOSTrace("  -c (--commstick)                  : MOOSCommsTick in Hz\n");
     MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
-    MOOSTrace("  -p var1@t1 [var2@t2,var3@t3....]  : list of publciations in form var_name@period eg x@0.5 y@2.0\n");
+    MOOSTrace("  -p var1@t1 [var2@t2,var3@t3....]  : list of publications in form var_name@period eg x@0.5 y@2.0\n");
 
     MOOSTrace("\n\nNetwork failure simulation:\n");
     MOOSTrace("  -N (--simulate_network_failure)   : enable simulation of network/app failure\n");
