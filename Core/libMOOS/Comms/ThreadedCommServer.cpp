@@ -8,6 +8,7 @@
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include <iterator>
 #include <algorithm>
 
 #ifndef _WIN32
@@ -56,6 +57,7 @@ bool ThreadedCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 
     //after handshaking we will know what this client is called
     std::string sClientName = GetClientName(pNewClient);
+
 
     //here we need to start a new thread to handle our comms...
     return AddAndStartClientThread(*pNewClient,sClientName);
@@ -131,8 +133,12 @@ bool ThreadedCommServer::ServerLoop()
         switch(SD._Status)
         {
         case ClientThreadSharedData::PKT_READ:
+        {
+        	double dfT = MOOSTime();
             ProcessClient(SD);
+        	std::cerr<<"Process Client takes "<<MOOSTime()-dfT<<" s\n";
             break;
+        }
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
             OnClientDisconnect(SD);
@@ -206,6 +212,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
             }
 
             //MOOSTrace("sending %d message back to client\n",MsgLstTx.size());
+
 
             //stuff reply message into a packet
             SD._pPktTx->Serialize(MsgLstTx,true);

@@ -111,8 +111,6 @@ protected:
     bool ProcessMsg(CMOOSMsg & MsgRx,MOOSMSG_LIST & MsgLstTx);
     double GetStartTime(){return m_dfStartTime;}
 private:
-    CMOOSCommServer m_CommServer;
-    MOOS::ThreadedCommServer m_ThreadedCommServer;
     string m_sDBName;
     string m_sCommunityName;
     CMOOSFileReader m_MissionReader;
@@ -127,6 +125,12 @@ private:
 
     //pointer to a webserver if one is needed
     std::auto_ptr<CMOOSDBHTTPServer> m_pWebServer;
+
+    //pointer to the comms server (could be a threaded one but base class is CMOOSCommServer
+    std::auto_ptr<CMOOSCommServer> m_pCommServer;
+    //CMOOSCommServer m_CommServer;
+    //MOOS::ThreadedCommServer m_ThreadedCommServer;
+
 
 
 private:

@@ -524,9 +524,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
     std::cerr<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
-
     MOOSTrace("New client connected:\n");
-
 
     std::cerr<<"  Host          :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
 
@@ -551,7 +549,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         MOOSTrace("--------------------------------\n");
         return false;
     }
-        std::cerr<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
+    std::cerr<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
 
 
     MOOSTrace("--------------------------------\n");
@@ -690,6 +688,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             if(IsUniqueName(Msg.m_sVal))
             {
                 m_Socket2ClientMap[pNewClient->iGetSocketFd()] = Msg.m_sVal;
+                std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
             }
             else
             {
@@ -782,6 +781,5 @@ bool CMOOSCommServer::GetClientNames(STRING_LIST &sList)
     {
         sList.push_front(p->second);
     }
-
     return true;
 }

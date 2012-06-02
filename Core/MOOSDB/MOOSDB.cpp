@@ -243,28 +243,25 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     //are we being asked to be old skool and use a single thread?
     bool bSingleThreaded = cl.search(2,"-s","--single_threaded");
 
-
-
-
-    m_ThreadedCommServer.SetOnRxCallBack(OnRxPktCallBack,this);
-    m_ThreadedCommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
-
-
-    m_CommServer.SetOnRxCallBack(OnRxPktCallBack,this);
-    m_CommServer.SetOnDisconnectCallBack(OnDisconnectCallBack,this);
     
     LogStartTime();
     
     if(bSingleThreaded)
     {
         std::cerr<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
-        m_CommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new CMOOSCommServer);
     }
     else
     {
         //std::cerr<<MOOS::ConsoleColours::green()<<"running in multi-threaded mode\n"<<MOOS::ConsoleColours::reset();
-        m_ThreadedCommServer.Run(m_nPort,m_sCommunityName,bNoNetwork);
+		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new MOOS::ThreadedCommServer);
     }
+
+    m_pCommServer->SetOnRxCallBack(OnRxPktCallBack,this);
+
+    m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
+
+    m_pCommServer->Run(m_nPort,m_sCommunityName,bNoNetwork);
 
 
         
@@ -282,7 +279,7 @@ void CMOOSDB::UpdateDBClientsVar()
     if(dfNow-dfLastTime>CLIENT_LIST_PUBLISH_PERIOD)
     {
         STRING_LIST Clients;
-        m_CommServer.GetClientNames(Clients);
+        m_pCommServer->GetClientNames(Clients);
 
         std::ostringstream ss;
         std::copy(Clients.begin(),Clients.end(),ostream_iterator<std::string>(ss,","));
@@ -292,10 +289,8 @@ void CMOOSDB::UpdateDBClientsVar()
         DBC.m_sSrc = m_sDBName;
         OnNotify(DBC);
         dfLastTime = dfNow;
+
     }
-
-
-
 
 }
 
@@ -330,6 +325,8 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
+
+
     //good spot to update our internal time    
     UpdateDBTimeVars();
 
@@ -723,7 +720,7 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     STRING_LIST Clients;
     
-    m_CommServer.GetClientNames(Clients);
+    m_pCommServer->GetClientNames(Clients);
     
     
     for(q=Clients.begin();q!=Clients.end();q++)
