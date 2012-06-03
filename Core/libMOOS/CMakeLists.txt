@@ -54,6 +54,30 @@ set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCE
 include(PlatformDefines)
 
 
+
+
+############# COMPRESSED COMMS? ################
+SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
+
+IF(COMPRESSED_MOOS_PROTOCOL)
+    FIND_PACKAGE(ZLIB QUIET)
+    IF (ZLIB_FOUND)
+        ADD_DEFINITIONS(-DZLIB_FOUND)
+            ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
+    
+        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
+            MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
+
+        SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
+        INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})    
+    
+    ELSE(ZLIB_FOUND)
+        SET(ZLIB_LIBRARIES "")
+    ENDIF (ZLIB_FOUND)
+ENDIF(COMPRESSED_MOOS_PROTOCOL)
+
+
+
 #do we want to turn on the experimental clock skew detection?
 OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
 IF (DETECT_CLOCK_DRIFT)
