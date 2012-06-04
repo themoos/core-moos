@@ -39,51 +39,10 @@ if (ENABLE_DOXYGEN)
 endif()
 
 
+###########  SETTING UP PREPROCESSOR ################
+include(PlatformDefines)
 
 
-#########################  SETTING UP PREPROCESSOR ############################################
-
-IF(WIN32)
-    ADD_DEFINITIONS(-DWINDOWS_NT -D_CRT_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
-ENDIF(WIN32)
-
-IF(UNIX)
-    
-    ADD_DEFINITIONS(-DUNIX)
-	
-	IF("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
-	
-		ADD_DEFINITIONS( -DPLATFORM_DARWIN )
-		
-		#some support for macport installed libraries
-		SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
-		SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
-		SET( PLATFORM_DARWIN 1 )
-		
-	ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
-	
-	IF("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-	
-		ADD_DEFINITIONS( -DPLATFORM_LINUX )
-		SET( PLATFORM_LINUX 1 )
-	
-	ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-	
-ENDIF(UNIX)
-
-
-#####################################################
-# some platform libs are always required...
-IF(WIN32)
-  SET(PLATFORM_LIBS   ${PLATFORM_LIBS} wsock32 comctl32)
-ENDIF(WIN32)
-
-IF(UNIX)
-  SET(PLATFORM_LIBS   ${PLATFORM_LIBS} m pthread)
-  IF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
-	SET(PLATFORM_LIBS ${PLATFORM_LIBS} socket nsl rt)
-  ENDIF("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
-ENDIF(UNIX)
 
 
 #####################################################

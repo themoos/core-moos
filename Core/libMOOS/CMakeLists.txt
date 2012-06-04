@@ -54,8 +54,6 @@ set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCE
 include(PlatformDefines)
 
 
-
-
 ############# COMPRESSED COMMS? ################
 SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
 
@@ -113,6 +111,12 @@ list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 if(UNIX)
     set(DEPENDENCIES pthread m)
 endif(UNIX)
+
+IF(WIN32)
+  set(DEPENDENCIES wsock32 comctl32)
+ENDIF(WIN32)
+    
+
 set(${LIBNAME}_DEPEND_LIBRARIES
     ${DEPENDENCIES}
     CACHE INTERNAL
@@ -139,11 +143,10 @@ set(${LIBNAME}_LIBRARIES
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
 
-MESSAGE(STATUS "MOOSLIB include path: ${${LIBNAME}_DEPEND_INCLUDE_DIRS}")
-
 
 ######################################
-#export the library
+#export the library - this is picked up and used by the chunk of
+#script at the end of the top level CMakeLists.txt file
 cache_internal_append_unique(PROJECT_EXPORT_LIBS 
     ${LIBNAME}
 )
@@ -164,7 +167,10 @@ install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MAT
 
 
 # install libraries
-INSTALL(TARGETS ${LIBNAME} DESTINATION lib)
+INSTALL(TARGETS ${LIBNAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 
 
 
