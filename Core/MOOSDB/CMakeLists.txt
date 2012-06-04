@@ -26,4 +26,12 @@ add_executable(${EXECNAME} ${SRCS} )
 target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
 
+
+INSTALL(TARGETS ${EXECNAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
+
 add_subdirectory(testing)
