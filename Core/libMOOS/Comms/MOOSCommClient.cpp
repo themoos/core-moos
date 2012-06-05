@@ -284,10 +284,7 @@ bool CMOOSCommClient::DoClientWork()
 		if(!IsConnected())
 			return false;
 
-		bool bNullPacket = false;
-
 		//note the symmetry here... a warm feeling
-
 		CMOOSCommPkt PktTx,PktRx;
 		
 		m_OutLock.Lock();         
@@ -300,7 +297,6 @@ bool CMOOSCommClient::DoClientWork()
 				CMOOSMsg Msg;
 				Msg.m_sSrc = m_sMyName;
 				m_OutBox.push_front(Msg);
-                bNullPacket = true;
 			}
 
 
