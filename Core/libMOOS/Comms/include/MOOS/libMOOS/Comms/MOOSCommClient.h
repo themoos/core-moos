@@ -350,6 +350,8 @@ protected:
     
     /** Tells us whether the ClientLoop is running. */
     bool m_bClientLoopIsRunning;
+
+
 };
 
 #endif // !defined(MOOSCommClientH)

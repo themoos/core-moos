@@ -56,6 +56,8 @@
 
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
@@ -270,6 +272,11 @@ bool CMOOSCommClient::ClientLoop()
 
 bool CMOOSCommClient::DoClientWork()
 {
+	//this existence of this object makes this scope
+	//a critical section - this allows ::flush to be called
+	//safely
+    MOOS::ScopedLock WL(m_WorkLock);
+
 	//this is the IO Loop
 	try
 	{
@@ -277,14 +284,12 @@ bool CMOOSCommClient::DoClientWork()
 		if(!IsConnected())
 			return false;
 
-		m_WorkLock.Lock();
+		bool bNullPacket = false;
 
 		//note the symmetry here... a warm feeling
 
 		CMOOSCommPkt PktTx,PktRx;
 		
-        bool bNullPacket  = false;
-
 		m_OutLock.Lock();         
 		{
 			//if nothing to send we send a NULL packet
@@ -309,7 +314,6 @@ bool CMOOSCommClient::DoClientWork()
 			{
 				//clear the outbox
 				m_OutBox.clear();
-				m_OutLock.UnLock();
 				throw CMOOSException("Serialisation Failed - this must be a lot of mail..."); 
 			}
 
@@ -388,12 +392,8 @@ bool CMOOSCommClient::DoClientWork()
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
-		m_WorkLock.UnLock();
-
 		return false;//jump out to connect loop....				
 	}
-
-	m_WorkLock.UnLock();
 
 	return true;
 }
