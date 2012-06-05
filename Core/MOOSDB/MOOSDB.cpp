@@ -428,6 +428,8 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         
         rVar.m_sWhoChangedMe = Msg.m_sSrc;
         
+        rVar.m_sSrcAux       = Msg.m_sSrcAux; // Added by mikerb 5-29-12
+        
         if(Msg.m_sOriginatingCommunity.empty())
         {
             //we are the server in the originating community
@@ -931,6 +933,7 @@ void CMOOSDB::Var2Msg(CMOOSDBVar &Var, CMOOSMsg &Msg)
     Msg.m_dfTime = Var.m_dfTime;
     Msg.m_cDataType = Var.m_cDataType;
     Msg.m_sSrc = Var.m_sWhoChangedMe;
+    Msg.m_sSrcAux = Var.m_sSrcAux;   // Added by mikerb 5-29-12
     Msg.m_sKey = Var.m_sName;
     Msg.m_sOriginatingCommunity = Var.m_sOriginatingCommunity;
     switch(Var.m_cDataType)
