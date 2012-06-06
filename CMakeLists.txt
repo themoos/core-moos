@@ -43,8 +43,6 @@ endif()
 include(PlatformDefines)
 
 
-
-
 #####################################################
 # Toby Schneider's request for fPIC on amd64
 IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
@@ -52,62 +50,7 @@ IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
 
-
-################## CHOOSING WHAT TO BUID #########################################
-
-############# CORE ? ################
-SET( BUILD_CORE_MOOS ON CACHE BOOL "Build Core MOOS")
-IF(BUILD_CORE_MOOS)
-    add_subdirectory(Core)
-ENDIF(BUILD_CORE_MOOS)
-
-############# ESSENTIAL APPS ? ################
-SET( BUILD_ESSENTIAL_MOOS OFF CACHE BOOL "Build Essential MOOS Processes (like pLogger pAntler etc)")
-IF(BUILD_ESSENTIAL_MOOS)
-    #here we name all the things we want built as part of the Essential MOOS
-    add_subdirectory(Essentials)
-ENDIF(BUILD_ESSENTIAL_MOOS)
-
-############# CONTROL AND NAV ? ################
-SET( BUILD_CONTROL_AND_NAV OFF CACHE BOOL "Build control and navigation Apps iRemote pHelm pNav")
-IF(BUILD_CONTROL_AND_NAV)
-    #here we name all the things we want built under the navigation and control heading
-    add_subdirectory(NavigationAndControl)
-ENDIF(BUILD_CONTROL_AND_NAV)
-
-############# TOOLS ? ################
-SET( BUILD_TOOLS OFF CACHE BOOL "Build GUI tools, simulators and matlab access")
-IF(BUILD_TOOLS)
-    #here we tell CMake to descend into the tools directory. More
-    #decisions will be made in there
-    add_subdirectory(Tools)
-ENDIF(BUILD_TOOLS)
-
-############# INSTRUMENTS ? ################
-SET( BUILD_INSTRUMENTS OFF CACHE BOOL "Build Instruments ")
-IF(BUILD_INSTRUMENTS)
-    add_subdirectory(Instruments)
-ENDIF(BUILD_INSTRUMENTS)
-
-############# EXAMPLES ? ################
-SET( BUILD_EXAMPLES OFF CACHE BOOL "Build Documentation Examples ")
-IF(BUILD_EXAMPLES)
-    add_subdirectory(Docs/ProgrammingWithMOOS/code)
-    add_subdirectory(Docs/Essentials/Antler/code)
-ENDIF(BUILD_EXAMPLES)
-
-
-
-
-
-
-
-
-
-
-
-
-
+add_subdirectory(Core)
 
 
 #########################
