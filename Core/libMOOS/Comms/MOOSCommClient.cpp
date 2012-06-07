@@ -787,6 +787,18 @@ bool CMOOSCommClient::Notify(const std::string &sVar, const std::string & sVal, 
 	return Post(Msg);
 }
 
+bool CMOOSCommClient::Notify(const std::string &sVar, const char * sVal,double dfTime)
+{
+	return Notify(sVar,std::string(sVal),dfTime);
+}
+
+bool CMOOSCommClient::Notify(const std::string &sVar, const char * sVal,const std::string & sSrcAux, double dfTime)
+{
+	return Notify(sVar,std::string(sVal),sSrcAux,dfTime);
+}
+
+
+
 bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize, double dfTime)
 {
 	std::string BinaryPayload((char*)pData,nSize);
