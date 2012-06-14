@@ -117,7 +117,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_pfnDisconnectCallBack = NULL;
     m_sCommunityName = "#1";
     m_bQuiet  = false;
-	m_bDisableNameLookUp = false;
+	m_bDisableNameLookUp = true;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
@@ -293,21 +293,17 @@ bool CMOOSCommServer::ListenLoop()
 
             m_pListenSocket->vListen();
 			XPCTcpSocket * pNewSocket = NULL;
-			#ifdef MOOS_DISABLE_NAMES_LOOKUP
+
+			if(!m_bDisableNameLookUp)
+			{
+				pNewSocket = m_pListenSocket->Accept(sClientName);
+			}
+			else
+			{
+				MOOSTrace("not waiting for name lookup\n");
 				pNewSocket = m_pListenSocket->Accept(); 
 				sClientName[0]='\0'; 
-			#else 
-				if(!m_bDisableNameLookUp)
-				{
-					pNewSocket = m_pListenSocket->Accept(sClientName);
-				}
-				else 
-				{
-					MOOSTrace("not waiting for name lookup\n");
-					pNewSocket = m_pListenSocket->Accept(); 
-					sClientName[0]='\0'; 
-				}
-			#endif 
+			}
 			
             m_SocketListLock.Lock();
 

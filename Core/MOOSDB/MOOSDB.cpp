@@ -139,7 +139,7 @@ void PrintHelpAndExit()
 	std::cerr<<"-p    (--server_port)  <positive_integer>   specify server port number (default 9000)\n";
 	std::cerr<<"-s    (--single_threaded)                   run as a single thread (legacy mode)\n";
 	std::cerr<<"-w    (--time_warp)    <positive_float>     specify time warp\n";
-	std::cerr<<"-n    (--no_dns)                            run without dns lookup\n";
+	std::cerr<<"-d    (--dns)                               run with dns lookup\n";
 	std::cerr<<"-c    (--community)    <string>             specify community name\n";
 //#ifdef MOOSDB_HAS_WEBSERVER
 	std::cerr<<"-W    (--webserver)    <positive_integer>   run webserver on given port\n";
@@ -203,12 +203,12 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     ///////////////////////////////////////////////////////////
     //is there a network - default  - true
-	bool bNoNetwork = false;
-    m_MissionReader.GetValue("NoNetwork",bNoNetwork);
+	bool bDisableNameLookUp = true;
+    m_MissionReader.GetValue("NoNetwork",bDisableNameLookUp);
 
     //overriddden in command line?
-    if(cl.search(1,"-nnw","--no_network"))
-        bNoNetwork = true;
+    if(cl.search(1,"-d","--dns"))
+    	bDisableNameLookUp = false;
 
 
 	
@@ -261,7 +261,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
-    m_pCommServer->Run(m_nPort,m_sCommunityName,bNoNetwork);
+    m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 
 
         
