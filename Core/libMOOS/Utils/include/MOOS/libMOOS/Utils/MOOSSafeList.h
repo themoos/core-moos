@@ -47,6 +47,7 @@ public:
 
     }
 
+
     bool PeekLatest(T & Element)
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
@@ -58,6 +59,7 @@ public:
     }
 
 
+
     bool PeekNext(T & Element)
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
@@ -67,6 +69,25 @@ public:
         Element = _List.front();
         return true;
     }
+
+    template <typename  Predicate>
+      bool FindIf( Predicate P,T & Element)
+      {
+	Poco::FastMutex::ScopedLock Lock(_mutex);
+	std::list<T>::iterator q = _List.find_if(_List.begin(),_List.end(),P);
+
+        if(q==_List.end())
+	  {
+	    return false;
+	  }
+        else
+	  {
+	    Element=*q;
+	    return true
+	      }
+
+      }
+
 
 
     bool WaitForPush(long milliseconds = -1)

@@ -145,8 +145,8 @@ public:
 		{
 			pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 		}
-        int Status = pthread_create( &m_nThreadID,&attr,CallbackProc,this);
-        if(Status!=0) {
+        int nStatus = pthread_create( &m_nThreadID,&attr,CallbackProc,this);
+        if(nStatus!=0) {
             SetRunningFlag(false);
             return false;
         }
