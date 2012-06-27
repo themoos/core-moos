@@ -111,6 +111,100 @@ protected:
     /** make a status string - overload this in a derived class if you want to modify or what the statuts string looks like */
     virtual std::string MakeStatusString();
 
+
+
+    /** notify the MOOS community that something has changed (string)
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param sVal string contents (data payload)
+     * @param dfTime time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string &sVar, const std::string & sVal, double dfTime=-1);
+
+    /** notify the MOOS community that something has changed (string) with an auxiliary string payload
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param sVal string contents (data payload)
+     * @param sSrcAux additional string payload
+     * @param dfTime time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime=-1);
+
+    /** notify the MOOS community that something has changed (const char *)
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param sVal string contents (data payload)
+     * @param dfTime dfTime time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string &sVar, const char * sVal,double dfTime=-1);
+
+    /** notify the MOOS community that something has changed (const char *) with an auxiliary string paylad
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param sVal string contents (data payload)
+     * @param sSrcAux additional string data
+     * @param dfTime  time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string &sVar, const char * sVal,const std::string & sSrcAux, double dfTime=-1);
+
+
+    /** notify the MOOS community that something has changed (double)
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param dfVal double value of data being sent
+     * @param dfTime  time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string & sVar,double dfVal, double dfTime=-1);
+
+    /** notify the MOOS community that something has changed (double) with an auxiliary string paylad
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param dfVal double value of data being sent
+     * @param sSrcAux  additional string data
+     * @param dfTime  time valid (if not specified this is filled in for you as MOOS::Time())
+     * @return
+     */
+    bool Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime=-1);
+
+
+	/** notify the MOOS community that something has changed -  binary data
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param pData pointer to a chunk of data
+     * @param nDataSize size of data in number of bytes
+     * @param dfTime double value of data being sent
+     * @return
+     */
+    bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, double dfTime=-1);
+
+	/** notify the MOOS community that something has changed  ( binary data ) with an auxiliary string paylad
+     *
+     * @param sVar Name of variable being notified /posted
+     * @param pData pointer to a chunk of data
+     * @param nDataSize size of data
+     * @param sSrcAux additional string data member
+     * @param dfTime time valid
+     * @return
+     */
+    bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
+
+
+
+    /** Register for notification in changes of named variable
+    @param sVar name of variable of interest
+    @param dfInterval minimum time between notifications*/
+    bool Register(const std::string & sVar,double dfInterval);
+
+    /** UnRegister for notification in changes of named variable
+    @param sVar name of variable of interest*/
+    bool UnRegister(const std::string & sVar);
+
+
     /** The MOOSComms node. All communications happens by way of this object. You'll often do things like  m_Comms.Notify("VARIABLE_X","STRING_DATA",dfTime) top send data */
     CMOOSCommClient m_Comms;
 
