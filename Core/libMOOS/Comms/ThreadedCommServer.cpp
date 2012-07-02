@@ -136,7 +136,7 @@ bool ThreadedCommServer::ServerLoop()
         {
         	double dfT = MOOSTime();
             ProcessClient(SD);
-        	std::cerr<<"Process Client takes "<<MOOSTime()-dfT<<" s\n";
+        	//std::cerr<<"Process Client takes "<<MOOSTime()-dfT<<" s\n";
             break;
         }
 
