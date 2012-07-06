@@ -33,7 +33,7 @@
 
 /*! \file MOOSSerialPort.h */
 
-#if !defined(MOOSERIALPORTH)
+#if !defined(MOOSSERIALPORTH)
 #define MOOSSERIALPORTH
 
 #if _MSC_VER > 1000
