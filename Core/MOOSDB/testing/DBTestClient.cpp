@@ -68,7 +68,17 @@ public:
         for(q = vPublish.begin();q!=vPublish.end();q++)
         {
             std::string sEntry  = *q;
-            std::string sName = MOOSChomp(sEntry,"@");
+            std::string sVar = MOOSChomp(sEntry,"@");
+
+            sName = MOOSChomp(sVar,":");
+            if(!sVar.empty())
+            {
+            	//we are being told to send an array
+            	std::stringstream ss(sVar);
+            	unsigned int nArraySize;
+            	ss>>nArraySize;
+            }
+
             if (!MOOSIsNumeric(sEntry) || sEntry.empty())
             {
                 std::cerr<<MOOS::ConsoleColours::red()<<"badly formatted publish directive name1@period1 name2@period 2\n"<<MOOS::ConsoleColours::reset();
@@ -112,7 +122,14 @@ public:
         {
             Job Active = _Jobs.top();
             _Jobs.pop();
-            m_Comms.Notify(Active._sName,Active._nCount,MOOSTime());
+            if(Active.IsBinary())
+            {
+            	Notify(Active._sName,Active._pData,Active._DataSize, MOOS::Time() );
+            }
+            else
+            {
+            	m_Comms.Notify(Active._sName,Active._nCount,MOOSTime());
+            }
             std::cerr<<MOOS::ConsoleColours::Yellow()<<"publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
             Active.Reschedule();
             _Jobs.push(Active);
@@ -159,11 +176,28 @@ private:
         Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
         {
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
+            _pData = NULL;
         }
 
+        Job(double dfPeriod,std::string sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
+        {
+        	_DataSize = nSize;
+        	_dfTimeScheduled = MOOSTime()+_dfPeriod;
+        	_pData = new unsigned char[nSize];
+        }
+
+        ~Job()
+        {
+        	if(+pData!=NULL)
+        		delete [] _pData;
+        }
         bool operator < (const  Job &  a) const
         {
             return _dfTimeScheduled> a._dfTimeScheduled;
+        }
+        bool IsBinary()
+        {
+        	return _pData!=NULL;
         }
 
         void Reschedule()
@@ -181,6 +215,9 @@ private:
         double _dfTimeScheduled;
         std::string _sName;
         int _nCount;
+        unsigned char * _pData;
+        unsigned int _DataSize;
+
     };
     std::priority_queue<Job> _Jobs;
 
