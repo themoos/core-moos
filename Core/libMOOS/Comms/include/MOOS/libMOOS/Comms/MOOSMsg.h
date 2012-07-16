@@ -91,6 +91,12 @@ public:
     /**check data type is string*/
     bool IsString()const{return IsDataType(MOOS_STRING) || IsDataType(MOOS_BINARY_STRING);}    
 
+    /** check if data type is binary*/
+    bool IsBinary()const{return  IsDataType(MOOS_BINARY_STRING);}
+
+    /** get size of binary message - 0 if not binary type */
+    unsigned int GetBinaryDataSize();
+
     /**return true if mesage is substantially (SKEW_TOLERANCE) older than dfTimeNow
        if pdfSkew is not NULL, the time skew is returned in *pdfSkew*/
     bool IsSkewed(double dfTimeNow, double * pdfSkew = NULL);
