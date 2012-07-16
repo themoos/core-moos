@@ -575,6 +575,14 @@ string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/, int nNumDP/*=5*/)
     return os.str();
 }
 
+unsigned int CMOOSMsg::GetBinaryDataSize()
+{
+	if(!IsBinary())
+		return 0;
+	else
+		return m_sVal.size();
+}
+
 bool CMOOSMsg::IsDataType(char cDataType) const
 {
     return m_cDataType == cDataType;

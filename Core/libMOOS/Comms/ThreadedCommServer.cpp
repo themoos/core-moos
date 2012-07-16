@@ -134,9 +134,7 @@ bool ThreadedCommServer::ServerLoop()
         {
         case ClientThreadSharedData::PKT_READ:
         {
-        	double dfT = MOOSTime();
             ProcessClient(SD);
-        	//std::cerr<<"Process Client takes "<<MOOSTime()-dfT<<" s\n";
             break;
         }
 

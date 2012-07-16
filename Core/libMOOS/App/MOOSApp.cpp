@@ -445,6 +445,67 @@ bool CMOOSApp::OnDisconnectFromServer()
     return true;
 }
 
+
+/* this block of functions simply notifies the DB that a string variable has changed*/
+bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, double dfTime)
+{
+	return m_Comms.Notify(sVar,sVal,dfTime);
+}
+
+bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime)
+{
+	return m_Comms.Notify(sVar,sVal,dfTime);
+}
+
+bool CMOOSApp::Notify(const std::string &sVar, const char * sVal,double dfTime)
+{
+	return m_Comms.Notify(sVar,sVal,dfTime);
+}
+
+bool CMOOSApp::Notify(const std::string &sVar, const char * sVal,const std::string & sSrcAux, double dfTime)
+{
+	return m_Comms.Notify(sVar,sVal,sSrcAux,dfTime);
+}
+
+
+/** notify the MOOS community that something has changed (double)*/
+bool CMOOSApp::Notify(const std::string & sVar,double dfVal, double dfTime)
+{
+	return m_Comms.Notify(sVar,dfVal,dfTime);
+}
+bool CMOOSApp::Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime)
+{
+	return m_Comms.Notify(sVar,dfVal,sSrcAux,dfTime);
+}
+
+
+/** notify the MOOS community that something has changed binary data*/
+bool CMOOSApp::Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, double dfTime)
+{
+	return m_Comms.Notify(sVar,pData,nDataSize,dfTime);
+}
+bool CMOOSApp::Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime)
+{
+	return m_Comms.Notify(sVar,pData,nDataSize,sSrcAux,dfTime);
+}
+
+
+
+/** Register for notification in changes of named variable*/
+bool CMOOSApp::Register(const std::string & sVar,double dfInterval)
+{
+	return m_Comms.Register(sVar,dfInterval);
+}
+
+/** UnRegister for notification in changes of named variable*/
+bool CMOOSApp::UnRegister(const std::string & sVar)
+{
+	return m_Comms.UnRegister(sVar);
+}
+
+
+
+
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {

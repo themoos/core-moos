@@ -300,7 +300,6 @@ bool CMOOSCommServer::ListenLoop()
 			}
 			else
 			{
-				MOOSTrace("not waiting for name lookup\n");
 				pNewSocket = m_pListenSocket->Accept(); 
 				sClientName[0]='\0'; 
 			}
@@ -745,6 +744,7 @@ void CMOOSCommServer::DoBanner()
     MOOSTrace("***************************************************\n");
     MOOSTrace("*  This is a MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
     MOOSTrace("*  Connect to this server on port %d               \n",m_lListenPort);
+    MOOSTrace("*  Name look up is %s                              \n",m_bDisableNameLookUp ? "off" : "on");
     //MOOSTrace("*  This machine is %s endian                 \n",IsLittleEndian()?"Little":"Big");
     MOOSTrace("***************************************************\n");
 
