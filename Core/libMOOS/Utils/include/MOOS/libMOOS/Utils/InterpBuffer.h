@@ -35,7 +35,7 @@
 #include <assert.h>
 #include <math.h>
 #include <algorithm>
-#include <Utils/GlobalHelper.h>
+//#include <Utils/GlobalHelper.h>
 
 //! a buffer to store data and get interp values by index with time
 template< class Key, class Data, class InterpFunc, class Compare=std::less<Key> > 
