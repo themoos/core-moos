@@ -521,8 +521,6 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 
     MOOSTrace("New client connected:\n");
 
-    std::cerr<<"  Host          :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
-
     if(HandShake(pNewClient))
     {
         std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
@@ -683,7 +681,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             if(IsUniqueName(Msg.m_sVal))
             {
                 m_Socket2ClientMap[pNewClient->iGetSocketFd()] = Msg.m_sVal;
-                std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
+                //std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
             }
             else
             {
@@ -697,12 +695,13 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
         }
         else
         {
-            PoisonClient(pNewClient,"Failed to read receive clients name");
+            PoisonClient(pNewClient,"Failed to read receive client's name");
             return false;
         }
 
         //send a message back to the client saying welcome
         CMOOSMsg MsgW(MOOS_WELCOME,"",dfSkew);
+        MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 
         return true;

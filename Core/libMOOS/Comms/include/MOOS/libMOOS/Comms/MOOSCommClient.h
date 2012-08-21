@@ -219,6 +219,12 @@ public:
     bool SetCommsTick(int nCommsTick);
 
     /**
+     * return name of community the client is attached to
+     * @return name of community the client is attached to
+     */
+    std::string GetCommunityName();
+
+    /**
      * Flush the comms client (force it to talk to the Server now).
      * It is rare that you will need this...
      * @return true on success;
@@ -291,6 +297,9 @@ protected:
     @see Init*/
     long m_lPort;
     
+    /** community name hosted by connected MOOSDB */
+    std::string m_sCommunityName;
+
     /** IO thread will continue so long as this flag is false */
     bool  m_bQuit;
     

@@ -173,7 +173,6 @@ bool CMOOSCommClient::SetCommsTick(int nCommTick)
 	}
     else
     {
-        MOOSTrace("setting comms tick\n");
         m_nFundamentalFreq = (int)nCommTick;
         if(m_nFundamentalFreq==0)//catch a stupid setting
             m_nFundamentalFreq = 1;
@@ -617,14 +616,15 @@ bool CMOOSCommClient::HandShake()
 		}
 		else
 		{
-			//read our skew
-	       if(!m_bQuiet)
-                MOOSTrace("  Handshaking Complete\n");
+            m_sCommunityName = WelcomeMsg.GetCommunity();
 
+			//read our skew
 			double dfSkew = WelcomeMsg.m_dfVal;
             if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
 
+            if(!m_bQuiet)
+                MOOSTrace("  Joined community %s\n  Handshaking complete\n",m_sCommunityName.c_str());
 
 		}
 	}
@@ -640,6 +640,14 @@ bool CMOOSCommClient::HandShake()
 bool CMOOSCommClient::IsConnected()
 {
 	return m_bConnected;
+}
+
+std::string CMOOSCommClient::GetCommunityName()
+{
+	if(IsConnected())
+		return m_sCommunityName;
+	else
+		return "";
 }
 
 bool CMOOSCommClient::OnCloseConnection()
