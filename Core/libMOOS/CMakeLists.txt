@@ -90,10 +90,28 @@ IF (DISABLE_AUX_SOURCE)
 ENDIF (DISABLE_AUX_SOURCE)
 MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
 
+OPTION(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
+IF (ENABLE_V10_COMPATIBILITY)
+    set(COMPATIBILITY_HEADER_ROOT 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)
+ENDIF ()
+
+
 
 ##########################
 # Packages / Dependencies
 set(INCLUDE_ROOTS  
+
+# this first entry is most likely empty but some souls may not want to update headers.
+# placing this location at the start of the search list will enable some
+# indirection
+                                    
+    ${COMPATIBILITY_HEADER_ROOT}
+    
+# these are standard locations for the (functional) partitioning of the libMOOS
+# library
+        
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
