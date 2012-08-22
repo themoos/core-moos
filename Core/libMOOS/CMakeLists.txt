@@ -91,10 +91,23 @@ ENDIF (DISABLE_AUX_SOURCE)
 MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
 
 OPTION(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
+OPTION(ENABLE_V10_IVP_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers as expected by IvP " OFF)
+MARK_AS_ADVANCED(ENABLE_V10_IVP_COMPATIBILITY)
+
 IF (ENABLE_V10_COMPATIBILITY)
-    set(COMPATIBILITY_HEADER_ROOT 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)
+    IF(ENABLE_V10_IVP_COMPATIBILITY)
+        set(COMPATIBILITY_HEADER_ROOTS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core/MOOSLIB
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core/MOOSGenLib
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials/MOOSUtlityLib
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)        
+        message(WARNING "IVP V10 compatibility will be removed soon - please consider adding qualified include directories") 
+    ELSE()
+        set(COMPATIBILITY_HEADER_ROOTS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)
+    ENDIF()
 ENDIF ()
 
 
@@ -107,7 +120,7 @@ set(INCLUDE_ROOTS
 # placing this location at the start of the search list will enable some
 # indirection
                                     
-    ${COMPATIBILITY_HEADER_ROOT}
+    ${COMPATIBILITY_HEADER_ROOTS}
     
 # these are standard locations for the (functional) partitioning of the libMOOS
 # library
