@@ -162,7 +162,7 @@ std::string CMOOSFileReader::GetNextValidLine(bool bDoSubstitution)
 		}
 	}
 	
-    if (nC >= 0 && nC <= sLine.size() && nC!=std::string::npos)
+    if ( nC <= sLine.size() && nC!=std::string::npos)
     {
         if (nC > 0)
 		{

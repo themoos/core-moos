@@ -243,6 +243,12 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
 
 }
 
+bool ThreadedCommServer::ProcessClient()
+{
+	return BASE::ProcessClient();
+}
+
+
 bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 {
     //lock the base socket list
@@ -273,6 +279,12 @@ bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 
     return true;
 }
+
+bool ThreadedCommServer::OnClientDisconnect()
+{
+	return BASE::OnClientDisconnect();
+}
+
 
 
 bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)

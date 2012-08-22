@@ -135,6 +135,7 @@ protected:
     virtual bool OnNewClient(XPCTcpSocket * pNewClient,char * sName);
 
     virtual bool OnClientDisconnect(ClientThreadSharedData &SD);
+    virtual bool OnClientDisconnect();
 
     virtual bool ServerLoop();
 
@@ -143,6 +144,7 @@ protected:
     virtual bool AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName);
 
     virtual bool ProcessClient(ClientThreadSharedData &SD);
+    virtual bool ProcessClient();
 
     bool StopAndCleanUpClientThread(std::string sName);
 
