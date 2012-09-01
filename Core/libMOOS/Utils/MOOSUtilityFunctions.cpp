@@ -103,6 +103,13 @@ namespace MOOS
 	{
 		return MOOSTime();
 	}
+
+	std::string Chomp(string &sStr, const string &sTk,bool bInsensitive)
+	{
+		return MOOSChomp(sStr,sTk,bInsensitive);
+	}
+
+
 };
 
 
@@ -296,9 +303,8 @@ string MOOSChomp(string &sStr, const string &sTk,bool bInsensitive)
         sStr="";
         return sTmp;
     }
-
-
 }
+
 
 //case insensitive character compare functor
 struct CompareInsensitive: public std::binary_function< char, char, bool >

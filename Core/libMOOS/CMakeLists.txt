@@ -31,6 +31,8 @@ SET(UTILS_SOURCES
    Utils/MOOSLinuxSerialPort.cpp
    Utils/MOOSSerialPort.cpp
    Utils/MOOSPlaybackStatus.cpp
+   Utils/IPV4Address.cpp
+   
 
    )
 
