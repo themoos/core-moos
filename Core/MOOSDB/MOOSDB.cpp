@@ -624,7 +624,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		std::string var_pattern = "";
 		double period = 0.0;
 
-		std::cerr<<Msg.GetString()<<std::endl;
+
 		MOOSValFromString(app_pattern,Msg.GetString(),"AppPattern");
 		MOOSValFromString(var_pattern,Msg.GetString(),"VarPattern");
 		MOOSValFromString(period,Msg.GetString(),"Interval");
@@ -648,8 +648,6 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 				M.m_cDataType = MOOS_DOUBLE;
 				M.m_dfVal = period;
 				M.m_sSrc = Msg.GetSource();
-				std::cerr<<"registering "<<M.GetKey()<<std::endl;
-				M.Trace();
 				OnRegister(M);//smart...
 			}
 		}
@@ -706,9 +704,9 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 						{
 							//add the filter owner (client *g) as a subscriber
 							NewVar.AddSubscriber(g->first, h->period());
-							std::cerr<<MOOS::ConsoleColours::Yellow()<<
-									"Wildcard: "<<g->first<<" becomes subscriber to "
-									<<Msg.GetKey()<<std::endl<<MOOS::ConsoleColours::reset();
+							std::cerr<<"MOOSDB: adding subscription of \""<<g->first<<"\" to \""
+									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+									<<"\""<<std::endl;
 						}
 					}
 				}
@@ -753,10 +751,16 @@ bool CMOOSDB::OnDisconnect(string &sClient)
         
         rVar.RemoveSubscriber(sClient);
     }
+    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...\n";
+    if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
+    {
+        std::cerr<<"  removing wildcard subscriptions\n";
+    	m_ClientFilters[sClient].clear();
+    }
     
-    MOOSTrace("removing held mail for \"%s\"...\n",sClient.c_str());
-    
+    std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
+    std::cerr<<MOOS::ConsoleColours::reset();
     
     return true;
 }

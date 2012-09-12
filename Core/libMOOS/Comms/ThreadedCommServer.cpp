@@ -395,7 +395,7 @@ bool ThreadedCommServer::ClientThread::Run()
                 {
                     //client disconnected!
                     OnClientDisconnect();
-                    MOOSTrace("socket thread for %s quits after disconnect",_sClientName.c_str());
+                    //MOOSTrace("socket thread for %s quits after disconnect",_sClientName.c_str());
                     return true;
                 }
             }
@@ -412,7 +412,7 @@ bool ThreadedCommServer::ClientThread::Run()
         FD_ZERO(&fdset);
 
     }
-    MOOSTrace("socket thread for %s quits",_sClientName.c_str());
+    //MOOSTrace("socket thread for %s quits",_sClientName.c_str());
     return 0;
 }
 

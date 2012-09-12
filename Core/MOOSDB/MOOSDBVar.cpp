@@ -101,7 +101,7 @@ void CMOOSDBVar::RemoveSubscriber(string &sWho)
     REGISTER_INFO_MAP::iterator p = m_Subscribers.find(sWho);
     if(p!=m_Subscribers.end())
     {
-    MOOSTrace("removing \"%s\"'s subscription to \"%s\"\n",sWho.c_str(),m_sName.c_str());
+    MOOSTrace("MOOSDB: Removing \"%s\"'s subscription to \"%s\"\n",sWho.c_str(),m_sName.c_str());
     m_Subscribers.erase(p);
     }
 }

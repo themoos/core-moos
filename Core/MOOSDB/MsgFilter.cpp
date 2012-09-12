@@ -7,9 +7,9 @@ namespace MOOS
 {
 bool MsgFilter::Matches(const CMOOSMsg & M) const
 {
-	std::cerr<<app_filter()<<"matches "<<M.GetSource()<<":"<<std::boolalpha<<MOOSWildCmp(app_filter(),M.GetSource())<<std::endl;
-	std::cerr<<var_filter()<<"matches "<<M.GetKey()<<":"<<std::boolalpha<<MOOSWildCmp(var_filter(),M.GetKey() )<<std::endl;
-	std::cerr<<std::noboolalpha;
+	//std::cerr<<app_filter()<<"matches "<<M.GetSource()<<":"<<std::boolalpha<<MOOSWildCmp(app_filter(),M.GetSource())<<std::endl;
+	//std::cerr<<var_filter()<<"matches "<<M.GetKey()<<":"<<std::boolalpha<<MOOSWildCmp(var_filter(),M.GetKey() )<<std::endl;
+	//std::cerr<<std::noboolalpha;
 	return MOOSWildCmp(app_filter(),M.GetSource()) &&
 			MOOSWildCmp(var_filter(),M.GetKey() );
 }
@@ -21,6 +21,11 @@ std::string MsgFilter::app_filter() const
 std::string MsgFilter::var_filter() const
 {
 	return filters_.second;
+}
+
+std::string MsgFilter::as_string() const
+{
+	return var_filter()+":"+app_filter();
 }
 
 double MsgFilter::period() const
