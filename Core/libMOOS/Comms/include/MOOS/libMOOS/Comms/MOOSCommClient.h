@@ -102,6 +102,16 @@ public:
     @param dfInterval minimum time between notifications*/
     bool Register(const std::string & sVar,double dfInterval);
 
+    /**
+     * Wild card registration
+     * @param sVarPattern wildcard pattern for variables eg NAV_*
+     * @param sAppPattern wildcard pattern for variables eg GPS_*
+     * @param dfInterval minimim time between notifications
+     * @return true on success
+     */
+    bool Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval);
+
+
     /** UnRegister for notification in changes of named variable
     @param sVar name of variable of interest*/
     bool UnRegister(const std::string & sVar);

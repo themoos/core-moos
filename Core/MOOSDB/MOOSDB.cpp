@@ -388,6 +388,7 @@ bool CMOOSDB::ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx)
         return OnUnRegister(MsgRx);
         break;
     case MOOS_REGISTER:    //REGISTRATION
+    case MOOS_WILDCARD_REGISTER:
         return OnRegister(MsgRx);
         break;
     case MOOS_NULL_MSG:
@@ -412,7 +413,11 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     
     CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
     
+
+
+
     
+
     if(rVar.m_nWrittenTo==0)
     {
         rVar.m_cDataType=Msg.m_cDataType;
@@ -587,29 +592,70 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
     
     
     //what are we looking to register for?
-    
-    //if the variable already exists then post a notification message
-    //to the client
-    bool bAlreadyThere = VariableExists(Msg.m_sKey);
-    
-    CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
-    
-    if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
-        return false;
-    
-    
-    if(bAlreadyThere && rVar.m_nWrittenTo!=0)
-    {
-        //when the client registered the variable already existed...
-        //better tell them
-        CMOOSMsg ReplyMsg;
-        Var2Msg(rVar,ReplyMsg);
-        
-        ReplyMsg.m_cMsgType = MOOS_NOTIFY;
-        
-        AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);      
-        
-    }
+	if(Msg.IsType(MOOS_REGISTER))
+	{
+
+		//if the variable already exists then post a notification message
+		//to the client
+		bool bAlreadyThere = VariableExists(Msg.m_sKey);
+
+		CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
+
+		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
+			return false;
+
+		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
+		{
+			//when the client registered the variable already existed...
+			//better tell them
+			CMOOSMsg ReplyMsg;
+			Var2Msg(rVar,ReplyMsg);
+
+			ReplyMsg.m_cMsgType = MOOS_NOTIFY;
+
+			AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);
+
+		}
+	}
+	else if(Msg.IsType(MOOS_WILDCARD_REGISTER))
+	{
+		//here we parse out the filter
+		std::string app_pattern = "";
+		std::string var_pattern = "";
+		double period = 0.0;
+
+		std::cerr<<Msg.GetString()<<std::endl;
+		MOOSValFromString(app_pattern,Msg.GetString(),"AppPattern");
+		MOOSValFromString(var_pattern,Msg.GetString(),"VarPattern");
+		MOOSValFromString(period,Msg.GetString(),"Interval");
+		MOOS::MsgFilter F(app_pattern,var_pattern,period);
+
+		//store this filter we will need it later when new
+		//as yet undiscovered variables are written
+		m_ClientFilters[Msg.GetSource()].insert(F);
+
+
+		//now iterate over all existing variables and see if they match
+		//if the do simply register for them...
+		DBVAR_MAP::iterator q;
+		for(q = m_VarMap.begin();q!=m_VarMap.end();q++)
+		{
+			CMOOSMsg M;
+			Var2Msg(q->second,M);
+			if(F.Matches(M))
+			{
+				M.m_cMsgType = MOOS_REGISTER;
+				M.m_cDataType = MOOS_DOUBLE;
+				M.m_dfVal = period;
+				M.m_sSrc = Msg.GetSource();
+				std::cerr<<"registering "<<M.GetKey()<<std::endl;
+				M.Trace();
+				OnRegister(M);//smart...
+			}
+		}
+
+
+	}
     
     return true;
 }
@@ -643,6 +689,32 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         {
             //new variable will have data type of request message
             NewVar.m_cDataType = Msg.m_cDataType;
+
+            if(!VariableExists(Msg.GetKey()))
+			{
+				//look to see if any existing wildcards make us want to subscribe
+				//to this new message
+				std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
+				for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
+				{
+					//for every client
+					std::set<MOOS::MsgFilter>::const_iterator h;
+					for (h = g->second.begin(); h != g->second.end(); h++)
+					{
+						//for every filter
+						if (h->Matches(Msg))
+						{
+							//add the filter owner (client *g) as a subscriber
+							NewVar.AddSubscriber(g->first, h->period());
+							std::cerr<<MOOS::ConsoleColours::Yellow()<<
+									"Wildcard: "<<g->first<<" becomes subscriber to "
+									<<Msg.GetKey()<<std::endl<<MOOS::ConsoleColours::reset();
+						}
+					}
+				}
+			}
+
+
         }
         
         //index our new creation

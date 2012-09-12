@@ -75,7 +75,7 @@ CMOOSDBVar::~CMOOSDBVar()
 
 }
 
-bool CMOOSDBVar::AddSubscriber(string &sClient, double dfPeriod)
+bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 {
     CMOOSRegisterInfo Info;
 

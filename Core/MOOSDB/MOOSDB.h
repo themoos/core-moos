@@ -41,6 +41,7 @@
 #include <map>
 #include <memory>
 #include "MOOSDBHTTPServer.h"
+#include "MsgFilter.h"
 
 
 using namespace std;
@@ -122,6 +123,10 @@ private:
     the next time a client calls in*/
     MOOSMSG_LIST_STRING_MAP m_HeldMailMap;
     DBVAR_MAP    m_VarMap;
+
+
+
+    std::map<std::string,std::set< MOOS::MsgFilter > > m_ClientFilters;
 
     //pointer to a webserver if one is needed
     std::auto_ptr<CMOOSDBHTTPServer> m_pWebServer;

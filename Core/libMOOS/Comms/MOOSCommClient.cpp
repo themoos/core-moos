@@ -742,6 +742,21 @@ bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 	}
 }
 
+bool CMOOSCommClient::Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval)
+{
+	std::string sMsg;
+
+	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
+	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
+	MOOSAddValToString(sMsg,"Interval",dfInterval);
+
+	CMOOSMsg MsgR(MOOS_WILDCARD_REGISTER,m_sMyName,sMsg);
+
+
+	return Post(MsgR);
+}
+
+
 
 bool CMOOSCommClient::IsRegisteredFor(const std::string & sVariable)
 {

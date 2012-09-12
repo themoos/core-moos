@@ -18,6 +18,7 @@ void PrintHelp()
     MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
     MOOSTrace("  -c (--commstick)                  : MOOSCommsTick in Hz\n");
     MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
+    MOOSTrace("  -w var1 [var2,var3...]            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w x*:*@0.1  *:GPS:0.0 z\n");
     MOOSTrace("  -p var1[:n]@t1 [var2@t2,var3@t3....]  : list of publications in form var_name[:optional_binary_size]@period eg x@0.5 y:2048@2.0\n");
     MOOSTrace("  -v (--verbose)                    : verbose output\n");
 
@@ -50,6 +51,9 @@ public:
 
         _vSubscribe = cl.nominus_followers("-s");
         std::vector<std::string> vPublish = cl.nominus_followers("-p");
+
+        _vWildSubscriptions = cl.nominus_followers("-w");
+
 
         _SimulateNetworkFailure = cl.search(2,"-N","--simulate_network_failure");
         _NetworkStallProb = cl.follow(0.1,2,"-P","--network_failure_prob");
@@ -105,6 +109,10 @@ public:
 
         }
 
+
+
+
+
         _BinaryArray.resize(MaxArraySize);
 
     }
@@ -142,7 +150,7 @@ public:
         	}
         	if(_bVerbose)
         	{
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetAsString()<<"\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetKey()<<":"<<q->GetAsString()<<"\n";
                 std::cerr<<MOOS::ConsoleColours::reset();
         	}
         }
@@ -198,6 +206,27 @@ public:
         }
         std::cerr<<MOOS::ConsoleColours::reset();
 
+        std::vector<std::string>::iterator w;
+
+		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end();w++)
+		{
+			//GPS_X:*@0.4
+			std::string sEntry = *w;
+			std::string sVarPattern = MOOSChomp(sEntry,":");
+			std::string sAppPattern = MOOSChomp(sEntry,"@");
+			double dfPeriod  = atoi(sEntry.c_str());
+			if(sVarPattern.empty()||sAppPattern.empty()||sEntry.empty())
+			{
+				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern@period\n";
+				continue;
+			}
+
+			m_Comms.Register(sVarPattern,sAppPattern,dfPeriod);
+
+		}
+
+
+
         return true;
     }
 
@@ -205,6 +234,7 @@ public:
 
 private:
     std::vector<std::string> _vSubscribe;
+    std::vector<std::string> _vWildSubscriptions;
     double _AppTick;
     double _CommsTick;
 
