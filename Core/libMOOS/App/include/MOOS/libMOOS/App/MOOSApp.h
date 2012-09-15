@@ -197,8 +197,18 @@ protected:
 
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
-    @param dfInterval minimum time between notifications*/
+    @param dfInterval minimum time between notifications in seconds*/
     bool Register(const std::string & sVar,double dfInterval);
+
+    /** Register for notification in changes of variables which match variable and source patterns
+     *
+     * @param sVarPattern variable name pattern eg VAR*_21
+     * @param sAppPattern src name patterd eg V?R_PRODUCER
+     * @param dfInterval minimum time between notifications in seconds
+     * @return true on success
+     */
+    bool Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval);
+
 
     /** UnRegister for notification in changes of named variable
     @param sVar name of variable of interest*/

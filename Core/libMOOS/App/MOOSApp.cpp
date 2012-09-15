@@ -497,6 +497,14 @@ bool CMOOSApp::Register(const std::string & sVar,double dfInterval)
 	return m_Comms.Register(sVar,dfInterval);
 }
 
+/** Register with wildcards based on application and variable patterns (* and ? allowed)*/
+bool CMOOSApp::Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval)
+{
+	return m_Comms.Register(sVarPattern,sAppPattern,dfInterval);
+}
+
+
+
 /** UnRegister for notification in changes of named variable*/
 bool CMOOSApp::UnRegister(const std::string & sVar)
 {
