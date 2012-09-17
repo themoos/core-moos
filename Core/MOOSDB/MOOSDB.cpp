@@ -654,7 +654,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 
 		std::cerr<<MOOS::ConsoleColours::yellow()
 				<<"MOOSDB: Adding subscription of \""
-				<<Msg.GetSource()<<"\" to \""
+				<<Msg.GetSource()<<"\" to variables matching \""
 				<<var_pattern<<":"<<app_pattern<<"\""
 				<<MOOS::ConsoleColours::reset()<<std::endl;
 

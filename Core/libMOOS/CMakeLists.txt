@@ -32,8 +32,7 @@ SET(UTILS_SOURCES
    Utils/MOOSSerialPort.cpp
    Utils/MOOSPlaybackStatus.cpp
    Utils/IPV4Address.cpp
-   
-
+   Utils/KeyboardCapture.cpp
    )
 
 IF(WIN32)
