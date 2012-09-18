@@ -57,6 +57,7 @@
 class XPCTcpSocket;
 #include <list>
 #include <map>
+#include <set>
 
 /** This class is the MOOS Comms Server. It lies at the heart of the communications
 architecture and typically is of no interest to the component developer. It maintains a list of all
@@ -192,6 +193,10 @@ protected:
 
     /** map of socket file descriptors to the std::string  name of the client process at the other end*/
     SOCKETFD_2_CLIENT_NAME_MAP m_Socket2ClientMap;
+
+    /** map of socket file descriptors to the std::string  name of the client if that client supports
+     * asynchronous reception of data*/
+    std::set<std::string> m_AsynchronousClientSet;
 
     /** Called when a new client connects. Performs handshaking and adds new socket to m_ClientSocketList
     @param pNewClient pointer to the new socket created in ListenLoop;

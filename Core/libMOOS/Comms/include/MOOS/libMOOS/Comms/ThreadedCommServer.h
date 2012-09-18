@@ -71,7 +71,7 @@ protected:
          * @param SharedData a sae list of ClientThreadSharedData object
          * @return
          */
-        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming );
+        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync = false );
 
 
         /**
@@ -80,12 +80,17 @@ protected:
          * @return
          */
         static bool RunEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> Run();}
+        static bool WriteEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> AsynchronousWriteLoop();}
+
 
         /**
          * here is the main business of the day - this does the reading and writing in turn
          * @return should not return unless socket closes..
          */
         bool Run();
+
+
+        bool AsynchronousWriteLoop();
 
         /**
          * used to push data to client to send...
@@ -101,6 +106,9 @@ protected:
 
         XPCTcpSocket & GetSocket(){return _ClientSocket;};
 
+        bool IsSynchronous(){return !_bAsynchronous;};
+        bool IsAsynchronous(){return _bAsynchronous;};
+
 
         bool Kill();
 
@@ -111,6 +119,8 @@ protected:
 
         //a thread object which will start the Run() method
         CMOOSThread _Worker;
+        CMOOSThread _Writer;
+
 
 
         //what is the name of the client we are representing?
@@ -124,6 +134,8 @@ protected:
 
         //note that this one we own - its private to us
         ThreadedCommServer::SHARED_PKT_LIST _SharedDataOutgoing;
+
+        bool _bAsynchronous;
 
 
     };
