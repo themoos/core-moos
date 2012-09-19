@@ -8,6 +8,7 @@
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <iterator>
 #include <algorithm>
 
@@ -21,6 +22,7 @@
 #define INVALID_SOCKET_SELECT EBADF
 #endif
 
+#define TOLERABLE_SILENCE 5.0
 
 namespace MOOS
 {
@@ -387,10 +389,13 @@ bool ThreadedCommServer::ClientThread::Run()
 
         case 0:
             //timeout...nothing to read - spin
-        	if(MOOS::Time()-dfLastGoodComms>5)
+        	if(MOOS::Time()-dfLastGoodComms>TOLERABLE_SILENCE)
         	{
-        		 OnClientDisconnect();
-        		 return true;
+        		std::cout<<MOOS::ConsoleColours::Red();
+        		MOOSTrace("Disconnecting absent client after %d seconds of silence\n",TOLERABLE_SILENCE);
+        		std::cout<<MOOS::ConsoleColours::reset();
+        		OnClientDisconnect();
+        		return true;
         	}
         	else
         	{
