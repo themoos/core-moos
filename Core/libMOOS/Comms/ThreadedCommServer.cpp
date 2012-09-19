@@ -293,7 +293,7 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
 
     if(q==m_ClientThreads.end())
-        return MOOSFail("runtime error ThreadedCommServer::OnAbsentClient - cannot figure out worker thread");
+        return MOOSFail("runtime error ThreadedCommServer::StopAndCleanUpClientThread - cannot figure out worker thread");
 
     //stop the thread and wait for it to return
     ClientThread* pWorker = q->second;
@@ -343,6 +343,8 @@ bool ThreadedCommServer::ClientThread::Run()
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
+    double dfLastGoodComms = MOOS::Time();
+
     while(!_Worker.IsQuitRequested())
     {
 
@@ -385,6 +387,15 @@ bool ThreadedCommServer::ClientThread::Run()
 
         case 0:
             //timeout...nothing to read - spin
+        	if(MOOS::Time()-dfLastGoodComms>5)
+        	{
+        		 OnClientDisconnect();
+        		 return true;
+        	}
+        	else
+        	{
+        		dfLastGoodComms = MOOS::Time();
+        	}
             break;
 
         default:
