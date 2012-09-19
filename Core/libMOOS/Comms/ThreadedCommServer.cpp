@@ -392,7 +392,7 @@ bool ThreadedCommServer::ClientThread::Run()
         	if(MOOS::Time()-dfLastGoodComms>TOLERABLE_SILENCE)
         	{
         		std::cout<<MOOS::ConsoleColours::Red();
-        		MOOSTrace("Disconnecting absent client after %d seconds of silence\n",TOLERABLE_SILENCE);
+        		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<TOLERABLE_SILENCE<<" seconds of silence\n";
         		std::cout<<MOOS::ConsoleColours::reset();
         		OnClientDisconnect();
         		return true;
