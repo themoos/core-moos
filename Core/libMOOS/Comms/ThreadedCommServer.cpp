@@ -8,6 +8,7 @@
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <iterator>
 #include <algorithm>
 
@@ -32,6 +33,9 @@ namespace MOOS
 ThreadedCommServer::ThreadedCommServer()
 {
     // TODO Auto-generated constructor stub
+	std::cerr<<MOOS::ConsoleColours::Red()<<
+			"THIS IS A RISKY BUSINESS SUPPORTING ASYNCHRONOUS MOOS\n"
+			<<MOOS::ConsoleColours::reset();
 
 }
 

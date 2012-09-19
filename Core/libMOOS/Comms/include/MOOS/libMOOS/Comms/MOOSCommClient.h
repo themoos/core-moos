@@ -134,7 +134,7 @@ public:
 
     /** internal method which runs in a seperate thread and manages the input and output
     of messages from the server. DO NOT CALL THIS METHOD.*/
-    bool ClientLoop();
+    virtual bool ClientLoop();
 
     /** called by the above to do the client mail box shuffling **/
     virtual bool DoClientWork();
@@ -293,7 +293,7 @@ protected:
     
     /** called internally to start IO management thread 
     @see ClientLoop*/
-    bool StartThreads();
+    virtual bool StartThreads();
     
 
     /** pointer to socket connected to server */

@@ -3,6 +3,7 @@ set(LIBNAME MOOS)
 SET(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
+    Comms/MOOSAsyncCommClient.cpp
     Comms/MOOSCommObject.cpp
     Comms/MOOSCommPkt.cpp
     Comms/MOOSCommServer.cpp
