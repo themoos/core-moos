@@ -12,6 +12,9 @@ namespace MOOS
 	{
 
 	public:
+		typedef CMOOSCommClient BASE;
+		MOOSAsyncCommClient();
+		virtual ~MOOSAsyncCommClient();
 		virtual bool StartThreads();
 	    bool WritingLoop();
 	    bool DoWriting();
@@ -19,10 +22,13 @@ namespace MOOS
 	    bool ReadingLoop();
 	    bool DoReading();
 
+	    virtual std::string HandShakeKey();
+
+
 	    CMOOSThread WritingThread_;
 	    CMOOSThread ReadingThread_;
 
 	};
-}
+};
 
 #endif

@@ -682,8 +682,11 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             {
                 m_Socket2ClientMap[pNewClient->iGetSocketFd()] = Msg.m_sVal;
                 //std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
-                if(MOOSStrCmp(Msg.m_sSrcAux,"asynchronous"))
+                if(MOOSStrCmp(Msg.m_sKey,"asynchronous"))
+                {
+                	std::cerr<<MOOS::ConsoleColours::Red()<<Msg.m_sVal<<" registers as asynchronous\n";
                 	m_AsynchronousClientSet.insert(Msg.m_sVal);
+                }
 
             }
             else

@@ -578,6 +578,12 @@ bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
 	return !MsgList.empty();
 }
 
+std::string CMOOSCommClient::HandShakeKey()
+{
+	//old MOOS Clients return empty string
+	return "";
+}
+
 bool CMOOSCommClient::HandShake()
 {
 	try
@@ -592,7 +598,7 @@ bool CMOOSCommClient::HandShake()
 		m_pSocket->iSendMessage((void*)MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
 
 		//a little bit of handshaking..we need to say who we are
-		CMOOSMsg Msg(MOOS_DATA,"",(char *)m_sMyName.c_str());
+		CMOOSMsg Msg(MOOS_DATA,HandShakeKey(),(char *)m_sMyName.c_str());
 
 		SendMsg(m_pSocket,Msg);
 

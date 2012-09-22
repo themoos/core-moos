@@ -262,6 +262,9 @@ protected:
     function this class tells the server its name*/
     bool HandShake();
     
+    /**returns the key used when handshaking */
+    virtual std::string HandShakeKey();
+
     /** The number of pending unsent messages that can be tolerated*/
     unsigned int m_nOutPendingLimit;
     

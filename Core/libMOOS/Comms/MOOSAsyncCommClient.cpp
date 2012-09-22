@@ -21,25 +21,45 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 
-
 namespace MOOS
 {
 
 bool AsyncCommsReaderDispatch(void * pParam)
 {
-	MOOSAsyncCommClient *pMe = (MOOSAsyncCommClient*)pMe;
+	MOOSAsyncCommClient *pMe = (MOOSAsyncCommClient*)pParam;
 	return pMe->ReadingLoop();
 }
 
 bool AsyncCommsWriterDispatch(void * pParam)
 {
-	MOOSAsyncCommClient *pMe = (MOOSAsyncCommClient*)pMe;
+	MOOSAsyncCommClient *pMe = (MOOSAsyncCommClient*)pParam;
+
 	return pMe->WritingLoop();
+}
+
+///default constructor
+MOOSAsyncCommClient::MOOSAsyncCommClient()
+{
+
+}
+///default destructor
+MOOSAsyncCommClient::~MOOSAsyncCommClient()
+{
+
+}
+
+
+std::string MOOSAsyncCommClient::HandShakeKey()
+{
+	return "asynchronous";
 }
 
 
 bool MOOSAsyncCommClient::StartThreads()
 {
+	m_bQuit = false;
+
+	std::cerr<<"starting threads...";
     if(!WritingThread_.Initialise(AsyncCommsWriterDispatch,this))
         return false;
 
@@ -51,19 +71,22 @@ bool MOOSAsyncCommClient::StartThreads()
 
     if(!ReadingThread_.Start())
         return false;
+	std::cerr<<"OK\n";
 
 	return true;
 }
 
 
+
 bool MOOSAsyncCommClient::WritingLoop()
 {
-	 m_bClientLoopIsRunning = true;
-	//MOOSTrace("ClientLoop() Begins\n");s
-	double dfTDebug = MOOSLocalTime();
-	while(!m_bQuit)
+	std::cerr<<"WritingLoop() Begins\n";
+
+	while(!WritingThread_.IsQuitRequested())
 	{
 		//this is the connect loop...
+		std::cerr<<"making socket "<<m_lPort<<std::endl;
+
 		m_pSocket = new XPCTcpSocket(m_lPort);
 
 		if(ConnectToServer())
@@ -82,6 +105,8 @@ bool MOOSAsyncCommClient::WritingLoop()
 		//wait one second before try to connect again
 		MOOSPause(1000);
 	}
+	std::cerr<<"WTF\n";
+
 
 	//clean up on exit....
 	if(m_pSocket!=NULL)
@@ -105,7 +130,9 @@ bool MOOSAsyncCommClient::ReadingLoop()
 {
 	//not we will rely on our sibling writing thread to handle
 	//the connected and reconnecting...
-	while(!m_ReadingThread.IsQuitRequested())
+	std::cerr<<"ReadingLoop Begins\n";
+
+	while(!ReadingThread_.IsQuitRequested())
 	{
 		if(IsConnected())
 		{
@@ -116,6 +143,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			MOOSPause(100);
 		}
 	}
+	return true;
 }
 
 
@@ -135,7 +163,7 @@ bool MOOSAsyncCommClient::DoWriting()
 			return false;
 
 		//note the symmetry here... a warm feeling
-		CMOOSCommPkt PktTx,PktRx;
+		CMOOSCommPkt PktTx;
 
 		m_OutLock.Lock();
 		{
@@ -188,6 +216,8 @@ bool MOOSAsyncCommClient::DoReading()
 
 	try
 	{
+		CMOOSCommPkt PktRx;
+
 		ReadPkt(m_pSocket,PktRx);
 
 		m_InLock.Lock();
@@ -211,7 +241,8 @@ bool MOOSAsyncCommClient::DoReading()
 			//did you manage to grab the DB time while you were there?
 			if(m_bDoLocalTimeCorrection && !std::isnan(dfServerPktTxTime))
 			{
-				UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
+			//	TODO::fix me
+			//	UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
 			}
 
 
@@ -231,9 +262,9 @@ bool MOOSAsyncCommClient::DoReading()
 		MOOSTrace("Exception in ReadLoop() : %s\n",e.m_sReason);
 	}
 
-
-
-
+	return true;
 }
 
 };
+
+
