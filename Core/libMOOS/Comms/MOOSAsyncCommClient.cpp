@@ -246,7 +246,7 @@ bool MOOSAsyncCommClient::DoReading()
 			}
 
 
-			m_bMailPresent = true;
+			m_bMailPresent = !m_InBox.empty();
 		}
 		m_InLock.UnLock();
 

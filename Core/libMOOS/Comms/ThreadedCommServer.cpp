@@ -130,25 +130,25 @@ bool ThreadedCommServer::ServerLoop()
     //eternally look at our incoming work list....
     while(1)
     {
-        ClientThreadSharedData SD;
+        ClientThreadSharedData SDFromClient;
 
         //MOOSTrace("ThreadedCommServer::ServerLoop[%d]-  %d items to handle\n",i++,m_SharedDataListFromClient.Size());
 
         if(m_SharedDataListFromClient.Size()==0)
             m_SharedDataListFromClient.WaitForPush();
 
-        m_SharedDataListFromClient.Pull(SD);
+        m_SharedDataListFromClient.Pull(SDFromClient);
 
-        switch(SD._Status)
+        switch(SDFromClient._Status)
         {
         case ClientThreadSharedData::PKT_READ:
         {
-            ProcessClient(SD);
+            ProcessClient(SDFromClient);
             break;
         }
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
-            OnClientDisconnect(SD);
+            OnClientDisconnect(SDFromClient);
             break;
 
         default:
@@ -170,7 +170,7 @@ bool ThreadedCommServer::ServerLoop()
  * @param SD
  * @return
  */
-bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
+bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
 {
     bool bResult = true;
 
@@ -185,11 +185,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
             MOOSMSG_LIST MsgLstRx,MsgLstTx;
 
             //convert to list of messages
-            SD._pPktRx->Serialize(MsgLstRx,false);
+            SDFromClient._pPkt->Serialize(MsgLstRx,false);
 
 //            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++) q->Trace();
 
-            std::string sWho = SD._sClientName;
+            std::string sWho = SDFromClient._sClientName;
 
             //let owner figure out what to do !
             //this is a user supplied call back
@@ -221,10 +221,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
             //MOOSTrace("sending %d message back to client\n",MsgLstTx.size());
 
 
-            //stuff reply message into a packet
-            SD._pPktTx->Serialize(MsgLstTx,true);
-
             //send packet back to client...
+            ClientThreadSharedData SDDownStream(sWho,ClientThreadSharedData::PKT_WRITE);
+
+            //stuff reply message into a packet
+            SDDownStream._pPkt->Serialize(MsgLstTx,true);
 
             //first find the client object
             std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sWho);
@@ -234,17 +235,16 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
             }
 
             ClientThread* pClient = m_ClientThreads[sWho];
-            SD._Status = ClientThreadSharedData::PKT_WRITE;
 
             //add it to the work load
-            pClient->SendToClient(SD);
+            pClient->SendToClient(SDDownStream);
 
             //and here if we have any new fancy asynchronous clients
             //w can send them mail as well...
             for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
             {
             	ClientThread* pClient = q->second;
-            	if(!pClient->IsSynchronous())
+            	if(pClient->IsAsynchronous())
             	{
             		//OK this client can handle unsolicited pushes of data
       //              if(!(*m_pfnOutBoxCallBack)(q->first,MsgLstTx,m_pRxCallBackParam))
@@ -253,11 +253,14 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SD)
                     	if(MsgLstTx.size()==0)
                     		continue;
 
+                    	ClientThreadSharedData SDAdditionalDownStream(sWho,
+                    			ClientThreadSharedData::PKT_WRITE);
+
                     	//stuff all notifications into a packet
-                        SD._pPktTx->Serialize(MsgLstTx,true);
+                    	SDAdditionalDownStream._pPkt->Serialize(MsgLstTx,true);
 
                         //add it to the work load of this client
-                        pClient->SendToClient(SD);
+                        pClient->SendToClient(SDAdditionalDownStream);
 
                     }
             	}
@@ -460,11 +463,15 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
     //prepare to send it up the chain
     CMOOSCommPkt PktRx,PktTx;
-    ClientThreadSharedData SD(_sClientName, &PktRx,&PktTx);
-    SD._Status = ClientThreadSharedData::CONNECTION_CLOSED;
+    ClientThreadSharedData SD(_sClientName,ClientThreadSharedData::CONNECTION_CLOSED);
 
     //push this data back to the central thread
     _SharedDataIncoming.Push(SD);
+
+    if(IsAsynchronous())
+    {
+	    _SharedDataOutgoing.Push(SD);
+    }
 
     return true;
 }
@@ -472,12 +479,20 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
 bool ThreadedCommServer::ClientThread::Kill()
 {
-	if(!IsSynchronous())
+	if(IsAsynchronous())
+	{
+	    //wait for it to stop..
 		if(!_Writer.Stop())
 			return false;
+		std::cerr<<"Writer stopped\n";
+
+	}
 
     if(!_Worker.Stop())
     	return false;
+
+    std::cerr<<"Worker stopped\n";
+
 
     return true;
 }
@@ -506,29 +521,47 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 
     bool bResult = true;
 
-    CMOOSCommPkt PktRx,PktTx;
-
     try
     {
 		while(!_Writer.IsQuitRequested())
 		{
-			ClientThreadSharedData SD(_sClientName, &PktRx,&PktTx);
+			ClientThreadSharedData SDDownChain;
 			_SharedDataOutgoing.WaitForPush();
-			_SharedDataOutgoing.Pull(SD);
-			if(SD._Status!=ClientThreadSharedData::PKT_WRITE)
+			_SharedDataOutgoing.Pull(SDDownChain);
+
+			switch(SDDownChain._Status)
 			{
-				MOOSTrace("logical error %s", MOOSHERE);
-				return false;
+				//we are being asked to quit
+				case ClientThreadSharedData::CONNECTION_CLOSED:
+				{
+					std::cerr<<"Async writer quits after receiving CONNECTION_CLOSED\n";
+					return true;
+				}
+
+				//do normal writing
+				case ClientThreadSharedData::PKT_WRITE:
+				{
+					if(SDDownChain._pPkt.isNull())
+					{
+						std::cerr<<"logical error"<< MOOSHERE;
+						return false;
+					}
+					//send packet to client
+					SendPkt(&_ClientSocket,*SDDownChain._pPkt);
+					break;
+				}
+				default:
+				{
+					//we have no expectation of this signal
+					MOOSTrace("logical error %s", MOOSHERE);
+					return false;
+				}
 			}
-
-			//send packet to client
-			SendPkt(&_ClientSocket,*SD._pPktTx);
-
 		}
     }
     catch (CMOOSException e)
 	{
-	   MOOSTrace("CMOOSCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
+	   MOOSTrace("CMOOSCommServer::ClientThread::AsynchronousWriteLoop() Exception: %s\n", e.m_sReason);
 	   bResult = false;
 	}
     return bResult;
@@ -544,32 +577,33 @@ bool ThreadedCommServer::ClientThread::HandleClient()
     {
         _ClientSocket.SetReadTime(MOOSTime());
 
-        CMOOSCommPkt PktRx,PktTx;
-
-        //read input
-        ReadPkt(&_ClientSocket,PktRx);
 
         //prepare to send it up the chain
-        ClientThreadSharedData SD(_sClientName, &PktRx,&PktTx);
-        SD._Status = ClientThreadSharedData::PKT_READ;
+        ClientThreadSharedData SDUpChain(_sClientName);
+        SDUpChain._Status = ClientThreadSharedData::PKT_READ;
+
+        //read input
+        ReadPkt(&_ClientSocket,*SDUpChain._pPkt);
+
 
         //push this data back to the central thread
-        _SharedDataIncoming.Push(SD);
+        _SharedDataIncoming.Push(SDUpChain);
 
         if(IsSynchronous())
         {
 			//wait for data to be returned...
+            ClientThreadSharedData SDDownChain(_sClientName);
 			_SharedDataOutgoing.WaitForPush();
-			_SharedDataOutgoing.Pull(SD);
+			_SharedDataOutgoing.Pull(SDDownChain);
 
-			if(SD._Status!=ClientThreadSharedData::PKT_WRITE)
+			if(SDDownChain._Status!=ClientThreadSharedData::PKT_WRITE)
 			{
 				MOOSTrace("logical error %s", MOOSHERE);
 				return false;
 			}
 
 			//send packet to client
-			SendPkt(&_ClientSocket,*SD._pPktTx);
+			SendPkt(&_ClientSocket,*SDDownChain._pPkt);
         }
 
     }

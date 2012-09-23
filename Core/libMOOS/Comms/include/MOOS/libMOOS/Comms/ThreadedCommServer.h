@@ -10,7 +10,7 @@
 
 #include "MOOS/libMOOS/Comms/MOOSCommServer.h"
 #include "MOOS/libMOOS/Utils/SafeList.h"
-
+#include "MOOS/libMOOS/Thirdparty/PocoBits/SharedPtr.h"
 
 namespace MOOS
 {
@@ -18,24 +18,33 @@ namespace MOOS
 
 struct ClientThreadSharedData
 {
-  ClientThreadSharedData(const std::string & sN, CMOOSCommPkt * pPktRx, CMOOSCommPkt * pPktTx ):
-      _sClientName(sN),_pPktRx(pPktRx),_pPktTx(pPktTx){}
 
-  ClientThreadSharedData(){_pPktRx = NULL; _pPktTx = NULL;_Status =NOT_INITIALISED; };
+	std::string _sClientName;
 
-  //payload(s)
-  std::string _sClientName;
-  CMOOSCommPkt * _pPktRx;
-  CMOOSCommPkt * _pPktTx;
+	//payload
+	Poco::SharedPtr<CMOOSCommPkt> _pPkt;
 
-  //little bit of status
-  enum Status
-  {
-      NOT_INITIALISED,
-      PKT_READ,
-      CONNECTION_CLOSED,
-      PKT_WRITE,
-  } _Status;
+	//little bit of status
+	enum Status
+	{
+	  NOT_INITIALISED,
+	  PKT_READ,
+	  CONNECTION_CLOSED,
+	  PKT_WRITE,
+	} _Status;
+
+
+	ClientThreadSharedData(const std::string & sN,Status eStatus =NOT_INITIALISED):
+	_sClientName(sN),_Status(eStatus)
+	{
+		_pPkt = new CMOOSCommPkt;
+	};
+
+
+	ClientThreadSharedData(){_Status =NOT_INITIALISED; };
+
+
+
 
 };
 
