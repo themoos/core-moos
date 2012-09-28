@@ -216,6 +216,10 @@ public:
     /** return the list of messages registered*/
     std::set<std::string> GetRegistered(){return m_Registered;};
     
+    /** return true if client is running */
+    virtual bool IsRunning();
+
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
@@ -376,7 +380,7 @@ protected:
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
     /** Tells us whether the ClientLoop is running. */
-    bool m_bClientLoopIsRunning;
+   // bool m_bClientLoopIsRunning;
 
 
 };

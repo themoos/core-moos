@@ -92,7 +92,7 @@ bool MOOSAsyncCommClient::WritingLoop()
 		if(ConnectToServer())
 		{
 
-			while(!m_bQuit)
+			while(!WritingThread_.IsQuitRequested())
 			{
 
 				if(!DoWriting())
@@ -105,7 +105,6 @@ bool MOOSAsyncCommClient::WritingLoop()
 		//wait one second before try to connect again
 		MOOSPause(1000);
 	}
-	std::cerr<<"WTF\n";
 
 
 	//clean up on exit....
@@ -120,8 +119,6 @@ bool MOOSAsyncCommClient::WritingLoop()
 		MOOSTrace("CMOOSAsyncCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
-
-	m_bClientLoopIsRunning = false;
 
 	return true;
 }
@@ -210,6 +207,12 @@ bool MOOSAsyncCommClient::DoWriting()
 
 
 }
+
+bool MOOSAsyncCommClient::IsRunning()
+{
+	return WritingThread_.IsThreadRunning() || ReadingThread_.IsThreadRunning();
+}
+
 
 bool MOOSAsyncCommClient::DoReading()
 {

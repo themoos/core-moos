@@ -24,6 +24,10 @@ namespace MOOS
 
 	    virtual std::string HandShakeKey();
 
+	    virtual bool IsRunning();
+
+	protected:
+
 
 	    CMOOSThread WritingThread_;
 	    CMOOSThread ReadingThread_;

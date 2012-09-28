@@ -87,7 +87,6 @@ bool ClientLoopProc( void * pParameter)
 
 CMOOSCommClient::CMOOSCommClient()
 {
-    m_bClientLoopIsRunning = false;
 
 	m_pConnectCallBackParam = NULL;
 	m_pfnConnectCallBack = NULL;
@@ -126,6 +125,13 @@ CMOOSCommClient::~CMOOSCommClient()
 
 bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName, unsigned int nFundamentalFrequency)
 {
+	if(IsRunning())
+	{
+		std::cerr<<"error CMOOSCommClient::Run - client is already running\n";
+		return false;
+	}
+
+
 	m_bQuit = false;
 
 	//do advert
@@ -209,13 +215,15 @@ void CMOOSCommClient::SetOnDisconnectCallBack(bool ( *pfn)( void * pConnectParam
 	m_pDisconnectCallBackParam = pParam;
 }
 
+bool CMOOSCommClient::IsRunning()
+{
+	return m_ClientThread.IsThreadRunning();
+}
 
 bool CMOOSCommClient::ClientLoop()
 {
-    m_bClientLoopIsRunning = true;
-	//MOOSTrace("ClientLoop() Begins\n");s
     double dfTDebug = MOOSLocalTime();
-	while(!m_bQuit)
+	while(!m_ClientThread.IsQuitRequested())
 	{
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
@@ -262,8 +270,6 @@ bool CMOOSCommClient::ClientLoop()
         MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
-
-    m_bClientLoopIsRunning = false;
 
 	return true;
 }
@@ -1000,25 +1006,8 @@ bool CMOOSCommClient::PeekAndCheckMail(MOOSMSG_LIST &Mail, const std::string &sK
 
 bool CMOOSCommClient::Close(bool bNice )
 {
-
-	m_bQuit = true;
-	
     m_ClientThread.Stop();
     
-    int i = 0;
-
-	//while(m_bConnected )
-	while(m_bClientLoopIsRunning)
-	{
-		MOOSPause(100);
-
-		if(++i>100)
-		{
-			MOOSTrace("failed to close MOOSClient object! Most Strange.\n");
-			return false;
-		}
-	}
-
 	ClearResources();
 
 	return true;

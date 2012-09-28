@@ -39,7 +39,7 @@ int main(int argc, char * argv[])
 	C2.SetOnMailCallBack(_OnMail,&C2);
 
 	C1.Run("127.0.0.1",9000L,"C1",10);
-	C1.Run("127.0.0.1",9000L,"C2",10);
+	C2.Run("127.0.0.1",9000L,"C2",10);
 
 	while(1)
 	{
