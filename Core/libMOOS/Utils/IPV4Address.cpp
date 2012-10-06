@@ -62,11 +62,11 @@ void IPV4Address::set_port(unsigned int port)
 	port_=port;
 }
 
-std::string IPV4Address::host()
+std::string IPV4Address::host() const
 {
 	return host_;
 }
-unsigned int IPV4Address::port()
+unsigned int IPV4Address::port() const
 {
 	return port_;
 }
