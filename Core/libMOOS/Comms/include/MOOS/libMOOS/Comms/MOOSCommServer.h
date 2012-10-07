@@ -90,6 +90,15 @@ public:
     */
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
 
+
+    /**
+	* Set up the callback which is can be to collect all
+	* pending mail in named client
+	* @param pfn
+	* @param pParam
+	*/
+    void SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam);
+
     /** This function is the listen loop called from one of the two server threads. It is responsible
     for accepting a coonection and creating a new client socket.    */
     virtual bool ListenLoop();
@@ -180,6 +189,18 @@ protected:
     /** place holder for the address of the object passed back to the user during a Disconnect callback
     @see SetOnDisconnectCallBack */
     void * m_pDisconnectCallBackParam;
+
+
+
+    /** user supplied FetchAllMail callback which is called after a message has caused a call back
+	@see SetOnFetchAllMailCallBack */
+	bool (*m_pfnFetchAllMailCallBack)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pCaller);
+
+	/** place holder for the address of the object passed back to the user during an FetchAllMail callback
+	@see SetOnFetchAllMailCallBack */
+    void * m_pFetchAllMailCallBackParam;
+
+
 
     /** Listen socket (bound to port address supplied in constructor) */
     XPCTcpSocket * m_pListenSocket;

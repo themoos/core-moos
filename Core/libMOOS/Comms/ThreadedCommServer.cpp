@@ -9,6 +9,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include <iomanip>
 #include <iterator>
 #include <algorithm>
 
@@ -182,12 +183,33 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
         if(m_pfnRxCallBack!=NULL)
         {
 
+
+
             MOOSMSG_LIST MsgLstRx,MsgLstTx;
 
             //convert to list of messages
             SDFromClient._pPkt->Serialize(MsgLstRx,false);
 
-//            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++) q->Trace();
+            //is there any sort of notification going on here?
+            bool bIsNotification = false;
+            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++)
+            {
+            	if(q->IsType(MOOS_NOTIFY))
+            	{
+            		bIsNotification= true;
+            		break;
+            	}
+            }
+
+            if(bIsNotification)
+            {
+				std::cerr<<MOOS::ConsoleColours::Yellow();
+				std::cerr<<"read notification at "<< std::setw(20)
+					<<std::setprecision(15)<<MOOS::Time()<<std::endl;
+				std::cerr<<MOOS::ConsoleColours::reset();
+            }
+
+
 
             std::string sWho = SDFromClient._sClientName;
 
@@ -239,19 +261,25 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             //add it to the work load
             pClient->SendToClient(SDDownStream);
 
+            //was there ever a notification? If not just continue
+            if(bIsNotification==false)
+            	return true;
+
             //and here if we have any new fancy asynchronous clients
             //w can send them mail as well...
             for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
             {
             	ClientThread* pClient = q->second;
-            	if(pClient->IsAsynchronous())
+            	if(m_pfnFetchAllMailCallBack!=NULL && pClient->IsAsynchronous())
             	{
             		//OK this client can handle unsolicited pushes of data
-      //              if(!(*m_pfnOutBoxCallBack)(q->first,MsgLstTx,m_pRxCallBackParam))
+            		if((*m_pfnFetchAllMailCallBack)(q->first,MsgLstTx,m_pFetchAllMailCallBackParam))
                     {
                     	//any pending mail?
                     	if(MsgLstTx.size()==0)
                     		continue;
+
+                    	std::cerr<<"++++I found mail at "<<std::setw(20)<<MOOS::Time()<<std::endl;
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
@@ -584,6 +612,7 @@ bool ThreadedCommServer::ClientThread::HandleClient()
 
         //read input
         ReadPkt(&_ClientSocket,*SDUpChain._pPkt);
+
 
 
         //push this data back to the central thread

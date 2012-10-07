@@ -115,6 +115,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_nMaxSocketFD = 0;
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
+	m_pfnFetchAllMailCallBack = NULL;
     m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
@@ -619,6 +620,16 @@ void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, vo
     //store the address of the object invoking the callback -> needed for scope
     //resolution when callback is invoked
     m_pDisconnectCallBackParam = pParam;
+}
+
+void CMOOSCommServer::SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam)
+{
+    //address of function to invoke (static)
+	m_pfnFetchAllMailCallBack = pfn;
+
+	//store the parameter to pass with the invocation
+	m_pFetchAllMailCallBackParam = pParam;
+
 }
 
 bool CMOOSCommServer::IsUniqueName(string &sClientName)

@@ -119,6 +119,12 @@ public:
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
 
+    /**
+     * returns the name with which the client registers with the MOOSDB
+     * @return
+     */
+    std::string GetMOOSName();
+
     /** Called by a user of CMOOSCommClient to retrieve mail
     @param MsgList a list of messages into which the newly received message will be placed
     @return true if there is new mail */
@@ -243,7 +249,7 @@ public:
      * It is rare that you will need this...
      * @return true on success;
      */
-    bool Flush();
+    virtual bool Flush();
 
 protected:
     bool ClearResources();

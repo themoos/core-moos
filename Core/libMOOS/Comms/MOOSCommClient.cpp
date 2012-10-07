@@ -169,6 +169,12 @@ bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName,
 	return true;
 }
 
+std::string CMOOSCommClient::GetMOOSName()
+{
+	return m_sMyName;
+}
+
+
 bool CMOOSCommClient::SetCommsTick(int nCommTick)
 {
     if(nCommTick>CLIENT_MAX_FUNDAMENTAL_FREQ)

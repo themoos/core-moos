@@ -92,6 +92,9 @@ protected:
         static bool WriteEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> AsynchronousWriteLoop();}
 
 
+
+
+
         /**
          * here is the main business of the day - this does the reading and writing in turn
          * @return should not return unless socket closes..
@@ -129,6 +132,7 @@ protected:
         //a thread object which will start the Run() method
         CMOOSThread _Worker;
         CMOOSThread _Writer;
+
 
 
 
@@ -171,11 +175,15 @@ protected:
 
 
 
+    protected:
 
-    //all connected clients will push the received Pkts into this list....
-    SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
+		//all connected clients will push the received Pkts into this list....
+		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
 
-    std::map<std::string,ClientThread*> m_ClientThreads;
+		std::map<std::string,ClientThread*> m_ClientThreads;
+
+
+
 
 };
 

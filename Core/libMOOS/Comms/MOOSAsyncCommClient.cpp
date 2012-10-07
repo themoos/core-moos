@@ -76,6 +76,10 @@ bool MOOSAsyncCommClient::StartThreads()
 	return true;
 }
 
+bool MOOSAsyncCommClient::Flush()
+{
+	return DoWriting();
+}
 
 
 bool MOOSAsyncCommClient::WritingLoop()

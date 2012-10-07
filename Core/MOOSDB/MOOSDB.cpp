@@ -63,6 +63,13 @@ bool CMOOSDB::OnRxPktCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListRx,
     return pMe->OnRxPkt(sWho,MsgListRx,MsgListTx);
 }
 
+bool CMOOSDB::OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam)
+{
+    CMOOSDB* pMe = (CMOOSDB*)(pParam);
+
+    return pMe->OnFetchAllMail(sWho,MsgListTx);
+}
+
 bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
 {
     CMOOSDB* pMe = (CMOOSDB*)(pParam);
@@ -261,6 +268,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
+    m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 
 
@@ -372,6 +381,21 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
     }
     
     return true;
+}
+
+bool CMOOSDB::OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx)
+{
+	std::cerr<<"being asked for ALL  mail for "<<sWho<<std::endl;
+	MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sWho);
+	if(q!=m_HeldMailMap.end())
+	{
+		if(!q->second.empty())
+		{
+            MsgListTx.splice(MsgListTx.begin(),q->second);
+			std::cerr<<" +++ i found some..."<<MsgListTx.size()<<" in MsgListTx\n";
+		}
+	}
+	return true;
 }
 
 /** This functions decides what needs to be done on a message by message basis */

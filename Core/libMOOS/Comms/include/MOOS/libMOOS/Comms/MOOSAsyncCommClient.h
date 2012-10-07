@@ -26,6 +26,8 @@ namespace MOOS
 
 	    virtual bool IsRunning();
 
+	    virtual bool Flush();
+
 	protected:
 
 
