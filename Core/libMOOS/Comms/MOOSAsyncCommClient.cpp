@@ -81,6 +81,12 @@ bool MOOSAsyncCommClient::Flush()
 	return DoWriting();
 }
 
+bool MOOSAsyncCommClient::Post(CMOOSMsg & Msg)
+{
+	if(!BASE::Post(Msg))
+		return false;
+	return Flush();
+}
 
 bool MOOSAsyncCommClient::WritingLoop()
 {

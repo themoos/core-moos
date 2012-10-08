@@ -201,15 +201,6 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             	}
             }
 
-            if(bIsNotification)
-            {
-				std::cerr<<MOOS::ConsoleColours::Yellow();
-				std::cerr<<"read notification at "<< std::setw(20)
-					<<std::setprecision(15)<<MOOS::Time()<<std::endl;
-				std::cerr<<MOOS::ConsoleColours::reset();
-            }
-
-
 
             std::string sWho = SDFromClient._sClientName;
 
@@ -278,8 +269,6 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
                     	//any pending mail?
                     	if(MsgLstTx.size()==0)
                     		continue;
-
-                    	std::cerr<<"++++I found mail at "<<std::setw(20)<<MOOS::Time()<<std::endl;
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
@@ -353,11 +342,14 @@ bool ThreadedCommServer::OnClientDisconnect()
 
 bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 {
+	MOOSTrace("ThreadedCommServer::StopAndCleanUpClientThread \n");
+
+
     //use this name to get the thread which is doing our work
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
 
     if(q==m_ClientThreads.end())
-        return MOOSFail("runtime error ThreadedCommServer::OnAbsentClient - cannot figure out worker thread");
+        return MOOSFail("runtime error ThreadedCommServer::StopAndCleanUpClientThread - cannot figure out worker thread");
 
     //stop the thread and wait for it to return
     ClientThread* pWorker = q->second;
@@ -461,7 +453,7 @@ bool ThreadedCommServer::ClientThread::Run()
             //something to read (somewhere)
             if (FD_ISSET(_ClientSocket.iGetSocketFd(), &fdset) != 0)
             {
-                if(!HandleClient())
+                if(!HandleClientWrite())
                 {
                     //client disconnected!
                     OnClientDisconnect();
@@ -489,6 +481,8 @@ bool ThreadedCommServer::ClientThread::Run()
 bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 {
 
+    MOOSTrace("ThreadedCommServer::ClientThread::OnClientDisconnect() %s\n", _sClientName.c_str());
+
     //prepare to send it up the chain
     CMOOSCommPkt PktRx,PktTx;
     ClientThreadSharedData SD(_sClientName,ClientThreadSharedData::CONNECTION_CLOSED);
@@ -507,6 +501,8 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
 bool ThreadedCommServer::ClientThread::Kill()
 {
+    MOOSTrace("ThreadedCommServer::ClientThread::Kill() %s\n", _sClientName.c_str());
+
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
@@ -554,7 +550,12 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 		while(!_Writer.IsQuitRequested())
 		{
 			ClientThreadSharedData SDDownChain;
-			_SharedDataOutgoing.WaitForPush();
+
+			if(_SharedDataOutgoing.Size()==0)
+			{
+				_SharedDataOutgoing.WaitForPush();
+			}
+
 			_SharedDataOutgoing.Pull(SDDownChain);
 
 			switch(SDDownChain._Status)
@@ -562,7 +563,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				//we are being asked to quit
 				case ClientThreadSharedData::CONNECTION_CLOSED:
 				{
-					std::cerr<<"Async writer quits after receiving CONNECTION_CLOSED\n";
+					std::cerr<<"Async writer "<<_sClientName<<" quits after receiving CONNECTION_CLOSED\n";
 					return true;
 				}
 
@@ -592,10 +593,13 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 	   MOOSTrace("CMOOSCommServer::ClientThread::AsynchronousWriteLoop() Exception: %s\n", e.m_sReason);
 	   bResult = false;
 	}
+
+	std::cerr<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
+
     return bResult;
 }
 
-bool ThreadedCommServer::ClientThread::HandleClient()
+bool ThreadedCommServer::ClientThread::HandleClientWrite()
 {
     bool bResult = true;
 
@@ -638,7 +642,7 @@ bool ThreadedCommServer::ClientThread::HandleClient()
     }
     catch (CMOOSException e)
     {
-        MOOSTrace("CMOOSCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
+        MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
         bResult = false;
     }
 

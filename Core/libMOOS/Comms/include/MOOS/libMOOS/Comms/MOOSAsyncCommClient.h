@@ -24,6 +24,8 @@ namespace MOOS
 
 	    virtual std::string HandShakeKey();
 
+	    virtual bool Post(CMOOSMsg & Msg);
+
 	    virtual bool IsRunning();
 
 	    virtual bool Flush();

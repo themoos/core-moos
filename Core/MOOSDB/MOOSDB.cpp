@@ -385,14 +385,12 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
 
 bool CMOOSDB::OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx)
 {
-	std::cerr<<"being asked for ALL  mail for "<<sWho<<std::endl;
 	MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sWho);
 	if(q!=m_HeldMailMap.end())
 	{
 		if(!q->second.empty())
 		{
             MsgListTx.splice(MsgListTx.begin(),q->second);
-			std::cerr<<" +++ i found some..."<<MsgListTx.size()<<" in MsgListTx\n";
 		}
 	}
 	return true;

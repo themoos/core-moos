@@ -8,13 +8,16 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
+#include "MOOS/libMOOS/Utils/SafeList.h"
 
-bool _OnConnectC1(void * pParam)
+MOOS::SafeList<double> _gTimes;
+
+bool _OnConnectNULL(void * pParam)
 {
 	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
 	return true;
 }
-bool _OnConnectC2(void * pParam)
+bool _OnConnectRegister(void * pParam)
 {
 	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
 	pC->Register("X",0.0);
@@ -25,17 +28,18 @@ bool _OnMail(void *pParam)
 {
 	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
 
-	std::cerr<<MOOS::ConsoleColours::Red();
-	std::cerr<<pC->GetMOOSName()<<" Got mail at"<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
+	//std::cout<<MOOS::ConsoleColours::Red();
+	//std::cerr<<pC->GetMOOSName()<<" Got mail at"<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
 
 	MOOSMSG_LIST M;
 	pC->Fetch(M);
 	MOOSMSG_LIST::iterator q;
 	for(q=M.begin();q!=M.end();q++)
 	{
-	//	q->Trace();
+		_gTimes.Push((MOOS::Time()-q->GetTime())/1e-3);
+		std::cerr<<pC->GetMOOSName()<<"lag:"<<std::setprecision(3)<<(MOOS::Time()-q->GetTime())/1e-3<<"ms\n";
 	}
-	std::cerr<<MOOS::ConsoleColours::reset();
+	//std::cerr<<MOOS::ConsoleColours::reset();
 
 	return true;
 }
@@ -43,29 +47,55 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	MOOS::MOOSAsyncCommClient C1,C2,C3;
+	std::vector<MOOS::MOOSAsyncCommClient*> Clients(3);
 
-	C1.SetOnConnectCallBack(_OnConnectC1,&C1);
-	C2.SetOnConnectCallBack(_OnConnectC2,&C2);
-	C3.SetOnConnectCallBack(_OnConnectC2,&C3);
-
-	C1.SetOnMailCallBack(_OnMail,&C1);
-	C2.SetOnMailCallBack(_OnMail,&C2);
-	C3.SetOnMailCallBack(_OnMail,&C3);
-
-
-	C1.Run("127.0.0.1",9000L,"C1",10);
-	C2.Run("127.0.0.1",9000L,"C2",10);
-	C3.Run("127.0.0.1",9000L,"C3",10);
-
-	while(1)
+	for(unsigned int i = 0;i< Clients.size();i++)
 	{
-		MOOSPause(1000);
-		CMOOSMsg Msg(MOOS_NOTIFY,"X",MOOS::Time() );
-		C1.Post(Msg);C1.Flush();
-		std::cerr<<"C1 posted at "<<std::setw(20)<<std::setprecision(15)<<Msg.GetTime()<<std::endl;
-		//Msg.Trace();
+		MOOS::MOOSAsyncCommClient* pNewClient = new MOOS::MOOSAsyncCommClient;
 
+		if(i == 0)
+		{
+			pNewClient->SetOnConnectCallBack(_OnConnectNULL,pNewClient);
+		}
+		else
+		{
+			pNewClient->SetOnConnectCallBack(_OnConnectRegister,pNewClient);
+		}
+
+		pNewClient->SetOnMailCallBack(_OnMail,pNewClient);
+
+		std::stringstream ss;
+		ss<<"C"<<i;
+		pNewClient->Run("127.0.0.1",9000L,ss.str().c_str(),1);
+
+		Clients[i] = pNewClient;
+
+		MOOSPause(100);
 
 	}
+
+
+
+
+	unsigned int i = 0;
+	while(i++<1)
+	{
+		CMOOSMsg Msg(MOOS_NOTIFY,"X",MOOS::Time() );
+		Clients[0]->Post(Msg);
+		std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<Msg.GetTime()<<std::endl;
+		MOOSPause(100);
+		//Msg.Trace();
+	}
+
+	MOOSPause(1000);
+
+	i = 0;
+	while(_gTimes.Size())
+	{
+		double T;
+		_gTimes.Pull(T);
+		std::cout<<i++<<":"<<T<<std::endl;
+	}
+
+
 }

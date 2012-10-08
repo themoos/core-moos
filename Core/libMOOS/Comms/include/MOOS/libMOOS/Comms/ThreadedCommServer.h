@@ -112,7 +112,7 @@ protected:
         bool SendToClient(ClientThreadSharedData & OutGoing);
 
 
-        bool HandleClient();
+        bool HandleClientWrite();
 
         bool OnClientDisconnect();
 
