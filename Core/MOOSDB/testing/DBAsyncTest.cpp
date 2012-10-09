@@ -10,6 +10,10 @@
 
 #include "MOOS/libMOOS/Utils/SafeList.h"
 
+#include "MOOS/libMOOS/Utils/ThreadPrint.h"
+
+MOOS::ThreadPrint gPrinter(std::cout);
+
 MOOS::SafeList<double> _gTimes;
 
 bool _OnConnectNULL(void * pParam)
@@ -36,8 +40,9 @@ bool _OnMail(void *pParam)
 	MOOSMSG_LIST::iterator q;
 	for(q=M.begin();q!=M.end();q++)
 	{
-		_gTimes.Push((MOOS::Time()-q->GetTime())/1e-3);
-		std::cerr<<pC->GetMOOSName()<<"lag:"<<std::setprecision(3)<<(MOOS::Time()-q->GetTime())/1e-3<<"ms\n";
+		double dfLagMS =(MOOS::Time()-q->GetTime())/1e-3;
+		_gTimes.Push(dfLagMS);
+		gPrinter.Print(MOOSFormat("%s lag:%.3f",pC->GetMOOSName().c_str(),dfLagMS));
 	}
 	//std::cerr<<MOOS::ConsoleColours::reset();
 
@@ -47,7 +52,7 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	std::vector<MOOS::MOOSAsyncCommClient*> Clients(3);
+	std::vector<MOOS::MOOSAsyncCommClient*> Clients(200);
 
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
@@ -78,7 +83,7 @@ int main(int argc, char * argv[])
 
 
 	unsigned int i = 0;
-	while(i++<1)
+	while(i++<100)
 	{
 		CMOOSMsg Msg(MOOS_NOTIFY,"X",MOOS::Time() );
 		Clients[0]->Post(Msg);

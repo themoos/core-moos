@@ -34,6 +34,7 @@ SET(UTILS_SOURCES
    Utils/MOOSPlaybackStatus.cpp
    Utils/IPV4Address.cpp
    Utils/KeyboardCapture.cpp
+   Utils/ThreadPrint.cpp
    )
 
 IF(WIN32)

@@ -9,6 +9,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
@@ -27,6 +28,7 @@
 namespace MOOS
 {
 
+ThreadPrint gPrinter(std::cout);
 
 
 
@@ -264,11 +266,14 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             	if(m_pfnFetchAllMailCallBack!=NULL && pClient->IsAsynchronous())
             	{
             		//OK this client can handle unsolicited pushes of data
+            		MsgLstTx.clear();
             		if((*m_pfnFetchAllMailCallBack)(q->first,MsgLstTx,m_pFetchAllMailCallBackParam))
                     {
                     	//any pending mail?
                     	if(MsgLstTx.size()==0)
                     		continue;
+
+                    	gPrinter.Print("sending message to "+q->first);
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
