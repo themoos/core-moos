@@ -273,7 +273,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
                     	if(MsgLstTx.size()==0)
                     		continue;
 
-                    	gPrinter.Print("sending message to "+q->first);
+                    	//gPrinter.Print("sending message to "+q->first);
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);

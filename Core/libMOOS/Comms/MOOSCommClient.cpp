@@ -451,7 +451,7 @@ bool CMOOSCommClient::ConnectToServer()
 
 			m_pSocket = new XPCTcpSocket(m_lPort);
 
-			MOOSPause(100);
+			MOOSPause(1000);
 			MOOSTrace("\r");
 		}
 	}

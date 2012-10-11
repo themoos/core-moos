@@ -292,7 +292,7 @@ bool CMOOSCommServer::ListenLoop()
         {
             char sClientName[255];
 
-            m_pListenSocket->vListen();
+            m_pListenSocket->vListen(50);
 			XPCTcpSocket * pNewSocket = NULL;
 
 			if(!m_bDisableNameLookUp)
@@ -695,7 +695,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
                 //std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
                 if(MOOSStrCmp(Msg.m_sKey,"asynchronous"))
                 {
-                	std::cerr<<MOOS::ConsoleColours::Red()<<Msg.m_sVal<<" registers as asynchronous\n";
+                	std::cerr<<MOOS::ConsoleColours::Red()<<Msg.m_sVal<<" registers as asynchronous\n"<<MOOS::ConsoleColours::reset();
                 	m_AsynchronousClientSet.insert(Msg.m_sVal);
                 }
 

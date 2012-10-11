@@ -5,6 +5,7 @@
  *      Author: pnewman
  */
 
+#include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
@@ -38,11 +39,12 @@ bool _OnMail(void *pParam)
 	MOOSMSG_LIST M;
 	pC->Fetch(M);
 	MOOSMSG_LIST::iterator q;
+	unsigned int k = 0;
 	for(q=M.begin();q!=M.end();q++)
 	{
 		double dfLagMS =(MOOS::Time()-q->GetTime())/1e-3;
 		_gTimes.Push(dfLagMS);
-		gPrinter.Print(MOOSFormat("%s lag:%.3f",pC->GetMOOSName().c_str(),dfLagMS));
+		gPrinter.Print(MOOSFormat("%s [%3d] lag:%.3f",pC->GetMOOSName().c_str(),k++,dfLagMS));
 	}
 	//std::cerr<<MOOS::ConsoleColours::reset();
 
@@ -52,12 +54,20 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	std::vector<MOOS::MOOSAsyncCommClient*> Clients(200);
-
+	std::vector<CMOOSCommClient*> Clients(10);
+	//std::vector<CMOOSCommClient*> Clients(3);
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
-		MOOS::MOOSAsyncCommClient* pNewClient = new MOOS::MOOSAsyncCommClient;
+		CMOOSCommClient  * pNewClient;
 
+		if(i %2 ==0 )
+		{
+			pNewClient = new MOOS::MOOSAsyncCommClient;
+		}
+		else
+		{
+			pNewClient = new CMOOSCommClient;
+		}
 		if(i == 0)
 		{
 			pNewClient->SetOnConnectCallBack(_OnConnectNULL,pNewClient);
@@ -71,11 +81,11 @@ int main(int argc, char * argv[])
 
 		std::stringstream ss;
 		ss<<"C"<<i;
-		pNewClient->Run("127.0.0.1",9000L,ss.str().c_str(),1);
+		pNewClient->Run("127.0.0.1",9000L,ss.str().c_str(),10);
 
 		Clients[i] = pNewClient;
 
-		MOOSPause(100);
+		//MOOSPause(100);
 
 	}
 
@@ -83,24 +93,18 @@ int main(int argc, char * argv[])
 
 
 	unsigned int i = 0;
-	while(i++<100)
+	std::vector<unsigned char> Data(387000);
+
+	while(i++<1000)
 	{
-		CMOOSMsg Msg(MOOS_NOTIFY,"X",MOOS::Time() );
-		Clients[0]->Post(Msg);
-		std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<Msg.GetTime()<<std::endl;
-		MOOSPause(100);
+		Clients[0]->Notify("X",Data.data(), Data.size());
+
+		std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
+		MOOSPause(50);
 		//Msg.Trace();
 	}
 
-	MOOSPause(1000);
 
-	i = 0;
-	while(_gTimes.Size())
-	{
-		double T;
-		_gTimes.Pull(T);
-		std::cout<<i++<<":"<<T<<std::endl;
-	}
 
 
 }
