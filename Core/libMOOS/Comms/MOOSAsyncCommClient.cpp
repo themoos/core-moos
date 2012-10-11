@@ -40,7 +40,7 @@ bool AsyncCommsWriterDispatch(void * pParam)
 ///default constructor
 MOOSAsyncCommClient::MOOSAsyncCommClient()
 {
-
+	m_dfLastTimingMessage = 0.0;
 }
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
@@ -137,8 +137,6 @@ bool MOOSAsyncCommClient::ReadingLoop()
 {
 	//not we will rely on our sibling writing thread to handle
 	//the connected and reconnecting...
-	std::cerr<<"ReadingLoop Begins\n";
-
 	while(!ReadingThread_.IsQuitRequested())
 	{
 		if(IsConnected())
@@ -176,12 +174,24 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			//if nothing to send we send a NULL packet
 			//just to tick things over..
+			//we need to do this for old MOOSDB's
 			if(m_OutBox.empty())
 			{
 				//default msg is MOOS_NULL_MSG
 				CMOOSMsg Msg;
 				Msg.m_sSrc = m_sMyName;
 				m_OutBox.push_front(Msg);
+			}
+
+			//and once in a while we shall send a timing
+			//message (this is the new style of timing
+			if((MOOS::Time()-m_dfLastTimingMessage)>1)
+			{
+				std::cerr<<"instigating async timing\n";
+
+				CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOS::Time());
+				m_OutBox.push_front(Msg);
+				m_dfLastTimingMessage= Msg.GetTime();
 			}
 
 			//convert our out box to a single packet
@@ -203,6 +213,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		}
 		m_OutLock.UnLock();
 
+		//finally the send....
 		SendPkt(m_pSocket,PktTx);
 
 	}
@@ -233,6 +244,8 @@ bool MOOSAsyncCommClient::DoReading()
 
 		ReadPkt(m_pSocket,PktRx);
 
+		double dfLocalRxTime =MOOSLocalTime();
+
 		m_InLock.Lock();
 		{
 			if(m_InBox.size()>m_nInPendingLimit)
@@ -245,19 +258,49 @@ bool MOOSAsyncCommClient::DoReading()
 			//convert reply into a list of mesasges :-)
 			//but no NULL messages
 			//we ask serialise also to return the DB time
-			//by looking in the first NULL_MSG in the packet
+			//by looking in the first NULL_MSG in the packet - this is how timing worked
+			//on vanilla clients
 			double dfServerPktTxTime=std::numeric_limits<double>::quiet_NaN();
 
-			//extract...
-			PktRx.Serialize(m_InBox,false,true,&dfServerPktTxTime);
+			//extract... and please leave NULL messages there
+			PktRx.Serialize(m_InBox,false,false,&dfServerPktTxTime);
 
-			//did you manage to grab the DB time while you were there?
-			if(m_bDoLocalTimeCorrection && !std::isnan(dfServerPktTxTime))
+			//now Serialize simply adds to the front of a list so looking
+			//at the first element allows us to check for timing information
+			//as supported by the threaded server class
+			if(m_InBox.front().IsType(MOOS_TIMING))
 			{
-			//	TODO::fix me
-			//	UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
-			}
+				std::cerr<<"did async timing\n";
+				//we do have a fancy new DB at the end.....
+				if(m_bDoLocalTimeCorrection)
+				{
+					CMOOSMsg TimingMsg = m_InBox.front();
+					m_InBox.pop_front();
 
+					UpdateMOOSSkew(TimingMsg.GetDouble(),
+							TimingMsg.GetTime(),
+							MOOSLocalTime());
+
+				}
+			}
+			else if(m_bDoLocalTimeCorrection && m_InBox.front().IsType(MOOS_NULL_MSG))
+			{
+				//looks like we have an old fashioned DB which sends timing
+				//info at the front of every packet in a null message
+				//we have no corresponding outgoing packet so not much we can
+				//do other than imagine it tooks as long to send to the
+				//DB as to receive...
+				double dfTimeSentFromDB = m_InBox.front().GetDouble();
+				double dfSkew = dfTimeSentFromDB-dfLocalRxTime;
+				double dfTimeSentToDBApprox =dfTimeSentFromDB+dfSkew;
+
+				m_InBox.pop_front();
+
+				UpdateMOOSSkew(dfTimeSentToDBApprox,
+						dfTimeSentFromDB,
+						dfLocalRxTime);
+
+			}
 
 			m_bMailPresent = !m_InBox.empty();
 		}

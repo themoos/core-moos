@@ -555,6 +555,10 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg)
 
 }
 
+bool IsNullMsg(const CMOOSMsg& msg)
+{
+	return msg.IsType(MOOS_NULL_MSG);
+}
 /** this is called by a user of a CommClient object
 to retrieve mail */
 bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
@@ -569,16 +573,19 @@ bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
 
 	MOOSMSG_LIST::iterator p;
 
-	for(p = m_InBox.begin();p!=m_InBox.end();p++)
-	{
-		CMOOSMsg & rMsg = *p;
-		if(!rMsg.IsType(MOOS_NULL_MSG))
-		{
-			//only give client non NULL Msgs
+	m_InBox.remove_if(IsNullMsg);
+//	for(p = m_InBox.begin();p!=m_InBox.end();p++)
+//	{
+//		CMOOSMsg & rMsg = *p;
+//		if(!rMsg.IsType(MOOS_NULL_MSG))
+//		{
+//			//only give client non NULL Msgs
+//
+//			MsgList.push_front(rMsg);
+//		}
+//	}
 
-			MsgList.push_front(rMsg);
-		}
-	}
+	MsgList.splice(MsgList.begin(),m_InBox,m_InBox.begin(),m_InBox.end());
 
 	//remove all elements
 	m_InBox.clear();

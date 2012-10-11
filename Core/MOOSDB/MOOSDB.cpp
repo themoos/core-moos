@@ -375,7 +375,10 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
             if(!q->second.empty())
             {
                 //copy all the held mail to MsgListTx
-                MsgListTx.splice(MsgListTx.begin(),q->second);
+                MsgListTx.splice(MsgListTx.begin(),
+                		q->second,
+                		q->second.begin(),
+                		q->second.end());
             }
         }
     }
@@ -390,7 +393,10 @@ bool CMOOSDB::OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx)
 	{
 		if(!q->second.empty())
 		{
-            MsgListTx.splice(MsgListTx.begin(),q->second);
+            MsgListTx.splice(MsgListTx.begin(),
+            		q->second,
+            		q->second.begin(),
+            		q->second.end());
 		}
 	}
 	return true;
@@ -497,13 +503,6 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 //MIN
                 rVar.m_dfWriteFreq = 0.0;
             }
-            //else if(dfDT<0.005)
-            //{
-                //MAX OUT
-                //this is almost certainly two of tge same mesages arrive in the same commpkt - ignore...
-                //MOOSTrace("Msg %s was last updated at %f and its now %f\n", Msg.GetKey().c_str(),dfTimeNow,dfLastWrittenTime);
-                //rVar.m_dfWriteFreq = 200.0;
-            //}
             else
             {
                 //IIR FILTER COOEFFICENT

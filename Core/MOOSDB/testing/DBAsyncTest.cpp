@@ -44,7 +44,7 @@ bool _OnMail(void *pParam)
 	{
 		double dfLagMS =(MOOS::Time()-q->GetTime())/1e-3;
 		_gTimes.Push(dfLagMS);
-		gPrinter.Print(MOOSFormat("%s [%3d] lag:%.3f",pC->GetMOOSName().c_str(),k++,dfLagMS));
+		//gPrinter.Print(MOOSFormat("%s [%3d] lag:%.3f",pC->GetMOOSName().c_str(),k++,dfLagMS));
 	}
 	//std::cerr<<MOOS::ConsoleColours::reset();
 

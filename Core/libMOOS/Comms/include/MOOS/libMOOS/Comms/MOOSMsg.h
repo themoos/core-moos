@@ -53,6 +53,7 @@
 #define MOOS_POISON  'K'
 #define MOOS_WELCOME 'W'
 #define MOOS_SERVER_REQUEST 'Q'
+#define MOOS_TIMING 'T'
 
 //MESSAGE DATA TYPES
 #define MOOS_DOUBLE 'D'

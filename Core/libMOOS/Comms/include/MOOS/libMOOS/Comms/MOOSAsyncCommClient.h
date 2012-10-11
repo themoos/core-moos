@@ -36,6 +36,8 @@ namespace MOOS
 	    CMOOSThread WritingThread_;
 	    CMOOSThread ReadingThread_;
 
+	    double m_dfLastTimingMessage;
+
 	};
 };
 
