@@ -24,6 +24,8 @@
 namespace MOOS
 {
 
+#define TIMING_MESSAGE_PERIOD 3.0
+
 bool AsyncCommsReaderDispatch(void * pParam)
 {
 	MOOSAsyncCommClient *pMe = (MOOSAsyncCommClient*)pParam;
@@ -59,7 +61,6 @@ bool MOOSAsyncCommClient::StartThreads()
 {
 	m_bQuit = false;
 
-	std::cerr<<"starting threads...";
     if(!WritingThread_.Initialise(AsyncCommsWriterDispatch,this))
         return false;
 
@@ -71,52 +72,66 @@ bool MOOSAsyncCommClient::StartThreads()
 
     if(!ReadingThread_.Start())
         return false;
-	std::cerr<<"OK\n";
 
 	return true;
 }
 
 bool MOOSAsyncCommClient::Flush()
 {
-	return DoWriting();
+	return true;
 }
 
 bool MOOSAsyncCommClient::Post(CMOOSMsg & Msg)
 {
-	if(!BASE::Post(Msg))
-		return false;
-	return Flush();
+
+	BASE::Post(Msg);
+
+	m_OutLock.Lock();
+	{
+		OutGoingQueue_.AppendToMeInConstantTime(m_OutBox);
+		//std::cerr<<"OutGoingQueue_ : "<<OutGoingQueue_.Size()<<"\n";
+	}
+	m_OutLock.UnLock();
+
+	return true;
 }
+
+bool MOOSAsyncCommClient::OnCloseConnection()
+{
+	MOOS::ScopedLock WL(m_CloseConnectionLock);
+
+	BASE::OnCloseConnection();
+}
+
 
 bool MOOSAsyncCommClient::WritingLoop()
 {
-	std::cerr<<"WritingLoop() Begins\n";
+	//we want errors not signals!
+	signal(SIGPIPE, SIG_IGN);
 
 	while(!WritingThread_.IsQuitRequested())
 	{
 		//this is the connect loop...
-		std::cerr<<"making socket "<<m_lPort<<std::endl;
-
 		m_pSocket = new XPCTcpSocket(m_lPort);
+
+		int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
 
 		if(ConnectToServer())
 		{
-
-			while(!WritingThread_.IsQuitRequested())
+			while(!WritingThread_.IsQuitRequested() && IsConnected() )
 			{
+				if(OutGoingQueue_.Size()==0)
+				{
+					OutGoingQueue_.WaitForPush(nMSToWait);
+				}
 
 				if(!DoWriting())
-					break;
-
-				MOOSPause((int)(1000.0/m_nFundamentalFreq));
-
+				{
+					OnCloseConnection();
+				}
 			}
 		}
-		//wait one second before try to connect again
-		MOOSPause(1000);
 	}
-
-
 	//clean up on exit....
 	if(m_pSocket!=NULL)
 	{
@@ -126,39 +141,18 @@ bool MOOSAsyncCommClient::WritingLoop()
 	}
 
 	if(m_bQuiet)
-		MOOSTrace("CMOOSAsyncCommClient::ClientLoop() quits\n");
+		MOOSTrace("CMOOSAsyncCommClient::WritingLoop() quits\n");
 
 	m_bConnected = false;
 
 	return true;
 }
 
-bool MOOSAsyncCommClient::ReadingLoop()
-{
-	//not we will rely on our sibling writing thread to handle
-	//the connected and reconnecting...
-	while(!ReadingThread_.IsQuitRequested())
-	{
-		if(IsConnected())
-		{
-			DoReading();
-		}
-		else
-		{
-			MOOSPause(100);
-		}
-	}
-	return true;
-}
+
 
 
 bool MOOSAsyncCommClient::DoWriting()
 {
-
-	//this existence of this object makes this scope
-	//a critical section - this allows ::flush to be called
-	//safely
-	MOOS::ScopedLock WL(m_WorkLock);
 
 	//this is the IO Loop
 	try
@@ -167,60 +161,39 @@ bool MOOSAsyncCommClient::DoWriting()
 		if(!IsConnected())
 			return false;
 
-		//note the symmetry here... a warm feeling
-		CMOOSCommPkt PktTx;
+		MOOSMSG_LIST StuffToSend;
 
-		m_OutLock.Lock();
+		OutGoingQueue_.AppendToOtherInConstantTime(StuffToSend);
+
+		//and once in a while we shall send a timing
+		//message (this is the new style of timing
+		if((MOOS::Time()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
-			//if nothing to send we send a NULL packet
-			//just to tick things over..
-			//we need to do this for old MOOSDB's
-			if(m_OutBox.empty())
-			{
-				//default msg is MOOS_NULL_MSG
-				CMOOSMsg Msg;
-				Msg.m_sSrc = m_sMyName;
-				m_OutBox.push_front(Msg);
-			}
-
-			//and once in a while we shall send a timing
-			//message (this is the new style of timing
-			if((MOOS::Time()-m_dfLastTimingMessage)>1)
-			{
-				std::cerr<<"instigating async timing\n";
-
-				CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOS::Time());
-				m_OutBox.push_front(Msg);
-				m_dfLastTimingMessage= Msg.GetTime();
-			}
-
-			//convert our out box to a single packet
-			try
-			{
-				PktTx.Serialize(m_OutBox,true);
-			}
-			catch (CMOOSException e)
-			{
-				//clear the outbox
-				m_OutBox.clear();
-				throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
-			}
-
-			//clear the outbox
-			m_OutBox.clear();
-
-
+			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOS::Time());
+			StuffToSend.push_front(Msg);
+			m_dfLastTimingMessage= Msg.GetTime();
 		}
-		m_OutLock.UnLock();
+
+		//convert our out box to a single packet
+		CMOOSCommPkt PktTx;
+		try
+		{
+			PktTx.Serialize(StuffToSend,true);
+		}
+		catch (CMOOSException e)
+		{
+			//clear the outbox
+			throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
+		}
+
 
 		//finally the send....
 		SendPkt(m_pSocket,PktTx);
 
 	}
-	catch(CMOOSException e)
+	catch(const CMOOSException & e)
 	{
-		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
-		OnCloseConnection();
+		MOOSTrace("Exception in DoWriting() : %s\n",e.m_sReason);
 		return false;//jump out to connect loop....
 	}
 
@@ -229,11 +202,32 @@ bool MOOSAsyncCommClient::DoWriting()
 
 }
 
-bool MOOSAsyncCommClient::IsRunning()
-{
-	return WritingThread_.IsThreadRunning() || ReadingThread_.IsThreadRunning();
-}
 
+
+bool MOOSAsyncCommClient::ReadingLoop()
+{
+	//note we will rely on our sibling writing thread to handle
+	//the connected and reconnecting...
+	signal(SIGPIPE, SIG_IGN);
+
+
+	while(!ReadingThread_.IsQuitRequested())
+	{
+		if(IsConnected())
+		{
+			if(!DoReading())
+			{
+				std::cerr<<"reading failed!\n";
+			}
+		}
+		else
+		{
+			MOOSPause(100);
+		}
+	}
+	std::cerr<<"READING LOOP quiting...\n";
+	return true;
+}
 
 bool MOOSAsyncCommClient::DoReading()
 {
@@ -255,57 +249,57 @@ bool MOOSAsyncCommClient::DoReading()
 				m_InBox.clear();
 			}
 
-			//convert reply into a list of mesasges :-)
-			//but no NULL messages
-			//we ask serialise also to return the DB time
-			//by looking in the first NULL_MSG in the packet - this is how timing worked
-			//on vanilla clients
-			double dfServerPktTxTime=std::numeric_limits<double>::quiet_NaN();
-
 			//extract... and please leave NULL messages there
-			PktRx.Serialize(m_InBox,false,false,&dfServerPktTxTime);
+			PktRx.Serialize(m_InBox,false,false,NULL);
 
 			//now Serialize simply adds to the front of a list so looking
 			//at the first element allows us to check for timing information
 			//as supported by the threaded server class
-			if(m_InBox.front().IsType(MOOS_TIMING))
+			if(m_bDoLocalTimeCorrection)
 			{
-				std::cerr<<"did async timing\n";
-				//we do have a fancy new DB at the end.....
-				if(m_bDoLocalTimeCorrection)
+				switch(m_InBox.front().GetType())
 				{
-					CMOOSMsg TimingMsg = m_InBox.front();
-					m_InBox.pop_front();
+					case MOOS_TIMING:
+					{
+						//we have a fancy new DB upstream...
+						//one that support Asynchronous Clients
+						CMOOSMsg TimingMsg = m_InBox.front();
+						m_InBox.pop_front();
 
-					UpdateMOOSSkew(TimingMsg.GetDouble(),
-							TimingMsg.GetTime(),
-							MOOSLocalTime());
+						UpdateMOOSSkew(TimingMsg.GetDouble(),
+								TimingMsg.GetTime(),
+								MOOSLocalTime());
+						break;
+					}
+					case MOOS_NULL_MSG:
+					{
+						//looks like we have an old fashioned DB which sends timing
+						//info at the front of every packet in a null message
+						//we have no corresponding outgoing packet so not much we can
+						//do other than imagine it tooks as long to send to the
+						//DB as to receive...
+						double dfTimeSentFromDB = m_InBox.front().GetDouble();
+						double dfSkew = dfTimeSentFromDB-dfLocalRxTime;
+						double dfTimeSentToDBApprox =dfTimeSentFromDB+dfSkew;
 
+						m_InBox.pop_front();
+
+						UpdateMOOSSkew(dfTimeSentToDBApprox,
+								dfTimeSentFromDB,
+								dfLocalRxTime);
+
+						break;
+
+					}
 				}
-			}
-			else if(m_bDoLocalTimeCorrection && m_InBox.front().IsType(MOOS_NULL_MSG))
-			{
-				//looks like we have an old fashioned DB which sends timing
-				//info at the front of every packet in a null message
-				//we have no corresponding outgoing packet so not much we can
-				//do other than imagine it tooks as long to send to the
-				//DB as to receive...
-				double dfTimeSentFromDB = m_InBox.front().GetDouble();
-				double dfSkew = dfTimeSentFromDB-dfLocalRxTime;
-				double dfTimeSentToDBApprox =dfTimeSentFromDB+dfSkew;
-
-				m_InBox.pop_front();
-
-				UpdateMOOSSkew(dfTimeSentToDBApprox,
-						dfTimeSentFromDB,
-						dfLocalRxTime);
-
 			}
 
 			m_bMailPresent = !m_InBox.empty();
 		}
 		m_InLock.UnLock();
 
+		//and here we can optionally give users an indication
+		//that mail has arrived...
 		if(m_pfnMailCallBack!=NULL && m_bMailPresent)
 		{
 			bool bUserResult = (*m_pfnMailCallBack)(m_pMailCallBackParam);
@@ -313,12 +307,30 @@ bool MOOSAsyncCommClient::DoReading()
 				MOOSTrace("user mail callback returned false..is all ok?\n");
 		}
 	}
-	catch(CMOOSException e)
+	catch(const CMOOSException & e)
 	{
-		MOOSTrace("Exception in ReadLoop() : %s\n",e.m_sReason);
+		MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
+		return false;
 	}
 
 	return true;
+}
+
+bool MOOSAsyncCommClient::IsRunning()
+{
+	return WritingThread_.IsThreadRunning() || ReadingThread_.IsThreadRunning();
+}
+
+void MOOSAsyncCommClient::DoBanner()
+{
+    if(m_bQuiet)
+        return ;
+
+	MOOSTrace("****************************************************\n");
+	MOOSTrace("*       This is an Asynchronous MOOS Client        *\n");
+	MOOSTrace("*       c. P Newman 2001-2012                      *\n");
+	MOOSTrace("****************************************************\n");
+
 }
 
 };

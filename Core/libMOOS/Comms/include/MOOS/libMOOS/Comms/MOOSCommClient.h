@@ -257,10 +257,10 @@ protected:
     int m_nNextMsgID;
     
     /** send library info to stdout */
-    void DoBanner();
+    virtual void DoBanner();
     
     /** called when connection to server is closed */
-    bool OnCloseConnection();
+    virtual bool OnCloseConnection();
     
     /** true if we are connected to the server */
     bool m_bConnected;

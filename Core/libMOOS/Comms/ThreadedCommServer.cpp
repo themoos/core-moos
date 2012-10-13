@@ -215,38 +215,29 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             		bIsNotification= true;
             		break;
             	}
-            	if(q->IsType(MOOS_NOTIFY))
-            	{
-            		std::cerr<<"tahts something\n";
-            	}
             }
 
 
             //is this a timing message from V10 client?
-            if(pClient->IsAsynchronous() &&
-            	MsgLstRx.front().IsType(MOOS_TIMING))
+            if(MsgLstRx.front().IsType(MOOS_TIMING))
             {
-				std::cerr<<"responding to async timing\n";
-
             	CMOOSMsg TimingMsg =MsgLstRx.front();
+            	MsgLstRx.pop_front();
+
             	TimingMsg.SetDouble( MOOSLocalTime() );
             	MsgLstTx.push_front(TimingMsg);
             }
-            else
-            {
-				//let owner figure out what to do !
-				//this is a user supplied call back
-				if(!(*m_pfnRxCallBack)(sWho,MsgLstRx,MsgLstTx,m_pRxCallBackParam))
-				{
-					//client call back failed!!
-					MOOSTrace(" CMOOSCommServer::ProcessClient()  pfnCallback failed\n");
-				}
-            }
+
+            //let owner figure out what to do !
+			//this is a user supplied call back
+			if(!(*m_pfnRxCallBack)(sWho,MsgLstRx,MsgLstTx,m_pRxCallBackParam))
+			{
+				//client call back failed!!
+				MOOSTrace(" CMOOSCommServer::ProcessClient()  pfnCallback failed\n");
+			}
 
             if(m_bQuiet)
                 InhibitMOOSTraceInThisThread(true);
-
-
 
             if(pClient->IsSynchronous())
             {
@@ -260,16 +251,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
 
             }
 
-            //MOOSTrace("sending %d message back to client\n",MsgLstTx.size());
-
-
             //send packet back to client...
             ClientThreadSharedData SDDownStream(sWho,ClientThreadSharedData::PKT_WRITE);
 
             //stuff reply message into a packet
             SDDownStream._pPkt->Serialize(MsgLstTx,true);
-
-
 
             //add it to the work load
             pClient->SendToClient(SDDownStream);

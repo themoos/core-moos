@@ -65,7 +65,6 @@
 
 
 
-#define MOOS_SERVER_REQUEST_ID  -2
 
 
 using namespace std;
@@ -247,7 +246,9 @@ bool CMOOSCommClient::ClientLoop()
                 }
                                    
 				if(!DoClientWork())
+				{
 					break;
+				}
                 
                 if(m_bVerboseDebug)
                     MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",MOOSLocalTime()-dfTDebug);
@@ -262,6 +263,7 @@ bool CMOOSCommClient::ClientLoop()
 		}
 		//wait one second before try to connect again
 		MOOSPause(1000);
+
 	}
 
 	//clean up on exit....
@@ -392,7 +394,6 @@ bool CMOOSCommClient::DoClientWork()
                 MOOSTrace("user mail callback returned false..is all ok?\n");
         }
 
-        
         
 	}
 	catch(CMOOSException e)
@@ -718,10 +719,8 @@ void CMOOSCommClient::DoBanner()
         return ;
 
 	MOOSTrace("****************************************************\n");
-	MOOSTrace("*                                                  *\n");
 	MOOSTrace("*       This is MOOS Client                        *\n");
 	MOOSTrace("*       c. P Newman 2001-2011                      *\n");
-	MOOSTrace("*                                                  *\n");
 	MOOSTrace("****************************************************\n");
 
 }
@@ -1094,7 +1093,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	//back out correction which has already been made..
 	//dfRqTime-=dfOldSkew;
 	//dfRxTime-=dfOldSkew;
-
+//#define MOOS_DETECT_CLOCK_DRIFT
 #ifdef MOOS_DETECT_CLOCK_DRIFT
 
 	// This is an experimental and unfinished feature.  It tracks the drift between
@@ -1112,11 +1111,13 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 		// Make a fresh skew filter
 		//m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSConditionedSkewFilter);
 		m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
-		if (!m_pSkewFilter.get()) return false;
+		if (!m_pSkewFilter.get())
+			return false;
 	}
 
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
 	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
+	MOOSTrace("Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",dfRqTime,dfTxTime,dfRxTime,dfNewSkew);
 
 #else // MOOS_DETECT_CLOCK_DRIFT
 	
@@ -1126,7 +1127,12 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	if(dfOldSkew!=0.0)
 	{
 		dfNewSkew = 0.9*dfOldSkew+0.1*dfMeasuredSkew;	
-		//MOOSTrace("Tx Time (@DB) = %.4f Localtime (@localhost) = %.4f Skew = %.4f smoothed skew = %.5f seconds\n",dfTxTime,HPMOOSTime(),dfMeasuredSkew,dfNewSkew);
+	/*	MOOSTrace("%s Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",
+				m_sMyName.c_str(),
+				dfRqTime,
+				dfTxTime,
+				dfRxTime,
+				dfNewSkew);*/
 	}
 	else
 	{

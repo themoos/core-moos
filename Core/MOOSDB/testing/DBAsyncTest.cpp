@@ -15,7 +15,6 @@
 
 MOOS::ThreadPrint gPrinter(std::cout);
 
-MOOS::SafeList<double> _gTimes;
 
 bool _OnConnectNULL(void * pParam)
 {
@@ -43,8 +42,7 @@ bool _OnMail(void *pParam)
 	for(q=M.begin();q!=M.end();q++)
 	{
 		double dfLagMS =(MOOS::Time()-q->GetTime())/1e-3;
-		_gTimes.Push(dfLagMS);
-		//gPrinter.Print(MOOSFormat("%s [%3d] lag:%.3f",pC->GetMOOSName().c_str(),k++,dfLagMS));
+		gPrinter.Print(MOOSFormat("%s [%3d] lag:%.3f",pC->GetMOOSName().c_str(),k++,dfLagMS));
 	}
 	//std::cerr<<MOOS::ConsoleColours::reset();
 
@@ -54,13 +52,13 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	std::vector<CMOOSCommClient*> Clients(10);
+	std::vector<CMOOSCommClient*> Clients(20);
 	//std::vector<CMOOSCommClient*> Clients(3);
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
 		CMOOSCommClient  * pNewClient;
 
-		if(i %2 ==0 )
+		if(1 || i %2 ==0 )
 		{
 			pNewClient = new MOOS::MOOSAsyncCommClient;
 		}
@@ -81,7 +79,7 @@ int main(int argc, char * argv[])
 
 		std::stringstream ss;
 		ss<<"C"<<i;
-		pNewClient->Run("127.0.0.1",9000L,ss.str().c_str(),10);
+		pNewClient->Run("127.0.0.1",9000L,ss.str().c_str(),2);
 
 		Clients[i] = pNewClient;
 
@@ -89,18 +87,15 @@ int main(int argc, char * argv[])
 
 	}
 
-
-
-
 	unsigned int i = 0;
-	std::vector<unsigned char> Data(387000);
+	std::vector<unsigned char> Data(387);
 
-	while(i++<1000)
+	while(1 || i++<1000)
 	{
 		Clients[0]->Notify("X",Data.data(), Data.size());
 
-		std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
-		MOOSPause(50);
+		//std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
+		MOOSPause(100);
 		//Msg.Trace();
 	}
 

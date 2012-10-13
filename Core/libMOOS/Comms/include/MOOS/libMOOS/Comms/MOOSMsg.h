@@ -53,6 +53,7 @@
 #define MOOS_POISON  'K'
 #define MOOS_WELCOME 'W'
 #define MOOS_SERVER_REQUEST 'Q'
+#define MOOS_SERVER_REQUEST_ID  -2
 #define MOOS_TIMING 'T'
 
 //MESSAGE DATA TYPES
@@ -108,6 +109,9 @@ public:
 
     /**check message type MOOS_NOTIFY, REGISTER etc*/
     bool IsType (char  cType)const;
+
+    /** return type */
+    char GetType() const;
 
     /**return time stamp of message*/
     double GetTime()const {return m_dfTime;};

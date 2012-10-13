@@ -482,6 +482,11 @@ bool CMOOSMsg::IsType(char cType) const
     return m_cMsgType==cType;
 }
 
+char CMOOSMsg::GetType() const
+{
+	return m_cMsgType;
+}
+
 void CMOOSMsg::Trace()
 {
     MOOSTrace("Type=%c DataType=%c Key =%s ",m_cMsgType,m_cDataType,m_sKey.c_str());

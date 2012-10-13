@@ -58,6 +58,28 @@ public:
         _List.pop_front();
     }
 
+    bool AppendToMeInConstantTime(std::list<T> & ThingToAppend)
+    {
+    	if(ThingToAppend.empty())
+    		return true;
+        Poco::FastMutex::ScopedLock Lock(_mutex);
+        _List.splice(_List.end(), ThingToAppend, ThingToAppend.begin(), ThingToAppend.end());
+        _PushEvent.set();
+
+        return true;
+    }
+
+    bool AppendToOtherInConstantTime(std::list<T> & ThingToAppendTo)
+    {
+        Poco::FastMutex::ScopedLock Lock(_mutex);
+    	if(_List.empty())
+    		return true;
+        ThingToAppendTo.splice(ThingToAppendTo.end(), _List, _List.begin(), _List.end());
+
+        return true;
+    }
+
+
     bool PeekLatest(T & Element)
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
