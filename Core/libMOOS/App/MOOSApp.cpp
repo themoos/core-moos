@@ -43,6 +43,11 @@
 #include <sstream>
 #include <iterator>
 
+#ifdef FAST_CLIENT
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
+#endif
+
+
 using namespace std;
 
 // predicate for sorting on time
@@ -127,6 +132,12 @@ CMOOSApp::CMOOSApp()
     
     SetMOOSTimeWarp(1.0);
     
+#ifdef FAST_CLIENT
+    m_pMailEvent = new Poco::Event;
+    UseMailCallBack();
+#endif
+
+
     EnableIterateWithoutComms(false);
 }
 
@@ -264,17 +275,10 @@ bool CMOOSApp::Run( const char * sName,
 
     while(!m_bQuitRequested)
     {
-        if(!m_Comms.HasMailCallBack())
-        {
-            
-        	bool bOK = DoRunWork();
-            
-            if(m_bQuitOnIterateFail && !bOK)
-                return MOOSFail("MOOSApp Exiting as requested");
-        }
-        else
-            MOOSPause(1000);
-                
+		bool bOK = DoRunWork();
+
+		if(m_bQuitOnIterateFail && !bOK)
+			return MOOSFail("MOOSApp Exiting as requested");
     }
 
     /***************************   END OF MOOS APP LOOP ***************************************/
@@ -293,6 +297,7 @@ bool CMOOSApp::RequestQuit()
 
 bool CMOOSApp::DoRunWork()
 {
+
     //look for mail
     double dfT1 = MOOSLocalTime();
     //local vars
@@ -349,6 +354,7 @@ bool CMOOSApp::DoRunWork()
     
     //store for derived class use the last time iterate was called;
     m_dfLastRunTime = MOOSLocalTime();
+
     
     //sleep
     if(m_dfFreq>0)
@@ -362,9 +368,14 @@ bool CMOOSApp::DoRunWork()
 
         //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
         //tick once more and let the OS schedule us appropriately
-        if(nSleep>10 && !m_Comms.HasMailCallBack())
+        if(nSleep>1)
         {
+#ifdef FAST_CLIENT
+        	//block until time out or mail received...
+        	m_pMailEvent->tryWait(nSleep);
+#else
             MOOSPause(nSleep);
+#endif
         }
     }
     
@@ -409,10 +420,7 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
 /////////////////// EXPERIMENTAL July 2008 ////////////////////
 bool CMOOSApp::UseMailCallBack()
 {
-    /* by calling this function Iterate and OnNewMail will be
-     called from the thread that is servicing the MOOS Comms client. It
-     is provided to let really very specialised MOOSApps have very speedy
-     response times. It is not recommended for general use*/
+    /* This attaches a callback to thw comms object's mail handler*/
     m_Comms.SetOnMailCallBack(MOOSAPP_OnMail,this);
     return true;
 }
@@ -517,7 +525,12 @@ bool CMOOSApp::UnRegister(const std::string & sVar)
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {
-    return DoRunWork();
+#ifdef FAST_CLIENT
+    m_pMailEvent->set();
+    return true;
+#else
+    return DoClientWork()
+#endif
 }
 
 bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)

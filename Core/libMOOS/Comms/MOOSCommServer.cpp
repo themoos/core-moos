@@ -532,6 +532,14 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         {
             std::cerr<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
         }
+        if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
+        {
+        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
     }
     else
     {
@@ -558,7 +566,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
-    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
+    std::cerr<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
@@ -570,10 +578,16 @@ bool CMOOSCommServer::OnClientDisconnect()
     {
         sWho = p->second;
 
-        MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
+        //MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
 
         m_Socket2ClientMap.erase(p);
+
+        if(m_AsynchronousClientSet.find(sWho)!=m_AsynchronousClientSet.end())
+        {
+        	m_AsynchronousClientSet.erase(sWho);
+        }
     }
+
 
     GetMaxSocketFD();
 
@@ -583,7 +597,7 @@ bool CMOOSCommServer::OnClientDisconnect()
 
     if(m_pfnDisconnectCallBack!=NULL)
     {
-        MOOSTrace("Invoking user OnDisconnect callback...\n");
+        //MOOSTrace("Invoking user OnDisconnect callback...\n");
 		if(m_bQuiet)
 			InhibitMOOSTraceInThisThread(false);
 
@@ -695,7 +709,6 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
                 //std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
                 if(MOOSStrCmp(Msg.m_sKey,"asynchronous"))
                 {
-                	std::cerr<<MOOS::ConsoleColours::Red()<<Msg.m_sVal<<" registers as asynchronous\n"<<MOOS::ConsoleColours::reset();
                 	m_AsynchronousClientSet.insert(Msg.m_sVal);
                 }
 
@@ -761,7 +774,6 @@ void CMOOSCommServer::DoBanner()
     MOOSTrace("*  This is a MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
     MOOSTrace("*  Connect to this server on port %d               \n",m_lListenPort);
     MOOSTrace("*  Name look up is %s                              \n",m_bDisableNameLookUp ? "off" : "on");
-    //MOOSTrace("*  This machine is %s endian                 \n",IsLittleEndian()?"Little":"Big");
     MOOSTrace("***************************************************\n");
 
 }

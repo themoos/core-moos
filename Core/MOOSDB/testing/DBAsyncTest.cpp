@@ -53,12 +53,11 @@ bool _OnMail(void *pParam)
 int main(int argc, char * argv[])
 {
 	std::vector<CMOOSCommClient*> Clients(20);
-	//std::vector<CMOOSCommClient*> Clients(3);
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
 		CMOOSCommClient  * pNewClient;
 
-		if(1 || i %2 ==0 )
+		if( i %2 ==0 )
 		{
 			pNewClient = new MOOS::MOOSAsyncCommClient;
 		}
@@ -68,7 +67,7 @@ int main(int argc, char * argv[])
 		}
 		if(i == 0)
 		{
-			pNewClient->SetOnConnectCallBack(_OnConnectNULL,pNewClient);
+			pNewClient->SetOnConnectCallBack(_OnConnectRegister,pNewClient);
 		}
 		else
 		{
@@ -83,7 +82,7 @@ int main(int argc, char * argv[])
 
 		Clients[i] = pNewClient;
 
-		//MOOSPause(100);
+		MOOSPause(100);
 
 	}
 

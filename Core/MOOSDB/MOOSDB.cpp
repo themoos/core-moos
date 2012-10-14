@@ -325,7 +325,6 @@ void CMOOSDB::UpdateDBTimeVars()
 /**this will be called each time a new packet is recieved*/
 bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx)
 {
-    //MOOSTrace("\nClient %s::OnRxPkt:\n",sClient.c_str());
 
     MOOSMSG_LIST::iterator p;
     
@@ -334,8 +333,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
-
-
     //good spot to update our internal time    
     UpdateDBTimeVars();
 
@@ -346,8 +343,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
     {
         
         //now we fill in the packet with our replies to THIS CLIENT
-        //MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(MsgListRx.front().m_sSrc);
-        
         MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sClient);
         
         if(q==m_HeldMailMap.end())
@@ -438,14 +433,8 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 {
     double dfTimeNow = HPMOOSTime();
     
-    
     CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
     
-
-
-
-    
-
     if(rVar.m_nWrittenTo==0)
     {
         rVar.m_cDataType=Msg.m_cDataType;
@@ -769,6 +758,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
+    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -778,16 +768,15 @@ bool CMOOSDB::OnDisconnect(string &sClient)
         
         rVar.RemoveSubscriber(sClient);
     }
-    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...\n";
     if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
     {
-        std::cerr<<"  removing wildcard subscriptions\n";
+        //std::cerr<<"  removing wildcard subscriptions\n";
     	m_ClientFilters[sClient].clear();
     }
     
-    std::cerr<<"  removing held mail\n";
+    //std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
-    std::cerr<<MOOS::ConsoleColours::reset();
+    std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
     return true;
 }
@@ -822,12 +811,10 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
     DBVAR_MAP::iterator p;
     STRING_LIST::iterator q;
-    
     STRING_LIST Clients;
     
     m_pCommServer->GetClientNames(Clients);
-    
-    
+
     for(q=Clients.begin();q!=Clients.end();q++)
     {
         string sWho = *q;

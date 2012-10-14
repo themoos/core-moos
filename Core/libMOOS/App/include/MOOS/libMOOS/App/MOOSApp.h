@@ -34,6 +34,7 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
+#define FAST_CLIENT
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 
@@ -52,6 +53,14 @@
 
 
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
+
+#ifdef FAST_CLIENT
+#include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+namespace Poco
+{
+class Event;
+}
+#endif
 
 /** This is a class from which all MOOS component applications can be derived
 main() will typically end with a call to MOOSAppDerivedClass::Run(). It provides
@@ -215,9 +224,12 @@ protected:
     bool UnRegister(const std::string & sVar);
 
 
-    /** The MOOSComms node. All communications happens by way of this object. You'll often do things like  m_Comms.Notify("VARIABLE_X","STRING_DATA",dfTime) top send data */
+    /** The MOOSComms node. All communications happens by way of this object.*/
+#ifdef FAST_CLIENT
+    MOOS::MOOSAsyncCommClient m_Comms;
+#else
     CMOOSCommClient m_Comms;
-
+#endif
     /** Set the time between calls into the DB - can be set using the CommsTick flag in the config file*/
     bool SetCommsFreq(unsigned int nFreq);
 
@@ -444,6 +456,10 @@ private:
 
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
+
+#ifdef FAST_CLIENT
+    Poco::Event * m_pMailEvent;
+#endif
 
 
 private:

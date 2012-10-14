@@ -56,6 +56,14 @@ set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCE
 
 include(PlatformDefines)
 
+##############   FAST COMMS?   ################
+#do we want to use the new fast asynchronous client architecture?
+OPTION(USE_FAST_COMMS  "enable fast asynchronous comms architecture" OFF)
+IF (USE_FAST_COMMS)
+    ADD_DEFINITIONS(-DUSE_FAST_COMMS)
+ENDIF (USE_FAST_COMMS)
+MARK_AS_ADVANCED(USE_FAST_COMMS)
+
 
 ############# COMPRESSED COMMS? ################
 SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")

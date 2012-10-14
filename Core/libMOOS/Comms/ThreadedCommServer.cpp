@@ -353,8 +353,6 @@ bool ThreadedCommServer::OnClientDisconnect()
 
 bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 {
-	MOOSTrace("ThreadedCommServer::StopAndCleanUpClientThread \n");
-
 
     //use this name to get the thread which is doing our work
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
@@ -492,7 +490,6 @@ bool ThreadedCommServer::ClientThread::Run()
 bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 {
 
-    MOOSTrace("ThreadedCommServer::ClientThread::OnClientDisconnect() %s\n", _sClientName.c_str());
 
     //prepare to send it up the chain
     CMOOSCommPkt PktRx,PktTx;
@@ -512,22 +509,16 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
 bool ThreadedCommServer::ClientThread::Kill()
 {
-    MOOSTrace("ThreadedCommServer::ClientThread::Kill() %s\n", _sClientName.c_str());
 
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
 		if(!_Writer.Stop())
 			return false;
-		std::cerr<<"Writer stopped\n";
-
 	}
 
     if(!_Worker.Stop())
     	return false;
-
-    std::cerr<<"Worker stopped\n";
-
 
     return true;
 }
@@ -574,7 +565,6 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				//we are being asked to quit
 				case ClientThreadSharedData::CONNECTION_CLOSED:
 				{
-					std::cerr<<"Async writer "<<_sClientName<<" quits after receiving CONNECTION_CLOSED\n";
 					return true;
 				}
 
@@ -614,12 +604,9 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 {
     bool bResult = true;
 
-
-
     try
     {
         _ClientSocket.SetReadTime(MOOSTime());
-
 
         //prepare to send it up the chain
         ClientThreadSharedData SDUpChain(_sClientName);
@@ -659,14 +646,11 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
     }
     catch (CMOOSException e)
     {
-        MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
+        //MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
         bResult = false;
     }
 
     return bResult;
-
-
-
 
 
 }
