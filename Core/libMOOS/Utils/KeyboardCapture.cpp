@@ -19,7 +19,6 @@ KeyboardCapture::KeyboardCapture(): impl_(new Impl)
 {
 
 }
-
 bool KeyboardCapture::dispatch(void * param)
 {
 	KeyboardCapture* pMe = (KeyboardCapture*)param;

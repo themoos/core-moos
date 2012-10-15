@@ -145,7 +145,7 @@ public:
 
         		if(MOOS::Time()-dfT>1.0)
         		{
-        			std::cerr<<MOOS::ConsoleColours::red()<<"Band Width: "<<  8*_nByteCounter/(1024*1024) <<" Mbit/s\n";
+        			std::cerr<<MOOS::ConsoleColours::red()<<"Band Width: "<<  8*_nByteCounter/(1024.0*1024.0) <<" Mbit/s\n";
         			_nByteCounter = 0;
         			dfT = MOOS::Time();
         		}
@@ -159,6 +159,8 @@ public:
         	{
         		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
         		std::cerr<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
                 std::cerr<<MOOS::ConsoleColours::reset();
         	}
         }

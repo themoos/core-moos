@@ -179,7 +179,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		//message (this is the new style of timing
 		if((MOOS::Time()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
-			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOS::Time());
+			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
 		}
