@@ -20,6 +20,7 @@ void PrintHelp()
     MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
     MOOSTrace("  -w var1 [var2,var3...]            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w x*:*@0.1  *:GPS:0.0 z\n");
     MOOSTrace("  -p var1[:n]@t1 [var2@t2,var3@t3....]  : list of publications in form var_name[:optional_binary_size]@period eg x@0.5 y:2048@2.0\n");
+    MOOSTrace("  -l (--latency)                    : show latency (time between posting and receiving)\n");
     MOOSTrace("  -v (--verbose)                    : verbose output\n");
 
     MOOSTrace("\n\nNetwork failure simulation:\n");
@@ -60,6 +61,7 @@ public:
         _NetworkStallTime = cl.follow(3.0,2,"-t","--network_failure_time");
         _ApplicationExitProb = cl.follow(0.0,2,"-k","--application_failure_prob");
         _bVerbose = cl.search(2,"-v","--verbose");
+        _bShowLatency = cl.search(2,"-l","--latency");
 
 
         if(cl.search(2,"-h","--help"))
@@ -151,6 +153,12 @@ public:
         	if(_bVerbose)
         	{
         		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetKey()<<":"<<q->GetAsString()<<"\n";
+                std::cerr<<MOOS::ConsoleColours::reset();
+        	}
+        	if(_bShowLatency)
+        	{
+        		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
                 std::cerr<<MOOS::ConsoleColours::reset();
         	}
         }
@@ -291,6 +299,7 @@ private:
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
     bool _bVerbose;
+    bool _bShowLatency;
 
 
 

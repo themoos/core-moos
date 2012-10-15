@@ -1,6 +1,8 @@
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/SafeList.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
+#include <iostream>
+//#include "unistd.h"
 
 namespace MOOS
 {
@@ -25,6 +27,10 @@ bool KeyboardCapture::dispatch(void * param)
 }
 bool KeyboardCapture::Capture()
 {
+//	MOOSPause(1000);
+//	std::cout<<"cin :"<< isatty(0)<<std::endl;
+//	std::cout<<"cout :"<< isatty(1)<<std::endl;
+//	std::cout<<"cerr :"<< isatty(2)<<std::endl;
 	while(!impl_->worker_.IsQuitRequested())
 	{
 		char c = MOOSGetch();
