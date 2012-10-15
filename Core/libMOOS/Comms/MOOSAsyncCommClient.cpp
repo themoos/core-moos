@@ -109,10 +109,11 @@ bool MOOSAsyncCommClient::WritingLoop()
 	//we want errors not signals!
 	signal(SIGPIPE, SIG_IGN);
 
+	//this is the connect loop...
+	m_pSocket = new XPCTcpSocket(m_lPort);
+
 	while(!WritingThread_.IsQuitRequested())
 	{
-		//this is the connect loop...
-		m_pSocket = new XPCTcpSocket(m_lPort);
 
 		int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
 
@@ -131,6 +132,15 @@ bool MOOSAsyncCommClient::WritingLoop()
 				}
 			}
 		}
+		else
+		{
+			//this is bad....if ConnectToServer() returns false
+			//it wasn't simply that we could not get hold of the server
+			//it was that we misbehaved badly. We should quit..
+			OnCloseConnection();
+			break;
+		}
+
 	}
 	//clean up on exit....
 	if(m_pSocket!=NULL)

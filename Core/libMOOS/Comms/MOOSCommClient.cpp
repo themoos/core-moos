@@ -57,6 +57,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -609,7 +610,7 @@ bool CMOOSCommClient::HandShake()
 	try
 	{
         if(!m_bQuiet)
-		    MOOSTrace("  Handshaking as \"%s\"\n",m_sMyName.c_str());
+		    MOOSTrace("  Handshaking as \"%s\"........ ",m_sMyName.c_str());
 
         if(m_bDoLocalTimeCorrection)
 		    SetMOOSSkew(0);
@@ -630,9 +631,9 @@ bool CMOOSCommClient::HandShake()
 		{
             if(!m_bQuiet)
             {
-			    MOOSTrace("..failed\n");
-			    MOOSTrace("->   MOOS Server Poisoned me....\n");
-			    MOOSTrace("->   What I did wrong was :\"%s\"",WelcomeMsg.m_sVal.c_str());
+            	std::cerr<<MOOS::ConsoleColours::Red()<<"[fail]\n";
+            	std::cerr<<"    \""<<WelcomeMsg.m_sVal<<"\"\n";
+            	std::cerr<<MOOS::ConsoleColours::reset();
             }
             else
             {
@@ -642,15 +643,17 @@ bool CMOOSCommClient::HandShake()
 		}
 		else
 		{
-            m_sCommunityName = WelcomeMsg.GetCommunity();
+        	std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+
+
+			m_sCommunityName = WelcomeMsg.GetCommunity();
 
 			//read our skew
 			double dfSkew = WelcomeMsg.m_dfVal;
             if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
 
-            if(!m_bQuiet)
-                MOOSTrace("  Joined community %s\n  Handshaking complete\n",m_sCommunityName.c_str());
+            std::cerr<<MOOS::ConsoleColours::reset();
 
 		}
 	}
