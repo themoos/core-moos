@@ -494,7 +494,7 @@ bool CMOOSCommClient::ConnectToServer()
 
 /** this is called by user of a CommClient object
 to send a Msg to MOOS */
-bool CMOOSCommClient::Post(CMOOSMsg &Msg)
+bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 {
 	if(!IsConnected())
 		return false;
@@ -503,7 +503,7 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg)
 
 	//stuff our name in here  - prevent client from having to worry about
 	//it...
-	if(!m_bFakeSource )
+	if(!m_bFakeSource && !bKeepMsgSourceName )
 	{
 		Msg.m_sSrc = m_sMyName;
 	}

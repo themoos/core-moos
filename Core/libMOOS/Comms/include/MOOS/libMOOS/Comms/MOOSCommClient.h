@@ -130,7 +130,7 @@ public:
     however prevents wayward user software bring down the MOOSComms by way of denial of service.
     (ie hogging the network)
     @param Msg reference to CMOOSMsg which user wishes to send*/
-    bool Post(CMOOSMsg  & Msg);
+    bool Post(CMOOSMsg  & Msg,bool bKeepMsgSourceName = false);
 
     /** internal method which runs in a seperate thread and manages the input and output
     of messages from the server. DO NOT CALL THIS METHOD.*/
