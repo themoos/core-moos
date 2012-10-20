@@ -21,15 +21,19 @@ public:
 
 	IPV4Address(const std::string & ip, unsigned int p);
 	IPV4Address(const std::string & ip_and_port);
-	static std::string GetNumericAddress(const std::string & address);
+	bool operator==(const IPV4Address & a) const;
 
+	static std::string GetNumericAddress(const std::string & address);
 	bool ConvertHostToNumeric();
 
 	/** support for simple lexical sort*/
 	bool operator<(const IPV4Address & P) const;
+
 	std::string to_string() const;
+
 	std::string host() const;
 	void set_host(const std::string & host);
+
 	unsigned int port() const;
 	void set_port(unsigned int port);
 

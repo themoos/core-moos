@@ -51,6 +51,11 @@ IPV4Address::IPV4Address(const std::string & host_and_port)
 
 }
 
+bool IPV4Address::operator==(const IPV4Address & a) const
+{
+	return host_==a.host() && port_==a.port();
+}
+
 
 void IPV4Address::set_host(const std::string & host)
 {
