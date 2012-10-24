@@ -8,9 +8,6 @@
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
-
-#include "MOOS/libMOOS/Utils/SafeList.h"
-
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 
 MOOS::ThreadPrint gPrinter(std::cout);
@@ -18,7 +15,7 @@ MOOS::ThreadPrint gPrinter(std::cout);
 
 bool _OnConnectNULL(void * pParam)
 {
-	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
+	//MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
 	return true;
 }
 bool _OnConnectRegister(void * pParam)
@@ -27,6 +24,19 @@ bool _OnConnectRegister(void * pParam)
 	pC->Register("X",0.0);
 	return true;
 }
+
+
+bool _OnMailPost(void *pParam)
+{
+	MOOSMSG_LIST M;
+	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
+
+	pC->Fetch(M);
+	char X[400];
+	pC->Notify("X",(void*)X,sizeof(X));
+	return true;
+}
+
 
 bool _OnMail(void *pParam)
 {
@@ -52,12 +62,12 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	std::vector<CMOOSCommClient*> Clients(20);
+	std::vector<CMOOSCommClient*> Clients(2);
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
 		CMOOSCommClient  * pNewClient;
 
-		if( i %2 ==0 )
+		if( 1 || i %2 ==0 )
 		{
 			pNewClient = new MOOS::MOOSAsyncCommClient;
 		}
@@ -86,6 +96,8 @@ int main(int argc, char * argv[])
 
 	}
 
+	Clients[1]->SetOnMailCallBack(_OnMail,Clients[1]);
+
 	unsigned int i = 0;
 	std::vector<unsigned char> Data(387);
 
@@ -93,8 +105,10 @@ int main(int argc, char * argv[])
 	{
 		Clients[0]->Notify("X",Data.data(), Data.size());
 
-		//std::cerr<<"C0 posted at "<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
-		MOOSPause(100);
+
+		MOOSPause(10);
+
+
 		//Msg.Trace();
 	}
 
