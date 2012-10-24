@@ -234,7 +234,7 @@ protected:
     bool SetCommsFreq(unsigned int nFreq);
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
-    void SetAppFreq(double dfFreq);
+    void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
 
     /** return the boot time of the App */
     double GetAppStartTime();
@@ -247,6 +247,7 @@ protected:
     
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
+
 	
 	
 
@@ -377,6 +378,11 @@ protected:
     /** frequency at which this application will iterate */
     double m_dfFreq;
 
+    /** max frequency at which app can tick (if zero then anything is OK). This
+     * allows apps to respond very quickly to mail but also allows users
+     * to throttle their rates */
+    double m_dfMaxAppTick;
+
     /** std::string name of mission file */
     std::string m_sMissionFile;
 
@@ -476,6 +482,9 @@ private:
     /** called before starting the Application running. If parameters have not beedn set correctly
     it prints a help statement and returns false */
     bool CheckSetUp();
+
+    /** controls the rate at which application runs */
+    void LimitAppSpeed(double dfTimeAtStartOfThisIteration);
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;

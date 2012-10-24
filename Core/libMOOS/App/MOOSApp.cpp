@@ -115,6 +115,7 @@ CMOOSApp::CMOOSApp()
 {
     m_dfFreq=DEFAULT_MOOS_APP_FREQ;
     m_nCommsFreq=DEFAULT_MOOS_APP_COMMS_FREQ;
+    m_dfMaxAppTick = 0.0; //we can respond to mail mvery quickly
     m_nIterateCount = 0;
     m_nMailCount = 0;
     m_bServerSet = false;
@@ -299,7 +300,8 @@ bool CMOOSApp::DoRunWork()
 {
 
     //look for mail
-    double dfT1 = MOOSLocalTime();
+    double dfStartOfRun = MOOSLocalTime();
+
     //local vars
     MOOSMSG_LIST MailIn;
     if(m_bUseMOOSComms)
@@ -355,35 +357,54 @@ bool CMOOSApp::DoRunWork()
     //store for derived class use the last time iterate was called;
     m_dfLastRunTime = MOOSLocalTime();
 
-    
-    //sleep
-    if(m_dfFreq>0)
-    {
-        int nElapsedTime_ms  = static_cast<int> (1000.0*(m_dfLastRunTime-dfT1));
-		int nRequiredWait_ms = static_cast<int> (1000.0/m_dfFreq);
-
-		if (nElapsedTime_ms < 0) nElapsedTime_ms = 0;
-		
-		int nSleep = (nRequiredWait_ms - nElapsedTime_ms);
-
-        //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
-        //tick once more and let the OS schedule us appropriately
-        if(nSleep>1)
-        {
-#ifdef FAST_CLIENT
-        	//block until time out or mail received...
-        	m_pMailEvent->tryWait(nSleep);
-#else
-            MOOSPause(nSleep);
-#endif
-        }
-    }
+    //finally limit the app speed appropriately
+    //this must be the last thing called on every loop
+    LimitAppSpeed(dfStartOfRun);
     
     return true;
     
 }
 
+void CMOOSApp::LimitAppSpeed(double dfTimeAtStartOfThisIteration)
+{
+	 //sleep
+	if(m_dfFreq>0)
+	{
+		int nElapsedTime_ms  = static_cast<int> (1000.0*(m_dfLastRunTime-dfTimeAtStartOfThisIteration));
 
+		int nRequiredWait_ms = static_cast<int> (1000.0/m_dfFreq);
+
+		if (nElapsedTime_ms < 0) nElapsedTime_ms = 0;
+
+		int nSleep = (nRequiredWait_ms - nElapsedTime_ms);
+
+		//a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
+		//tick once more and let the OS schedule us appropriately
+		if(nSleep>1)
+		{
+#ifdef FAST_CLIENT
+			//block until time out or mail received...
+			if(m_pMailEvent->tryWait(nSleep))
+			{
+				//mail has appeared - but we we may have been configured
+				//to limit rate at which applications ticks....
+				double dfTimeSlept = MOOSLocalTime()-m_dfLastRunTime;
+				double dfMinPeriod = m_dfMaxAppTick> 0.0 ? 1.0/m_dfMaxAppTick : 0.0;
+				if(dfTimeSlept<dfMinPeriod)
+				{
+					nSleep=static_cast<int> (1000*(dfMinPeriod-dfTimeSlept));
+					if(nSleep>0)
+					{
+						MOOSPause(nSleep);
+					}
+				}
+			}
+#else
+			MOOSPause(nSleep);
+#endif
+		}
+	}
+}
 
 void CMOOSApp::SetServer(const char *sServerHost, long lPort)
 {
@@ -606,11 +627,20 @@ double CMOOSApp::GetAppStartTime()
     return m_dfAppStartTime;
 }
 
-void CMOOSApp::SetAppFreq(double  dfFreq)
+void CMOOSApp::SetAppFreq(double  dfFreq,double dfMaxFreq)
 {
     if(m_dfFreq<=MOOS_MAX_APP_FREQ)
     {
         m_dfFreq = dfFreq;
+    }
+    else
+    {
+    	std::cerr<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
+    }
+
+    if(dfMaxFreq>=0.0)
+    {
+    	m_dfMaxAppTick = dfMaxFreq;
     }
 }
 
