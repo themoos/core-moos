@@ -55,7 +55,10 @@ public:
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
         _PushEvent.reset();
-        _List.pop_front();
+        if(!_List.empty())
+        {
+        	_List.pop_front();
+        }
     }
 
     bool AppendToMeInConstantTime(std::list<T> & ThingToAppend)
