@@ -113,6 +113,10 @@ bool MOOSAsyncCommClient::OnCloseConnection()
 	return BASE::OnCloseConnection();
 }
 
+bool MOOSAsyncCommClient::IsAsynchronous()
+{
+	return true;
+}
 
 bool MOOSAsyncCommClient::WritingLoop()
 {
@@ -239,7 +243,7 @@ bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 		if(++m_nOverSpeedCount>=MAX_SEQUENTIAL_OVERSPEED_WRITES)
 		{
 			m_nOverSpeedCount=MAX_SEQUENTIAL_OVERSPEED_WRITES;
-			MOOSPause(100);
+			MOOSPause(10);
 			//std::cerr<<"Throttling\n!!";
 		}
 	}

@@ -225,6 +225,8 @@ public:
     /** return true if client is running */
     virtual bool IsRunning();
 
+    /** return true if this client is Asynchronous (so can have data pushed to it at any time)*/
+    virtual bool IsAsynchronous();
 
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};

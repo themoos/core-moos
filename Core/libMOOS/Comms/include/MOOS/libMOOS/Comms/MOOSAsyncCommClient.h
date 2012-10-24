@@ -31,6 +31,8 @@ namespace MOOS
 
 	    virtual bool Flush();
 
+	    virtual bool IsAsynchronous();
+
 	protected:
 
 	    bool MonitorAndLimitWriteSpeed();

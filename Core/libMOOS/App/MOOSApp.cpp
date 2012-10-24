@@ -115,7 +115,7 @@ CMOOSApp::CMOOSApp()
 {
     m_dfFreq=DEFAULT_MOOS_APP_FREQ;
     m_nCommsFreq=DEFAULT_MOOS_APP_COMMS_FREQ;
-    m_dfMaxAppTick = 0.0; //we can respond to mail mvery quickly
+    m_dfMaxAppTick = MOOS_MAX_APP_FREQ; //we can respond to mail very quickly
     m_nIterateCount = 0;
     m_nMailCount = 0;
     m_bServerSet = false;
@@ -216,6 +216,8 @@ bool CMOOSApp::Run( const char * sName,
             //by the mission architect
             m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
             
+            m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
+
 
             //do we want to enable command filtering (default is set in constructor)
             m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
@@ -266,8 +268,17 @@ bool CMOOSApp::Run( const char * sName,
 
 
     MOOSTrace("%s is Running:\n",GetAppName().c_str());
-    MOOSTrace("\t AppTick   @ %.1f Hz\n",m_dfFreq);
-    MOOSTrace("\t CommsTick @ %d Hz\n",m_nCommsFreq);
+    MOOSTrace("\t Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+    MOOSTrace("\t Maximum  AppTick   @ %.1f Hz\n",m_dfMaxAppTick);
+    if(m_Comms.IsAsynchronous())
+    {
+    	MOOSTrace("\t Comms is Full Duplex and Asynchronous\n");
+    }
+    else
+    {
+    	MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
+    }
+
     if(GetMOOSTimeWarp()!=1.0)
     	MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
 

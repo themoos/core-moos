@@ -206,6 +206,11 @@ bool CMOOSCommClient::HasMailCallBack()
     return m_pfnMailCallBack!=NULL;
 }
 
+bool CMOOSCommClient::IsAsynchronous()
+{
+	return false;
+}
+
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
