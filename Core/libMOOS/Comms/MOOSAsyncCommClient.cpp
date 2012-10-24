@@ -17,6 +17,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -88,6 +89,15 @@ bool MOOSAsyncCommClient::Post(CMOOSMsg & Msg)
 
 	m_OutLock.Lock();
 	{
+		if(OutGoingQueue_.Size()>OUTBOX_PENDING_LIMIT)
+		{
+			std::cerr<<MOOS::ConsoleColours::red()<<"WARNING "<<MOOS::ConsoleColours::reset()<<
+					"MOOSAsyncCommClient::Outbox is very full "
+					"- ditching half of the unsent mail\n";
+
+			while(OutGoingQueue_.Size()>OUTBOX_PENDING_LIMIT/2)
+				OutGoingQueue_.Pop();
+		}
 		OutGoingQueue_.AppendToMeInConstantTime(m_OutBox);
 		//std::cerr<<"OutGoingQueue_ : "<<OutGoingQueue_.Size()<<"\n";
 	}
@@ -100,7 +110,7 @@ bool MOOSAsyncCommClient::OnCloseConnection()
 {
 	MOOS::ScopedLock WL(m_CloseConnectionLock);
 
-	BASE::OnCloseConnection();
+	return BASE::OnCloseConnection();
 }
 
 
@@ -115,14 +125,18 @@ bool MOOSAsyncCommClient::WritingLoop()
 	while(!WritingThread_.IsQuitRequested())
 	{
 
-		int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
 
 		if(ConnectToServer())
 		{
+			int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
+			m_dfLastSendTime = MOOSLocalTime();
+
 			while(!WritingThread_.IsQuitRequested() && IsConnected() )
 			{
 				if(OutGoingQueue_.Size()==0)
 				{
+					//this may time out in which case we DoWriting() which may send
+					//a timing message
 					OutGoingQueue_.WaitForPush(nMSToWait);
 				}
 
@@ -177,7 +191,7 @@ bool MOOSAsyncCommClient::DoWriting()
 
 		//and once in a while we shall send a timing
 		//message (this is the new style of timing
-		if((MOOS::Time()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
+		if((MOOSLocalTime()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
 			StuffToSend.push_front(Msg);
@@ -196,9 +210,10 @@ bool MOOSAsyncCommClient::DoWriting()
 			throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
 		}
 
-
 		//finally the send....
 		SendPkt(m_pSocket,PktTx);
+
+		MonitorAndLimitWriteSpeed();
 
 	}
 	catch(const CMOOSException & e)
@@ -212,7 +227,30 @@ bool MOOSAsyncCommClient::DoWriting()
 
 }
 
+#define OVERSPEED_WRITE_PERIOD 0.01
+#define MAX_SEQUENTIAL_OVERSPEED_WRITES 100
+bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
+{
+	double dfNowTime = MOOSLocalTime();
 
+	double dfDelta = dfNowTime-m_dfLastSendTime;
+	if(dfDelta<OVERSPEED_WRITE_PERIOD)
+	{
+		if(++m_nOverSpeedCount>=MAX_SEQUENTIAL_OVERSPEED_WRITES)
+		{
+			m_nOverSpeedCount=MAX_SEQUENTIAL_OVERSPEED_WRITES;
+			MOOSPause(100);
+			//std::cerr<<"Throttling\n!!";
+		}
+	}
+	else
+	{
+		m_nOverSpeedCount/=2;
+	}
+	m_dfLastSendTime = dfNowTime;
+
+	return true;
+}
 
 bool MOOSAsyncCommClient::ReadingLoop()
 {

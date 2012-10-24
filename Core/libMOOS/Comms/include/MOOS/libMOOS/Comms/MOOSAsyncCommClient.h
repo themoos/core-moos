@@ -17,13 +17,9 @@ namespace MOOS
 		MOOSAsyncCommClient();
 		virtual ~MOOSAsyncCommClient();
 		virtual bool StartThreads();
-	    bool WritingLoop();
-	    bool DoWriting();
 
 	    bool ReadingLoop();
-	    bool DoReading();
-
-	    virtual std::string HandShakeKey();
+	    bool WritingLoop();
 
 	    virtual bool Post(CMOOSMsg & Msg);
 
@@ -37,11 +33,20 @@ namespace MOOS
 
 	protected:
 
+	    bool MonitorAndLimitWriteSpeed();
+
+	    virtual std::string HandShakeKey();
+
+	    bool DoReading();
+
+	    bool DoWriting();
 
 	    CMOOSThread WritingThread_;
 	    CMOOSThread ReadingThread_;
 
 	    double m_dfLastTimingMessage;
+	    double m_dfLastSendTime;
+	    unsigned int m_nOverSpeedCount;
 
 	    /** Mutex around Close Connection - two threads could call it
 	     *  method
