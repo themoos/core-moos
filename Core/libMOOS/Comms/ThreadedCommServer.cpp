@@ -28,9 +28,7 @@
 namespace MOOS
 {
 
-ThreadPrint gPrinter(std::cout);
-
-
+ThreadPrint gPrinter(std::cerr);
 
 
 ThreadedCommServer::ThreadedCommServer()
@@ -606,14 +604,20 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 
     try
     {
-        _ClientSocket.SetReadTime(MOOSTime());
+
+
 
         //prepare to send it up the chain
         ClientThreadSharedData SDUpChain(_sClientName);
         SDUpChain._Status = ClientThreadSharedData::PKT_READ;
 
         //read input
-        ReadPkt(&_ClientSocket,*SDUpChain._pPkt);
+        if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
+        	throw std::runtime_error("failed packet read and no exception handled");
+
+
+		_ClientSocket.SetReadTime(MOOS::Time());
+
 
         //push this data back to the central thread
         _SharedDataIncoming.Push(SDUpChain);
