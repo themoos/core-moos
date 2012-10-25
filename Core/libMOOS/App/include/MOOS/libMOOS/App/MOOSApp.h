@@ -100,6 +100,8 @@ public:
 	
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
+
+
     
 
 protected:
@@ -231,11 +233,23 @@ protected:
 #else
     CMOOSCommClient m_Comms;
 #endif
+
     /** Set the time between calls into the DB - can be set using the CommsTick flag in the config file*/
     bool SetCommsFreq(unsigned int nFreq);
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
     void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
+
+    //enumeration of ways application can iterate
+    enum IterateMode
+	{
+		REGULAR_ITERATE_AND_MAIL,
+		COMMS_DRIVEN_ITERATE_AND_MAIL,
+		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL,
+	}m_IterationMode;
+
+	//set up the iteration mode of the app
+	bool SetIterateMode(IterateMode Mode);
 
     /** return the boot time of the App */
     double GetAppStartTime();
@@ -469,8 +483,6 @@ private:
 #endif
 
 
-private:
-
     /** Number of times Application has cycled */
     int m_nIterateCount;
 
@@ -485,7 +497,7 @@ private:
     bool CheckSetUp();
 
     /** controls the rate at which application runs */
-    void LimitAppSpeed(double dfTimeAtStartOfThisIteration);
+    void SleepAsRequired(bool & bIterateShouldRun);
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;

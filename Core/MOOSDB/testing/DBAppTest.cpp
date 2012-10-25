@@ -23,6 +23,21 @@ public:
 	}
 	bool OnNewMail(MOOSMSG_LIST & List)
 	{
+		static double dfRate = 0;
+		static double dfLastTime = 0.0;
+		static double dfLastPrintTime = 0.0;
+
+		double dfAlpha = 0.6;
+
+		dfRate  = dfAlpha*dfRate+ (1.0-dfAlpha)/(MOOS::Time()-dfLastTime);
+
+		if(MOOS::Time()-dfLastPrintTime>1.0)
+		{
+			dfLastPrintTime = MOOS::Time();
+			std::cout<<MOOSFormat(" OnNewMail Running at %.1f Hz\n",dfRate);
+		}
+
+		dfLastTime = MOOS::Time();
 
 		return true;
 	}
@@ -30,14 +45,15 @@ public:
 	{
 		double dfAlpha = 0.6;
 		static double dfRate = 0;
+		static double dfLastTime = 0.0;
+		static double dfLastPrintTime = 0.0;
 		static bool crazy_state = false;
 
-		dfRate  = dfAlpha*dfRate+ (1.0-dfAlpha)/(MOOS::Time()-GetLastIterateTime());
+		dfRate  = dfAlpha*dfRate+ (1.0-dfAlpha)/(MOOS::Time()-dfLastTime);
 
-		int print_if =  crazy_state ? (int)request_max_freq_ : (int)request_app_freq_;
-
-		if(GetIterateCount()%print_if==0)
+		if(MOOS::Time()-dfLastPrintTime>1.0)
 		{
+			dfLastPrintTime = MOOS::Time();
 			std::cout<<MOOSFormat(" Iterate Running at %.1f Hz\n",dfRate);
 		}
 
@@ -61,11 +77,15 @@ public:
 			}
 		}
 
+		dfLastTime = MOOS::Time();
 		return true;
 	}
 	bool OnStartUp()
 	{
 		SetAppFreq(request_app_freq_,request_max_freq_);
+		//SetIterateMode(REGULAR_ITERATE_AND_MAIL);
+		//SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL);
+		SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL);
 		return true;
 	}
 

@@ -115,7 +115,8 @@ CMOOSApp::CMOOSApp()
 {
     m_dfFreq=DEFAULT_MOOS_APP_FREQ;
     m_nCommsFreq=DEFAULT_MOOS_APP_COMMS_FREQ;
-    m_dfMaxAppTick = MOOS_MAX_APP_FREQ; //we can respond to mail very quickly
+    m_dfMaxAppTick = DEFAULT_MOOS_APP_FREQ; //we can respond to mail very quickly but by default we are cautious
+    m_IterationMode = REGULAR_ITERATE_AND_MAIL;
     m_nIterateCount = 0;
     m_nMailCount = 0;
     m_bServerSet = false;
@@ -310,8 +311,14 @@ bool CMOOSApp::RequestQuit()
 bool CMOOSApp::DoRunWork()
 {
 
-    //look for mail
-    double dfStartOfRun = MOOSLocalTime();
+	bool bIterateRequired = true;
+
+	SleepAsRequired(bIterateRequired);
+
+	//std::cerr<<"bIterate:"<<bIterateRequired<<"\n";
+
+    //store for derived class use the last time iterate was called;
+    m_dfLastRunTime = MOOSLocalTime();
 
     //local vars
     MOOSMSG_LIST MailIn;
@@ -339,12 +346,15 @@ bool CMOOSApp::DoRunWork()
             //do private work
             IteratePrivate();
             
-            //////////////////////////////////////
-            //  do application specific processing
-            bool bOK = Iterate();
-            
-            if(m_bQuitOnIterateFail && !bOK)
-                return false;
+            if(bIterateRequired)
+            {
+				//////////////////////////////////////
+				//  do application specific processing
+				bool bOK = Iterate();
+
+				if(m_bQuitOnIterateFail && !bOK)
+					return false;
+            }
             
             m_nIterateCount++;
         }
@@ -353,69 +363,131 @@ bool CMOOSApp::DoRunWork()
     {
         //do private work
         IteratePrivate();
-        
-        /////////////////////////////////////////
-        //  do application specific processing
-        bool bOK = Iterate();
 
-        if(m_bQuitOnIterateFail && !bOK)
-            return false;
+        if(bIterateRequired)
+        {
+			/////////////////////////////////////////
+			//  do application specific processing
+			bool bOK = Iterate();
 
+			if(m_bQuitOnIterateFail && !bOK)
+				return false;
+        }
         
         m_nIterateCount++;
     }
     
-    //store for derived class use the last time iterate was called;
-    m_dfLastRunTime = MOOSLocalTime();
 
-    //finally limit the app speed appropriately
-    //this must be the last thing called on every loop
-    LimitAppSpeed(dfStartOfRun);
     
+
+
     return true;
     
 }
 
-void CMOOSApp::LimitAppSpeed(double dfTimeAtStartOfThisIteration)
+bool CMOOSApp::SetIterateMode(IterateMode Mode)
 {
-	 //sleep
-	if(m_dfFreq>0)
+	if(!m_Comms.IsAsynchronous() && Mode!=REGULAR_ITERATE_AND_MAIL)
 	{
-		int nElapsedTime_ms  = static_cast<int> (1000.0*(m_dfLastRunTime-dfTimeAtStartOfThisIteration));
+		std::cerr<<"can only set iterate mode to REGULAR_ITERATE_AND_MAIL"
+				" for old MOOS Clients\n";
+		return false;
+	}
 
-		int nRequiredWait_ms = static_cast<int> (1000.0/m_dfFreq);
+	m_IterationMode =Mode;
+	return true;
 
-		if (nElapsedTime_ms < 0) nElapsedTime_ms = 0;
 
-		int nSleep = (nRequiredWait_ms - nElapsedTime_ms);
+}
 
-		//a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
-		//tick once more and let the OS schedule us appropriately
-		if(nSleep>1)
+void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
+{
+
+	bIterateShouldRun = true;
+
+	//do we need to sleep at all?
+	if(m_dfFreq<=0.0)
+	{
+		//no we are being told to go flat out
+		return;
+	}
+
+	//first thing we do is look to see how long we need to sleep in
+	//vanilla case
+	int nAppPeriod_ms = static_cast<int> (1000.0/m_dfFreq);
+
+	//how long since we ran?
+	int nElapsedTime_ms = static_cast<int> (1000.0*( MOOSLocalTime() - m_dfLastRunTime));
+
+	if (nElapsedTime_ms < 0){
+		nElapsedTime_ms = 0;
+	}
+
+	//so how long do we need to pause for
+	int nSleep = (nAppPeriod_ms - nElapsedTime_ms);
+	if(nSleep<1){
+		//std::cerr<<"no sleep for "<<nSleep<<"\n";
+		return;//nothing to do...
+	}
+
+	if(!m_Comms.IsAsynchronous())
+	{
+		//we just always sleep;
+		MOOSPause(nSleep);
+		return;
+	}
+
+
+
+	//OK, we are a modern client and we have three distinct behaviours
+	switch(m_IterationMode)
+	{
+	case  REGULAR_ITERATE_AND_MAIL:
+		//we always to sleep - this behaves like old MOOS did - AppTick governs it all
+		//std::cerr<<"sleeping for "<<nSleep<<"\n";
+		MOOSPause(nSleep);
+		break;
+	case  REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
+		//On NewMail is called as often as is needed but iterate is only called
+		//at AppTick rates.
+		if(m_Comms.GetNumberOfUnreadMessages() || m_pMailEvent->tryWait(nSleep))
 		{
-#ifdef FAST_CLIENT
-			//block until time out or mail received...
-			if(m_pMailEvent->tryWait(nSleep))
+			if(MOOSLocalTime()-m_dfLastRunTime<1.0/m_dfFreq)
 			{
-				//mail has appeared - but we we may have been configured
-				//to limit rate at which applications ticks....
-				double dfTimeSlept = MOOSLocalTime()-m_dfLastRunTime;
-				double dfMinPeriod = m_dfMaxAppTick> 0.0 ? 1.0/m_dfMaxAppTick : 0.0;
-				if(dfTimeSlept<dfMinPeriod)
+				//we have mail but we are in a mode where we don't have
+				//to call Iterate
+				bIterateShouldRun= false;
+			}
+		}
+		break;
+	case COMMS_DRIVEN_ITERATE_AND_MAIL:
+		//both OnNewMail and Iterate will be called as fast as mail comes in up
+		//to a limiting speed.
+		if(m_Comms.GetNumberOfUnreadMessages()>0 || m_pMailEvent->tryWait(nSleep))
+		{
+
+			//we got woken by the arrival of mail.....
+			//do we need to sleep some more to ensure we don't iterate
+			//too fast?
+			double dfTimeSinceRun = MOOSLocalTime()-m_dfLastRunTime;
+			double dfMinPeriod = m_dfMaxAppTick> 0.0 ? 1.0/m_dfMaxAppTick : 0.0;
+			if(dfTimeSinceRun<dfMinPeriod)
+			{
+				//yes we do..
+				nSleep=static_cast<int> (1000*(dfMinPeriod-dfTimeSinceRun));
+				if(nSleep>0)
 				{
-					nSleep=static_cast<int> (1000*(dfMinPeriod-dfTimeSlept));
-					if(nSleep>0)
-					{
-						MOOSPause(nSleep);
-					}
+					MOOSPause(nSleep);
 				}
 			}
-#else
-			MOOSPause(nSleep);
-#endif
 		}
+		break;
+	default:
+		break;
 	}
 }
+
+
 
 void CMOOSApp::SetServer(const char *sServerHost, long lPort)
 {

@@ -211,6 +211,15 @@ bool CMOOSCommClient::IsAsynchronous()
 	return false;
 }
 
+unsigned int CMOOSCommClient::GetNumberOfUnreadMessages()
+{
+
+	m_InLock.Lock();
+	unsigned int n = m_InBox.size();
+	m_InLock.UnLock();
+	return n;
+
+}
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)

@@ -228,6 +228,9 @@ public:
     /** return true if this client is Asynchronous (so can have data pushed to it at any time)*/
     virtual bool IsAsynchronous();
 
+    /** how much incoming mail is pending?*/
+    unsigned int GetNumberOfUnreadMessages();
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
