@@ -58,11 +58,11 @@ include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?
-OPTION(USE_FAST_COMMS  "enable fast asynchronous comms architecture" OFF)
-IF (USE_FAST_COMMS)
-    ADD_DEFINITIONS(-DUSE_FAST_COMMS)
-ENDIF (USE_FAST_COMMS)
-MARK_AS_ADVANCED(USE_FAST_COMMS)
+OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
+IF (USE_ASYNC_COMMS)
+    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
+ENDIF (USE_ASYNC_COMMS)
+
 
 
 ############# COMPRESSED COMMS? ################

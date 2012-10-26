@@ -43,7 +43,7 @@
 #include <sstream>
 #include <iterator>
 
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
 #endif
 
@@ -134,7 +134,7 @@ CMOOSApp::CMOOSApp()
     
     SetMOOSTimeWarp(1.0);
     
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     m_pMailEvent = new Poco::Event;
     UseMailCallBack();
 #endif
@@ -629,7 +629,7 @@ bool CMOOSApp::UnRegister(const std::string & sVar)
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     m_pMailEvent->set();
     return true;
 #else

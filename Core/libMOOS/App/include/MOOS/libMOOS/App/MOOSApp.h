@@ -34,7 +34,7 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
-#define FAST_CLIENT
+
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 
@@ -47,7 +47,7 @@
 
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
-#define MOOS_MAX_APP_FREQ 500
+#define MOOS_MAX_APP_FREQ 100
 #define MOOS_MAX_COMMS_FREQ 200
 
 #define STATUS_PERIOD 2
@@ -55,7 +55,7 @@
 
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
 
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 namespace Poco
 {
@@ -228,7 +228,7 @@ protected:
 
 
     /** The MOOSComms node. All communications happens by way of this object.*/
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     MOOS::MOOSAsyncCommClient m_Comms;
 #else
     CMOOSCommClient m_Comms;
@@ -478,7 +478,7 @@ private:
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
 
-#ifdef FAST_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     Poco::Event * m_pMailEvent;
 #endif
 
