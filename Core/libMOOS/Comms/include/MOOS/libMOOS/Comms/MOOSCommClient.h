@@ -169,10 +169,6 @@ public:
     @param pCallerParam parameter passed to callback function when invoked*/
     void SetOnDisconnectCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
-    /** set the user supplied OnMail callback. This usually will not be set. Users are expected to use FetchMail from
-     their own thread and not use this call back. This function is experimental as of release 7.2 and coders are
-     not encouraged to use it*/
-    void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
     
     /** return true if a mail callback is installed */
     bool HasMailCallBack();
@@ -256,6 +252,10 @@ public:
      */
     virtual bool Flush();
 
+    /** set the user supplied OnMail callback. This is an internal function - do not call it yourself
+     * if you want rapid response use V10 */
+    void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
+
 protected:
     bool ClearResources();
     
@@ -267,6 +267,8 @@ protected:
     /** called when connection to server is closed */
     virtual bool OnCloseConnection();
     
+
+
     /** true if we are connected to the server */
     bool m_bConnected;
     

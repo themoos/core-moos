@@ -139,7 +139,6 @@ CMOOSApp::CMOOSApp()
     UseMailCallBack();
 #endif
 
-
     EnableIterateWithoutComms(false);
 }
 
@@ -437,6 +436,7 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 		return;
 	}
 
+#ifdef ASYNCHRONOUS_CLIENT
 
 
 	//OK, we are a modern client and we have three distinct behaviours
@@ -485,6 +485,9 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 	default:
 		break;
 	}
+
+#endif
+
 }
 
 
@@ -633,7 +636,8 @@ bool CMOOSApp::OnMailCallBack()
     m_pMailEvent->set();
     return true;
 #else
-    return DoClientWork()
+    std::cerr<<"OnMailCallback is deprecated for Asynchronous Clients\n";
+    return false;
 #endif
 }
 

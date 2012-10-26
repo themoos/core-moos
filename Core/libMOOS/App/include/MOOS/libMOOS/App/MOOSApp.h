@@ -462,11 +462,14 @@ public:
     void OnConnectToServerPrivate();
     bool OnMailCallBack();
     
+protected:
     /* by calling this function Iterate and OnNewMail will be
      called from the thread that is servicing the MOOS Comms client. It
      is provided to let really very specialised MOOSApps have very speedy
      response times. It is not recommended for general use*/
     bool UseMailCallBack();
+
+
 
 private:
     /* this function is used to process mail on behalf of the client just before
