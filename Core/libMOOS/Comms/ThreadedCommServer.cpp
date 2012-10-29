@@ -34,9 +34,6 @@ ThreadPrint gPrinter(std::cerr);
 ThreadedCommServer::ThreadedCommServer()
 {
     // TODO Auto-generated constructor stub
-	std::cerr<<MOOS::ConsoleColours::Red()<<
-			"THIS IS A RISKY BUSINESS SUPPORTING ASYNCHRONOUS MOOS\n"
-			<<MOOS::ConsoleColours::reset();
 
 }
 
@@ -366,6 +363,11 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
     m_ClientThreads.erase(q);
     delete pWorker;
     return true;
+}
+
+bool ThreadedCommServer::SupportsAsynchronousClients()
+{
+	return true;
 }
 
 bool ThreadedCommServer::TimerLoop()

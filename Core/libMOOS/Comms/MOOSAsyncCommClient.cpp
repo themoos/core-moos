@@ -48,7 +48,7 @@ MOOSAsyncCommClient::MOOSAsyncCommClient()
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
 {
-
+	std::cerr<<"~MOOSAsyncCommClient\n";
 }
 
 
@@ -67,13 +67,13 @@ bool MOOSAsyncCommClient::StartThreads()
 
     if(!ReadingThread_.Initialise(AsyncCommsReaderDispatch,this))
             return false;
-
+/*
     if(!WritingThread_.Start())
         return false;
 
     if(!ReadingThread_.Start())
         return false;
-
+*/
 	return true;
 }
 
@@ -373,17 +373,6 @@ bool MOOSAsyncCommClient::IsRunning()
 	return WritingThread_.IsThreadRunning() || ReadingThread_.IsThreadRunning();
 }
 
-void MOOSAsyncCommClient::DoBanner()
-{
-    if(m_bQuiet)
-        return ;
-
-	MOOSTrace("****************************************************\n");
-	MOOSTrace("*       This is an Asynchronous MOOS Client        *\n");
-	MOOSTrace("*       c. P Newman 2001-2012                      *\n");
-	MOOSTrace("****************************************************\n");
-
-}
 
 };
 

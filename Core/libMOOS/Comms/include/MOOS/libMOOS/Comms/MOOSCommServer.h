@@ -140,6 +140,9 @@ protected:
     /** prints class information banner to stdout*/
     virtual void DoBanner();
 
+    /** return true if Aynschronous Clients are supported */
+    virtual bool SupportsAsynchronousClients();
+
     /** Get the name of the client on the remote end of pSocket*/
     std::string  GetClientName(XPCTcpSocket* pSocket);
 

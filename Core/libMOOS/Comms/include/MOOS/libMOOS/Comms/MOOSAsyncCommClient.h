@@ -25,8 +25,6 @@ namespace MOOS
 
 	    virtual bool OnCloseConnection();
 
-	    virtual void DoBanner();
-
 	    virtual bool IsRunning();
 
 	    virtual bool Flush();

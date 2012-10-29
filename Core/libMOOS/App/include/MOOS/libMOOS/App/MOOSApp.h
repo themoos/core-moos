@@ -52,10 +52,9 @@
 
 #define STATUS_PERIOD 2
 
-
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
 
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 namespace Poco
 {
@@ -228,8 +227,9 @@ protected:
 
 
     /** The MOOSComms node. All communications happens by way of this object.*/
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
     MOOS::MOOSAsyncCommClient m_Comms;
+    //CMOOSCommClient m_Comms;
 #else
     CMOOSCommClient m_Comms;
 #endif
@@ -239,6 +239,9 @@ protected:
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
     void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
+
+    /** print out salient info at startup */
+    virtual void DoBanner();
 
     //enumeration of ways application can iterate
     enum IterateMode
@@ -481,7 +484,7 @@ private:
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
 
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
     Poco::Event * m_pMailEvent;
 #endif
 

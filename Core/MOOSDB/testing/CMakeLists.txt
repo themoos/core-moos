@@ -3,11 +3,13 @@
 set(EXECNAME1 uDBTestClient)
 set(EXECNAME2 uDBAsyncTest)
 set(EXECNAME3 uDBAppTest)
+set(EXECNAME4 uSanity)
 
 #what files are needed?
 SET(SRCS1 DBTestClient.cpp)
 SET(SRCS2 DBAsyncTest.cpp)
 SET(SRCS3 DBAppTest.cpp)
+SET(SRCS4 Sanity)
 
 include_directories( ${${EXECNAME1}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME1} ${SRCS1} )
@@ -21,3 +23,6 @@ include_directories( ${${EXECNAME3}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DE
 add_executable(${EXECNAME3} ${SRCS3} )
 target_link_libraries(${EXECNAME3} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
+include_directories( ${${EXECNAME4}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
+add_executable(${EXECNAME4} ${SRCS4} )
+target_link_libraries(${EXECNAME4} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})

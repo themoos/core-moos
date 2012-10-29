@@ -305,7 +305,6 @@ private:
 
 
 
-
 };
 
 int main (int argc, char* argv[])
@@ -314,6 +313,10 @@ int main (int argc, char* argv[])
     std::string sClientName = cl.follow("TC1",2,"-n","--name");
 
     DBTestClient TC1(argc,argv);
+
+    while(1)
+    	MOOSPause(100);
+
 
     TC1.Run(sClientName.c_str(),"Mission.moos");
 }

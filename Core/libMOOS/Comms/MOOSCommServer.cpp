@@ -675,7 +675,11 @@ bool CheckProtocol(XPCTcpSocket *pNewClient)
 	if (nRead <=0 || !MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
 	{
 		//this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
-		return MOOSFail("Incompatible wire protocol between DB and Client:\n  Expecting protocol named \"%s\".\n  Client is using a protocol called  \"%s\"\n\n  Make sure the client and MOOSDB are linking against a MOOSLIB which uses the same protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
+		return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
+				"Expecting protocol named \"%s\".\n  Client is using a protocol"
+				" called  \"%s\"\n\n  Make sure the client and MOOSDB"
+				" are linking against a MOOSLIB which uses the same"
+				" protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
 	}
 	
 	return true;
@@ -768,13 +772,43 @@ string CMOOSCommServer::GetClientName(XPCTcpSocket *pSocket)
 
 }
 
+
+bool CMOOSCommServer::SupportsAsynchronousClients()
+{
+	return false;
+}
+
 void CMOOSCommServer::DoBanner()
 {
-    MOOSTrace("***************************************************\n");
-    MOOSTrace("*  This is a MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
-    MOOSTrace("*  Connect to this server on port %d               \n",m_lListenPort);
-    MOOSTrace("*  Name look up is %s                              \n",m_bDisableNameLookUp ? "off" : "on");
-    MOOSTrace("***************************************************\n");
+    std::cout<<"------------------- MOOSDB V10 -------------------\n";
+
+    std::cout<<"  Hosting  community                "<<
+    		MOOS::ConsoleColours::Green()<<"\""<<m_sCommunityName<<"\"\n"<<MOOS::ConsoleColours::reset();
+
+    std::cout<<"  Name look up is                   ";
+    if(!m_bDisableNameLookUp)
+    {
+    	std::cout<<MOOS::ConsoleColours::Green()<<"on\n"<<MOOS::ConsoleColours::reset();
+    }
+    else
+    {
+    	std::cout<<MOOS::ConsoleColours::red()<<"off\n"<<MOOS::ConsoleColours::reset();
+    }
+
+    std::cout<<"  Asynchronous support is           ";
+    if(SupportsAsynchronousClients())
+    {
+    	std::cout<<MOOS::ConsoleColours::Green()<<"on\n"<<MOOS::ConsoleColours::reset();
+    }
+    else
+    {
+    	std::cout<<MOOS::ConsoleColours::red()<<"off\n"<<MOOS::ConsoleColours::reset();
+    }
+
+    std::cout<<"  Connect to this server on port    ";
+    std::cout<<MOOS::ConsoleColours::green()<<m_lListenPort<<MOOS::ConsoleColours::reset()<<"\n";
+
+    std::cout<<"--------------------------------------------------\n";
 
 }
 

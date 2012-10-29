@@ -43,9 +43,11 @@
 #include <sstream>
 #include <iterator>
 
-#ifdef ASYNCHRONOUS_CLIENT
+
+#if ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
 #endif
+
 
 
 using namespace std;
@@ -134,7 +136,7 @@ CMOOSApp::CMOOSApp()
     
     SetMOOSTimeWarp(1.0);
     
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
     m_pMailEvent = new Poco::Event;
     UseMailCallBack();
 #endif
@@ -144,6 +146,10 @@ CMOOSApp::CMOOSApp()
 
 CMOOSApp::~CMOOSApp()
 {
+#if ASYNCHRONOUS_CLIENT
+    delete m_pMailEvent;
+#endif
+	std::cerr<<"~CMOOSApp()\n";
 
 }
 
@@ -217,7 +223,16 @@ bool CMOOSApp::Run( const char * sName,
             m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
             
             m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
-
+/*
+            unsigned int nMode = 0;
+            m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
+            switch(nMode)
+            {
+            case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+            case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
+            case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
+            }
+*/
 
             //do we want to enable command filtering (default is set in constructor)
             m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
@@ -266,21 +281,9 @@ bool CMOOSApp::Run( const char * sName,
         return false;
     }
 
+    DoBanner();
 
-    MOOSTrace("%s is Running:\n",GetAppName().c_str());
-    MOOSTrace("\t Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
-    MOOSTrace("\t Maximum  AppTick   @ %.1f Hz\n",m_dfMaxAppTick);
-    if(m_Comms.IsAsynchronous())
-    {
-    	MOOSTrace("\t Comms is Full Duplex and Asynchronous\n");
-    }
-    else
-    {
-    	MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
-    }
 
-    if(GetMOOSTimeWarp()!=1.0)
-    	MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
 
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/
@@ -298,6 +301,36 @@ bool CMOOSApp::Run( const char * sName,
     return true;
 }
 
+void CMOOSApp::DoBanner()
+{
+	MOOSTrace("%s is Running:\n",GetAppName().c_str());
+	MOOSTrace("\t Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+	if(m_Comms.IsAsynchronous())
+	{
+		MOOSTrace("\t Comms is Full Duplex and Asynchronous\n");
+		switch(m_IterationMode)
+		{
+		case REGULAR_ITERATE_AND_MAIL:
+			std::cout<<"Iterate Mode 0 :  regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
+			break;
+		case COMMS_DRIVEN_ITERATE_AND_MAIL:
+			std::cout<<"Iterate Mode 1 :  dynamic iterate speed driven by message delivery ( up to "<<m_dfMaxAppTick<<" Hz)\n";
+			break;
+		case REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
+			std::cout<<"Iterate Mode 2 : regular iterate at "<<m_dfFreq<<" Hz. Dynamic message delivery (up to "<<m_dfMaxAppTick<<"Hz)\n";
+			break;
+		}
+	}
+	else
+	{
+		MOOSTrace("\t Comms is Synchronous\n");
+		MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
+	}
+
+	if(GetMOOSTimeWarp()!=1.0)
+		MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
+
+}
 
 /*called by a third party to request a MOOS App to quit - only useful for 
  example if a MOOSApp is run in a secondary thread */
@@ -389,7 +422,8 @@ bool CMOOSApp::SetIterateMode(IterateMode Mode)
 	if(!m_Comms.IsAsynchronous() && Mode!=REGULAR_ITERATE_AND_MAIL)
 	{
 		std::cerr<<"can only set iterate mode to REGULAR_ITERATE_AND_MAIL"
-				" for old MOOS Clients\n";
+				" for old MOOS Clients\n"<<Mode;
+		m_IterationMode = REGULAR_ITERATE_AND_MAIL;
 		return false;
 	}
 
@@ -436,7 +470,7 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 		return;
 	}
 
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
 
 
 	//OK, we are a modern client and we have three distinct behaviours
@@ -632,7 +666,7 @@ bool CMOOSApp::UnRegister(const std::string & sVar)
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {
-#ifdef ASYNCHRONOUS_CLIENT
+#if ASYNCHRONOUS_CLIENT
     m_pMailEvent->set();
     return true;
 #else

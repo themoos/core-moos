@@ -60,7 +60,9 @@ include(PlatformDefines)
 #do we want to use the new fast asynchronous client architecture?
 OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
 IF (USE_ASYNC_COMMS)
-    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
+    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT=1)
+ELSE(USE_ASYNC_COMMS)
+    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT=0)
 ENDIF (USE_ASYNC_COMMS)
 
 

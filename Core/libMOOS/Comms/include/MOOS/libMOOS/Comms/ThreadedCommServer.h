@@ -162,6 +162,9 @@ protected:
     virtual bool OnClientDisconnect(ClientThreadSharedData &SD);
     virtual bool OnClientDisconnect();
 
+    /** return true if Aynschronous Clients are supported */
+    virtual bool SupportsAsynchronousClients();
+
     virtual bool ServerLoop();
 
     virtual bool TimerLoop();
