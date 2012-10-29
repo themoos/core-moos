@@ -44,7 +44,7 @@
 #include <set>
 #include <map>
 
-
+#define ASYNCHRONOUS_CLIENT  1
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
 #define MOOS_MAX_APP_FREQ 100

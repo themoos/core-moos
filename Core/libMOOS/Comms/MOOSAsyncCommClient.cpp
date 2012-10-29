@@ -67,14 +67,14 @@ bool MOOSAsyncCommClient::StartThreads()
 
     if(!ReadingThread_.Initialise(AsyncCommsReaderDispatch,this))
             return false;
-/*
+
     if(!WritingThread_.Start())
         return false;
 
     if(!ReadingThread_.Start())
         return false;
-*/
-	return true;
+
+    return true;
 }
 
 bool MOOSAsyncCommClient::Flush()

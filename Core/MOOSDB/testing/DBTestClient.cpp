@@ -314,9 +314,5 @@ int main (int argc, char* argv[])
 
     DBTestClient TC1(argc,argv);
 
-    while(1)
-    	MOOSPause(100);
-
-
     TC1.Run(sClientName.c_str(),"Mission.moos");
 }
