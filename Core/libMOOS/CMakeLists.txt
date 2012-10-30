@@ -60,9 +60,8 @@ include(PlatformDefines)
 #do we want to use the new fast asynchronous client architecture?
 OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
 IF (USE_ASYNC_COMMS)
-    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT=1)
-ELSE(USE_ASYNC_COMMS)
-    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT=0)
+    cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
+    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
 ENDIF (USE_ASYNC_COMMS)
 
 
@@ -77,7 +76,7 @@ IF(COMPRESSED_MOOS_PROTOCOL)
             ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
     
         MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
-            MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
+        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
 
         SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
         INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})    

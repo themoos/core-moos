@@ -1,5 +1,6 @@
 #this builds a test application which can be used
 #to test and stress the MOOSDB
+
 set(EXECNAME1 uDBTestClient)
 set(EXECNAME2 uDBAsyncTest)
 set(EXECNAME3 uDBAppTest)
