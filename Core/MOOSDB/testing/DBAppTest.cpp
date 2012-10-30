@@ -8,11 +8,12 @@ protected:
 	double dfA;
 	double dfB;
 };
+
 int main(int argc, char * argv[])
 {
 	GetPot cl(argc,argv);
 
 	CMOOSApp A;
-	A.Run("DBApptest","Mission.moos");
+	//A.Run("DBApptest","Mission.moos");
 	return 0;
 }

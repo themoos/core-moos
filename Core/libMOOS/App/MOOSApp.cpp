@@ -44,7 +44,7 @@
 #include <iterator>
 
 
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
 #endif
 
@@ -136,7 +136,7 @@ CMOOSApp::CMOOSApp()
     
     SetMOOSTimeWarp(1.0);
     
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     m_pMailEvent = new Poco::Event;
     UseMailCallBack();
 #endif
@@ -146,11 +146,9 @@ CMOOSApp::CMOOSApp()
 
 CMOOSApp::~CMOOSApp()
 {
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     delete m_pMailEvent;
 #endif
-	std::cerr<<"~CMOOSApp()\n";
-
 }
 
 //this is an overloaded 3 parameter version which allows explicit setting of the registration name
@@ -223,7 +221,7 @@ bool CMOOSApp::Run( const char * sName,
             m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
             
             m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
-/*
+
             unsigned int nMode = 0;
             m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
             switch(nMode)
@@ -232,7 +230,7 @@ bool CMOOSApp::Run( const char * sName,
             case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
             case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
             }
-*/
+
 
             //do we want to enable command filtering (default is set in constructor)
             m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
@@ -470,7 +468,7 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 		return;
 	}
 
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
 
 
 	//OK, we are a modern client and we have three distinct behaviours
@@ -666,7 +664,7 @@ bool CMOOSApp::UnRegister(const std::string & sVar)
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     m_pMailEvent->set();
     return true;
 #else

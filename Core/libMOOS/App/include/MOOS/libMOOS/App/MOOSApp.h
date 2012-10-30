@@ -44,7 +44,6 @@
 #include <set>
 #include <map>
 
-#define ASYNCHRONOUS_CLIENT  1
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
 #define MOOS_MAX_APP_FREQ 100
@@ -54,7 +53,7 @@
 
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
 
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 namespace Poco
 {
@@ -227,7 +226,7 @@ protected:
 
 
     /** The MOOSComms node. All communications happens by way of this object.*/
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     MOOS::MOOSAsyncCommClient m_Comms;
     //CMOOSCommClient m_Comms;
 #else
@@ -484,7 +483,7 @@ private:
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
 
-#if ASYNCHRONOUS_CLIENT
+#ifdef ASYNCHRONOUS_CLIENT
     Poco::Event * m_pMailEvent;
 #endif
 

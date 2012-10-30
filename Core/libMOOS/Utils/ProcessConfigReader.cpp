@@ -48,7 +48,6 @@ CProcessConfigReader::CProcessConfigReader()
 
 CProcessConfigReader::~CProcessConfigReader()
 {
-    std::cerr<<"~CProcessConfigReader\n";
 }
 
 

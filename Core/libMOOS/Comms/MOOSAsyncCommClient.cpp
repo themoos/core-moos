@@ -48,7 +48,6 @@ MOOSAsyncCommClient::MOOSAsyncCommClient()
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
 {
-	std::cerr<<"~MOOSAsyncCommClient\n";
 }
 
 
