@@ -226,9 +226,11 @@ bool CMOOSApp::Run( const char * sName,
             m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
             switch(nMode)
             {
-            case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
-            case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
-            case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
+				case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+				case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
+				case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
+				default:SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+
             }
 
 
@@ -302,20 +304,29 @@ bool CMOOSApp::Run( const char * sName,
 void CMOOSApp::DoBanner()
 {
 	MOOSTrace("%s is Running:\n",GetAppName().c_str());
-	MOOSTrace("\t Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+	MOOSTrace(" +Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
 	if(m_Comms.IsAsynchronous())
 	{
-		MOOSTrace("\t Comms is Full Duplex and Asynchronous\n");
+		MOOSTrace(" +Comms is Full Duplex and Asynchronous\n");
 		switch(m_IterationMode)
 		{
 		case REGULAR_ITERATE_AND_MAIL:
-			std::cout<<"Iterate Mode 0 :  regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
+			std::cout<<" +Iterate Mode 0 :\n   -Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
 			break;
 		case COMMS_DRIVEN_ITERATE_AND_MAIL:
-			std::cout<<"Iterate Mode 1 :  dynamic iterate speed driven by message delivery ( up to "<<m_dfMaxAppTick<<" Hz)\n";
+			std::cout<<" +Iterate Mode 1 :\n   -Dynamic iterate speed driven by message delivery ";
+			if(m_dfMaxAppTick==0.0)
+				std::cout<<"at an unlimited rate\n";
+			else
+				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
 			break;
 		case REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
-			std::cout<<"Iterate Mode 2 : regular iterate at "<<m_dfFreq<<" Hz. Dynamic message delivery (up to "<<m_dfMaxAppTick<<"Hz)\n";
+			std::cout<<" +Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   -Dynamic message delivery ";
+			if(m_dfMaxAppTick==0.0)
+				std::cout<<"at an unlimited rate\n";
+			else
+				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
+
 			break;
 		}
 	}
@@ -327,6 +338,9 @@ void CMOOSApp::DoBanner()
 
 	if(GetMOOSTimeWarp()!=1.0)
 		MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
+
+
+	std::cout<<"\n\n";
 
 }
 

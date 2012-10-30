@@ -21,7 +21,7 @@ namespace MOOS
 	    bool ReadingLoop();
 	    bool WritingLoop();
 
-	    virtual bool Post(CMOOSMsg & Msg);
+	    virtual bool Post(CMOOSMsg & Msg,bool bKeepMsgSourceName=false);
 
 	    virtual bool OnCloseConnection();
 

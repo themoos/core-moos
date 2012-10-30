@@ -600,7 +600,6 @@ request is received */
 bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 {
     
-    
     //what are we looking to register for?
 	if(Msg.IsType(MOOS_REGISTER))
 	{

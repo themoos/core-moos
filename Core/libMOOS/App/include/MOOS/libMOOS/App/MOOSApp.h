@@ -228,7 +228,6 @@ protected:
     /** The MOOSComms node. All communications happens by way of this object.*/
 #ifdef ASYNCHRONOUS_CLIENT
     MOOS::MOOSAsyncCommClient m_Comms;
-    //CMOOSCommClient m_Comms;
 #else
     CMOOSCommClient m_Comms;
 #endif
@@ -245,7 +244,7 @@ protected:
     //enumeration of ways application can iterate
     enum IterateMode
 	{
-		REGULAR_ITERATE_AND_MAIL,
+		REGULAR_ITERATE_AND_MAIL=0,
 		COMMS_DRIVEN_ITERATE_AND_MAIL,
 		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL,
 	}m_IterationMode;
