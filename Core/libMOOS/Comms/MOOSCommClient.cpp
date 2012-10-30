@@ -869,6 +869,7 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	std::string BinaryPayload((char*)pData,nSize);
 	
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
+
 	Msg.MarkAsBinary();
 	
 	m_Published.insert(sVar);
@@ -891,6 +892,17 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	
 	return Post(Msg);
 	
+}
+
+
+bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData,double dfTime)
+{
+	return Notify(sVar,(void*) vData.data(),vData.size(), dfTime);
+}
+
+bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData, const std::string & sSrcAux,double dfTime)
+{
+	return Notify(sVar,(void*) vData.data(),vData.size(),sSrcAux,dfTime);
 }
 
 

@@ -91,11 +91,12 @@ public:
     bool Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime=-1);
 
 
-	/** notify the MOOS community that something has changed binary data. These are experimental - don't use them until I say so*/
+	/** notify the MOOS community that something has changed binary data*/
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, double dfTime=-1);
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
+    bool Notify(const std::string & sVar,const std::vector<unsigned char>& vData,double dfTime=-1);
+    bool Notify(const std::string & sVar,const std::vector<unsigned char>& vData, const std::string & sSrcAux,double dfTime=-1);
 
-	
 	
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
@@ -136,7 +137,7 @@ public:
     however prevents wayward user software bring down the MOOSComms by way of denial of service.
     (ie hogging the network)
     @param Msg reference to CMOOSMsg which user wishes to send*/
-    bool Post(CMOOSMsg  & Msg,bool bKeepMsgSourceName = false);
+    virtual bool Post(CMOOSMsg  & Msg,bool bKeepMsgSourceName = false);
 
     /** internal method which runs in a seperate thread and manages the input and output
     of messages from the server. DO NOT CALL THIS METHOD.*/
