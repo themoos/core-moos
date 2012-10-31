@@ -11,6 +11,7 @@ void PrintHelpAndExit()
     MOOSTrace("  -m (--maxapptick)                 : MaximumAppTick in Hz\n");
     MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
     MOOSTrace("  -i (--iterate_mode)               : Iterate mode  0:2 \n");
+    MOOSTrace("  -d (--data_size)                  : data size in bytes\n");
 
     exit(0);
 
@@ -28,6 +29,8 @@ public:
 		request_max_freq_ = cl.follow(500.0,2,"-m","--maxlimit");
 		request_app_freq_ = cl.follow(20.0,2,"-a","--apptick");
 		iterate_mode_ = cl.follow(0,2,"-i","--iterate_mode");
+		int data_size = cl.follow(100,2,"-d","--data_size");
+		data_.resize(data_size);
 
 
 
@@ -77,7 +80,7 @@ public:
 				std::cout<<"starting to post \"X\" from iterate...\n";
 				crazy_state = true;
 			}
-			Notify("X",MOOS::Time());
+			Notify("X",data_,MOOS::Time());
 		}
 		else
 		{
@@ -114,6 +117,7 @@ protected:
 	double request_max_freq_;
 	double request_app_freq_;
 	int iterate_mode_;
+	std::vector<unsigned char > data_;
 };
 
 int main(int argc, char * argv[])

@@ -15,6 +15,7 @@ SET(COMMS_SOURCES
     Comms/XPCSocket.cpp
     Comms/XPCTcpSocket.cpp
     Comms/XPCUdpSocket.cpp
+    Comms/ServerAudit.cpp
 )
 
 SET(APP_SOURCES

@@ -48,6 +48,8 @@ struct ClientThreadSharedData
 
 };
 
+class ServerAudit;
+
 
 class ThreadedCommServer : public CMOOSCommServer
 {
@@ -171,7 +173,7 @@ protected:
 
     virtual bool AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName);
 
-    virtual bool ProcessClient(ClientThreadSharedData &SD);
+    virtual bool ProcessClient(ClientThreadSharedData &SD, MOOS::ServerAudit & Auditor);
     virtual bool ProcessClient();
 
     bool StopAndCleanUpClientThread(std::string sName);

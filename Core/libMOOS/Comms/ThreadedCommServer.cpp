@@ -10,6 +10,7 @@
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
+#include "MOOS/libMOOS/Comms/ServerAudit.h"
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
@@ -124,7 +125,8 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
  */
 bool ThreadedCommServer::ServerLoop()
 {
-
+	MOOS::ServerAudit Auditor;
+	Auditor.Run();
     //eternally look at our incoming work list....
     while(1)
     {
@@ -141,12 +143,13 @@ bool ThreadedCommServer::ServerLoop()
         {
         case ClientThreadSharedData::PKT_READ:
         {
-            ProcessClient(SDFromClient);
+            ProcessClient(SDFromClient,Auditor);
             break;
         }
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
             OnClientDisconnect(SDFromClient);
+            Auditor.Remove(SDFromClient._sClientName);
             break;
 
         default:
@@ -168,7 +171,7 @@ bool ThreadedCommServer::ServerLoop()
  * @param SD
  * @return
  */
-bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
+bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS::ServerAudit & Auditor)
 {
     bool bResult = true;
 
@@ -195,6 +198,8 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             if(m_bQuiet)
                 InhibitMOOSTraceInThisThread(false);
 
+
+            Auditor.AddStatistic(sWho,SDFromClient._pPkt->GetStreamLength(),MOOS::Time(),true);
 
             MOOSMSG_LIST MsgLstRx,MsgLstTx;
 
@@ -252,6 +257,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
             //stuff reply message into a packet
             SDDownStream._pPkt->Serialize(MsgLstTx,true);
 
+            Auditor.AddStatistic(sWho,
+            					SDDownStream._pPkt->GetStreamLength(),
+								MOOS::Time(),
+								false);
+
             //add it to the work load
             pClient->SendToClient(SDDownStream);
 
@@ -281,6 +291,12 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient)
 
                     	//stuff all notifications into a packet
                     	SDAdditionalDownStream._pPkt->Serialize(MsgLstTx,true);
+
+                        Auditor.AddStatistic(q->first,
+                        		SDAdditionalDownStream._pPkt->GetStreamLength(),
+                        		MOOS::Time(),
+                        		false);
+
 
                         //add it to the work load of this client
                         pClient->SendToClient(SDAdditionalDownStream);

@@ -204,6 +204,24 @@ protected:
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
 
 
+    /** notify the MOOS community that something has changed -  binary data
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param dfTime double value of data being sent
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData, double dfTime=-1);
+
+	/** notify the MOOS community that something has changed  ( binary data ) with an auxiliary string paylad
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param sSrcAux additional string data member
+	 * @param dfTime time valid
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData,const std::string & sSrcAux, double dfTime=-1);
 
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest

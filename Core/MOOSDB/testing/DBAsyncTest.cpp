@@ -42,8 +42,6 @@ bool _OnMail(void *pParam)
 {
 	MOOS::MOOSAsyncCommClient* pC = (MOOS::MOOSAsyncCommClient*)pParam;
 
-	//std::cout<<MOOS::ConsoleColours::Red();
-	//std::cerr<<pC->GetMOOSName()<<" Got mail at"<<std::setw(20)<<std::setprecision(15)<<MOOS::Time()<<std::endl;
 
 	MOOSMSG_LIST M;
 	pC->Fetch(M);
@@ -62,12 +60,12 @@ bool _OnMail(void *pParam)
 
 int main(int argc, char * argv[])
 {
-	std::vector<CMOOSCommClient*> Clients(2);
+	std::vector<CMOOSCommClient*> Clients(40);
 	for(unsigned int i = 0;i< Clients.size();i++)
 	{
 		CMOOSCommClient  * pNewClient;
 
-		if( 1 || i %2 ==0 )
+		if( i %2 ==0 )
 		{
 			pNewClient = new MOOS::MOOSAsyncCommClient;
 		}
@@ -99,17 +97,14 @@ int main(int argc, char * argv[])
 	Clients[1]->SetOnMailCallBack(_OnMail,Clients[1]);
 
 	unsigned int i = 0;
-	std::vector<unsigned char> Data(387);
+	std::vector<unsigned char> Data(1024);
 
 	while(1 || i++<1000)
 	{
 		Clients[0]->Notify("X",Data.data(), Data.size());
 
+		MOOSPause(100);
 
-		MOOSPause(10);
-
-
-		//Msg.Trace();
 	}
 
 

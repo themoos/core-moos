@@ -650,6 +650,16 @@ bool CMOOSApp::Notify(const std::string & sVar,void *  pData, unsigned int nData
 	return m_Comms.Notify(sVar,pData,nDataSize,sSrcAux,dfTime);
 }
 
+bool CMOOSApp::Notify(const std::string & sVar,const std::vector<unsigned char> & vData, double dfTime)
+{
+	return m_Comms.Notify(sVar,vData,dfTime);
+}
+
+bool CMOOSApp::Notify(const std::string & sVar,const std::vector<unsigned char> & vData,const std::string & sSrcAux, double dfTime)
+{
+	return m_Comms.Notify(sVar,vData,sSrcAux,dfTime);
+}
+
 
 
 /** Register for notification in changes of named variable*/
