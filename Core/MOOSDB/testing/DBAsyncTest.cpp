@@ -12,6 +12,8 @@
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include <map>
 #include <numeric>
+#include <iterator>
+
 #include <limits>
 #include <iostream>
 #include <fstream>
