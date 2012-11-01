@@ -9,7 +9,7 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
-#include "MOOS/libMOOS/Thirdparty/GetPot/GetPot.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include <map>
 #include <numeric>
 #include <iostream>
