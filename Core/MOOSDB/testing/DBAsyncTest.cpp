@@ -12,6 +12,7 @@
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include <map>
 #include <numeric>
+#include <limits>
 #include <iostream>
 #include <fstream>
 
@@ -50,7 +51,7 @@ bool _OnMail(void *pParam)
 	pC->Fetch(M);
 
 	MOOSMSG_LIST::iterator q;
-	unsigned int k = 0;
+	//unsigned int k = 0;
 	double dfNow = MOOSLocalTime();
 	for(q=M.begin();q!=M.end();q++)
 	{
