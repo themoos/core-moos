@@ -37,7 +37,11 @@ SET(UTILS_SOURCES
    )
 
 IF(WIN32)
-    SET(UTIL_SOURCES ${UTILS_SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
+    SET(UTILS_SOURCES 
+	${UTILS_SOURCES}
+ 	Utils/NTSerial.cpp
+ 	Utils/MOOSNTSerialPort.cpp
+ 	)
 ENDIF(WIN32)
 
 
@@ -48,6 +52,7 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Timestamp.cpp
   Thirdparty/PocoBits/src/Exception.cpp
   Thirdparty/PocoBits/src/AtomicCounter.cpp
+  Thirdparty/PocoBits/include/MOOS/libMOOS/Thirdparty/PocoBits/Exception.h
 )
 
 
