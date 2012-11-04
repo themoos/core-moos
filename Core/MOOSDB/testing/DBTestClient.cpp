@@ -258,7 +258,7 @@ private:
 
     struct Job
     {
-        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
+        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _pData(0)
         {
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
             _DataSize = 0;

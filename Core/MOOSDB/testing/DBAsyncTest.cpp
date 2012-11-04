@@ -85,7 +85,7 @@ int main(int argc, char * argv[])
 	double dfTestPeriod = cl.follow(20,2,"-p","--test_period");
 	unsigned int message_period= cl.follow(100,2,"-m","--message_period_ms");
 	unsigned int num_clients= cl.follow(40,2,"-c","--num_clients");
-	unsigned int payload_size = cl.follow(40,2,"-s","--paylaod_size");
+	unsigned int payload_size = cl.follow(40,2,"-s","--payload_size");
 
 
 	std::vector<CMOOSCommClient*> Clients(num_clients);
