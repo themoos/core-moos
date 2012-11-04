@@ -31,17 +31,22 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+
 #if !defined(MOOSDBH)
 #define MOOSDBH
 
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 
-#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+
+
 #include "MOOSDBVar.h"
 #include <string>
 #include <map>
 #include <memory>
 #include "MOOSDBHTTPServer.h"
 
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 
 using namespace std;
 
