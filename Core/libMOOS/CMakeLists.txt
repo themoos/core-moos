@@ -152,6 +152,7 @@ endif(UNIX)
 
 IF(WIN32)
   set(DEPENDENCIES wsock32 comctl32)
+  add_definitions(-D_WIN32_WINNT=0x500)
 ENDIF(WIN32)
     
 
