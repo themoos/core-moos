@@ -411,7 +411,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
                 if(!bOmit)
                 {
-                    List.push_front(Msg);
+                    List.push_back(Msg);
                 }
 
 

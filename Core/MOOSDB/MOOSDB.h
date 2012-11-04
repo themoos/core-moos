@@ -45,6 +45,7 @@
 #include <map>
 #include <memory>
 #include "MOOSDBHTTPServer.h"
+#include "MsgFilter.h"
 
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 
@@ -70,9 +71,14 @@ public:
     /** called internally when a client disconnects */
     static bool OnDisconnectCallBack(string & sClient,void * pParam);
 
+    static bool OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam);
+
     /** called internally when a MOOSPkt (a collection of MOOSMsg's ) is
     received by the server */
     bool OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgLstRx,MOOSMSG_LIST & MsgLstTx);
+
+    bool OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx);
+
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
@@ -127,6 +133,10 @@ private:
     the next time a client calls in*/
     MOOSMSG_LIST_STRING_MAP m_HeldMailMap;
     DBVAR_MAP    m_VarMap;
+
+
+
+    std::map<std::string,std::set< MOOS::MsgFilter > > m_ClientFilters;
 
     //pointer to a webserver if one is needed
     std::auto_ptr<CMOOSDBHTTPServer> m_pWebServer;

@@ -57,6 +57,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -65,7 +66,6 @@
 
 
 
-#define MOOS_SERVER_REQUEST_ID  -2
 
 
 using namespace std;
@@ -87,7 +87,6 @@ bool ClientLoopProc( void * pParameter)
 
 CMOOSCommClient::CMOOSCommClient()
 {
-    m_bClientLoopIsRunning = false;
 
 	m_pConnectCallBackParam = NULL;
 	m_pfnConnectCallBack = NULL;
@@ -122,10 +121,18 @@ CMOOSCommClient::CMOOSCommClient()
 CMOOSCommClient::~CMOOSCommClient()
 {
 	Close();
+	std::cerr<<"~CMOOSCommClient\n";
 }
 
 bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName, unsigned int nFundamentalFrequency)
 {
+	if(IsRunning())
+	{
+		std::cerr<<"error CMOOSCommClient::Run - client is already running\n";
+		return false;
+	}
+
+
 	m_bQuit = false;
 
 	//do advert
@@ -163,6 +170,12 @@ bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName,
 	return true;
 }
 
+std::string CMOOSCommClient::GetMOOSName()
+{
+	return m_sMyName;
+}
+
+
 bool CMOOSCommClient::SetCommsTick(int nCommTick)
 {
     if(nCommTick>CLIENT_MAX_FUNDAMENTAL_FREQ)
@@ -194,6 +207,20 @@ bool CMOOSCommClient::HasMailCallBack()
     return m_pfnMailCallBack!=NULL;
 }
 
+bool CMOOSCommClient::IsAsynchronous()
+{
+	return false;
+}
+
+unsigned int CMOOSCommClient::GetNumberOfUnreadMessages()
+{
+
+	m_InLock.Lock();
+	unsigned int n = m_InBox.size();
+	m_InLock.UnLock();
+	return n;
+
+}
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
@@ -209,13 +236,15 @@ void CMOOSCommClient::SetOnDisconnectCallBack(bool ( *pfn)( void * pConnectParam
 	m_pDisconnectCallBackParam = pParam;
 }
 
+bool CMOOSCommClient::IsRunning()
+{
+	return m_ClientThread.IsThreadRunning();
+}
 
 bool CMOOSCommClient::ClientLoop()
 {
-    m_bClientLoopIsRunning = true;
-	//MOOSTrace("ClientLoop() Begins\n");s
     double dfTDebug = MOOSLocalTime();
-	while(!m_bQuit)
+	while(!m_ClientThread.IsQuitRequested())
 	{
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
@@ -233,7 +262,9 @@ bool CMOOSCommClient::ClientLoop()
                 }
                                    
 				if(!DoClientWork())
+				{
 					break;
+				}
                 
                 if(m_bVerboseDebug)
                     MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",MOOSLocalTime()-dfTDebug);
@@ -248,6 +279,7 @@ bool CMOOSCommClient::ClientLoop()
 		}
 		//wait one second before try to connect again
 		MOOSPause(1000);
+
 	}
 
 	//clean up on exit....
@@ -262,8 +294,6 @@ bool CMOOSCommClient::ClientLoop()
         MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
-
-    m_bClientLoopIsRunning = false;
 
 	return true;
 }
@@ -381,7 +411,6 @@ bool CMOOSCommClient::DoClientWork()
         }
 
         
-        
 	}
 	catch(CMOOSException e)
 	{
@@ -439,7 +468,7 @@ bool CMOOSCommClient::ConnectToServer()
 
 			m_pSocket = new XPCTcpSocket(m_lPort);
 
-			MOOSPause(100);
+			MOOSPause(1000);
 			MOOSTrace("\r");
 		}
 	}
@@ -494,7 +523,7 @@ bool CMOOSCommClient::ConnectToServer()
 
 /** this is called by user of a CommClient object
 to send a Msg to MOOS */
-bool CMOOSCommClient::Post(CMOOSMsg &Msg)
+bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 {
 	if(!IsConnected())
 		return false;
@@ -503,7 +532,7 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg)
 
 	//stuff our name in here  - prevent client from having to worry about
 	//it...
-	if(!m_bFakeSource )
+	if(!m_bFakeSource && !bKeepMsgSourceName )
 	{
 		Msg.m_sSrc = m_sMyName;
 	}
@@ -543,6 +572,10 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg)
 
 }
 
+bool IsNullMsg(const CMOOSMsg& msg)
+{
+	return msg.IsType(MOOS_NULL_MSG);
+}
 /** this is called by a user of a CommClient object
 to retrieve mail */
 bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
@@ -557,16 +590,19 @@ bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
 
 	MOOSMSG_LIST::iterator p;
 
-	for(p = m_InBox.begin();p!=m_InBox.end();p++)
-	{
-		CMOOSMsg & rMsg = *p;
-		if(!rMsg.IsType(MOOS_NULL_MSG))
-		{
-			//only give client non NULL Msgs
+	m_InBox.remove_if(IsNullMsg);
+//	for(p = m_InBox.begin();p!=m_InBox.end();p++)
+//	{
+//		CMOOSMsg & rMsg = *p;
+//		if(!rMsg.IsType(MOOS_NULL_MSG))
+//		{
+//			//only give client non NULL Msgs
+//
+//			MsgList.push_front(rMsg);
+//		}
+//	}
 
-			MsgList.push_front(rMsg);
-		}
-	}
+	MsgList.splice(MsgList.begin(),m_InBox,m_InBox.begin(),m_InBox.end());
 
 	//remove all elements
 	m_InBox.clear();
@@ -578,12 +614,18 @@ bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
 	return !MsgList.empty();
 }
 
+std::string CMOOSCommClient::HandShakeKey()
+{
+	//old MOOS Clients return empty string
+	return "";
+}
+
 bool CMOOSCommClient::HandShake()
 {
 	try
 	{
         if(!m_bQuiet)
-		    MOOSTrace("  Handshaking as \"%s\"\n",m_sMyName.c_str());
+		    MOOSTrace("  Handshaking as \"%s\"........ ",m_sMyName.c_str());
 
         if(m_bDoLocalTimeCorrection)
 		    SetMOOSSkew(0);
@@ -592,7 +634,7 @@ bool CMOOSCommClient::HandShake()
 		m_pSocket->iSendMessage((void*)MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
 
 		//a little bit of handshaking..we need to say who we are
-		CMOOSMsg Msg(MOOS_DATA,"",(char *)m_sMyName.c_str());
+		CMOOSMsg Msg(MOOS_DATA,HandShakeKey(),(char *)m_sMyName.c_str());
 
 		SendMsg(m_pSocket,Msg);
 
@@ -604,9 +646,9 @@ bool CMOOSCommClient::HandShake()
 		{
             if(!m_bQuiet)
             {
-			    MOOSTrace("..failed\n");
-			    MOOSTrace("->   MOOS Server Poisoned me....\n");
-			    MOOSTrace("->   What I did wrong was :\"%s\"",WelcomeMsg.m_sVal.c_str());
+            	std::cerr<<MOOS::ConsoleColours::Red()<<"[fail]\n";
+            	std::cerr<<"    \""<<WelcomeMsg.m_sVal<<"\"\n";
+            	std::cerr<<MOOS::ConsoleColours::reset();
             }
             else
             {
@@ -616,15 +658,17 @@ bool CMOOSCommClient::HandShake()
 		}
 		else
 		{
-            m_sCommunityName = WelcomeMsg.GetCommunity();
+        	std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+
+
+			m_sCommunityName = WelcomeMsg.GetCommunity();
 
 			//read our skew
 			double dfSkew = WelcomeMsg.m_dfVal;
             if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
 
-            if(!m_bQuiet)
-                MOOSTrace("  Joined community %s\n  Handshaking complete\n",m_sCommunityName.c_str());
+            std::cerr<<MOOS::ConsoleColours::reset();
 
 		}
 	}
@@ -693,10 +737,8 @@ void CMOOSCommClient::DoBanner()
         return ;
 
 	MOOSTrace("****************************************************\n");
-	MOOSTrace("*                                                  *\n");
 	MOOSTrace("*       This is MOOS Client                        *\n");
 	MOOSTrace("*       c. P Newman 2001-2011                      *\n");
-	MOOSTrace("*                                                  *\n");
 	MOOSTrace("****************************************************\n");
 
 }
@@ -741,6 +783,21 @@ bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 		return false;
 	}
 }
+
+bool CMOOSCommClient::Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval)
+{
+	std::string sMsg;
+
+	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
+	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
+	MOOSAddValToString(sMsg,"Interval",dfInterval);
+
+	CMOOSMsg MsgR(MOOS_WILDCARD_REGISTER,m_sMyName,sMsg);
+
+
+	return Post(MsgR);
+}
+
 
 
 bool CMOOSCommClient::IsRegisteredFor(const std::string & sVariable)
@@ -812,6 +869,7 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	std::string BinaryPayload((char*)pData,nSize);
 	
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
+
 	Msg.MarkAsBinary();
 	
 	m_Published.insert(sVar);
@@ -834,6 +892,23 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 	
 	return Post(Msg);
 	
+}
+
+
+bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData,double dfTime)
+{
+	if(vData.empty())
+		return false;
+
+	return Notify(sVar,(void*) (&vData[0]),vData.size(), dfTime);
+}
+
+bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData, const std::string & sSrcAux,double dfTime)
+{
+	if(vData.empty())
+		return false;
+
+	return Notify(sVar,(void*) (&vData[0]),vData.size(),sSrcAux,dfTime);
 }
 
 
@@ -982,22 +1057,9 @@ bool CMOOSCommClient::Close(bool bNice )
 	bNice;
 	m_bQuit = true;
 	
-    m_ClientThread.Stop();
+	if(m_ClientThread.IsThreadRunning())
+		m_ClientThread.Stop();
     
-    int i = 0;
-
-	//while(m_bConnected )
-	while(m_bClientLoopIsRunning)
-	{
-		MOOSPause(100);
-
-		if(++i>100)
-		{
-			MOOSTrace("failed to close MOOSClient object! Most Strange.\n");
-			return false;
-		}
-	}
-
 	ClearResources();
 
 	return true;
@@ -1071,7 +1133,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	//back out correction which has already been made..
 	//dfRqTime-=dfOldSkew;
 	//dfRxTime-=dfOldSkew;
-
+//#define MOOS_DETECT_CLOCK_DRIFT
 #ifdef MOOS_DETECT_CLOCK_DRIFT
 
 	// This is an experimental and unfinished feature.  It tracks the drift between
@@ -1089,11 +1151,13 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 		// Make a fresh skew filter
 		//m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSConditionedSkewFilter);
 		m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
-		if (!m_pSkewFilter.get()) return false;
+		if (!m_pSkewFilter.get())
+			return false;
 	}
 
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
 	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
+	MOOSTrace("Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",dfRqTime,dfTxTime,dfRxTime,dfNewSkew);
 
 #else // MOOS_DETECT_CLOCK_DRIFT
 	
@@ -1103,7 +1167,12 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	if(dfOldSkew!=0.0)
 	{
 		dfNewSkew = 0.9*dfOldSkew+0.1*dfMeasuredSkew;	
-		//MOOSTrace("Tx Time (@DB) = %.4f Localtime (@localhost) = %.4f Skew = %.4f smoothed skew = %.5f seconds\n",dfTxTime,HPMOOSTime(),dfMeasuredSkew,dfNewSkew);
+	/*	MOOSTrace("%s Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",
+				m_sMyName.c_str(),
+				dfRqTime,
+				dfTxTime,
+				dfRxTime,
+				dfNewSkew);*/
 	}
 	else
 	{

@@ -8,7 +8,7 @@ ENDIF(WIN32)
 
 #what files are needed?
 SET(SRCS MOOSDB.cpp MOOSDBMain.cpp MOOSDBVar.cpp MOOSRegisterInfo.cpp
-    MOOSDB.h MOOSDBVar.h MOOSRegisterInfo.h MOOSDBHTTPServer.cpp MOOSDBHTTPServer.h HTTPConnection.cpp HTTPConnection.h
+    MOOSDB.h MOOSDBVar.h MOOSRegisterInfo.h MOOSDBHTTPServer.cpp MOOSDBHTTPServer.h HTTPConnection.cpp HTTPConnection.h MsgFilter.cpp
     ${RESOURCES})
 
 include(PlatformDefines)
@@ -19,6 +19,10 @@ IF(DISABLE_NAMES_LOOKUP)
     ADD_DEFINITIONS(-DMOOS_DISABLE_NAMES_LOOKUP)
 ENDIF(DISABLE_NAMES_LOOKUP)
 
+foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
+    ADD_DEFINITIONS(-D${DEFINE})        
+    message(STATUS "adding -D${DEFINE} as required by MOOS")
+endforeach()
 
 
 include_directories( ${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})

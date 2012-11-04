@@ -63,6 +63,13 @@ bool CMOOSDB::OnRxPktCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListRx,
     return pMe->OnRxPkt(sWho,MsgListRx,MsgListTx);
 }
 
+bool CMOOSDB::OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam)
+{
+    CMOOSDB* pMe = (CMOOSDB*)(pParam);
+
+    return pMe->OnFetchAllMail(sWho,MsgListTx);
+}
+
 bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
 {
     CMOOSDB* pMe = (CMOOSDB*)(pParam);
@@ -261,6 +268,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
+    m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 
 
@@ -316,7 +325,6 @@ void CMOOSDB::UpdateDBTimeVars()
 /**this will be called each time a new packet is recieved*/
 bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx)
 {
-    //MOOSTrace("\nClient %s::OnRxPkt:\n",sClient.c_str());
 
     MOOSMSG_LIST::iterator p;
     
@@ -325,8 +333,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
-
-
     //good spot to update our internal time    
     UpdateDBTimeVars();
 
@@ -337,8 +343,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
     {
         
         //now we fill in the packet with our replies to THIS CLIENT
-        //MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(MsgListRx.front().m_sSrc);
-        
         MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sClient);
         
         if(q==m_HeldMailMap.end())
@@ -366,12 +370,31 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
             if(!q->second.empty())
             {
                 //copy all the held mail to MsgListTx
-                MsgListTx.splice(MsgListTx.begin(),q->second);
+                MsgListTx.splice(MsgListTx.begin(),
+                		q->second,
+                		q->second.begin(),
+                		q->second.end());
             }
         }
     }
     
     return true;
+}
+
+bool CMOOSDB::OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx)
+{
+	MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sWho);
+	if(q!=m_HeldMailMap.end())
+	{
+		if(!q->second.empty())
+		{
+            MsgListTx.splice(MsgListTx.begin(),
+            		q->second,
+            		q->second.begin(),
+            		q->second.end());
+		}
+	}
+	return true;
 }
 
 /** This functions decides what needs to be done on a message by message basis */
@@ -388,6 +411,7 @@ bool CMOOSDB::ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx)
         return OnUnRegister(MsgRx);
         break;
     case MOOS_REGISTER:    //REGISTRATION
+    case MOOS_WILDCARD_REGISTER:
         return OnRegister(MsgRx);
         break;
     case MOOS_NULL_MSG:
@@ -409,9 +433,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 {
     double dfTimeNow = HPMOOSTime();
     
-    
     CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
-    
     
     if(rVar.m_nWrittenTo==0)
     {
@@ -470,13 +492,6 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 //MIN
                 rVar.m_dfWriteFreq = 0.0;
             }
-            //else if(dfDT<0.005)
-            //{
-                //MAX OUT
-                //this is almost certainly two of tge same mesages arrive in the same commpkt - ignore...
-                //MOOSTrace("Msg %s was last updated at %f and its now %f\n", Msg.GetKey().c_str(),dfTimeNow,dfLastWrittenTime);
-                //rVar.m_dfWriteFreq = 200.0;
-            //}
             else
             {
                 //IIR FILTER COOEFFICENT
@@ -585,31 +600,75 @@ request is received */
 bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 {
     
-    
     //what are we looking to register for?
-    
-    //if the variable already exists then post a notification message
-    //to the client
-    bool bAlreadyThere = VariableExists(Msg.m_sKey);
-    
-    CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
-    
-    if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
-        return false;
-    
-    
-    if(bAlreadyThere && rVar.m_nWrittenTo!=0)
-    {
-        //when the client registered the variable already existed...
-        //better tell them
-        CMOOSMsg ReplyMsg;
-        Var2Msg(rVar,ReplyMsg);
-        
-        ReplyMsg.m_cMsgType = MOOS_NOTIFY;
-        
-        AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);      
-        
-    }
+	if(Msg.IsType(MOOS_REGISTER))
+	{
+
+		//if the variable already exists then post a notification message
+		//to the client
+		bool bAlreadyThere = VariableExists(Msg.m_sKey);
+
+		CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
+
+		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
+			return false;
+
+		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
+		{
+			//when the client registered the variable already existed...
+			//better tell them
+			CMOOSMsg ReplyMsg;
+			Var2Msg(rVar,ReplyMsg);
+
+			ReplyMsg.m_cMsgType = MOOS_NOTIFY;
+
+			AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);
+
+		}
+	}
+	else if(Msg.IsType(MOOS_WILDCARD_REGISTER))
+	{
+		//here we parse out the filter
+		std::string app_pattern = "";
+		std::string var_pattern = "";
+		double period = 0.0;
+
+
+		MOOSValFromString(app_pattern,Msg.GetString(),"AppPattern");
+		MOOSValFromString(var_pattern,Msg.GetString(),"VarPattern");
+		MOOSValFromString(period,Msg.GetString(),"Interval");
+		MOOS::MsgFilter F(app_pattern,var_pattern,period);
+
+		//store this filter we will need it later when new
+		//as yet undiscovered variables are written
+		m_ClientFilters[Msg.GetSource()].insert(F);
+
+
+		//now iterate over all existing variables and see if they match
+		//if the do simply register for them...
+		DBVAR_MAP::iterator q;
+		for(q = m_VarMap.begin();q!=m_VarMap.end();q++)
+		{
+			CMOOSMsg M;
+			Var2Msg(q->second,M);
+			if(F.Matches(M))
+			{
+				M.m_cMsgType = MOOS_REGISTER;
+				M.m_cDataType = MOOS_DOUBLE;
+				M.m_dfVal = period;
+				M.m_sSrc = Msg.GetSource();
+				OnRegister(M);//smart...
+			}
+		}
+
+		std::cerr<<MOOS::ConsoleColours::yellow()
+				<<"MOOSDB: Adding subscription of \""
+				<<Msg.GetSource()<<"\" to variables matching \""
+				<<var_pattern<<":"<<app_pattern<<"\""
+				<<MOOS::ConsoleColours::reset()<<std::endl;
+
+
+	}
     
     return true;
 }
@@ -643,6 +702,32 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         {
             //new variable will have data type of request message
             NewVar.m_cDataType = Msg.m_cDataType;
+
+            if(!VariableExists(Msg.GetKey()))
+			{
+				//look to see if any existing wildcards make us want to subscribe
+				//to this new message
+				std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
+				for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
+				{
+					//for every client
+					std::set<MOOS::MsgFilter>::const_iterator h;
+					for (h = g->second.begin(); h != g->second.end(); h++)
+					{
+						//for every filter
+						if (h->Matches(Msg))
+						{
+							//add the filter owner (client *g) as a subscriber
+							NewVar.AddSubscriber(g->first, h->period());
+							std::cerr<<"MOOSDB: adding subscription of \""<<g->first<<"\" to \""
+									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+									<<"\""<<std::endl;
+						}
+					}
+				}
+			}
+
+
         }
         
         //index our new creation
@@ -672,6 +757,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
+    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -681,10 +767,15 @@ bool CMOOSDB::OnDisconnect(string &sClient)
         
         rVar.RemoveSubscriber(sClient);
     }
+    if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
+    {
+        //std::cerr<<"  removing wildcard subscriptions\n";
+    	m_ClientFilters[sClient].clear();
+    }
     
-    MOOSTrace("removing held mail for \"%s\"...\n",sClient.c_str());
-    
+    //std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
+    std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
     return true;
 }
@@ -719,12 +810,10 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
     DBVAR_MAP::iterator p;
     STRING_LIST::iterator q;
-    
     STRING_LIST Clients;
     
     m_pCommServer->GetClientNames(Clients);
-    
-    
+
     for(q=Clients.begin();q!=Clients.end();q++)
     {
         string sWho = *q;

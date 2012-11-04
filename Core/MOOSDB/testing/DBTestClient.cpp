@@ -4,6 +4,9 @@
  *  Created on: Sep 19, 2011
  *      Author: pnewman
  */
+#ifdef _WIN32
+#define NOMINMAX
+#endif
 #include <iostream>
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
@@ -18,7 +21,9 @@ void PrintHelp()
     MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
     MOOSTrace("  -c (--commstick)                  : MOOSCommsTick in Hz\n");
     MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
+    MOOSTrace("  -w var1 [var2,var3...]            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w x*:*@0.1  *:GPS:0.0 z\n");
     MOOSTrace("  -p var1[:n]@t1 [var2@t2,var3@t3....]  : list of publications in form var_name[:optional_binary_size]@period eg x@0.5 y:2048@2.0\n");
+    MOOSTrace("  -l (--latency)                    : show latency (time between posting and receiving)\n");
     MOOSTrace("  -v (--verbose)                    : verbose output\n");
 
     MOOSTrace("\n\nNetwork failure simulation:\n");
@@ -51,11 +56,15 @@ public:
         _vSubscribe = cl.nominus_followers("-s");
         std::vector<std::string> vPublish = cl.nominus_followers("-p");
 
+        _vWildSubscriptions = cl.nominus_followers("-w");
+
+
         _SimulateNetworkFailure = cl.search(2,"-N","--simulate_network_failure");
         _NetworkStallProb = cl.follow(0.1,2,"-P","--network_failure_prob");
         _NetworkStallTime = cl.follow(3.0,2,"-t","--network_failure_time");
         _ApplicationExitProb = cl.follow(0.0,2,"-k","--application_failure_prob");
         _bVerbose = cl.search(2,"-v","--verbose");
+        _bShowLatency = cl.search(2,"-l","--latency");
 
 
         if(cl.search(2,"-h","--help"))
@@ -67,7 +76,7 @@ public:
 
 
         std::vector<std::string>::iterator q;
-        unsigned int MaxArraySize;
+        unsigned int MaxArraySize=0;
 
         for(q = vPublish.begin();q!=vPublish.end();q++)
         {
@@ -105,6 +114,10 @@ public:
 
         }
 
+
+
+
+
         _BinaryArray.resize(MaxArraySize);
 
     }
@@ -135,14 +148,22 @@ public:
 
         		if(MOOS::Time()-dfT>1.0)
         		{
-        			std::cerr<<MOOS::ConsoleColours::red()<<"Band Width: "<<  8*_nByteCounter/(1024*1024) <<" Mbit/s\n";
+        			std::cerr<<MOOS::ConsoleColours::red()<<"Band Width: "<<  8*_nByteCounter/(1024.0*1024.0) <<" Mbit/s\n";
         			_nByteCounter = 0;
         			dfT = MOOS::Time();
         		}
         	}
         	if(_bVerbose)
         	{
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetAsString()<<"\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetKey()<<":"<<q->GetAsString()<<"\n";
+                std::cerr<<MOOS::ConsoleColours::reset();
+        	}
+        	if(_bShowLatency)
+        	{
+        		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
                 std::cerr<<MOOS::ConsoleColours::reset();
         	}
         }
@@ -157,7 +178,7 @@ public:
             _Jobs.pop();
             if(Active.IsBinary())
             {
-            	m_Comms.Notify(Active._sName,_BinaryArray.data(),Active._DataSize, MOOS::Time() );
+            	Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
 
             	if(_bVerbose)
             	{
@@ -198,6 +219,27 @@ public:
         }
         std::cerr<<MOOS::ConsoleColours::reset();
 
+        std::vector<std::string>::iterator w;
+
+		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end();w++)
+		{
+			//GPS_X:*@0.4
+			std::string sEntry = *w;
+			std::string sVarPattern = MOOSChomp(sEntry,":");
+			std::string sAppPattern = MOOSChomp(sEntry,"@");
+			double dfPeriod  = atoi(sEntry.c_str());
+			if(sVarPattern.empty()||sAppPattern.empty()||sEntry.empty())
+			{
+				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern@period\n";
+				continue;
+			}
+
+			m_Comms.Register(sVarPattern,sAppPattern,dfPeriod);
+
+		}
+
+
+
         return true;
     }
 
@@ -205,6 +247,7 @@ public:
 
 private:
     std::vector<std::string> _vSubscribe;
+    std::vector<std::string> _vWildSubscriptions;
     double _AppTick;
     double _CommsTick;
 
@@ -261,7 +304,7 @@ private:
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
     bool _bVerbose;
-
+    bool _bShowLatency;
 
 
 

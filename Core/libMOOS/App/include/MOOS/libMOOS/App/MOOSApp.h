@@ -34,6 +34,7 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
+
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 
@@ -43,15 +44,22 @@
 #include <set>
 #include <map>
 
-
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
-#define MOOS_MAX_APP_FREQ 50
+#define MOOS_MAX_APP_FREQ 100
 #define MOOS_MAX_COMMS_FREQ 200
+
 #define STATUS_PERIOD 2
 
-
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
+
+#ifdef ASYNCHRONOUS_CLIENT
+#include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+namespace Poco
+{
+class Event;
+}
+#endif
 
 /** This is a class from which all MOOS component applications can be derived
 main() will typically end with a call to MOOSAppDerivedClass::Run(). It provides
@@ -90,6 +98,8 @@ public:
 	
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
+
+
     
 
 protected:
@@ -194,25 +204,71 @@ protected:
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
 
 
+    /** notify the MOOS community that something has changed -  binary data
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param dfTime double value of data being sent
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData, double dfTime=-1);
+
+	/** notify the MOOS community that something has changed  ( binary data ) with an auxiliary string paylad
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param sSrcAux additional string data member
+	 * @param dfTime time valid
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData,const std::string & sSrcAux, double dfTime=-1);
 
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
-    @param dfInterval minimum time between notifications*/
+    @param dfInterval minimum time between notifications in seconds*/
     bool Register(const std::string & sVar,double dfInterval);
+
+    /** Register for notification in changes of variables which match variable and source patterns
+     *
+     * @param sVarPattern variable name pattern eg VAR*_21
+     * @param sAppPattern src name patterd eg V?R_PRODUCER
+     * @param dfInterval minimum time between notifications in seconds
+     * @return true on success
+     */
+    bool Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval);
+
 
     /** UnRegister for notification in changes of named variable
     @param sVar name of variable of interest*/
     bool UnRegister(const std::string & sVar);
 
 
-    /** The MOOSComms node. All communications happens by way of this object. You'll often do things like  m_Comms.Notify("VARIABLE_X","STRING_DATA",dfTime) top send data */
+    /** The MOOSComms node. All communications happens by way of this object.*/
+#ifdef ASYNCHRONOUS_CLIENT
+    MOOS::MOOSAsyncCommClient m_Comms;
+#else
     CMOOSCommClient m_Comms;
+#endif
 
     /** Set the time between calls into the DB - can be set using the CommsTick flag in the config file*/
     bool SetCommsFreq(unsigned int nFreq);
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
-    void SetAppFreq(double dfFreq);
+    void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
+
+    /** print out salient info at startup */
+    virtual void DoBanner();
+
+    //enumeration of ways application can iterate
+    enum IterateMode
+	{
+		REGULAR_ITERATE_AND_MAIL=0,
+		COMMS_DRIVEN_ITERATE_AND_MAIL,
+		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL,
+	}m_IterationMode;
+
+	//set up the iteration mode of the app
+	bool SetIterateMode(IterateMode Mode);
 
     /** return the boot time of the App */
     double GetAppStartTime();
@@ -225,6 +281,7 @@ protected:
     
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
+
 	
 	
 
@@ -355,6 +412,11 @@ protected:
     /** frequency at which this application will iterate */
     double m_dfFreq;
 
+    /** max frequency at which app can tick (if zero then anything is OK). This
+     * allows apps to respond very quickly to mail but also allows users
+     * to throttle their rates */
+    double m_dfMaxAppTick;
+
     /** std::string name of mission file */
     std::string m_sMissionFile;
 
@@ -419,11 +481,14 @@ public:
     void OnConnectToServerPrivate();
     bool OnMailCallBack();
     
+protected:
     /* by calling this function Iterate and OnNewMail will be
      called from the thread that is servicing the MOOS Comms client. It
      is provided to let really very specialised MOOSApps have very speedy
      response times. It is not recommended for general use*/
     bool UseMailCallBack();
+
+
 
 private:
     /* this function is used to process mail on behalf of the client just before
@@ -435,8 +500,10 @@ private:
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
 
+#ifdef ASYNCHRONOUS_CLIENT
+    Poco::Event * m_pMailEvent;
+#endif
 
-private:
 
     /** Number of times Application has cycled */
     int m_nIterateCount;
@@ -450,6 +517,9 @@ private:
     /** called before starting the Application running. If parameters have not beedn set correctly
     it prints a help statement and returns false */
     bool CheckSetUp();
+
+    /** controls the rate at which application runs */
+    void SleepAsRequired(bool & bIterateShouldRun);
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;

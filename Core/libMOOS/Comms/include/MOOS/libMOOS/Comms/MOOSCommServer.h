@@ -57,6 +57,7 @@
 class XPCTcpSocket;
 #include <list>
 #include <map>
+#include <set>
 
 /** This class is the MOOS Comms Server. It lies at the heart of the communications
 architecture and typically is of no interest to the component developer. It maintains a list of all
@@ -88,6 +89,15 @@ public:
     @param pParam      user suplied parameter to be passed to callback function
     */
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
+
+
+    /**
+	* Set up the callback which is can be to collect all
+	* pending mail in named client
+	* @param pfn
+	* @param pParam
+	*/
+    void SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam);
 
     /** This function is the listen loop called from one of the two server threads. It is responsible
     for accepting a coonection and creating a new client socket.    */
@@ -129,6 +139,9 @@ protected:
 
     /** prints class information banner to stdout*/
     virtual void DoBanner();
+
+    /** return true if Aynschronous Clients are supported */
+    virtual bool SupportsAsynchronousClients();
 
     /** Get the name of the client on the remote end of pSocket*/
     std::string  GetClientName(XPCTcpSocket* pSocket);
@@ -180,6 +193,18 @@ protected:
     @see SetOnDisconnectCallBack */
     void * m_pDisconnectCallBackParam;
 
+
+
+    /** user supplied FetchAllMail callback which is called after a message has caused a call back
+	@see SetOnFetchAllMailCallBack */
+	bool (*m_pfnFetchAllMailCallBack)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pCaller);
+
+	/** place holder for the address of the object passed back to the user during an FetchAllMail callback
+	@see SetOnFetchAllMailCallBack */
+    void * m_pFetchAllMailCallBackParam;
+
+
+
     /** Listen socket (bound to port address supplied in constructor) */
     XPCTcpSocket * m_pListenSocket;
 
@@ -192,6 +217,10 @@ protected:
 
     /** map of socket file descriptors to the std::string  name of the client process at the other end*/
     SOCKETFD_2_CLIENT_NAME_MAP m_Socket2ClientMap;
+
+    /** map of socket file descriptors to the std::string  name of the client if that client supports
+     * asynchronous reception of data*/
+    std::set<std::string> m_AsynchronousClientSet;
 
     /** Called when a new client connects. Performs handshaking and adds new socket to m_ClientSocketList
     @param pNewClient pointer to the new socket created in ListenLoop;

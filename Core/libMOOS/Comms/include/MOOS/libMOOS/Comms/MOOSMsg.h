@@ -44,6 +44,7 @@
 #define MOOS_NOTIFY 'N'
 #define MOOS_REGISTER 'R'
 #define MOOS_UNREGISTER 'U'
+#define MOOS_WILDCARD_REGISTER '*'
 #define MOOS_NOT_SET '~'
 #define MOOS_COMMAND 'C'
 #define MOOS_ANONYMOUS 'A'
@@ -52,6 +53,8 @@
 #define MOOS_POISON  'K'
 #define MOOS_WELCOME 'W'
 #define MOOS_SERVER_REQUEST 'Q'
+#define MOOS_SERVER_REQUEST_ID  -2
+#define MOOS_TIMING 'T'
 
 //MESSAGE DATA TYPES
 #define MOOS_DOUBLE 'D'
@@ -106,6 +109,9 @@ public:
 
     /**check message type MOOS_NOTIFY, REGISTER etc*/
     bool IsType (char  cType)const;
+
+    /** return type */
+    char GetType() const;
 
     /**return time stamp of message*/
     double GetTime()const {return m_dfTime;};

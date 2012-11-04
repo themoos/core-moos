@@ -163,7 +163,6 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
     try
     {
 
-
         if(m_bFakeDodgyComms)
         {
             //this is some very low level cruft that is only hear to provide

@@ -3,6 +3,7 @@ set(LIBNAME MOOS)
 SET(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
+    Comms/MOOSAsyncCommClient.cpp
     Comms/MOOSCommObject.cpp
     Comms/MOOSCommPkt.cpp
     Comms/MOOSCommServer.cpp
@@ -14,6 +15,7 @@ SET(COMMS_SOURCES
     Comms/XPCSocket.cpp
     Comms/XPCTcpSocket.cpp
     Comms/XPCUdpSocket.cpp
+    Comms/ServerAudit.cpp
 )
 
 SET(APP_SOURCES
@@ -32,8 +34,8 @@ SET(UTILS_SOURCES
    Utils/MOOSSerialPort.cpp
    Utils/MOOSPlaybackStatus.cpp
    Utils/IPV4Address.cpp
-   
-
+   Utils/KeyboardCapture.cpp
+   Utils/ThreadPrint.cpp
    )
 
 IF(WIN32)
@@ -52,6 +54,8 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Timestamp.cpp
   Thirdparty/PocoBits/src/Exception.cpp
   Thirdparty/PocoBits/src/AtomicCounter.cpp
+  Thirdparty/PocoBits/src/BugCheck.cpp
+   Thirdparty/PocoBits/src/Debugger.cpp
   Thirdparty/PocoBits/include/MOOS/libMOOS/Thirdparty/PocoBits/Exception.h
 )
 
@@ -59,6 +63,15 @@ set(THIRDPARTY_SOURCES
 set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
 
 include(PlatformDefines)
+
+##############   FAST COMMS?   ################
+#do we want to use the new fast asynchronous client architecture?
+OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
+IF (USE_ASYNC_COMMS)
+    cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
+    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
+ENDIF (USE_ASYNC_COMMS)
+
 
 
 ############# COMPRESSED COMMS? ################
@@ -71,7 +84,7 @@ IF(COMPRESSED_MOOS_PROTOCOL)
             ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
     
         MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
-            MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
+        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
 
         SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
         INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})    
@@ -152,7 +165,8 @@ endif(UNIX)
 
 IF(WIN32)
   set(DEPENDENCIES wsock32 comctl32)
-  add_definitions(-D_WIN32_WINNT=0x500)
+  cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x500)
+  add_definitions(-D_WIN32_WINNT=0x500 )
 ENDIF(WIN32)
     
 
@@ -197,7 +211,7 @@ cache_internal_append_unique(PROJECT_EXPORT_LIBS
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
 include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS})
-add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
+add_library(${LIBNAME} STATIC ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
 #######################################

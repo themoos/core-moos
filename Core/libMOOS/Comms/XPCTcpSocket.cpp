@@ -126,6 +126,9 @@ XPCTcpSocket *XPCTcpSocket::Accept(char *_sHost)
 
 void XPCTcpSocket::vListen(int _iNumPorts)
 {
+	if(_iNumPorts == -1)
+		_iNumPorts = SOMAXCONN;
+
     // Incoming connections are listened for
     if (listen(iSocket, _iNumPorts) == -1)
     {
