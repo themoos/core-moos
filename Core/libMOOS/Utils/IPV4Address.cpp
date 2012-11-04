@@ -5,9 +5,13 @@
  *      Author: pnewman
  */
 
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#ifdef UNIX
+	#include <ifaddrs.h>
+	#include <arpa/inet.h>
+	#include <netdb.h> 
+#elif _WIN32
+    #include <winsock2.h>
+#endif
 
 #include <iostream>
 #include <string>

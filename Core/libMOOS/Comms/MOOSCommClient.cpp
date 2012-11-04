@@ -979,7 +979,7 @@ bool CMOOSCommClient::PeekAndCheckMail(MOOSMSG_LIST &Mail, const std::string &sK
 
 bool CMOOSCommClient::Close(bool bNice )
 {
-
+	bNice;
 	m_bQuit = true;
 	
     m_ClientThread.Stop();

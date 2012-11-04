@@ -5,9 +5,11 @@
  *      Author: pnewman
  */
 
-#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include <iterator>
 #include <algorithm>
 

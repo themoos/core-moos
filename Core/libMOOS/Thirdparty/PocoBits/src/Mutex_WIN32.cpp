@@ -34,8 +34,8 @@
 //
 
 
-#include "PocoBits/Mutex_WIN32.h"
-#include "PocoBits/Timestamp.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
 
 
 namespace Poco {

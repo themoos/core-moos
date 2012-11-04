@@ -46,8 +46,9 @@
 
 
 #if defined(POCO_OS_FAMILY_WINDOWS)
+
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_WIN32.h"
-#else
+#else   
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_POSIX.h"
 #endif
 
@@ -194,6 +195,10 @@ public:
 	void lock(long milliseconds)
 		/// Always succeeds
 	{
+#ifdef _WIN32
+		UNREFERENCED_PARAMETER(milliseconds);
+#endif
+
 	}
 
 	bool tryLock()

@@ -420,6 +420,7 @@ bool CMOOSApp::UseMailCallBack()
 ////////////////////// DEFAULT HANDLERS //////////////////////
 bool CMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
 {
+	UNREFERENCED_PARAMETER(NewMail);
     return true;
 }
 
@@ -454,7 +455,7 @@ bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, double 
 
 bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime)
 {
-	return m_Comms.Notify(sVar,sVal,dfTime);
+	return m_Comms.Notify(sVar,sVal,sSrcAux,dfTime);
 }
 
 bool CMOOSApp::Notify(const std::string &sVar, const char * sVal,double dfTime)
