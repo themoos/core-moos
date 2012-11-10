@@ -72,6 +72,22 @@ bool _OnMail(void *pParam)
 	return true;
 }
 
+void PrintHelpAndExit()
+{
+
+	MOOSTrace("\n\nV10 performance and compatibility testing\n");
+	MOOSTrace("  -p (--test_period)                : test period in seconds (20 seconds default)\n");
+	MOOSTrace("  -m (--message_period)             : send test data every m milliseconds (default 100 ms) \n");
+	MOOSTrace("  -c (--num_clients)                : number of clients to instantiate (default 40)\n");
+	MOOSTrace("  -s (--payload_size)               : size of data to send default (default 1024 bytes) \n");
+
+	MOOSTrace("\n\nExample Usage:\n");
+	MOOSTrace(" test for 15 seconds with 20 clients and sending 100K every 50 ms\n");
+	MOOSTrace("  ./uDBAysncTest  -p 15 -c 20 -m 50 -s 100000\n");
+
+	exit(0);
+
+}
 
 int main(int argc, char * argv[])
 {
@@ -81,8 +97,12 @@ int main(int argc, char * argv[])
 	double dfTestPeriod = cl.follow(20,2,"-p","--test_period");
 	unsigned int message_period= cl.follow(100,2,"-m","--message_period_ms");
 	unsigned int num_clients= cl.follow(40,2,"-c","--num_clients");
-	unsigned int payload_size = cl.follow(40,2,"-s","--paylaod_size");
+	unsigned int payload_size = cl.follow(1024,2,"-s","--paylaod_size");
 
+	if(cl.search(2,"-h","--help"))
+	{
+		 PrintHelpAndExit();
+	}
 
 	std::vector<CMOOSCommClient*> Clients(num_clients);
 	for(unsigned int i = 0;i< Clients.size();i++)
