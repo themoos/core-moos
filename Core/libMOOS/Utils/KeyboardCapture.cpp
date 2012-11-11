@@ -2,6 +2,9 @@
 #include "MOOS/libMOOS/Utils/SafeList.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <iostream>
+#ifdef _WIN32
+#include <io.h>
+#endif
 //#include <fstream>
 
 namespace MOOS
@@ -33,8 +36,11 @@ bool KeyboardCapture::Capture()
 	iodebug<<"cout :"<< isatty(1)<<std::endl;
 	iodebug<<"cerr :"<< isatty(2)<<std::endl;
 	*/
-
+#ifdef _WIN32
+	if(_isatty(0)==0)
+#else
 	if(isatty(0)==0)
+#endif
 	{
 		std::cerr<<"KeyboardCapture::Capture std::cin is not a tty. Thread exiting.\n";
 		return false;

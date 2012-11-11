@@ -39,7 +39,11 @@ SET(UTILS_SOURCES
    )
 
 IF(WIN32)
-    SET(UTIL_SOURCES ${UTILS_SOURCES} NTSerial.cpp MOOSNTSerialPort.cpp NTSerial.h MOOSNTSerialPort.h )
+    SET(UTILS_SOURCES 
+	${UTILS_SOURCES}
+ 	Utils/NTSerial.cpp
+ 	Utils/MOOSNTSerialPort.cpp
+ 	)
 ENDIF(WIN32)
 
 
@@ -50,6 +54,9 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Timestamp.cpp
   Thirdparty/PocoBits/src/Exception.cpp
   Thirdparty/PocoBits/src/AtomicCounter.cpp
+  Thirdparty/PocoBits/src/BugCheck.cpp
+   Thirdparty/PocoBits/src/Debugger.cpp
+  Thirdparty/PocoBits/include/MOOS/libMOOS/Thirdparty/PocoBits/Exception.h
 )
 
 
@@ -158,6 +165,8 @@ endif(UNIX)
 
 IF(WIN32)
   set(DEPENDENCIES wsock32 comctl32)
+  cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x500)
+  add_definitions(-D_WIN32_WINNT=0x500 )
 ENDIF(WIN32)
     
 
@@ -202,7 +211,7 @@ cache_internal_append_unique(PROJECT_EXPORT_LIBS
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
 include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS})
-add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
+add_library(${LIBNAME} STATIC ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
 #######################################

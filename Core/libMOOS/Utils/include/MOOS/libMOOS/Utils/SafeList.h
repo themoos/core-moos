@@ -118,6 +118,11 @@ public:
         }
     }
 
+	bool IsEmpty()
+	{
+		Poco::FastMutex::ScopedLock Lock(_mutex);
+        return _List.empty();
+	}
     unsigned int Size()
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);

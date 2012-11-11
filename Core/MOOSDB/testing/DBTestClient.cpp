@@ -4,6 +4,9 @@
  *  Created on: Sep 19, 2011
  *      Author: pnewman
  */
+#ifdef _WIN32
+#define NOMINMAX
+#endif
 #include <iostream>
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
@@ -73,7 +76,7 @@ public:
 
 
         std::vector<std::string>::iterator q;
-        unsigned int MaxArraySize;
+        unsigned int MaxArraySize=0;
 
         for(q = vPublish.begin();q!=vPublish.end();q++)
         {
@@ -175,7 +178,7 @@ public:
             _Jobs.pop();
             if(Active.IsBinary())
             {
-            	m_Comms.Notify(Active._sName,_BinaryArray.data(),Active._DataSize, MOOS::Time() );
+            	Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
 
             	if(_bVerbose)
             	{
@@ -255,7 +258,7 @@ private:
 
     struct Job
     {
-        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
+        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _pData(0)
         {
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
             _DataSize = 0;

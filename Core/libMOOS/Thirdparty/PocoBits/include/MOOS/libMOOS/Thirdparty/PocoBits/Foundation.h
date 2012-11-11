@@ -53,7 +53,7 @@
 //
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Config.h"
 
-
+#define POCO_STATIC
 //
 // Ensure that POCO_DLL is default unless POCO_STATIC is defined
 //
@@ -139,6 +139,7 @@
 //
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Bugcheck.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Types.h"
+
 #include <string>
 
 

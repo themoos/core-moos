@@ -55,7 +55,6 @@
 //
 
 
-#include <windows.h>
 
 
 #if !defined(POCO_NO_UNWINDOWS)

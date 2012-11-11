@@ -5,9 +5,10 @@
  *      Author: pnewman
  */
 
-#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Comms/ServerAudit.h"
@@ -128,13 +129,12 @@ bool ThreadedCommServer::ServerLoop()
 	MOOS::ServerAudit Auditor;
 	Auditor.Run();
     //eternally look at our incoming work list....
-    while(1)
+	while(!m_ServerThread.IsQuitRequested())
     {
         ClientThreadSharedData SDFromClient;
 
-        //MOOSTrace("ThreadedCommServer::ServerLoop[%d]-  %d items to handle\n",i++,m_SharedDataListFromClient.Size());
-
-        if(m_SharedDataListFromClient.Size()==0)
+       
+        if(m_SharedDataListFromClient.IsEmpty())
             m_SharedDataListFromClient.WaitForPush();
 
         m_SharedDataListFromClient.Pull(SDFromClient);
@@ -205,6 +205,13 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             //convert to list of messages
             SDFromClient._pPkt->Serialize(MsgLstRx,false);
+
+			if(MsgLstRx.empty())
+			{
+				std::cerr<<"very strange there is no content in the Pkt\n";
+				return false;
+			}
+
 
             //is there any sort of notification going on here?
             bool bIsNotification = false;

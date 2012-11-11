@@ -1,11 +1,11 @@
 //
-// Mutex_WIN32.cpp
+// Bugcheck.cpp
 //
-// $Id: //poco/svn/Foundation/src/Mutex_WIN32.cpp#3 $
+// $Id: //poco/1.4/Foundation/src/Bugcheck.cpp#1 $
 //
 // Library: Foundation
-// Package: Threading
-// Module:  Mutex
+// Package: Core
+// Module:  Bugcheck
 //
 // Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
 // and Contributors.
@@ -34,48 +34,70 @@
 //
 
 
-#include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_WIN32.h"
-#include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
+#include "MOOS/libMOOS/ThirdParty/PocoBits/Bugcheck.h"
+#include "MOOS/libMOOS/ThirdParty/PocoBits/Debugger.h"
+#include "MOOS/libMOOS/ThirdParty/PocoBits/Exception.h"
+#include <sstream>
 
 
 namespace Poco {
 
 
-MutexImpl::MutexImpl()
+void Bugcheck::assertion(const char* cond, const char* file, int line)
 {
-	// the fct has a boolean return value under WInnNt/2000/XP but not on Win98
-	// the return only checks if the input address of &_cs was valid, so it is safe to omit it
-	InitializeCriticalSectionAndSpinCount(&_cs, 4000);
+	Debugger::enter(std::string("Assertion violation: ") + cond, file, line);
+	throw AssertionViolationException(what(cond, file, line));
 }
 
 
-MutexImpl::~MutexImpl()
+void Bugcheck::nullPointer(const char* ptr, const char* file, int line)
 {
-	DeleteCriticalSection(&_cs);
+	Debugger::enter(std::string("NULL pointer: ") + ptr, file, line);
+	throw NullPointerException(what(ptr, file, line));
 }
 
 
-bool MutexImpl::tryLockImpl(long milliseconds)
+void Bugcheck::bugcheck(const char* file, int line)
 {
-	const int sleepMillis = 5;
-	Timestamp now;
-	Timestamp::TimeDiff diff(Timestamp::TimeDiff(milliseconds)*1000);
-	do
+	Debugger::enter("Bugcheck", file, line);
+	throw BugcheckException(what(0, file, line));
+}
+
+
+void Bugcheck::bugcheck(const char* msg, const char* file, int line)
+{
+	std::string m("Bugcheck");
+	if (msg)
 	{
-		try
-		{
-			if (TryEnterCriticalSection(&_cs) == TRUE)
-				return true;
-		}
-		catch (...)
-		{
-			throw SystemException("cannot lock mutex");
-		}
-		Sleep(sleepMillis);
+		m.append(": ");
+		m.append(msg);
 	}
-	while (!now.isElapsed(diff));
-	return false;
+	Debugger::enter(m, file, line);
+	throw BugcheckException(what(msg, file, line));
 }
+
+
+void Bugcheck::debugger(const char* file, int line)
+{
+	Debugger::enter(file, line);
+}
+
+
+void Bugcheck::debugger(const char* msg, const char* file, int line)
+{
+	Debugger::enter(msg, file, line);
+}
+
+
+std::string Bugcheck::what(const char* msg, const char* file, int line)
+{
+	std::ostringstream str;
+	if (msg) str << msg << " ";
+	str << "in file \"" << file << "\", line " << line;
+	return str.str();
+}
+
+
 
 
 } // namespace Poco

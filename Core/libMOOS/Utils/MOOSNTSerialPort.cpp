@@ -28,7 +28,8 @@
 //
 //////////////////////////    END_GPL    //////////////////////////////////
 
-#include "MOOSUtilityFunctions.h#include "MOOSNTSerialPort.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Utils/MOOSNTSerialPort.h"
 #include <iostream>
 using namespace std;
 #include <assert.h>

@@ -121,7 +121,9 @@ bool MOOSAsyncCommClient::IsAsynchronous()
 bool MOOSAsyncCommClient::WritingLoop()
 {
 	//we want errors not signals!
-	signal(SIGPIPE, SIG_IGN);
+#ifndef _WIN32
+    signal(SIGPIPE,SIG_IGN);
+#endif
 
 	//this is the connect loop...
 	m_pSocket = new XPCTcpSocket(m_lPort);
@@ -202,6 +204,9 @@ bool MOOSAsyncCommClient::DoWriting()
 			m_dfLastTimingMessage= Msg.GetTime();
 		}
 
+		if(StuffToSend.empty())
+			return true;
+
 		//convert our out box to a single packet
 		CMOOSCommPkt PktTx;
 		try
@@ -260,8 +265,9 @@ bool MOOSAsyncCommClient::ReadingLoop()
 {
 	//note we will rely on our sibling writing thread to handle
 	//the connected and reconnecting...
-	signal(SIGPIPE, SIG_IGN);
-
+#ifndef _WIN32
+    signal(SIGPIPE,SIG_IGN);
+#endif	
 
 	while(!ReadingThread_.IsQuitRequested())
 	{

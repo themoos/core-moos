@@ -9,7 +9,7 @@
 #include "MOOS/libMOOS/Comms/XPCUdpSocket.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
-
+#include <iostream>
 #include <iomanip>
 #include <algorithm>
 

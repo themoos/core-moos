@@ -4,6 +4,9 @@
  *  Created on: Sep 18, 2012
  *      Author: pnewman
  */
+#ifdef _WIN32
+#define NOMINMAX
+#endif
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
@@ -17,6 +20,7 @@
 #include <limits>
 #include <iostream>
 #include <fstream>
+
 
 MOOS::ThreadPrint gPrinter(std::cout);
 
@@ -97,7 +101,7 @@ int main(int argc, char * argv[])
 	double dfTestPeriod = cl.follow(20,2,"-p","--test_period");
 	unsigned int message_period= cl.follow(100,2,"-m","--message_period_ms");
 	unsigned int num_clients= cl.follow(40,2,"-c","--num_clients");
-	unsigned int payload_size = cl.follow(1024,2,"-s","--paylaod_size");
+	unsigned int payload_size = cl.follow(1024,2,"-s","--payload_size");
 
 	if(cl.search(2,"-h","--help"))
 	{
@@ -150,7 +154,7 @@ int main(int argc, char * argv[])
 			MOOSTrace("%4d messages sent %.1f seconds to go\r",i,dfTestPeriod-(MOOSLocalTime()-dfStart));
 
 		//send 1K
-		Clients[0]->Notify("X",Data.data(), Data.size(),MOOSLocalTime());
+		Clients[0]->Notify("X",Data,MOOSLocalTime());
 
 		//write at 1/MESSAGE_PERIOD_MS Hz
 		MOOSPause(message_period);

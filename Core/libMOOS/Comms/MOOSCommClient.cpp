@@ -897,12 +897,18 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 
 bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData,double dfTime)
 {
-	return Notify(sVar,(void*) vData.data(),vData.size(), dfTime);
+	if(vData.empty())
+		return false;
+
+	return Notify(sVar,(void*) (&vData[0]),vData.size(), dfTime);
 }
 
 bool CMOOSCommClient::Notify(const std::string & sVar,const std::vector<unsigned char>& vData, const std::string & sSrcAux,double dfTime)
 {
-	return Notify(sVar,(void*) vData.data(),vData.size(),sSrcAux,dfTime);
+	if(vData.empty())
+		return false;
+
+	return Notify(sVar,(void*) (&vData[0]),vData.size(),sSrcAux,dfTime);
 }
 
 
@@ -1048,6 +1054,9 @@ bool CMOOSCommClient::PeekAndCheckMail(MOOSMSG_LIST &Mail, const std::string &sK
 
 bool CMOOSCommClient::Close(bool bNice )
 {
+	bNice;
+	m_bQuit = true;
+	
 	if(m_ClientThread.IsThreadRunning())
 		m_ClientThread.Stop();
     
