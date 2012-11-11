@@ -124,7 +124,7 @@ CMOOSCommClient::~CMOOSCommClient()
 	std::cerr<<"~CMOOSCommClient\n";
 }
 
-bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName, unsigned int nFundamentalFrequency)
+bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency)
 {
 	if(IsRunning())
 	{
@@ -142,7 +142,7 @@ bool CMOOSCommClient::Run(const char *sServer, long lPort, const char * sMyName,
 	m_sDBHost = sServer;
 
 	//and on what port are they listening
-	m_lPort = lPort;
+	m_lPort = Port;
 
 	//and what are we called?
 	m_sMyName = sMyName;

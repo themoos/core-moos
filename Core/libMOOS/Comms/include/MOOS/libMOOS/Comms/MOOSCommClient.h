@@ -154,7 +154,9 @@ public:
     @param nFundamentalFrequency the basic tick frequency of the comms loop. Default value of 5 implies mail will be
     retrieved and sent from the server at 5Hz
     */
-    bool Run(const char * sServer,long lPort, const char * sMyName, unsigned int nFundamentalFreq=5);
+    //bool Run(const char * sServer,long lPort, const char * sMyName, unsigned int nFundamentalFreq=5);
+    bool Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency=5);
+
 
     /** set the user supplied OnConnect call back. This callback , when set, will be invoked
     when a connection to the server is made. It is a good plan to register for notification of variables

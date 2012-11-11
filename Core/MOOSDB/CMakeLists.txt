@@ -39,3 +39,4 @@ INSTALL(TARGETS ${EXECNAME}
 
 
 add_subdirectory(testing)
+add_subdirectory(examples)
