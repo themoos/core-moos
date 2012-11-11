@@ -579,9 +579,8 @@ bool CMOOSApp::UseMailCallBack()
 }
 
 ////////////////////// DEFAULT HANDLERS //////////////////////
-bool CMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
+bool CMOOSApp::OnNewMail(MOOSMSG_LIST &)
 {
-	UNREFERENCED_PARAMETER(NewMail);
     return true;
 }
 
