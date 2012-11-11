@@ -1052,9 +1052,9 @@ bool CMOOSCommClient::PeekAndCheckMail(MOOSMSG_LIST &Mail, const std::string &sK
         return false;
 }
 
-bool CMOOSCommClient::Close(bool bNice )
+bool CMOOSCommClient::Close(bool  )
 {
-	bNice;
+
 	m_bQuit = true;
 	
 	if(m_ClientThread.IsThreadRunning())
