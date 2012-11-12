@@ -37,6 +37,8 @@
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
+
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSVariable.h"
@@ -99,7 +101,11 @@ public:
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
 
-
+	 /**
+	 * pass in a copy of any command line parameters so options can be
+	 * queried later
+	 */
+	void SetCommandLineParameters(int argc, char * argv[]);
     
 
 protected:
@@ -282,7 +288,7 @@ protected:
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
 
-	
+
 	
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -441,7 +447,9 @@ protected:
     /** flag specifying the error state of the App - set via SetAppError()*/
     bool m_bAppError;
     
+    MOOS::CommandLineParser m_CommandLineParser;
     
+
     /** Time since last iterate was called*/
     double GetTimeSinceIterate();
 
@@ -523,6 +531,7 @@ private:
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
+
     
     
 };

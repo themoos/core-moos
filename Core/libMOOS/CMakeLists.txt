@@ -36,6 +36,8 @@ SET(UTILS_SOURCES
    Utils/IPV4Address.cpp
    Utils/KeyboardCapture.cpp
    Utils/ThreadPrint.cpp
+   Utils/CommandLineParser.cpp
+   
    )
 
 IF(WIN32)
@@ -55,8 +57,7 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Exception.cpp
   Thirdparty/PocoBits/src/AtomicCounter.cpp
   Thirdparty/PocoBits/src/BugCheck.cpp
-   Thirdparty/PocoBits/src/Debugger.cpp
-  Thirdparty/PocoBits/include/MOOS/libMOOS/Thirdparty/PocoBits/Exception.h
+  Thirdparty/PocoBits/src/Debugger.cpp
 )
 
 

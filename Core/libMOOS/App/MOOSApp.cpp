@@ -570,7 +570,21 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
 }
 
 
-/////////////////// EXPERIMENTAL July 2008 ////////////////////
+void CMOOSApp::SetCommandLineParameters(int argc, char * argv[])
+{
+	m_CommandLineParser.Open(argc,argv);
+}
+
+
+/*
+template<class T>
+const T CMOOSApp::GetCommandLineOption(const std::string & sOption, const T & Default, )
+{
+	return  = cl(sOption, Default);
+}
+*/
+
+
 bool CMOOSApp::UseMailCallBack()
 {
     /* This attaches a callback to thw comms object's mail handler*/
