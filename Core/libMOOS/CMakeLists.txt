@@ -56,7 +56,7 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Timestamp.cpp
   Thirdparty/PocoBits/src/Exception.cpp
   Thirdparty/PocoBits/src/AtomicCounter.cpp
-  Thirdparty/PocoBits/src/BugCheck.cpp
+  Thirdparty/PocoBits/src/Bugcheck.cpp
   Thirdparty/PocoBits/src/Debugger.cpp
 )
 
