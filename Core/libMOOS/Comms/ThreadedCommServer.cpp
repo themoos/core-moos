@@ -261,16 +261,19 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             //send packet back to client...
             ClientThreadSharedData SDDownStream(sWho,ClientThreadSharedData::PKT_WRITE);
 
-            //stuff reply message into a packet
-            SDDownStream._pPkt->Serialize(MsgLstTx,true);
+            if(!MsgLstTx.empty())
+            {
+				//stuff reply message into a packet
+				SDDownStream._pPkt->Serialize(MsgLstTx,true);
 
-            Auditor.AddStatistic(sWho,
-            					SDDownStream._pPkt->GetStreamLength(),
-								MOOS::Time(),
-								false);
+				Auditor.AddStatistic(sWho,
+									SDDownStream._pPkt->GetStreamLength(),
+									MOOS::Time(),
+									false);
 
-            //add it to the work load
-            pClient->SendToClient(SDDownStream);
+				//add it to the work load
+				pClient->SendToClient(SDDownStream);
+            }
 
             //was there ever a notification? If not just continue
             if(bIsNotification==false)
@@ -303,7 +306,6 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                         		SDAdditionalDownStream._pPkt->GetStreamLength(),
                         		MOOS::Time(),
                         		false);
-
 
                         //add it to the work load of this client
                         pClient->SendToClient(SDAdditionalDownStream);

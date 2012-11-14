@@ -569,20 +569,11 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
     m_sAppError =  m_bAppError ? sErr : "";
 }
 
-
 void CMOOSApp::SetCommandLineParameters(int argc, char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }
 
-
-/*
-template<class T>
-const T CMOOSApp::GetCommandLineOption(const std::string & sOption, const T & Default, )
-{
-	return  = cl(sOption, Default);
-}
-*/
 
 
 bool CMOOSApp::UseMailCallBack()

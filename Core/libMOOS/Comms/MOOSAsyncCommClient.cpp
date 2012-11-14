@@ -202,10 +202,21 @@ bool MOOSAsyncCommClient::DoWriting()
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
+			std::cerr<<"timing\n";
 		}
 
 		if(StuffToSend.empty())
+		{
+			std::cerr<<"no no\n";
 			return true;
+		}
+
+		for(MOOSMSG_LIST::iterator q =StuffToSend.begin();
+				q!=StuffToSend.end();
+				q++)
+		{
+			q->Trace();
+		}
 
 		//convert our out box to a single packet
 		CMOOSCommPkt PktTx;
@@ -220,6 +231,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		}
 
 		//finally the send....
+		std::cerr<<PktTx.GetStreamLength()<<"\n";
 		SendPkt(m_pSocket,PktTx);
 
 		MonitorAndLimitWriteSpeed();
