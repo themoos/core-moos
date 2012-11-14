@@ -34,9 +34,9 @@
 //
 
 
-#include "MOOS/libMOOS/ThirdParty/PocoBits/Bugcheck.h"
-#include "MOOS/libMOOS/ThirdParty/PocoBits/Debugger.h"
-#include "MOOS/libMOOS/ThirdParty/PocoBits/Exception.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Bugcheck.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Debugger.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 #include <sstream>
 
 
