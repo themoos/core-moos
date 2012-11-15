@@ -125,11 +125,12 @@ bool MOOSAsyncCommClient::WritingLoop()
     signal(SIGPIPE,SIG_IGN);
 #endif
 
-	//this is the connect loop...
-	m_pSocket = new XPCTcpSocket(m_lPort);
 
 	while(!WritingThread_.IsQuitRequested())
 	{
+
+		//this is the connect loop...
+		m_pSocket = new XPCTcpSocket(m_lPort);
 
 
 		if(ConnectToServer())
@@ -142,7 +143,7 @@ bool MOOSAsyncCommClient::WritingLoop()
 				if(OutGoingQueue_.Size()==0)
 				{
 					//this may time out in which case we DoWriting() which may send
-					//a timing message
+					//a timing message (heart beat) in Do Writing...
 					OutGoingQueue_.WaitForPush(nMSToWait);
 				}
 
@@ -195,6 +196,15 @@ bool MOOSAsyncCommClient::DoWriting()
 
 		OutGoingQueue_.AppendToOtherInConstantTime(StuffToSend);
 
+		for(MOOSMSG_LIST::iterator q = StuffToSend.begin();q!=StuffToSend.end();q++)
+		{
+			if(q->IsType(MOOS_TERMINATE_CONNECTION))
+			{
+				std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
+				return false;
+			}
+		}
+
 		//and once in a while we shall send a timing
 		//message (this is the new style of timing
 		if((MOOSLocalTime()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
@@ -202,21 +212,14 @@ bool MOOSAsyncCommClient::DoWriting()
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
-			std::cerr<<"timing\n";
 		}
 
 		if(StuffToSend.empty())
 		{
-			std::cerr<<"no no\n";
 			return true;
 		}
 
-		for(MOOSMSG_LIST::iterator q =StuffToSend.begin();
-				q!=StuffToSend.end();
-				q++)
-		{
-			q->Trace();
-		}
+
 
 		//convert our out box to a single packet
 		CMOOSCommPkt PktTx;
@@ -224,14 +227,13 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			PktTx.Serialize(StuffToSend,true);
 		}
-		catch (CMOOSException e)
+		catch (const CMOOSException & e)
 		{
 			//clear the outbox
 			throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
 		}
 
 		//finally the send....
-		std::cerr<<PktTx.GetStreamLength()<<"\n";
 		SendPkt(m_pSocket,PktTx);
 
 		MonitorAndLimitWriteSpeed();
@@ -287,7 +289,12 @@ bool MOOSAsyncCommClient::ReadingLoop()
 		{
 			if(!DoReading())
 			{
+				OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-",0)   );
+
 				std::cerr<<"reading failed!\n";
+
+				while(IsConnected())
+					MOOSPause(200);
 			}
 		}
 		else
