@@ -39,6 +39,8 @@
 #endif // _MSC_VER > 1000
 
 #include <string>
+#include <vector>
+
 
 //MESSAGE TYPES
 #define MOOS_NOTIFY 'N'
@@ -98,6 +100,13 @@ public:
     /** check if data type is binary*/
     bool IsBinary()const{return  IsDataType(MOOS_BINARY_STRING);}
 
+    /** extract (copy) binary data from message*/
+    bool GetBinaryData(std::vector<unsigned char > &v);
+
+    /** simply access binary data, return NULL if message is not binary*/
+    unsigned char * GetBinaryData();
+
+
     /** get size of binary message - 0 if not binary type */
     unsigned int GetBinaryDataSize();
 
@@ -126,6 +135,7 @@ public:
     /**return the name of the message*/
     std::string GetKey()const {return m_sKey;};
     std::string GetName()const{return GetKey();};
+    bool IsName(const std::string & sName);
 
     /**return the name of the process (as registered with the DB) which
     posted this notification*/

@@ -110,6 +110,8 @@ void MOOSRemoveChars(std::string & sStr,const std::string & sTok);
 /** convert string to upper case*/
 void MOOSToUpper(std::string &str);
 
+std::string MOOSToUpper(const std::string & sStr);
+
 /** remove white space form start and end of a string */
 void MOOSTrimWhiteSpace(std::string & str);
 

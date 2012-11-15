@@ -921,6 +921,13 @@ void MOOSToUpper(string &str)
     }
 }
 
+std::string MOOSToUpper(const std::string & str)
+{
+	std::string STR = str;
+	std::transform(str.begin(), str.end(),STR.begin(), ::toupper);
+	return STR;
+}
+
 bool MOOSIsNumeric(string  str)
 {
     MOOSTrimWhiteSpace(str);

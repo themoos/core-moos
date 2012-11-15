@@ -588,6 +588,31 @@ unsigned int CMOOSMsg::GetBinaryDataSize()
 		return m_sVal.size();
 }
 
+bool CMOOSMsg::GetBinaryData(std::vector<unsigned char > &v)
+{
+	if(!IsBinary())
+		return false;
+
+	v.reserve(GetBinaryDataSize());
+	std::copy(m_sVal.begin(),m_sVal.end(),v.begin());
+	return true;
+}
+
+unsigned char * CMOOSMsg::GetBinaryData()
+{
+	if(!IsBinary())
+		return NULL;
+	else
+		return (unsigned char*)(&m_sVal[0]);
+}
+
+
+bool  CMOOSMsg::IsName(const std::string & sName)
+{
+	return MOOSStrCmp(m_sKey, sName);
+}
+
+
 bool CMOOSMsg::IsDataType(char cDataType) const
 {
     return m_cDataType == cDataType;

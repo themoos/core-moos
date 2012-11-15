@@ -31,6 +31,49 @@ bool CommandLineParser::Open(int argc, char * argv[])
 	return true;
 }
 
+
+bool CommandLineParser::GetOption(const std::string option,  double & result)
+{
+	if(!pcl_.get())
+		return false;
+
+	if(!pcl_->search(option.c_str()))
+		return false;
+
+	result = pcl_->follow(result,1,option.c_str());
+
+	return true;
+
+}
+bool CommandLineParser::GetOption(const std::string option,  std::string  & result)
+{
+	if(!pcl_.get())
+			return false;
+
+	if(!pcl_->search(option.c_str()))
+		return false;
+
+	result = pcl_->follow(result.c_str(),1,option.c_str());
+
+	return true;
+
+
+}
+bool CommandLineParser::GetOption(const std::string option,  int & result)
+{
+	if(!pcl_.get())
+		return false;
+
+	if(!pcl_->search(option.c_str()))
+		return false;
+
+	result = pcl_->follow(result,1,option.c_str());
+
+	return true;
+
+
+}
+
 bool CommandLineParser::GetVariable(const std::string option,  double & result)
 {
 	if(!pcl_.get())

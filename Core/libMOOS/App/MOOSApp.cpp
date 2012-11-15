@@ -159,89 +159,50 @@ bool CMOOSApp::Run(const char * sName,const char * sMissionFile,const char * sMO
     return Run(sName,sMissionFile);
 }
 
+//this is an overloaded 3 parameter version which allows explicit setting of the registration name
+bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
+{
+	SetCommandLineParameters(argc,argv);
+	return Run(sName);
+}
+
+
 //the main MOOSApp Run function
-bool CMOOSApp::Run( const char * sName,
-                    const char * sMissionFile)
+bool CMOOSApp::Run( const std::string & sName,
+                    const std::string & sMissionFile)
 {
 
-    //save absolutely crucial info...
-    m_sAppName      = sName;
-    m_sMissionFile  = sMissionFile;
-    m_MissionReader.SetAppName(m_sAppName);
+	//save absolutely crucial info...
+	m_sAppName      = sName; //default
+	m_CommandLineParser.GetOption("--app_name",m_sAppName);//overload
+
+	//but things might be overloaded
+	m_sMissionFile  = sMissionFile; //default
+	m_CommandLineParser.GetOption("--mission_file",m_sMissionFile); //overload
+
+	m_MissionReader.SetAppName(m_sAppName);
+
+	//by default we will register with our application name
+	if(m_sMOOSName.empty()) //default
+		m_sMOOSName=m_sAppName;
+
+	m_CommandLineParser.GetOption("--moos_name",m_sMOOSName); //overload
+
+
+	//look at mission file etc
+	if(!Configure())
+	{
+		std::cerr<<"configure returned false. Quitting\n";
+		return false;
+	}
+
+	//here we give users a chance to alter configurations
+	//or do more work in configuring
+	OnProcessCommandLine();
     
-    //by default we will 
-	if(m_sMOOSName.empty())
-        m_sMOOSName=m_sAppName;
-    
+	//what time did we start?
+	m_dfAppStartTime = MOOSTime();
 
-    //can we see the mission file
-    if(sMissionFile!=NULL)
-    {
-        if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
-        {
-            MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
-        }
-        
-        if(1)
-        {
-			//what is the global time warp
-            double dfTimeWarp = 1.0;
-            if(m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
-            {
-                SetMOOSTimeWarp(dfTimeWarp);
-            }
-            
-            
-            //are we expected to use MOOS comms?
-            m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
-            
-            //are we being asked to sort mail by time..
-            m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
-            
-            //are we in debug mode
-            m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
-
-            //are we in simulator mode?
-            string sSim;
-            if(m_MissionReader.GetValue("SIMULATOR",sSim))
-            {
-                m_bSimMode = MOOSStrCmp(sSim,"TRUE");
-            }
-
-            //are we in playback mode
-            string sPlayBack;
-            if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
-            {
-                SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
-            }
-
-            //OK now figure out our tick speeds  above what is set by default
-            //in derived class constructors this can be set in the process config block
-            //by the mission architect
-            m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
-            
-            m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
-
-            unsigned int nMode = 0;
-            m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
-            switch(nMode)
-            {
-				case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
-				case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
-				case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
-				default:SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
-
-            }
-
-
-            //do we want to enable command filtering (default is set in constructor)
-            m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
-        }
-    }
-
-    //what time did we start?
-    m_dfAppStartTime = MOOSTime();
-    
     //can we start the communications ?
     if(m_bUseMOOSComms)
     {
@@ -299,6 +260,86 @@ bool CMOOSApp::Run( const char * sName,
     /***************************   END OF MOOS APP LOOP ***************************************/
 
     return true;
+}
+
+bool CMOOSApp::Configure()
+{
+
+	//can we see the mission file
+
+	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
+	{
+		MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
+	}
+
+
+	//what is the global time warp
+	double dfTimeWarp = 1.0;
+	if(m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
+	{
+		SetMOOSTimeWarp(dfTimeWarp);
+	}
+
+	//are we expected to use MOOS comms?
+	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
+
+	//are we being asked to sort mail by time..
+	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
+
+	//are we in debug mode
+	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
+
+	//are we in simulator mode?
+	string sSim;
+	if(m_MissionReader.GetValue("SIMULATOR",sSim))
+	{
+		m_bSimMode = MOOSStrCmp(sSim,"TRUE");
+	}
+
+	//are we in playback mode
+	string sPlayBack;
+	if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
+	{
+		SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
+	}
+
+	//OK now figure out our tick speeds  above what is set by default
+	//in derived class constructors this can be set in the process config block
+	//by the mission architect
+	m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
+
+	m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
+
+	unsigned int nMode = 0;
+	m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
+	switch(nMode)
+	{
+		case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+		case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
+		case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
+		default:SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+
+	}
+
+	//do we want to enable command filtering (default is set in constructor)
+	m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
+
+	return IsConfigOK();
+
+}
+
+bool CMOOSApp::OnProcessCommandLine()
+{
+	//use things like
+	//m_CommandLineParser.GetVariable("--moos_name",std::string);
+
+	return true;
+}
+
+bool CMOOSApp::IsConfigOK()
+{
+	//put checks in here....if needed (or overload)
+	return true;
 }
 
 void CMOOSApp::DoBanner()
@@ -712,28 +753,23 @@ bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
 bool CMOOSApp::ConfigureComms()
 {
 
+	if(!m_CommandLineParser.GetOption("--moos_host",m_sServerHost))
+	{
+		if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
+		{
+			MOOSTrace("Warning Server host not read from mission file or command line: assuming LOCALHOST\n");
+			m_sServerHost = "LOCALHOST";
+		}
+	}
 
-
-    if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
-    {
-        MOOSTrace("Warning Server host not read from mission file: assuming LOCALHOST\n");
-        m_sServerHost = "LOCALHOST";
-    }
-
-
-    if(!m_MissionReader.GetValue("SERVERPORT",m_sServerPort))
-    {
-        MOOSTrace("Warning Server port not read from mission file: assuming 9000\n");
-        m_sServerPort = "9000";
-    }
-
-    m_lServerPort = atoi(m_sServerPort.c_str());
-
-    if(m_lServerPort==0)
-    {
-        m_lServerPort = 9000;
-        MOOSTrace("Warning Server port not read from mission file: assuming 9000\n");
-    }
+	if(!m_CommandLineParser.GetOption("--moos_port",m_lServerPort))
+	{
+		if(!m_MissionReader.GetValue("SERVERPORT",m_lServerPort))
+		{
+			MOOSTrace("Warning Server port not read from mission file or command line: assuming 9000\n");
+			m_sServerPort = "9000";
+		}
+	}
 
     if(!CheckSetUp())
         return false;
@@ -1088,7 +1124,7 @@ void CMOOSApp::IteratePrivate()
 {
     if(fabs(m_dfLastStatusTime-MOOSTime())>STATUS_PERIOD)
     {
-        std::string sStatus = GetAppName()+"_STATUS";
+        std::string sStatus = MOOSToUpper(GetAppName())+"_STATUS";
         MOOSToUpper(sStatus);
         m_Comms.Notify(sStatus,MakeStatusString());
         m_dfLastStatusTime = MOOSTime();

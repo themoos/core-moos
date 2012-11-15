@@ -89,15 +89,9 @@ public:
     @param the subscribe name of the application. If NULL then sName
     */
     bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName);
-    bool Run( const char * sName,const char * sMissionFile);
+    bool Run( const std::string & sName,const std::string & sMissionFile="Mission.moos");
+    bool Run(const std::string &  sName,int argc, char * argv[]);
 
-    /** Called when the class has succesully connected to the server. Overload this function
-    and place use it to register for notification when variables of interest change */
-    virtual bool OnConnectToServer();
-
-    /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
-    virtual bool OnDisconnectFromServer();
-	
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
 
@@ -106,7 +100,7 @@ public:
 	 * queried later
 	 */
 	void SetCommandLineParameters(int argc, char * argv[]);
-    
+
 
 protected:
     /** called when the application should iterate. Overload this function in a derived class
@@ -120,6 +114,10 @@ protected:
     @param NewMail a list of new mail messages*/
     virtual bool OnNewMail(MOOSMSG_LIST & NewMail);
 
+    /** called just before the main app loop is entered. Specific initialisation code can be written
+    in an overloaded version of this function */
+    virtual bool OnStartUp();
+
     /** optionally (see ::EnableCommandMessageFiltering() ) called when a command message (<MOOSNAME>_CMD) is recieved by the application.
     @param a copy of CmdMsg the message purporting to be a "command" - i.e. has the name <MOOSNAME>_CMD */
     virtual bool OnCommandMsg(CMOOSMsg Msg);
@@ -127,7 +125,18 @@ protected:
     /** make a status string - overload this in a derived class if you want to modify or what the statuts string looks like */
     virtual std::string MakeStatusString();
 
+    /** called before OnStartUp and before communications have been established to give users option of processing command line*/
+	virtual bool OnProcessCommandLine();
 
+public:
+    /** Called when the class has succesfully connected to the server. Overload this function
+    and place use it to register for notification when variables of interest change */
+    virtual bool OnConnectToServer();
+
+    /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
+    virtual bool OnDisconnectFromServer();
+
+protected:
 
     /** notify the MOOS community that something has changed (string)
      *
@@ -383,16 +392,17 @@ protected:
     can be set by registering for SIMULATION_MODE variable*/
     bool m_bSimMode;
 
-
-    /** called just before the main app loop is entered. Specific initialisation code can be written
-    in an overloaded version of this function */
-    virtual bool OnStartUp();
-
     /** start up the comms */
     virtual bool ConfigureComms();
 
+    /** read setting from file etc */
+    virtual bool Configure();
+
+    /** confirm configuration is acceptable */
+    virtual bool IsConfigOK();
+
     /** Port on which server application listens for new connection */
-    long m_lServerPort;
+    int m_lServerPort;
 
     /** name of machine on which MOOS Server resides */
     std::string m_sServerHost;
