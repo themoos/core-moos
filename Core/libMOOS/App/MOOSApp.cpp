@@ -752,24 +752,29 @@ bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
 
 bool CMOOSApp::ConfigureComms()
 {
-
+	m_sServerHost = "LOCALHOST";
 	if(!m_CommandLineParser.GetOption("--moos_host",m_sServerHost))
 	{
 		if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
 		{
-			MOOSTrace("Warning Server host not read from mission file or command line: assuming LOCALHOST\n");
-			m_sServerHost = "LOCALHOST";
+			MOOSTrace("Warning Server host not read from mission file or command line: assuming %s\n",m_sServerHost.c_str());
 		}
 	}
 
+	m_lServerPort = 9000;
 	if(!m_CommandLineParser.GetOption("--moos_port",m_lServerPort))
 	{
 		if(!m_MissionReader.GetValue("SERVERPORT",m_lServerPort))
 		{
-			MOOSTrace("Warning Server port not read from mission file or command line: assuming 9000\n");
-			m_sServerPort = "9000";
+			MOOSTrace("Warning Server port not read from mission file or command line: assuming %d\n",m_lServerPort);
 		}
 	}
+
+	//this is to support an old mistake
+	//m_sServerPort shoudl never have been a string!
+	std::stringstream ss;
+	ss<<m_lServerPort;
+	m_sServerPort = ss.str();
 
     if(!CheckSetUp())
         return false;
