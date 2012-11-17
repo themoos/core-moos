@@ -166,19 +166,38 @@ bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
 	return Run(sName);
 }
 
+void CMOOSApp::OnPrintExampleAndExit()
+{
+	std::cout<<" there is no example configuration for this app\n";
+	exit(0);
+}
+
+void CMOOSApp::OnPrintHelpAndExit()
+{
+	std::cout<<GetAppName()<<" help:\n";
+	std::cout<<"standard MOOSApp switches:\n";
+	std::cout<<"--moos_app_name :\n";
+	std::cout<<"--moos_name:\n";
+	std::cout<<"--moos_file:\n";
+	std::cout<<"--moos_host:\n";
+	std::cout<<"--moos_port:\n";
+	std::cout<<"--moos_example:\n";
+	std::cout<<"--moos_help:  print this message\n";
+
+	exit(0);
+}
 
 //the main MOOSApp Run function
 bool CMOOSApp::Run( const std::string & sName,
                     const std::string & sMissionFile)
 {
-
 	//save absolutely crucial info...
 	m_sAppName      = sName; //default
-	m_CommandLineParser.GetOption("--app_name",m_sAppName);//overload
+	m_CommandLineParser.GetOption("--moos_app_name",m_sAppName);//overload
 
 	//but things might be overloaded
 	m_sMissionFile  = sMissionFile; //default
-	m_CommandLineParser.GetOption("--mission_file",m_sMissionFile); //overload
+	m_CommandLineParser.GetOption("--moos_file",m_sMissionFile); //overload
 
 	m_MissionReader.SetAppName(m_sAppName);
 
@@ -187,6 +206,12 @@ bool CMOOSApp::Run( const std::string & sName,
 		m_sMOOSName=m_sAppName;
 
 	m_CommandLineParser.GetOption("--moos_name",m_sMOOSName); //overload
+
+	if(m_CommandLineParser.GetFlag("--help"))
+		OnPrintHelpAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_example"))
+		OnPrintExampleAndExit();
 
 
 	//look at mission file etc

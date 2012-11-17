@@ -128,6 +128,13 @@ protected:
     /** called before OnStartUp and before communications have been established to give users option of processing command line*/
 	virtual bool OnProcessCommandLine();
 
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintHelpAndExit();
+
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintExampleAndExit();
+
+
 public:
     /** Called when the class has succesfully connected to the server. Overload this function
     and place use it to register for notification when variables of interest change */
