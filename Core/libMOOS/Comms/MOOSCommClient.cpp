@@ -121,7 +121,6 @@ CMOOSCommClient::CMOOSCommClient()
 CMOOSCommClient::~CMOOSCommClient()
 {
 	Close();
-	std::cerr<<"~CMOOSCommClient\n";
 }
 
 bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency)
@@ -738,7 +737,7 @@ void CMOOSCommClient::DoBanner()
 
 	MOOSTrace("****************************************************\n");
 	MOOSTrace("*       This is MOOS Client                        *\n");
-	MOOSTrace("*       c. P Newman 2001-2011                      *\n");
+	MOOSTrace("*       c. P Newman 2001-2012                      *\n");
 	MOOSTrace("****************************************************\n");
 
 }
@@ -1073,27 +1072,15 @@ bool CMOOSCommClient::FakeSource(bool bFake)
 
 bool CMOOSCommClient::ClearResources()
 {
-	if(!m_bQuiet)
-		MOOSTrace("purging out box...");
 	m_OutLock.Lock();
-	m_OutBox.clear();
+		m_OutBox.clear();
 	m_OutLock.UnLock();
-	if(!m_bQuiet)
-		MOOSTrace("done\n");
 
-	if(!m_bQuiet)
-		MOOSTrace("purging in box...");
 	m_InLock.Lock();
-	m_InBox.clear();
+		m_InBox.clear();
 	m_InLock.UnLock();
-	if(!m_bQuiet)
-        MOOSTrace("done\n");
 
-	if(!m_bQuiet)
-		MOOSTrace("clearing registered set...");
 	m_Registered.clear();
-	if(!m_bQuiet)
-		MOOSTrace("done\n");
 
 	return true;
 

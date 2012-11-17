@@ -33,6 +33,8 @@ namespace MOOS
 
 	protected:
 
+	    virtual void DoBanner();
+
 	    bool MonitorAndLimitWriteSpeed();
 
 	    virtual std::string HandShakeKey();

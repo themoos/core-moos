@@ -38,6 +38,8 @@
 
 #include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/MOOSVersion.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -151,8 +153,61 @@ CMOOSApp::~CMOOSApp()
 #endif
 }
 
+
+
+void CMOOSApp::OnPrintExampleAndExit()
+{
+	std::cout<<" tragically, there is no example configuration for this app\n";
+	exit(0);
+}
+
+void CMOOSApp::OnPrintInterfaceAndExit()
+{
+	std::cout<<" sadly, there is no description of the interface for this app\n";
+	exit(0);
+}
+
+
+void CMOOSApp::PrintDefaultCommandLineSwitches()
+{
+	std::cout<<MOOS::ConsoleColours::Yellow()<<"\n";
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<GetAppName()<<"'s standard MOOSApp switches are:\n";
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<MOOS::ConsoleColours::reset()<<"\n\n";
+	std::cout<<"  --moos_app_name=<string> : name of application\n";
+	std::cout<<"  --moos_name=<string>     : name with which to register with MOOSDB\n";
+	std::cout<<"  --moos_file=<string>     : name of configuration file\n";
+	std::cout<<"  --moos_host=<string>     : address of machine hosting MOOSDB\n";
+	std::cout<<"  --moos_port=<number>     : port on which DB is listening \n";
+	std::cout<<"  --moos_print_example     : print an example configuration block \n";
+	std::cout<<"  --moos_print_interface   : describe the interface (subscriptions/pubs) \n";
+	std::cout<<"  --moos_print_version     : print the version of moos in play \n";
+	std::cout<<"  --moos_help              : print this message\n";
+	std::cout<<"  --help                   : print this message\n";
+
+
+}
+
+void CMOOSApp::OnPrintVersionAndExit()
+{
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<"libMOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+	std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+	std::cout<<"--------------------------------------------------\n";
+	exit(0);
+}
+
+
+void CMOOSApp::OnPrintHelpAndExit()
+{
+	PrintDefaultCommandLineSwitches();
+	exit(0);
+}
+
+
 //this is an overloaded 3 parameter version which allows explicit setting of the registration name
-bool CMOOSApp::Run(const char * sName,const char * sMissionFile,const char * sMOOSName)
+bool CMOOSApp::Run(const std::string & sName,const std::string & sMissionFile,const std::string & sMOOSName)
 {
     //fill in specialised MOOSName
     m_sMOOSName = sMOOSName;
@@ -166,25 +221,10 @@ bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
 	return Run(sName);
 }
 
-void CMOOSApp::OnPrintExampleAndExit()
+bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[])
 {
-	std::cout<<" there is no example configuration for this app\n";
-	exit(0);
-}
-
-void CMOOSApp::OnPrintHelpAndExit()
-{
-	std::cout<<GetAppName()<<" help:\n";
-	std::cout<<"standard MOOSApp switches:\n";
-	std::cout<<"--moos_app_name :\n";
-	std::cout<<"--moos_name:\n";
-	std::cout<<"--moos_file:\n";
-	std::cout<<"--moos_host:\n";
-	std::cout<<"--moos_port:\n";
-	std::cout<<"--moos_example:\n";
-	std::cout<<"--moos_help:  print this message\n";
-
-	exit(0);
+	SetCommandLineParameters(argc,argv);
+	return Run(sName,sMissionFile);
 }
 
 //the main MOOSApp Run function
@@ -197,7 +237,7 @@ bool CMOOSApp::Run( const std::string & sName,
 
 	//but things might be overloaded
 	m_sMissionFile  = sMissionFile; //default
-	m_CommandLineParser.GetOption("--moos_file",m_sMissionFile); //overload
+	m_CommandLineParser.GetVariable("--moos_file",m_sMissionFile); //overload
 
 	m_MissionReader.SetAppName(m_sAppName);
 
@@ -205,13 +245,22 @@ bool CMOOSApp::Run( const std::string & sName,
 	if(m_sMOOSName.empty()) //default
 		m_sMOOSName=m_sAppName;
 
-	m_CommandLineParser.GetOption("--moos_name",m_sMOOSName); //overload
+	m_CommandLineParser.GetVariable("--moos_name",m_sMOOSName); //overload
+
+	if(m_CommandLineParser.GetFlag("--moos_help"))
+		OnPrintHelpAndExit();
 
 	if(m_CommandLineParser.GetFlag("--help"))
 		OnPrintHelpAndExit();
 
-	if(m_CommandLineParser.GetFlag("--moos_example"))
+	if(m_CommandLineParser.GetFlag("--moos_print_example"))
 		OnPrintExampleAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_print_interface"))
+		OnPrintInterfaceAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_print_version"))
+		OnPrintVersionAndExit();
 
 
 	//look at mission file etc
@@ -778,7 +827,7 @@ bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
 bool CMOOSApp::ConfigureComms()
 {
 	m_sServerHost = "LOCALHOST";
-	if(!m_CommandLineParser.GetOption("--moos_host",m_sServerHost))
+	if(!m_CommandLineParser.GetVariable("--moos_host",m_sServerHost))
 	{
 		if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
 		{
@@ -787,7 +836,7 @@ bool CMOOSApp::ConfigureComms()
 	}
 
 	m_lServerPort = 9000;
-	if(!m_CommandLineParser.GetOption("--moos_port",m_lServerPort))
+	if(!m_CommandLineParser.GetVariable("--moos_port",m_lServerPort))
 	{
 		if(!m_MissionReader.GetValue("SERVERPORT",m_lServerPort))
 		{

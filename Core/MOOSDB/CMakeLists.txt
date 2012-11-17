@@ -37,6 +37,5 @@ INSTALL(TARGETS ${EXECNAME}
   ARCHIVE DESTINATION lib
 )
 
-
 add_subdirectory(testing)
-add_subdirectory(examples)
+

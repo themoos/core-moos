@@ -79,9 +79,6 @@ bool CommandLineParser::GetVariable(const std::string option,  double & result)
 	if(!pcl_.get())
 		return false;
 
-	if(!pcl_->search(option.c_str()))
-			return false;
-
 	result = (*pcl_)(option.c_str(),result);
 
 	return true;
@@ -91,9 +88,6 @@ bool CommandLineParser::GetVariable(const std::string option,  std::string  & re
 {
 	if(!pcl_.get())
 		return false;
-
-	if(!pcl_->search(option.c_str()))
-			return false;
 
 	result = (*pcl_)(option.c_str(),result.c_str());
 
@@ -105,9 +99,6 @@ bool CommandLineParser::GetVariable(const std::string option,  int & result)
 {
 	if(!pcl_.get())
 		return false;
-
-	if(!pcl_->search(option.c_str()))
-			return false;
 
 	result = (*pcl_)(option.c_str(),result);
 

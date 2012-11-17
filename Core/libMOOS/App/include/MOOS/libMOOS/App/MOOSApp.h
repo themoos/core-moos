@@ -88,9 +88,10 @@ public:
     @param the name of the mission file
     @param the subscribe name of the application. If NULL then sName
     */
-    bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName);
+    bool Run( const std::string & sName,const std::string & sMissionFile,const std::string & sSubscribeName);
     bool Run( const std::string & sName,const std::string & sMissionFile="Mission.moos");
-    bool Run(const std::string &  sName,int argc, char * argv[]);
+    bool Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[]);
+    bool Run( const std::string &,int argc, char * argv[]);
 
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
@@ -133,6 +134,12 @@ protected:
 
 	/** called when command line is asking for help to be printed */
 	virtual void OnPrintExampleAndExit();
+
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintInterfaceAndExit();
+
+	/** called when command line is asking for version to be printed */
+	virtual void OnPrintVersionAndExit();
 
 
 public:
@@ -341,6 +348,8 @@ protected:
     /** dispatching function for ::OnCommandMsg */
     bool LookForAndHandleAppCommand(MOOSMSG_LIST & NewMail);
 
+    /** prints default MOOSApp command line switches */
+	virtual void PrintDefaultCommandLineSwitches();
 
     /** return the application name */
     std::string GetAppName();
