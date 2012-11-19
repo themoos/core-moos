@@ -457,7 +457,7 @@ bool CMOOSCommClient::ConnectToServer()
 			m_pSocket->vConnect(m_sDBHost.c_str());
 			break;
 		}
-		catch(XPCException e)
+		catch(const XPCException & e)
 		{
 			//connect failed....
 		    UNUSED_PARAMETER(e);

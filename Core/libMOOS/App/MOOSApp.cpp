@@ -174,17 +174,31 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"--------------------------------------------------\n";
 	std::cout<<GetAppName()<<"'s standard MOOSApp switches are:\n";
 	std::cout<<"--------------------------------------------------\n";
-	std::cout<<MOOS::ConsoleColours::reset()<<"\n\n";
-	std::cout<<"  --moos_app_name=<string> : name of application\n";
-	std::cout<<"  --moos_name=<string>     : name with which to register with MOOSDB\n";
-	std::cout<<"  --moos_file=<string>     : name of configuration file\n";
-	std::cout<<"  --moos_host=<string>     : address of machine hosting MOOSDB\n";
-	std::cout<<"  --moos_port=<number>     : port on which DB is listening \n";
-	std::cout<<"  --moos_print_example     : print an example configuration block \n";
-	std::cout<<"  --moos_print_interface   : describe the interface (subscriptions/pubs) \n";
-	std::cout<<"  --moos_print_version     : print the version of moos in play \n";
-	std::cout<<"  --moos_help              : print this message\n";
-	std::cout<<"  --help                   : print this message\n";
+	std::cout<<MOOS::ConsoleColours::reset()<<"\n";
+	std::cout<<"\nvariables:\n";
+	std::cout<<"  --moos_app_name=<string>    : name of application\n";
+	std::cout<<"  --moos_name=<string>        : name with which to register with MOOSDB\n";
+	std::cout<<"  --moos_file=<string>        : name of configuration file\n";
+	std::cout<<"  --moos_host=<string>        : address of machine hosting MOOSDB\n";
+	std::cout<<"  --moos_port=<number>        : port on which DB is listening \n";
+	std::cout<<"  --moos_apptick=<number>     : frequency of application (if relevant) \n";
+	std::cout<<"  --moos_commstick=<number>   : frequency of comms (if relevant) \n";
+	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
+
+	std::cout<<"\nflags:\n";
+	std::cout<<"  --moos_iterate_no_comms     : enable iterate without comms \n";
+	std::cout<<"  --moos_filter_command       : enable command message filtering \n";
+	std::cout<<"  --moos_no_sort_mail         : don't sort mail by time \n";
+	std::cout<<"  --moos_no_comms             : don't start communications \n";
+	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
+
+
+	std::cout<<"\nhelp:\n";
+	std::cout<<"  --moos_print_example        : print an example configuration block \n";
+	std::cout<<"  --moos_print_interface      : describe the interface (subscriptions/pubs) \n";
+	std::cout<<"  --moos_print_version        : print the version of moos in play \n";
+	std::cout<<"  --moos_help                 : print this message\n";
+	std::cout<<"  --help                      : print this message\n";
 
 
 }
@@ -201,7 +215,7 @@ void CMOOSApp::OnPrintVersionAndExit()
 
 void CMOOSApp::OnPrintHelpAndExit()
 {
-	PrintDefaultCommandLineSwitches();
+	std::cout<<" distressingly, there is no custom help for this app\n";
 	exit(0);
 }
 
@@ -247,11 +261,12 @@ bool CMOOSApp::Run( const std::string & sName,
 
 	m_CommandLineParser.GetVariable("--moos_name",m_sMOOSName); //overload
 
-	if(m_CommandLineParser.GetFlag("--moos_help"))
+	if(m_CommandLineParser.GetFlag("--moos_help") ||
+			m_CommandLineParser.GetFlag("--help"))
+	{
+		PrintDefaultCommandLineSwitches();
 		OnPrintHelpAndExit();
-
-	if(m_CommandLineParser.GetFlag("--help"))
-		OnPrintHelpAndExit();
+	}
 
 	if(m_CommandLineParser.GetFlag("--moos_print_example"))
 		OnPrintExampleAndExit();
@@ -261,6 +276,10 @@ bool CMOOSApp::Run( const std::string & sName,
 
 	if(m_CommandLineParser.GetFlag("--moos_print_version"))
 		OnPrintVersionAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_iterate_no_comms"))
+		EnableIterateWithoutComms(true);
+
 
 
 	//look at mission file etc
@@ -349,16 +368,23 @@ bool CMOOSApp::Configure()
 
 	//what is the global time warp
 	double dfTimeWarp = 1.0;
-	if(m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
+	if(m_CommandLineParser.GetOption("--moos_time_warp",dfTimeWarp) ||
+			m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
 	{
 		SetMOOSTimeWarp(dfTimeWarp);
 	}
 
+
 	//are we expected to use MOOS comms?
 	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
+	m_bUseMOOSComms = !m_CommandLineParser.GetFlag("--moos_no_comms");
 
 	//are we being asked to sort mail by time..
 	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
+	m_bSortMailByTime = !m_CommandLineParser.GetFlag("--moos_no_sort_mail");
+
+	//are we being asked to quit if iterate fails?
+	m_bQuitOnIterateFail |= m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
 
 	//are we in debug mode
 	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
@@ -381,11 +407,15 @@ bool CMOOSApp::Configure()
 	//in derived class constructors this can be set in the process config block
 	//by the mission architect
 	m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
+	m_CommandLineParser.GetVariable("--moos_app_tick",m_dfFreq);
 
 	m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
+	m_CommandLineParser.GetVariable("--moos_max_app_tick",m_dfMaxAppTick);
 
 	unsigned int nMode = 0;
 	m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
+	m_CommandLineParser.GetVariable("--moos_iterate_mode",nMode);
+
 	switch(nMode)
 	{
 		case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
@@ -395,8 +425,13 @@ bool CMOOSApp::Configure()
 
 	}
 
+
+
 	//do we want to enable command filtering (default is set in constructor)
 	m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
+	m_bCommandMessageFiltering|=m_CommandLineParser.GetFlag("--moos_filter_command");
+
+
 
 	return IsConfigOK();
 
@@ -500,6 +535,7 @@ bool CMOOSApp::DoRunWork()
             m_nMailCount++;
         }
         
+
         if(m_Comms.IsConnected() ||  CanIterateWithoutComms() )
         {
             //do private work
@@ -857,6 +893,7 @@ bool CMOOSApp::ConfigureComms()
     //OK now figure out our speeds etc above what is set by default
     //in derived class constructors
     m_MissionReader.GetConfigurationParam("COMMSTICK",m_nCommsFreq);
+    m_CommandLineParser.GetOption("--moos_comms_tick",m_nCommsFreq);
     m_nCommsFreq = m_nCommsFreq <0 ? 1 : m_nCommsFreq;
 
     //register a callback for On Connect

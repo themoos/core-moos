@@ -20,21 +20,20 @@ void PrintHelpAndExit()
 class TestApp : public CMOOSApp
 {
 public:
-	TestApp(int argc, char * argv[])
-	{
-		GetPot cl(argc,argv);
-		if(cl.search(2,"-h","--help"))
-			PrintHelpAndExit();
 
-		request_max_freq_ = cl.follow(500.0,2,"-m","--maxlimit");
-		request_app_freq_ = cl.follow(20.0,2,"-a","--apptick");
-		iterate_mode_ = cl.follow(0,2,"-i","--iterate_mode");
-		int data_size = cl.follow(100,2,"-d","--data_size");
+	void OnPrintHelpAndExit()
+	{
+		PrintHelpAndExit();
+	}
+	bool OnProcessCommandLine()
+	{
+		int data_size = 100;
+		m_CommandLineParser.GetVariable("--data_size", data_size);
 		data_.resize(data_size);
 
-
-
+		return true;
 	}
+
 	bool OnNewMail(MOOSMSG_LIST & List)
 	{
 		static double dfRate = 0;
@@ -122,6 +121,6 @@ protected:
 
 int main(int argc, char * argv[])
 {
-	TestApp A(argc,argv);
+	TestApp A;
 	A.Run("Recurse","Mission.moos");
 }

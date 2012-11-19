@@ -48,7 +48,8 @@ bool KeyboardCapture::Capture()
 
 	while(!impl_->worker_.IsQuitRequested())
 	{
-		char c = MOOSGetch();
+		char c;
+		std::cin>>c;
 		impl_->queue_.Push(c);
 	}
 	return true;
@@ -61,6 +62,7 @@ bool KeyboardCapture::Start()
 
 bool KeyboardCapture::GetKeyboardInput(char & input)
 {
+
 	if(impl_->queue_.Size()==0)
 		return false;
 

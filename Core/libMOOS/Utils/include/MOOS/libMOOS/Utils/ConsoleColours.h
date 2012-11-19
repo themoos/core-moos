@@ -26,6 +26,7 @@ namespace MOOS
 struct ConsoleColours
 {
 #ifndef _WIN32
+
     static const char* red() {return "\x1b[31m";};
     static const char* Red() {return "\x1b[1;31m";};
 

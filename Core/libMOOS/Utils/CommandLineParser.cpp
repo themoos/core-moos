@@ -70,9 +70,29 @@ bool CommandLineParser::GetOption(const std::string option,  int & result)
 	result = pcl_->follow(result,1,option.c_str());
 
 	return true;
+}
 
+bool CommandLineParser::GetOption(const std::string option,  unsigned int & result)
+{
+	if(!pcl_.get())
+		return false;
+
+	if(!pcl_->search(option.c_str()))
+		return false;
+
+	int sr = result;
+	sr = pcl_->follow(sr,1,option.c_str());
+
+	if(sr<0)
+		return false;
+
+	result = sr;
+
+	return true;
 
 }
+
+
 
 bool CommandLineParser::GetVariable(const std::string option,  double & result)
 {
@@ -106,6 +126,24 @@ bool CommandLineParser::GetVariable(const std::string option,  int & result)
 
 
 }
+
+bool CommandLineParser::GetVariable(const std::string option, unsigned  int & result)
+{
+	if(!pcl_.get())
+		return false;
+
+	int sr = result;
+	sr = (*pcl_)(option.c_str(),sr);
+
+	if(sr<0)
+		return false;
+
+	result= sr;
+
+	return true;
+}
+
+
 bool CommandLineParser::GetFlag(const std::string flag)
 {
 	return pcl_->search(flag.c_str());
