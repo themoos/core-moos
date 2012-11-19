@@ -292,7 +292,8 @@ bool CMOOSApp::Run( const std::string & sName,
 
 	//here we give users a chance to alter configurations
 	//or do more work in configuring
-	OnProcessCommandLine();
+	if(m_CommandLineParser.IsAvailable())
+		OnProcessCommandLine();
     
 	//what time did we start?
 	m_dfAppStartTime = MOOSTime();

@@ -34,7 +34,7 @@ bool CommandLineParser::Open(int argc, char * argv[])
 
 bool CommandLineParser::GetOption(const std::string option,  double & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	if(!pcl_->search(option.c_str()))
@@ -47,7 +47,7 @@ bool CommandLineParser::GetOption(const std::string option,  double & result)
 }
 bool CommandLineParser::GetOption(const std::string option,  std::string  & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 			return false;
 
 	if(!pcl_->search(option.c_str()))
@@ -61,7 +61,7 @@ bool CommandLineParser::GetOption(const std::string option,  std::string  & resu
 }
 bool CommandLineParser::GetOption(const std::string option,  int & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	if(!pcl_->search(option.c_str()))
@@ -74,7 +74,7 @@ bool CommandLineParser::GetOption(const std::string option,  int & result)
 
 bool CommandLineParser::GetOption(const std::string option,  unsigned int & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	if(!pcl_->search(option.c_str()))
@@ -96,7 +96,7 @@ bool CommandLineParser::GetOption(const std::string option,  unsigned int & resu
 
 bool CommandLineParser::GetVariable(const std::string option,  double & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	result = (*pcl_)(option.c_str(),result);
@@ -106,7 +106,7 @@ bool CommandLineParser::GetVariable(const std::string option,  double & result)
 }
 bool CommandLineParser::GetVariable(const std::string option,  std::string  & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	result = (*pcl_)(option.c_str(),result.c_str());
@@ -117,7 +117,7 @@ bool CommandLineParser::GetVariable(const std::string option,  std::string  & re
 }
 bool CommandLineParser::GetVariable(const std::string option,  int & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	result = (*pcl_)(option.c_str(),result);
@@ -129,7 +129,7 @@ bool CommandLineParser::GetVariable(const std::string option,  int & result)
 
 bool CommandLineParser::GetVariable(const std::string option, unsigned  int & result)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 
 	int sr = result;
@@ -146,9 +146,14 @@ bool CommandLineParser::GetVariable(const std::string option, unsigned  int & re
 
 bool CommandLineParser::GetFlag(const std::string flag)
 {
-	if(!pcl_.get())
+	if(!IsAvailable())
 		return false;
 	return    pcl_->search(flag.c_str());
+}
+
+bool CommandLineParser::IsAvailable()
+{
+	return pcl_.get()!=NULL;
 }
 
 

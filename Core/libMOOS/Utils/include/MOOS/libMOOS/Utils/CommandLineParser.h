@@ -25,6 +25,9 @@ public:
 
 	bool Open(int argc, char * argv[]);
 
+	/** return true if command line parameters have been set*/
+	bool IsAvailable();
+
 	// -x=7 or -name=fred  (s var name=value)
 	bool GetVariable(const std::string option,  double & result);
 	bool GetVariable(const std::string option,  std::string  & result);
