@@ -146,7 +146,9 @@ bool CommandLineParser::GetVariable(const std::string option, unsigned  int & re
 
 bool CommandLineParser::GetFlag(const std::string flag)
 {
-	return pcl_->search(flag.c_str());
+	if(!pcl_.get())
+		return false;
+	return    pcl_->search(flag.c_str());
 }
 
 
