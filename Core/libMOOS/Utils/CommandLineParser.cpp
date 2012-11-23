@@ -25,6 +25,12 @@ CommandLineParser::~CommandLineParser() {
 }
 
 
+CommandLineParser::CommandLineParser(int argc, char * argv[])
+{
+	Open(argc,argv);
+}
+
+
 bool CommandLineParser::Open(int argc, char * argv[])
 {
 	pcl_ = std::auto_ptr<GetPot>(new GetPot(argc,argv) );
@@ -94,46 +100,46 @@ bool CommandLineParser::GetOption(const std::string option,  unsigned int & resu
 
 
 
-bool CommandLineParser::GetVariable(const std::string option,  double & result)
+bool CommandLineParser::GetVariable(const std::string var,  double & result)
 {
-	if(!IsAvailable())
+	if(!IsAvailable() || !VariableExists(var))
 		return false;
 
-	result = (*pcl_)(option.c_str(),result);
+	result = (*pcl_)(var.c_str(),result);
 
 	return true;
 
 }
-bool CommandLineParser::GetVariable(const std::string option,  std::string  & result)
+bool CommandLineParser::GetVariable(const std::string var,  std::string  & result)
 {
-	if(!IsAvailable())
+	if(!IsAvailable() || !VariableExists(var))
 		return false;
 
-	result = (*pcl_)(option.c_str(),result.c_str());
-
-	return true;
-
-
-}
-bool CommandLineParser::GetVariable(const std::string option,  int & result)
-{
-	if(!IsAvailable())
-		return false;
-
-	result = (*pcl_)(option.c_str(),result);
+	result = (*pcl_)(var.c_str(),result.c_str());
 
 	return true;
 
 
 }
-
-bool CommandLineParser::GetVariable(const std::string option, unsigned  int & result)
+bool CommandLineParser::GetVariable(const std::string var,  int & result)
 {
-	if(!IsAvailable())
+	if(!IsAvailable() || !VariableExists(var))
+		return false;
+
+	result = (*pcl_)(var.c_str(),result);
+
+	return true;
+
+
+}
+
+bool CommandLineParser::GetVariable(const std::string var, unsigned  int & result)
+{
+	if(!IsAvailable() || !VariableExists(var))
 		return false;
 
 	int sr = result;
-	sr = (*pcl_)(option.c_str(),sr);
+	sr = (*pcl_)(var.c_str(),sr);
 
 	if(sr<0)
 		return false;
@@ -154,6 +160,39 @@ bool CommandLineParser::GetFlag(const std::string flag)
 bool CommandLineParser::IsAvailable()
 {
 	return pcl_.get()!=NULL;
+}
+
+bool CommandLineParser::VariableExists(const std::string & sVar)
+{
+	if(!IsAvailable())
+		return false;
+
+	std::vector<std::string> vvars = pcl_->get_variable_names();
+
+	bool bFound = std::find(vvars.begin(),vvars.end(),sVar)!=vvars.end();
+
+	std::cerr<<sVar<<" bFound="<<bFound<<std::endl;;
+	return bFound;
+
+
+}
+
+std::string CommandLineParser::GetFreeParameter(unsigned int ndx, const std::string & default_value)
+{
+	std::vector<std::string > free_params;
+	GetFreeParameters(free_params);
+
+	return free_params.size()>ndx ? free_params[ndx]:  default_value;
+}
+
+bool  CommandLineParser::GetFreeParameters(std::vector<std::string> & result)
+{
+	if(!IsAvailable())
+		return false;
+
+	result = pcl_->nominus_vector();
+
+	return true;
 }
 
 

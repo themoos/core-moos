@@ -262,8 +262,13 @@ bool CMOOSApp::Run( const std::string & sName,
 	m_CommandLineParser.GetVariable("--moos_name",m_sMOOSName); //overload
 
 
-	if(m_CommandLineParser.GetFlag("--moos_help") ||
-			m_CommandLineParser.GetFlag("--help"))
+	if(m_CommandLineParser.GetFlag("--moos_help"))
+	{
+		PrintDefaultCommandLineSwitches();
+		exit(0);
+	}
+
+	if(m_CommandLineParser.GetFlag("--help"))
 	{
 		PrintDefaultCommandLineSwitches();
 		OnPrintHelpAndExit();
