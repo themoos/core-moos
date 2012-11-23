@@ -171,7 +171,6 @@ bool CommandLineParser::VariableExists(const std::string & sVar)
 
 	bool bFound = std::find(vvars.begin(),vvars.end(),sVar)!=vvars.end();
 
-	std::cerr<<sVar<<" bFound="<<bFound<<std::endl;;
 	return bFound;
 
 
