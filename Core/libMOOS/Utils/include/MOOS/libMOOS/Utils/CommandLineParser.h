@@ -43,11 +43,12 @@ public:
 	bool GetOption(const std::string option,  unsigned int & result);
 
 	// -k -t  -s   (so test is a single flag is set)
-	bool GetFlag(const std::string flag);
+	bool GetFlag(const std::string & flag, const std::string & alternative="");
 
 	//get the ith parameter (that is not x=8 variable form). returning default
 	//if not present
 	std::string GetFreeParameter(unsigned int ndx, const std::string & default_value);
+
 
 	/**
 	 * fill in all command line parameters that are not like x=7

@@ -285,6 +285,12 @@ protected:
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
     void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
 
+    /** return the application frequency*/
+    double GetAppFreq();
+
+    /** get the comms frequency*/
+    unsigned int GetCommsFreq();
+
     /** print out salient info at startup */
     virtual void DoBanner();
 

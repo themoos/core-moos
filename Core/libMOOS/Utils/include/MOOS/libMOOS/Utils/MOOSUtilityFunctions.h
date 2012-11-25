@@ -50,6 +50,7 @@ namespace MOOS
 {
 	double Time();
 	std::string Chomp(std::string &sStr, const std::string &sTk,bool bInsensitive=false);
+	std::vector<std::string > StringListToVector(std::string L, const std::string & tok="," );
 };
 
 

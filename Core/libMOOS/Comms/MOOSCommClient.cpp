@@ -221,6 +221,16 @@ unsigned int CMOOSCommClient::GetNumberOfUnreadMessages()
 
 }
 
+unsigned long long int CMOOSCommClient::GetNumBytesSent()
+{
+	return m_nBytesSent;
+}
+unsigned long long int CMOOSCommClient::GetNumBytesReceived()
+{
+	return m_nBytesReceived;
+}
+
+
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
 {
@@ -245,6 +255,9 @@ bool CMOOSCommClient::ClientLoop()
     double dfTDebug = MOOSLocalTime();
 	while(!m_ClientThread.IsQuitRequested())
 	{
+		m_nBytesReceived=0;
+		m_nBytesSent=0;
+
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
 
@@ -332,7 +345,7 @@ bool CMOOSCommClient::DoClientWork()
 			try 
 			{
 				PktTx.Serialize(m_OutBox,true);
-				
+				m_nBytesSent+=PktTx.GetStreamLength();
 			}
 			catch (CMOOSException e) 
 			{
@@ -387,6 +400,9 @@ bool CMOOSCommClient::DoClientWork()
 			//we ask serialise also to return the DB time
 			//by looking in the first NULL_MSG in the packet
 			double dfServerPktTxTime=numeric_limits<double>::quiet_NaN();
+
+
+			m_nBytesReceived+=PktRx.GetStreamLength();
 
 			//extract...
 			PktRx.Serialize(m_InBox,false,true,&dfServerPktTxTime);

@@ -150,11 +150,19 @@ bool CommandLineParser::GetVariable(const std::string var, unsigned  int & resul
 }
 
 
-bool CommandLineParser::GetFlag(const std::string flag)
+bool CommandLineParser::GetFlag(const std::string & flag, const std::string & alternative)
 {
 	if(!IsAvailable())
 		return false;
-	return    pcl_->search(flag.c_str());
+
+	if(alternative.empty())
+	{
+		return    pcl_->search(flag.c_str());
+	}
+	else
+	{
+		return    pcl_->search(flag.c_str())|| pcl_->search(alternative.c_str());
+	}
 }
 
 bool CommandLineParser::IsAvailable()
@@ -183,6 +191,7 @@ std::string CommandLineParser::GetFreeParameter(unsigned int ndx, const std::str
 
 	return free_params.size()>ndx ? free_params[ndx]:  default_value;
 }
+
 
 bool  CommandLineParser::GetFreeParameters(std::vector<std::string> & result)
 {

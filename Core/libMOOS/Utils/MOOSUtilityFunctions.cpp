@@ -97,6 +97,7 @@ typedef std::map<pthread_t,bool> THREAD2TRACE_MAP;
 double gdfMOOSTimeWarp = 1.0;
 double gdfMOOSSkew =0.0;
 
+//NB new V10 functions will be namespaced....
 namespace MOOS
 {
 	double Time()
@@ -109,6 +110,15 @@ namespace MOOS
 		return MOOSChomp(sStr,sTk,bInsensitive);
 	}
 
+	std::vector<std::string > StringListToVector(std::string L, const std::string & tok )
+	{
+		std::vector<std::string > v;
+		while(!L.empty())
+		{
+			v.push_back(MOOS::Chomp(L,tok));
+		}
+		return v;
+	}
 
 };
 

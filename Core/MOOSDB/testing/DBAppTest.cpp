@@ -5,13 +5,11 @@
 
 void PrintHelpAndExit()
 {
-    MOOSTrace("\n\nThis test tests the behaviour and reponse of a DB/App pair when the application\n"
+    MOOSTrace("\n\nThis test tests the behaviour and response of a DB/App pair when the application\n"
     		"publishes in every iteration the variable it is subscribing to. Behaviour in this case\n"
     		"is governed (when using Asynchronous comms clients) by the MaximumAppTick parameter. \n");
-    MOOSTrace("  -m (--maxapptick)                 : MaximumAppTick in Hz\n");
-    MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
-    MOOSTrace("  -i (--iterate_mode)               : Iterate mode  0:2 \n");
-    MOOSTrace("  -d (--data_size)                  : data size in bytes\n");
+
+    MOOSTrace("--data_size)                  : data size in bytes\n");
 
     exit(0);
 
@@ -121,6 +119,14 @@ protected:
 
 int main(int argc, char * argv[])
 {
+
+    //here we do some command line parsing...
+	MOOS::CommandLineParser P(argc,argv);
+	//mission file could be first free parameter
+	std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
+	//mission name can be the  second free parameter
+	std::string app_name = P.GetFreeParameter(1, "DBAppTest");
+
 	TestApp A;
-	A.Run("Recurse","Mission.moos");
+	A.Run(app_name,mission_file,argc,argv);
 }

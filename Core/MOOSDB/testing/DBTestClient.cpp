@@ -16,10 +16,7 @@
 void PrintHelp()
 {
 
-    MOOSTrace("\n\nGeneral MOOS settings:\n");
-    MOOSTrace("  -n (--name)                       : MOOS name\n");
-    MOOSTrace("  -a (--apptick)                    : MOOSAppTick in Hz\n");
-    MOOSTrace("  -c (--commstick)                  : MOOSCommsTick in Hz\n");
+    MOOSTrace("\n\nPub/Sub  settings:\n");
     MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
     MOOSTrace("  -w var1 [var2,var3...]            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w x*:*@0.1  *:GPS:0.0 z\n");
     MOOSTrace("  -p var1[:n]@t1 [var2@t2,var3@t3....]  : list of publications in form var_name[:optional_binary_size]@period eg x@0.5 y:2048@2.0\n");
@@ -33,45 +30,53 @@ void PrintHelp()
     MOOSTrace("  -k (--application_failure_prob)   : probability of application failing during DB-communication [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
-    MOOSTrace("  ./uDBTestClient --name C1 -s x -p y@0.5 z@2.0 --apptick 10 --commstick 20 \n");
-    MOOSTrace("  ./uDBTestClient --name C2 -s z --simulate_network_failure -P 0.05 -t 10.0 --application_failure_prob 0.05 \n");
-    MOOSTrace("  ./uDBTestClient --name C1 -s x -p y:4567@0.5 z@2.0 --apptick 10 --commstick 20 \n");
+    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10 --moos_commstick=20 -s x -p y@0.5 z@2.0\n");
+    MOOSTrace("  ./uDBTestClient --moos_name=C2 --simulate_network_failure -P=0.05 -t=10.0 --application_failure_prob=0.05 -s z \n");
+    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10 --moos_comms_tick=20 -s x -p y:4567@0.5 z@2.0\n");
 
 
 }
+
+
 
 class DBTestClient : public CMOOSApp
 {
 public:
     DBTestClient(){};
-    DBTestClient(int argc, char* argv[])
+
+    bool OnProcessCommandLine()
     {
-        GetPot cl(argc,argv);
 
+        std::string temp;
 
-        _AppTick = cl.follow(10.0,2,"-a","--apptick");
-        _CommsTick = cl.follow(10.0,2,"-c","--commstick");
-
-
-        _vSubscribe = cl.nominus_followers("-s");
-        std::vector<std::string> vPublish = cl.nominus_followers("-p");
-
-        _vWildSubscriptions = cl.nominus_followers("-w");
-
-
-        _SimulateNetworkFailure = cl.search(2,"-N","--simulate_network_failure");
-        _NetworkStallProb = cl.follow(0.1,2,"-P","--network_failure_prob");
-        _NetworkStallTime = cl.follow(3.0,2,"-t","--network_failure_time");
-        _ApplicationExitProb = cl.follow(0.0,2,"-k","--application_failure_prob");
-        _bVerbose = cl.search(2,"-v","--verbose");
-        _bShowLatency = cl.search(2,"-l","--latency");
-
-
-        if(cl.search(2,"-h","--help"))
+        if(m_CommandLineParser.GetVariable("-s",temp))
         {
-            PrintHelp();
-            exit(0);
+        	_vSubscribe = MOOS::StringListToVector(temp);
         }
+
+        std::vector<std::string> vPublish;
+        if(m_CommandLineParser.GetVariable("-p",temp))
+        {
+        	vPublish = MOOS::StringListToVector(temp);
+        }
+
+        if(m_CommandLineParser.GetVariable("-w",temp))
+        {
+        	_vWildSubscriptions = MOOS::StringListToVector(temp);
+        }
+
+        _NetworkStallProb=0.0;
+        m_CommandLineParser.GetVariable("--network_failure_prob",_NetworkStallProb);
+
+        _NetworkStallTime = 0.0;
+        m_CommandLineParser.GetVariable("--network_failure_time",_NetworkStallTime);
+
+        _ApplicationExitProb = 0.0;
+        m_CommandLineParser.GetVariable("--application_failure_prob",_ApplicationExitProb);
+
+        _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
+        _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
+        _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
 
 
 
@@ -97,6 +102,7 @@ public:
 
             if (!MOOSIsNumeric(sEntry) || sEntry.empty())
             {
+            	std::cerr<<"Entry:"<<sEntry<<std::endl;
                 std::cerr<<MOOS::ConsoleColours::red()<<"badly formatted publish directive name1@period1 name2@period 2\n"<<MOOS::ConsoleColours::reset();
                 exit(1);
             }
@@ -105,54 +111,50 @@ public:
             if(nArraySize==0)
             {
             	_Jobs.push(Job(dfPeriod,sName));
+                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" every "<<dfPeriod<<" seconds\n"<< MOOS::ConsoleColours::reset();
             }
             else
             {
             	_Jobs.push(Job(dfPeriod,sName,nArraySize));
+                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] bytes every "<<dfPeriod<<" seconds\n"<< MOOS::ConsoleColours::reset();
             }
-            std::cerr<<MOOS::ConsoleColours::green()<<"adding job: publishing "<<sName<<" every "<<dfPeriod<<" seconds\n"<< MOOS::ConsoleColours::reset();
 
         }
 
 
 
-
-
         _BinaryArray.resize(MaxArraySize);
 
+        return true;
+
+    }
+
+
+
+    void OnPrintHelpAndExit()
+    {
+    	PrintHelp();
+    	exit(0);
     }
 
     bool OnStartUp()
     {
-        SetAppFreq(_AppTick);
-        SetCommsFreq(_CommsTick);
         if(_SimulateNetworkFailure)
         {
             MOOSTrace("%f %f\n\n",_NetworkStallProb,_NetworkStallTime);
             m_Comms.ConfigureCommsTesting(_NetworkStallProb,_NetworkStallTime,_ApplicationExitProb);
         }
 
+        Scheduler.Initialise(ScheduleDispatch,this);
+        Scheduler.Start();
+
         return true;
     }
     bool OnNewMail(MOOSMSG_LIST & NewMail)
     {
-    	static double dfT = MOOS::Time();
-    	static long long unsigned int _nByteCounter=0;
-
         MOOSMSG_LIST::iterator q;
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
-        	if(q->IsBinary())
-        	{
-        		_nByteCounter+=q->GetBinaryDataSize();
-
-        		if(MOOS::Time()-dfT>1.0)
-        		{
-        			std::cerr<<MOOS::ConsoleColours::red()<<"Band Width: "<<  8*_nByteCounter/(1024.0*1024.0) <<" Mbit/s\n";
-        			_nByteCounter = 0;
-        			dfT = MOOS::Time();
-        		}
-        	}
         	if(_bVerbose)
         	{
         		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetKey()<<":"<<q->GetAsString()<<"\n";
@@ -172,32 +174,25 @@ public:
     }
     bool Iterate()
     {
-        while(_Jobs.size() && _Jobs.top().isActive())
-        {
-            Job Active = _Jobs.top();
-            _Jobs.pop();
-            if(Active.IsBinary())
-            {
-            	Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
+		static double dfT = MOOS::Time();
+		static long long unsigned int nByteInCounter=0;
+		static long long unsigned int nByteOutCounter=0;
+		if(MOOS::Time()-dfT>1.0)
+		{
+			long long unsigned int bi, bo;
+			bi  = m_Comms.GetNumBytesReceived();
+			bo = m_Comms.GetNumBytesSent();
 
-            	if(_bVerbose)
-            	{
-            		std::cerr<<MOOS::ConsoleColours::Yellow()<<"publishing binary data: "<<Active._sName<<"="
-                		<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();
-            	}
+			std::cerr<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
+			std::cerr<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
+			std::cerr<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+			std::cerr<<MOOS::ConsoleColours::reset();
+			nByteInCounter = bi;
+			nByteOutCounter = bo;
+			dfT = MOOS::Time();
+		}
 
-            }
-            else
-            {
-            	Notify(Active._sName,Active._nCount,MOOSTime());
-            	if(_bVerbose)
-            	{
-            		std::cerr<<MOOS::ConsoleColours::Yellow()<<"publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
-            	}
-            }
-            Active.Reschedule();
-            _Jobs.push(Active);
-        }
+
 
         return true;
     }
@@ -211,11 +206,11 @@ public:
     {
         std::vector<std::string>::iterator q;
 
-        std::cerr<<MOOS::ConsoleColours::Green()<<"\nsubscribing\n";
+        std::cerr<<MOOS::ConsoleColours::Green();
         for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
         {
             m_Comms.Register(*q,0.0);
-            std::cerr<<"  "<<*q<<"\n";
+            std::cerr<<"+Subscribing to "<<*q<<"\n";
         }
         std::cerr<<MOOS::ConsoleColours::reset();
 
@@ -243,13 +238,58 @@ public:
         return true;
     }
 
+public:
+    static bool ScheduleDispatch(void * pParam)
+    {
+    	DBTestClient* pMe = (DBTestClient*)pParam;
+    	return pMe->ScheduleLoop();
+    }
+
+    bool ScheduleLoop()
+    {
+    	while(!Scheduler.IsQuitRequested())
+    	{
+			while(!_Jobs.empty() && _Jobs.top().isActive(MOOS::Time()))
+			{
+
+				double T = MOOS::Time()-GetAppStartTime();
+
+				Job Active = _Jobs.top();
+				_Jobs.pop();
+				if(Active.IsBinary())
+				{
+					Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
+
+					if(_bVerbose)
+					{
+						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing binary data: "<<Active._sName<<"="
+							<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();
+					}
+
+				}
+				else
+				{
+					Notify(Active._sName,Active._nCount,MOOSTime());
+					if(_bVerbose)
+					{
+						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
+					}
+				}
+				Active.Reschedule();
+				_Jobs.push(Active);
+			}
+			MOOSPause(5);
+    	}
+
+    	return true;
+    }
 
 
 private:
     std::vector<std::string> _vSubscribe;
     std::vector<std::string> _vWildSubscriptions;
-    double _AppTick;
-    double _CommsTick;
+
+    CMOOSThread Scheduler;
 
     bool _SimulateNetworkFailure ;
     double _NetworkStallProb ;
@@ -288,9 +328,9 @@ private:
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
         }
 
-        bool isActive() const
+        bool isActive(double TimeNow) const
         {
-            return _dfTimeScheduled < MOOSTime();
+            return _dfTimeScheduled < TimeNow;
         }
 
         double _dfPeriod;
@@ -312,10 +352,16 @@ private:
 
 int main (int argc, char* argv[])
 {
-    GetPot cl(argc,argv);
-    std::string sClientName = cl.follow("TC1",2,"-n","--name");
 
-    DBTestClient TC1(argc,argv);
+	//here we do some command line parsing...
+	MOOS::CommandLineParser P(argc,argv);
+	//mission file could be first free parameter
+	std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
+	//mission name can be the  second free parameter
+	std::string app_name = P.GetFreeParameter(1, "TestClient");
 
-    TC1.Run(sClientName.c_str(),"Mission.moos");
+
+    DBTestClient TC1;
+
+    TC1.Run(app_name,mission_file,argc,argv);
 }

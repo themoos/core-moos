@@ -145,6 +145,10 @@ bool MOOSAsyncCommClient::WritingLoop()
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
 
+		//reset counters
+		m_nBytesSent = 0;
+		m_nBytesReceived = 0;
+
 
 		if(ConnectToServer())
 		{
@@ -239,6 +243,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		try
 		{
 			PktTx.Serialize(StuffToSend,true);
+			m_nBytesSent+=PktTx.GetStreamLength();
 		}
 		catch (const CMOOSException & e)
 		{
@@ -327,6 +332,9 @@ bool MOOSAsyncCommClient::DoReading()
 		CMOOSCommPkt PktRx;
 
 		ReadPkt(m_pSocket,PktRx);
+
+		m_nBytesReceived+=PktRx.GetStreamLength();
+
 
 		double dfLocalRxTime =MOOSLocalTime();
 

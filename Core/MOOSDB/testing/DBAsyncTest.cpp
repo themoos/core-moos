@@ -12,6 +12,8 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
+
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include <map>
 #include <numeric>
@@ -80,10 +82,10 @@ void PrintHelpAndExit()
 {
 
 	MOOSTrace("\n\nV10 performance and compatibility testing\n");
-	MOOSTrace("  -p (--test_period)                : test period in seconds (20 seconds default)\n");
-	MOOSTrace("  -m (--message_period)             : send test data every m milliseconds (default 100 ms) \n");
-	MOOSTrace("  -c (--num_clients)                : number of clients to instantiate (default 40)\n");
-	MOOSTrace("  -s (--payload_size)               : size of data to send default (default 1024 bytes) \n");
+	MOOSTrace("  -p=<numeric>              : test period in seconds (20 seconds default)\n");
+	MOOSTrace("  -m=<numeric>              : send test data every m milliseconds (default 100 ms) \n");
+	MOOSTrace("  -c=<numeric>              : number of clients to instantiate (default 40)\n");
+	MOOSTrace("  -s=<numeric>              : size of data to send default (default 1024 bytes) \n");
 
 	MOOSTrace("\n\nExample Usage:\n");
 	MOOSTrace(" test for 15 seconds with 20 clients and sending 100K every 50 ms\n");
@@ -98,12 +100,21 @@ int main(int argc, char * argv[])
 
 	GetPot cl(argc,argv);
 
-	double dfTestPeriod = cl.follow(20,2,"-p","--test_period");
-	unsigned int message_period= cl.follow(100,2,"-m","--message_period_ms");
-	unsigned int num_clients= cl.follow(40,2,"-c","--num_clients");
-	unsigned int payload_size = cl.follow(1024,2,"-s","--payload_size");
+	MOOS::CommandLineParser P(argc,argv);
 
-	if(cl.search(2,"-h","--help"))
+	double dfTestPeriod = 20.0;
+	P.GetVariable("-p",dfTestPeriod);
+
+	unsigned int message_period=100;
+	P.GetVariable("-m",message_period);
+
+	unsigned int num_clients= 40;
+	P.GetVariable("-c",num_clients);
+
+	unsigned int payload_size =1024;
+	P.GetVariable("-s",payload_size);
+
+	if(P.GetFlag("-h","--help"))
 	{
 		 PrintHelpAndExit();
 	}

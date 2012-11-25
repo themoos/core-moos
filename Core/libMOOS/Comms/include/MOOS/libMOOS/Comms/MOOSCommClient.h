@@ -230,6 +230,14 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnreadMessages();
 
+    /** get total number of bytes sent*/
+    unsigned long long int GetNumBytesSent();
+
+    /** get total number of bytes received*/
+    unsigned long long int GetNumBytesReceived();
+
+
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
@@ -258,6 +266,8 @@ public:
     /** set the user supplied OnMail callback. This is an internal function - do not call it yourself
      * if you want rapid response use V10 */
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
+
+
 
 protected:
     bool ClearResources();
@@ -395,8 +405,8 @@ protected:
     /** Skew filter keeps track of clock skew with server */
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
-    /** Tells us whether the ClientLoop is running. */
-   // bool m_bClientLoopIsRunning;
+    unsigned long long int m_nBytesReceived;
+    unsigned long long int m_nBytesSent;
 
 
 };

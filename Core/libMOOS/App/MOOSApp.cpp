@@ -181,8 +181,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_file=<string>        : name of configuration file\n";
 	std::cout<<"  --moos_host=<string>        : address of machine hosting MOOSDB\n";
 	std::cout<<"  --moos_port=<number>        : port on which DB is listening \n";
-	std::cout<<"  --moos_apptick=<number>     : frequency of application (if relevant) \n";
-	std::cout<<"  --moos_commstick=<number>   : frequency of comms (if relevant) \n";
+	std::cout<<"  --moos_app_tick=<number>    : frequency of application (if relevant) \n";
+	std::cout<<"  --moos_max_app_tick=<number>: max frequency of application (if relevant) \n";
+	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
 	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
 
 	std::cout<<"\nflags:\n";
@@ -197,8 +198,8 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_print_example        : print an example configuration block \n";
 	std::cout<<"  --moos_print_interface      : describe the interface (subscriptions/pubs) \n";
 	std::cout<<"  --moos_print_version        : print the version of moos in play \n";
-	std::cout<<"  --moos_help                 : print this message\n";
-	std::cout<<"  --help                      : print this message\n";
+	std::cout<<"  --moos_help                 : print help on moos switches\n";
+	std::cout<<"  --help                      : print help on moos switches and custom help\n";
 
 
 }
@@ -369,7 +370,7 @@ bool CMOOSApp::Configure()
 
 	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
 	{
-		MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
+		//MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
 	}
 
 
@@ -874,7 +875,7 @@ bool CMOOSApp::ConfigureComms()
 	{
 		if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
 		{
-			MOOSTrace("Warning Server host not read from mission file or command line: assuming %s\n",m_sServerHost.c_str());
+			//MOOSTrace("Warning Server host not read from mission file or command line: assuming %s\n",m_sServerHost.c_str());
 		}
 	}
 
@@ -883,7 +884,7 @@ bool CMOOSApp::ConfigureComms()
 	{
 		if(!m_MissionReader.GetValue("SERVERPORT",m_lServerPort))
 		{
-			MOOSTrace("Warning Server port not read from mission file or command line: assuming %d\n",m_lServerPort);
+			//MOOSTrace("Warning Server port not read from mission file or command line: assuming %d\n",m_lServerPort);
 		}
 	}
 
@@ -933,6 +934,19 @@ double CMOOSApp::GetAppStartTime()
 {
     return m_dfAppStartTime;
 }
+
+/** return the application frequency*/
+double CMOOSApp::GetAppFreq()
+{
+	return m_dfFreq;
+}
+
+/** get the comms frequency*/
+unsigned int CMOOSApp::GetCommsFreq()
+{
+	return m_nCommsFreq;
+}
+
 
 void CMOOSApp::SetAppFreq(double  dfFreq,double dfMaxFreq)
 {
