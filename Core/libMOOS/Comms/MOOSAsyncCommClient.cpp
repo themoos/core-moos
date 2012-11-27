@@ -89,6 +89,19 @@ bool MOOSAsyncCommClient::StartThreads()
     return true;
 }
 
+bool MOOSAsyncCommClient::Close(bool  )
+{
+
+	if(!ReadingThread_.Stop())
+		return false;
+
+	if(!WritingThread_.Stop())
+	    return false;
+
+	return true;
+}
+
+
 bool MOOSAsyncCommClient::Flush()
 {
 	return true;

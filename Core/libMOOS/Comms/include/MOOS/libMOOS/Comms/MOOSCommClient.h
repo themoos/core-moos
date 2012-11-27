@@ -210,7 +210,7 @@ public:
     bool FakeSource(bool bFake);
 
     /** make the client shut down */
-    bool Close(bool bNice =true);
+    virtual bool Close(bool bNice =true);
 
     /** return the list of messages names published*/
     std::set<std::string> GetPublished(){return m_Published;};

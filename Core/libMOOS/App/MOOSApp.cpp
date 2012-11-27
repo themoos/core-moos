@@ -360,6 +360,8 @@ bool CMOOSApp::Run( const std::string & sName,
 
     /***************************   END OF MOOS APP LOOP ***************************************/
 
+    m_Comms.Close();
+
     return true;
 }
 

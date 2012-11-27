@@ -9,7 +9,6 @@
 #endif
 #include <iostream>
 #include "MOOS/libMOOS/App/MOOSApp.h"
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <queue>
 
@@ -17,22 +16,22 @@ void PrintHelp()
 {
 
     MOOSTrace("\n\nPub/Sub  settings:\n");
-    MOOSTrace("  -s var1 [var2,var3...]            : list of subscriptions in form var_name@period eg -s x y z\n");
-    MOOSTrace("  -w var1 [var2,var3...]            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w x*:*@0.1  *:GPS:0.0 z\n");
-    MOOSTrace("  -p var1[:n]@t1 [var2@t2,var3@t3....]  : list of publications in form var_name[:optional_binary_size]@period eg x@0.5 y:2048@2.0\n");
-    MOOSTrace("  -l (--latency)                    : show latency (time between posting and receiving)\n");
-    MOOSTrace("  -v (--verbose)                    : verbose output\n");
+    MOOSTrace("  -s=<string>            : list of subscriptions in form var_name@period eg -s=x,y,z\n");
+    MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w=x*:*@0.1,*:GPS:0.0 z\n");
+    MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@period eg -p=x@0.5,y:2048@2.0\n");
+    MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
+    MOOSTrace("  --verbose              : verbose output\n");
 
     MOOSTrace("\n\nNetwork failure simulation:\n");
-    MOOSTrace("  -N (--simulate_network_failure)   : enable simulation of network/app failure\n");
-    MOOSTrace("  -P (--network_failure_prob)       : probability of each DB interaction having network failure [0.1]\n");
-    MOOSTrace("  -t (--network_failure_time)       : duration of network failure [3s]\n");
-    MOOSTrace("  -k (--application_failure_prob)   : probability of application failing during DB-communication [0]\n");
+    MOOSTrace("  --simulate_network_failure             : enable simulation of network/app failure\n");
+    MOOSTrace("  --network_failure_prob=<numeric>       : probability of each DB interaction having network failure [0.1]\n");
+    MOOSTrace("  --network_failure_time=<numeric>       : duration of network failure [3s]\n");
+    MOOSTrace("  --application_failure_prob=<numeric>   : probability of application failing during DB-communication [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
-    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10 --moos_commstick=20 -s x -p y@0.5 z@2.0\n");
-    MOOSTrace("  ./uDBTestClient --moos_name=C2 --simulate_network_failure -P=0.05 -t=10.0 --application_failure_prob=0.05 -s z \n");
-    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10 --moos_comms_tick=20 -s x -p y:4567@0.5 z@2.0\n");
+    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
+    MOOSTrace("  ./uDBTestClient C2 --simulate_network_failure --network_failure_prob=0.05 --network_failure_time=10.0 --application_failure_prob=0.05 -s=z \n");
+    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10  -s=x -p=y:4567@0.5,z@2.0\n");
 
 
 }
@@ -190,6 +189,7 @@ public:
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
 			dfT = MOOS::Time();
+
 		}
 
 

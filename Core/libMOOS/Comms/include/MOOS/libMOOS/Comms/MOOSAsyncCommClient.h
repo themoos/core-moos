@@ -18,6 +18,8 @@ namespace MOOS
 		virtual ~MOOSAsyncCommClient();
 		virtual bool StartThreads();
 
+		virtual bool Close(bool Nice = true );
+
 	    bool ReadingLoop();
 	    bool WritingLoop();
 
