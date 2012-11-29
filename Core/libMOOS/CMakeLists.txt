@@ -58,6 +58,8 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/AtomicCounter.cpp
   Thirdparty/PocoBits/src/Bugcheck.cpp
   Thirdparty/PocoBits/src/Debugger.cpp
+  Thirdparty/AppCasting/AppCastingMOOSApp.cpp
+  Thirdparty/AppCasting/AppCast.cpp
 )
 
 
@@ -151,7 +153,9 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
+    )
     
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
