@@ -22,6 +22,7 @@ void PrintHelp()
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --verbose              : verbose output\n");
 
+
     MOOSTrace("\n\nNetwork failure simulation:\n");
     MOOSTrace("  --simulate_network_failure             : enable simulation of network/app failure\n");
     MOOSTrace("  --network_failure_prob=<numeric>       : probability of each DB interaction having network failure [0.1]\n");
@@ -152,6 +153,10 @@ public:
     bool OnNewMail(MOOSMSG_LIST & NewMail)
     {
         MOOSMSG_LIST::iterator q;
+
+        if(_bVerbose && !NewMail.empty())
+        	std::cerr<<std::endl;
+
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
         	if(_bVerbose)

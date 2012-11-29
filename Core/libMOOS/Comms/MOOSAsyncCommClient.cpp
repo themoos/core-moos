@@ -360,6 +360,9 @@ bool MOOSAsyncCommClient::DoReading()
 				m_InBox.clear();
 			}
 
+			//how big was inbox before we add new mail?
+			unsigned int nur = m_InBox.size();
+
 			//extract... and please leave NULL messages there
 			PktRx.Serialize(m_InBox,false,false,NULL);
 
@@ -368,7 +371,11 @@ bool MOOSAsyncCommClient::DoReading()
 			//as supported by the threaded server class
 			if(m_bDoLocalTimeCorrection)
 			{
-				switch(m_InBox.front().GetType())
+
+				MOOSMSG_LIST::iterator q = m_InBox.begin();
+				std::advance(q,nur);
+
+				switch(q->GetType())
 				{
 					case MOOS_TIMING:
 					{
@@ -407,6 +414,12 @@ bool MOOSAsyncCommClient::DoReading()
 
 			m_bMailPresent = !m_InBox.empty();
 		}
+
+
+
+
+
+
 		m_InLock.UnLock();
 
 		//and here we can optionally give users an indication

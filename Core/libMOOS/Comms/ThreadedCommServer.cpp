@@ -226,13 +226,16 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
 
             //is this a timing message from V10 client?
+            bool bTimingPresent = false;
+            CMOOSMsg TimingMsg;
             if(MsgLstRx.front().IsType(MOOS_TIMING))
             {
-            	CMOOSMsg TimingMsg =MsgLstRx.front();
+            	bTimingPresent = true;
+            	TimingMsg =MsgLstRx.front();
             	MsgLstRx.pop_front();
 
             	TimingMsg.SetDouble( MOOSLocalTime() );
-            	MsgLstTx.push_front(TimingMsg);
+
             }
 
             //let owner figure out what to do !
@@ -256,6 +259,10 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 				NullMsg.m_dfVal = MOOSLocalTime();
 				MsgLstTx.push_front(NullMsg);
 
+            }
+            else if(bTimingPresent)
+            {
+            	MsgLstTx.push_front(TimingMsg);
             }
 
             //send packet back to client...
