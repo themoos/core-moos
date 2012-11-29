@@ -20,8 +20,8 @@
 /* Boston, MA 02111-1307, USA.                                   */
 /*****************************************************************/
 
-#ifndef BROADCAST_HEADER
-#define BROADCAST_HEADER
+#ifndef APP_CAST_BROADCAST_HEADER
+#define APP_CAST_BROADCAST_HEADER
 
 #include <vector>
 #include <list>

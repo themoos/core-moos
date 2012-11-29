@@ -22,7 +22,9 @@
 
 #include <cstdlib>
 #include <sstream>
-#include "MOOS/libMOOS/MOOSLib.h"
+#include <iomanip>
+
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCast.h"
 
 using namespace std;

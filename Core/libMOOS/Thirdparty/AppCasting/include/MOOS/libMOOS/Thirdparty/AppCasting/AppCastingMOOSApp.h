@@ -27,7 +27,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "MOOS/libMOOS/MOOSLib.h"
+#include "MOOS/libMOOS/App/MOOSApp.h"
 #include "AppCast.h"
 
 class AppCastingMOOSApp : public CMOOSApp
