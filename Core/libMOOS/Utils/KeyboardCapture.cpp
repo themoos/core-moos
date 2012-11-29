@@ -2,6 +2,9 @@
 #include "MOOS/libMOOS/Utils/SafeList.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <iostream>
+#ifdef _WIN32
+#include <io.h>
+#endif
 //#include <fstream>
 
 namespace MOOS
@@ -19,7 +22,6 @@ KeyboardCapture::KeyboardCapture(): impl_(new Impl)
 {
 
 }
-
 bool KeyboardCapture::dispatch(void * param)
 {
 	KeyboardCapture* pMe = (KeyboardCapture*)param;
@@ -34,8 +36,11 @@ bool KeyboardCapture::Capture()
 	iodebug<<"cout :"<< isatty(1)<<std::endl;
 	iodebug<<"cerr :"<< isatty(2)<<std::endl;
 	*/
-
+#ifdef _WIN32
+	if(_isatty(0)==0)
+#else
 	if(isatty(0)==0)
+#endif
 	{
 		std::cerr<<"KeyboardCapture::Capture std::cin is not a tty. Thread exiting.\n";
 		return false;
@@ -43,7 +48,8 @@ bool KeyboardCapture::Capture()
 
 	while(!impl_->worker_.IsQuitRequested())
 	{
-		char c = MOOSGetch();
+		char c;
+		std::cin>>c;
 		impl_->queue_.Push(c);
 	}
 	return true;
@@ -56,6 +62,7 @@ bool KeyboardCapture::Start()
 
 bool KeyboardCapture::GetKeyboardInput(char & input)
 {
+
 	if(impl_->queue_.Size()==0)
 		return false;
 

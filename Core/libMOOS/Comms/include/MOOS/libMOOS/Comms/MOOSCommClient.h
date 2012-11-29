@@ -91,11 +91,12 @@ public:
     bool Notify(const std::string & sVar,double dfVal, const std::string & sSrcAux,double dfTime=-1);
 
 
-	/** notify the MOOS community that something has changed binary data. These are experimental - don't use them until I say so*/
+	/** notify the MOOS community that something has changed binary data*/
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, double dfTime=-1);
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
+    bool Notify(const std::string & sVar,const std::vector<unsigned char>& vData,double dfTime=-1);
+    bool Notify(const std::string & sVar,const std::vector<unsigned char>& vData, const std::string & sSrcAux,double dfTime=-1);
 
-	
 	
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
@@ -119,6 +120,12 @@ public:
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
 
+    /**
+     * returns the name with which the client registers with the MOOSDB
+     * @return
+     */
+    std::string GetMOOSName();
+
     /** Called by a user of CMOOSCommClient to retrieve mail
     @param MsgList a list of messages into which the newly received message will be placed
     @return true if there is new mail */
@@ -130,11 +137,11 @@ public:
     however prevents wayward user software bring down the MOOSComms by way of denial of service.
     (ie hogging the network)
     @param Msg reference to CMOOSMsg which user wishes to send*/
-    bool Post(CMOOSMsg  & Msg,bool bKeepMsgSourceName = false);
+    virtual bool Post(CMOOSMsg  & Msg,bool bKeepMsgSourceName = false);
 
     /** internal method which runs in a seperate thread and manages the input and output
     of messages from the server. DO NOT CALL THIS METHOD.*/
-    bool ClientLoop();
+    virtual bool ClientLoop();
 
     /** called by the above to do the client mail box shuffling **/
     virtual bool DoClientWork();
@@ -147,7 +154,9 @@ public:
     @param nFundamentalFrequency the basic tick frequency of the comms loop. Default value of 5 implies mail will be
     retrieved and sent from the server at 5Hz
     */
-    bool Run(const char * sServer,long lPort, const char * sMyName, unsigned int nFundamentalFreq=5);
+    //bool Run(const char * sServer,long lPort, const char * sMyName, unsigned int nFundamentalFreq=5);
+    bool Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency=5);
+
 
     /** set the user supplied OnConnect call back. This callback , when set, will be invoked
     when a connection to the server is made. It is a good plan to register for notification of variables
@@ -163,10 +172,6 @@ public:
     @param pCallerParam parameter passed to callback function when invoked*/
     void SetOnDisconnectCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
-    /** set the user supplied OnMail callback. This usually will not be set. Users are expected to use FetchMail from
-     their own thread and not use this call back. This function is experimental as of release 7.2 and coders are
-     not encouraged to use it*/
-    void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
     
     /** return true if a mail callback is installed */
     bool HasMailCallBack();
@@ -205,7 +210,7 @@ public:
     bool FakeSource(bool bFake);
 
     /** make the client shut down */
-    bool Close(bool bNice =true);
+    virtual bool Close(bool bNice =true);
 
     /** return the list of messages names published*/
     std::set<std::string> GetPublished(){return m_Published;};
@@ -216,6 +221,23 @@ public:
     /** return the list of messages registered*/
     std::set<std::string> GetRegistered(){return m_Registered;};
     
+    /** return true if client is running */
+    virtual bool IsRunning();
+
+    /** return true if this client is Asynchronous (so can have data pushed to it at any time)*/
+    virtual bool IsAsynchronous();
+
+    /** how much incoming mail is pending?*/
+    unsigned int GetNumberOfUnreadMessages();
+
+    /** get total number of bytes sent*/
+    unsigned long long int GetNumBytesSent();
+
+    /** get total number of bytes received*/
+    unsigned long long int GetNumBytesReceived();
+
+
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
@@ -239,7 +261,13 @@ public:
      * It is rare that you will need this...
      * @return true on success;
      */
-    bool Flush();
+    virtual bool Flush();
+
+    /** set the user supplied OnMail callback. This is an internal function - do not call it yourself
+     * if you want rapid response use V10 */
+    void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
+
+
 
 protected:
     bool ClearResources();
@@ -247,11 +275,13 @@ protected:
     int m_nNextMsgID;
     
     /** send library info to stdout */
-    void DoBanner();
+    virtual void DoBanner();
     
     /** called when connection to server is closed */
-    bool OnCloseConnection();
+    virtual bool OnCloseConnection();
     
+
+
     /** true if we are connected to the server */
     bool m_bConnected;
     
@@ -262,6 +292,9 @@ protected:
     function this class tells the server its name*/
     bool HandShake();
     
+    /**returns the key used when handshaking */
+    virtual std::string HandShakeKey();
+
     /** The number of pending unsent messages that can be tolerated*/
     unsigned int m_nOutPendingLimit;
     
@@ -293,7 +326,7 @@ protected:
     
     /** called internally to start IO management thread 
     @see ClientLoop*/
-    bool StartThreads();
+    virtual bool StartThreads();
     
 
     /** pointer to socket connected to server */
@@ -372,8 +405,8 @@ protected:
     /** Skew filter keeps track of clock skew with server */
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
-    /** Tells us whether the ClientLoop is running. */
-    bool m_bClientLoopIsRunning;
+    unsigned long long int m_nBytesReceived;
+    unsigned long long int m_nBytesSent;
 
 
 };

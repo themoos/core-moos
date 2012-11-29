@@ -40,9 +40,10 @@
 #define Foundation_Mutex_WIN32_INCLUDED
 
 
-#include "PocoBits/Foundation.h"
-#include "PocoBits/Exception.h"
-#include "PocoBits/UnWindows.h"
+
+#include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 
 
 namespace Poco {

@@ -118,6 +118,9 @@ public:
     //! Starts the thread running (as long as the class has been properly initialised!)
     bool Start(bool bCreatUnixDetached = false)
     {
+#ifdef _WIN32
+		bCreatUnixDetached;
+#endif
         m_lock.Lock();
         {
             if (m_bRunning) {

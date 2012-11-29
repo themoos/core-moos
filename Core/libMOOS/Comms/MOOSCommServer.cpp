@@ -115,6 +115,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_nMaxSocketFD = 0;
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
+	m_pfnFetchAllMailCallBack = NULL;
     m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
@@ -291,7 +292,7 @@ bool CMOOSCommServer::ListenLoop()
         {
             char sClientName[255];
 
-            m_pListenSocket->vListen();
+            m_pListenSocket->vListen(50);
 			XPCTcpSocket * pNewSocket = NULL;
 
 			if(!m_bDisableNameLookUp)
@@ -531,6 +532,14 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         {
             std::cerr<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
         }
+        if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
+        {
+        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
     }
     else
     {
@@ -557,7 +566,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
-    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
+    std::cerr<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
@@ -569,10 +578,16 @@ bool CMOOSCommServer::OnClientDisconnect()
     {
         sWho = p->second;
 
-        MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
+        //MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
 
         m_Socket2ClientMap.erase(p);
+
+        if(m_AsynchronousClientSet.find(sWho)!=m_AsynchronousClientSet.end())
+        {
+        	m_AsynchronousClientSet.erase(sWho);
+        }
     }
+
 
     GetMaxSocketFD();
 
@@ -582,7 +597,7 @@ bool CMOOSCommServer::OnClientDisconnect()
 
     if(m_pfnDisconnectCallBack!=NULL)
     {
-        MOOSTrace("Invoking user OnDisconnect callback...\n");
+        //MOOSTrace("Invoking user OnDisconnect callback...\n");
 		if(m_bQuiet)
 			InhibitMOOSTraceInThisThread(false);
 
@@ -621,6 +636,16 @@ void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, vo
     m_pDisconnectCallBackParam = pParam;
 }
 
+void CMOOSCommServer::SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam)
+{
+    //address of function to invoke (static)
+	m_pfnFetchAllMailCallBack = pfn;
+
+	//store the parameter to pass with the invocation
+	m_pFetchAllMailCallBackParam = pParam;
+
+}
+
 bool CMOOSCommServer::IsUniqueName(string &sClientName)
 {
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
@@ -650,7 +675,11 @@ bool CheckProtocol(XPCTcpSocket *pNewClient)
 	if (nRead <=0 || !MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
 	{
 		//this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
-		return MOOSFail("Incompatible wire protocol between DB and Client:\n  Expecting protocol named \"%s\".\n  Client is using a protocol called  \"%s\"\n\n  Make sure the client and MOOSDB are linking against a MOOSLIB which uses the same protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
+		return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
+				"Expecting protocol named \"%s\".\n  Client is using a protocol"
+				" called  \"%s\"\n\n  Make sure the client and MOOSDB"
+				" are linking against a MOOSLIB which uses the same"
+				" protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
 	}
 	
 	return true;
@@ -682,6 +711,11 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
             {
                 m_Socket2ClientMap[pNewClient->iGetSocketFd()] = Msg.m_sVal;
                 //std::cerr<<"CMOOSCommServer::HandShake added "<<Msg.m_sVal<<" to m_Socket2ClientMap \n";
+                if(MOOSStrCmp(Msg.m_sKey,"asynchronous"))
+                {
+                	m_AsynchronousClientSet.insert(Msg.m_sVal);
+                }
+
             }
             else
             {
@@ -738,14 +772,43 @@ string CMOOSCommServer::GetClientName(XPCTcpSocket *pSocket)
 
 }
 
+
+bool CMOOSCommServer::SupportsAsynchronousClients()
+{
+	return false;
+}
+
 void CMOOSCommServer::DoBanner()
 {
-    MOOSTrace("***************************************************\n");
-    MOOSTrace("*  This is a MOOS Server for Community \"%s\"      \n",m_sCommunityName.c_str());
-    MOOSTrace("*  Connect to this server on port %d               \n",m_lListenPort);
-    MOOSTrace("*  Name look up is %s                              \n",m_bDisableNameLookUp ? "off" : "on");
-    //MOOSTrace("*  This machine is %s endian                 \n",IsLittleEndian()?"Little":"Big");
-    MOOSTrace("***************************************************\n");
+    std::cout<<"------------------- MOOSDB V10 -------------------\n";
+
+    std::cout<<"  Hosting  community                "<<
+    		MOOS::ConsoleColours::Green()<<"\""<<m_sCommunityName<<"\"\n"<<MOOS::ConsoleColours::reset();
+
+    std::cout<<"  Name look up is                   ";
+    if(!m_bDisableNameLookUp)
+    {
+    	std::cout<<MOOS::ConsoleColours::Green()<<"on\n"<<MOOS::ConsoleColours::reset();
+    }
+    else
+    {
+    	std::cout<<MOOS::ConsoleColours::red()<<"off\n"<<MOOS::ConsoleColours::reset();
+    }
+
+    std::cout<<"  Asynchronous support is           ";
+    if(SupportsAsynchronousClients())
+    {
+    	std::cout<<MOOS::ConsoleColours::Green()<<"on\n"<<MOOS::ConsoleColours::reset();
+    }
+    else
+    {
+    	std::cout<<MOOS::ConsoleColours::red()<<"off\n"<<MOOS::ConsoleColours::reset();
+    }
+
+    std::cout<<"  Connect to this server on port    ";
+    std::cout<<MOOS::ConsoleColours::green()<<m_lListenPort<<MOOS::ConsoleColours::reset()<<"\n";
+
+    std::cout<<"--------------------------------------------------\n";
 
 }
 

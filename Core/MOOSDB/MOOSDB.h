@@ -31,11 +31,15 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+
 #if !defined(MOOSDBH)
 #define MOOSDBH
 
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Platform_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 
-#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+
+
 #include "MOOSDBVar.h"
 #include <string>
 #include <map>
@@ -43,6 +47,7 @@
 #include "MOOSDBHTTPServer.h"
 #include "MsgFilter.h"
 
+#include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 
 using namespace std;
 
@@ -66,9 +71,14 @@ public:
     /** called internally when a client disconnects */
     static bool OnDisconnectCallBack(string & sClient,void * pParam);
 
+    static bool OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam);
+
     /** called internally when a MOOSPkt (a collection of MOOSMsg's ) is
     received by the server */
     bool OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgLstRx,MOOSMSG_LIST & MsgLstTx);
+
+    bool OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx);
+
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */

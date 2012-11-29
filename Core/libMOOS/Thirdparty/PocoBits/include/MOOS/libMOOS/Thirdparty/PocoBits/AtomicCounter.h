@@ -42,7 +42,7 @@
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 #if POCO_OS == POCO_OS_WINDOWS_NT
-#include "Poco/UnWindows.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 #elif POCO_OS == POCO_OS_MAC_OS_X
 #include <libkern/OSAtomic.h>
 #else

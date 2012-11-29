@@ -34,8 +34,11 @@
 #ifndef MOOSAPPH
 #define MOOSAPPH
 
+
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
+
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSVariable.h"
@@ -43,15 +46,22 @@
 #include <set>
 #include <map>
 
-
 #define DEFAULT_MOOS_APP_COMMS_FREQ 5
 #define DEFAULT_MOOS_APP_FREQ 5
-#define MOOS_MAX_APP_FREQ 50
+#define MOOS_MAX_APP_FREQ 100
 #define MOOS_MAX_COMMS_FREQ 200
+
 #define STATUS_PERIOD 2
 
-
 typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
+
+#ifdef ASYNCHRONOUS_CLIENT
+#include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+namespace Poco
+{
+class Event;
+}
+#endif
 
 /** This is a class from which all MOOS component applications can be derived
 main() will typically end with a call to MOOSAppDerivedClass::Run(). It provides
@@ -78,19 +88,20 @@ public:
     @param the name of the mission file
     @param the subscribe name of the application. If NULL then sName
     */
-    bool Run( const char * sName,const char * sMissionFile,const char * sSubscribeName);
-    bool Run( const char * sName,const char * sMissionFile);
+    bool Run( const std::string & sName,const std::string & sMissionFile,const std::string & sSubscribeName);
+    bool Run( const std::string & sName,const std::string & sMissionFile="Mission.moos");
+    bool Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[]);
+    bool Run( const std::string &,int argc, char * argv[]);
 
-    /** Called when the class has succesully connected to the server. Overload this function
-    and place use it to register for notification when variables of interest change */
-    virtual bool OnConnectToServer();
-
-    /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
-    virtual bool OnDisconnectFromServer();
-	
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
-    
+
+	 /**
+	 * pass in a copy of any command line parameters so options can be
+	 * queried later
+	 */
+	void SetCommandLineParameters(int argc, char * argv[]);
+
 
 protected:
     /** called when the application should iterate. Overload this function in a derived class
@@ -104,6 +115,10 @@ protected:
     @param NewMail a list of new mail messages*/
     virtual bool OnNewMail(MOOSMSG_LIST & NewMail);
 
+    /** called just before the main app loop is entered. Specific initialisation code can be written
+    in an overloaded version of this function */
+    virtual bool OnStartUp();
+
     /** optionally (see ::EnableCommandMessageFiltering() ) called when a command message (<MOOSNAME>_CMD) is recieved by the application.
     @param a copy of CmdMsg the message purporting to be a "command" - i.e. has the name <MOOSNAME>_CMD */
     virtual bool OnCommandMsg(CMOOSMsg Msg);
@@ -111,7 +126,31 @@ protected:
     /** make a status string - overload this in a derived class if you want to modify or what the statuts string looks like */
     virtual std::string MakeStatusString();
 
+    /** called before OnStartUp and before communications have been established to give users option of processing command line*/
+	virtual bool OnProcessCommandLine();
 
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintHelpAndExit();
+
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintExampleAndExit();
+
+	/** called when command line is asking for help to be printed */
+	virtual void OnPrintInterfaceAndExit();
+
+	/** called when command line is asking for version to be printed */
+	virtual void OnPrintVersionAndExit();
+
+
+public:
+    /** Called when the class has succesfully connected to the server. Overload this function
+    and place use it to register for notification when variables of interest change */
+    virtual bool OnConnectToServer();
+
+    /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
+    virtual bool OnDisconnectFromServer();
+
+protected:
 
     /** notify the MOOS community that something has changed (string)
      *
@@ -194,6 +233,24 @@ protected:
     bool Notify(const std::string & sVar,void *  pData, unsigned int nDataSize, const std::string & sSrcAux,double dfTime=-1);
 
 
+    /** notify the MOOS community that something has changed -  binary data
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param dfTime double value of data being sent
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData, double dfTime=-1);
+
+	/** notify the MOOS community that something has changed  ( binary data ) with an auxiliary string paylad
+	 *
+	 * @param sVar Name of variable being notified /posted
+	 * @param vData a vector of unsigned char data
+	 * @param sSrcAux additional string data member
+	 * @param dfTime time valid
+	 * @return
+	 */
+	bool Notify(const std::string & sVar,const std::vector<unsigned char> & vData,const std::string & sSrcAux, double dfTime=-1);
 
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
@@ -215,14 +272,38 @@ protected:
     bool UnRegister(const std::string & sVar);
 
 
-    /** The MOOSComms node. All communications happens by way of this object. You'll often do things like  m_Comms.Notify("VARIABLE_X","STRING_DATA",dfTime) top send data */
+    /** The MOOSComms node. All communications happens by way of this object.*/
+#ifdef ASYNCHRONOUS_CLIENT
+    MOOS::MOOSAsyncCommClient m_Comms;
+#else
     CMOOSCommClient m_Comms;
+#endif
 
     /** Set the time between calls into the DB - can be set using the CommsTick flag in the config file*/
     bool SetCommsFreq(unsigned int nFreq);
 
     /** Set the time  between calls of ::Iterate (which is where you'll probably do Application work)- can be set using the AppTick flag in the config file*/
-    void SetAppFreq(double dfFreq);
+    void SetAppFreq(double dfFreq,double dfMaxFreq=0.0);
+
+    /** return the application frequency*/
+    double GetAppFreq();
+
+    /** get the comms frequency*/
+    unsigned int GetCommsFreq();
+
+    /** print out salient info at startup */
+    virtual void DoBanner();
+
+    //enumeration of ways application can iterate
+    enum IterateMode
+	{
+		REGULAR_ITERATE_AND_MAIL=0,
+		COMMS_DRIVEN_ITERATE_AND_MAIL,
+		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL,
+	}m_IterationMode;
+
+	//set up the iteration mode of the app
+	bool SetIterateMode(IterateMode Mode);
 
     /** return the boot time of the App */
     double GetAppStartTime();
@@ -235,7 +316,8 @@ protected:
     
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
-	
+
+
 	
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,6 +354,8 @@ protected:
     /** dispatching function for ::OnCommandMsg */
     bool LookForAndHandleAppCommand(MOOSMSG_LIST & NewMail);
 
+    /** prints default MOOSApp command line switches */
+	virtual void PrintDefaultCommandLineSwitches();
 
     /** return the application name */
     std::string GetAppName();
@@ -330,16 +414,17 @@ protected:
     can be set by registering for SIMULATION_MODE variable*/
     bool m_bSimMode;
 
-
-    /** called just before the main app loop is entered. Specific initialisation code can be written
-    in an overloaded version of this function */
-    virtual bool OnStartUp();
-
     /** start up the comms */
     virtual bool ConfigureComms();
 
+    /** read setting from file etc */
+    virtual bool Configure();
+
+    /** confirm configuration is acceptable */
+    virtual bool IsConfigOK();
+
     /** Port on which server application listens for new connection */
-    long m_lServerPort;
+    int m_lServerPort;
 
     /** name of machine on which MOOS Server resides */
     std::string m_sServerHost;
@@ -365,6 +450,11 @@ protected:
     /** frequency at which this application will iterate */
     double m_dfFreq;
 
+    /** max frequency at which app can tick (if zero then anything is OK). This
+     * allows apps to respond very quickly to mail but also allows users
+     * to throttle their rates */
+    double m_dfMaxAppTick;
+
     /** std::string name of mission file */
     std::string m_sMissionFile;
 
@@ -389,7 +479,9 @@ protected:
     /** flag specifying the error state of the App - set via SetAppError()*/
     bool m_bAppError;
     
+    MOOS::CommandLineParser m_CommandLineParser;
     
+
     /** Time since last iterate was called*/
     double GetTimeSinceIterate();
 
@@ -429,11 +521,14 @@ public:
     void OnConnectToServerPrivate();
     bool OnMailCallBack();
     
+protected:
     /* by calling this function Iterate and OnNewMail will be
      called from the thread that is servicing the MOOS Comms client. It
      is provided to let really very specialised MOOSApps have very speedy
      response times. It is not recommended for general use*/
     bool UseMailCallBack();
+
+
 
 private:
     /* this function is used to process mail on behalf of the client just before
@@ -445,8 +540,10 @@ private:
     /**can we iterate without comms*/
     bool m_bIterateWithoutComms;
 
+#ifdef ASYNCHRONOUS_CLIENT
+    Poco::Event * m_pMailEvent;
+#endif
 
-private:
 
     /** Number of times Application has cycled */
     int m_nIterateCount;
@@ -460,9 +557,13 @@ private:
     /** called before starting the Application running. If parameters have not beedn set correctly
     it prints a help statement and returns false */
     bool CheckSetUp();
+
+    /** controls the rate at which application runs */
+    void SleepAsRequired(bool & bIterateShouldRun);
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
+
     
     
 };

@@ -33,6 +33,10 @@
 #define strtok_r(a, b, c) strtok(a, b)
 #endif // WINDOWS or SOLARIS or gcc 2.* or HP aCC
 
+#ifdef WIN32
+#pragma warning(disable:4127)
+#endif
+
 extern "C" {
 //   leave the 'extern C' to make it 100% sure to work -
 //   expecially with older distributions of header files.

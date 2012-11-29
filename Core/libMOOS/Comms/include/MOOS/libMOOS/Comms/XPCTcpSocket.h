@@ -73,7 +73,7 @@ public:
     XPCTcpSocket *Accept(char *_sHost = NULL);
 
     // Listens to connecting clients
-    void vListen(int _iNumPorts = 5);
+    void vListen(int _iNumPorts = -1);
 
     // Connects to a client specified by a supplied host name
     virtual void vConnect(const char *_sHost);

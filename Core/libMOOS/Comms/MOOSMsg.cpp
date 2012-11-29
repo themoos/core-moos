@@ -482,6 +482,11 @@ bool CMOOSMsg::IsType(char cType) const
     return m_cMsgType==cType;
 }
 
+char CMOOSMsg::GetType() const
+{
+	return m_cMsgType;
+}
+
 void CMOOSMsg::Trace()
 {
     MOOSTrace("Type=%c DataType=%c Key =%s ",m_cMsgType,m_cDataType,m_sKey.c_str());
@@ -582,6 +587,31 @@ unsigned int CMOOSMsg::GetBinaryDataSize()
 	else
 		return m_sVal.size();
 }
+
+bool CMOOSMsg::GetBinaryData(std::vector<unsigned char > &v)
+{
+	if(!IsBinary())
+		return false;
+
+	v.reserve(GetBinaryDataSize());
+	std::copy(m_sVal.begin(),m_sVal.end(),v.begin());
+	return true;
+}
+
+unsigned char * CMOOSMsg::GetBinaryData()
+{
+	if(!IsBinary())
+		return NULL;
+	else
+		return (unsigned char*)(&m_sVal[0]);
+}
+
+
+bool  CMOOSMsg::IsName(const std::string & sName)
+{
+	return MOOSStrCmp(m_sKey, sName);
+}
+
 
 bool CMOOSMsg::IsDataType(char cDataType) const
 {

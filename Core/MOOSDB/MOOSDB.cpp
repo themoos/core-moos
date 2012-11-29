@@ -63,6 +63,13 @@ bool CMOOSDB::OnRxPktCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListRx,
     return pMe->OnRxPkt(sWho,MsgListRx,MsgListTx);
 }
 
+bool CMOOSDB::OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam)
+{
+    CMOOSDB* pMe = (CMOOSDB*)(pParam);
+
+    return pMe->OnFetchAllMail(sWho,MsgListTx);
+}
+
 bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
 {
     CMOOSDB* pMe = (CMOOSDB*)(pParam);
@@ -261,6 +268,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
+    m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 
 
@@ -316,7 +325,6 @@ void CMOOSDB::UpdateDBTimeVars()
 /**this will be called each time a new packet is recieved*/
 bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSMSG_LIST & MsgListTx)
 {
-    //MOOSTrace("\nClient %s::OnRxPkt:\n",sClient.c_str());
 
     MOOSMSG_LIST::iterator p;
     
@@ -325,8 +333,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
-
-
     //good spot to update our internal time    
     UpdateDBTimeVars();
 
@@ -337,8 +343,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
     {
         
         //now we fill in the packet with our replies to THIS CLIENT
-        //MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(MsgListRx.front().m_sSrc);
-        
         MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sClient);
         
         if(q==m_HeldMailMap.end())
@@ -366,12 +370,31 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
             if(!q->second.empty())
             {
                 //copy all the held mail to MsgListTx
-                MsgListTx.splice(MsgListTx.begin(),q->second);
+                MsgListTx.splice(MsgListTx.begin(),
+                		q->second,
+                		q->second.begin(),
+                		q->second.end());
             }
         }
     }
     
     return true;
+}
+
+bool CMOOSDB::OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx)
+{
+	MOOSMSG_LIST_STRING_MAP::iterator q = m_HeldMailMap.find(sWho);
+	if(q!=m_HeldMailMap.end())
+	{
+		if(!q->second.empty())
+		{
+            MsgListTx.splice(MsgListTx.begin(),
+            		q->second,
+            		q->second.begin(),
+            		q->second.end());
+		}
+	}
+	return true;
 }
 
 /** This functions decides what needs to be done on a message by message basis */
@@ -410,14 +433,8 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 {
     double dfTimeNow = HPMOOSTime();
     
-    
     CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
     
-
-
-
-    
-
     if(rVar.m_nWrittenTo==0)
     {
         rVar.m_cDataType=Msg.m_cDataType;
@@ -475,13 +492,6 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 //MIN
                 rVar.m_dfWriteFreq = 0.0;
             }
-            //else if(dfDT<0.005)
-            //{
-                //MAX OUT
-                //this is almost certainly two of tge same mesages arrive in the same commpkt - ignore...
-                //MOOSTrace("Msg %s was last updated at %f and its now %f\n", Msg.GetKey().c_str(),dfTimeNow,dfLastWrittenTime);
-                //rVar.m_dfWriteFreq = 200.0;
-            //}
             else
             {
                 //IIR FILTER COOEFFICENT
@@ -589,7 +599,6 @@ bool CMOOSDB::OnUnRegister(CMOOSMsg &Msg)
 request is received */
 bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 {
-    
     
     //what are we looking to register for?
 	if(Msg.IsType(MOOS_REGISTER))
@@ -748,6 +757,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
+    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -757,16 +767,15 @@ bool CMOOSDB::OnDisconnect(string &sClient)
         
         rVar.RemoveSubscriber(sClient);
     }
-    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...\n";
     if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
     {
-        std::cerr<<"  removing wildcard subscriptions\n";
+        //std::cerr<<"  removing wildcard subscriptions\n";
     	m_ClientFilters[sClient].clear();
     }
     
-    std::cerr<<"  removing held mail\n";
+    //std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
-    std::cerr<<MOOS::ConsoleColours::reset();
+    std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
     return true;
 }
@@ -801,12 +810,10 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
     DBVAR_MAP::iterator p;
     STRING_LIST::iterator q;
-    
     STRING_LIST Clients;
     
     m_pCommServer->GetClientNames(Clients);
-    
-    
+
     for(q=Clients.begin();q!=Clients.end();q++)
     {
         string sWho = *q;

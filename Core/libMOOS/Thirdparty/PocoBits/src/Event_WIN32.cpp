@@ -33,7 +33,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "PocoBits/Event_WIN32.h"
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event_WIN32.h"
 
 
 namespace Poco {

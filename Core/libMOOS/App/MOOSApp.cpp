@@ -38,10 +38,19 @@
 
 #include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/MOOSVersion.h"
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <iterator>
+
+
+#ifdef ASYNCHRONOUS_CLIENT
+#include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
+#endif
+
+
 
 using namespace std;
 
@@ -110,6 +119,8 @@ CMOOSApp::CMOOSApp()
 {
     m_dfFreq=DEFAULT_MOOS_APP_FREQ;
     m_nCommsFreq=DEFAULT_MOOS_APP_COMMS_FREQ;
+    m_dfMaxAppTick = DEFAULT_MOOS_APP_FREQ; //we can respond to mail very quickly but by default we are cautious
+    m_IterationMode = REGULAR_ITERATE_AND_MAIL;
     m_nIterateCount = 0;
     m_nMailCount = 0;
     m_bServerSet = false;
@@ -127,92 +138,172 @@ CMOOSApp::CMOOSApp()
     
     SetMOOSTimeWarp(1.0);
     
+#ifdef ASYNCHRONOUS_CLIENT
+    m_pMailEvent = new Poco::Event;
+    UseMailCallBack();
+#endif
+
     EnableIterateWithoutComms(false);
 }
 
 CMOOSApp::~CMOOSApp()
 {
+#ifdef ASYNCHRONOUS_CLIENT
+    delete m_pMailEvent;
+#endif
+}
+
+
+
+void CMOOSApp::OnPrintExampleAndExit()
+{
+	std::cout<<" tragically, there is no example configuration for this app\n";
+	exit(0);
+}
+
+void CMOOSApp::OnPrintInterfaceAndExit()
+{
+	std::cout<<" sadly, there is no description of the interface for this app\n";
+	exit(0);
+}
+
+
+void CMOOSApp::PrintDefaultCommandLineSwitches()
+{
+	std::cout<<MOOS::ConsoleColours::Yellow()<<"\n";
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<GetAppName()<<"'s standard MOOSApp switches are:\n";
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<MOOS::ConsoleColours::reset()<<"\n";
+	std::cout<<"\nvariables:\n";
+	std::cout<<"  --moos_app_name=<string>    : name of application\n";
+	std::cout<<"  --moos_name=<string>        : name with which to register with MOOSDB\n";
+	std::cout<<"  --moos_file=<string>        : name of configuration file\n";
+	std::cout<<"  --moos_host=<string>        : address of machine hosting MOOSDB\n";
+	std::cout<<"  --moos_port=<number>        : port on which DB is listening \n";
+	std::cout<<"  --moos_app_tick=<number>    : frequency of application (if relevant) \n";
+	std::cout<<"  --moos_max_app_tick=<number>: max frequency of application (if relevant) \n";
+	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
+	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
+
+	std::cout<<"\nflags:\n";
+	std::cout<<"  --moos_iterate_no_comms     : enable iterate without comms \n";
+	std::cout<<"  --moos_filter_command       : enable command message filtering \n";
+	std::cout<<"  --moos_no_sort_mail         : don't sort mail by time \n";
+	std::cout<<"  --moos_no_comms             : don't start communications \n";
+	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
+
+
+	std::cout<<"\nhelp:\n";
+	std::cout<<"  --moos_print_example        : print an example configuration block \n";
+	std::cout<<"  --moos_print_interface      : describe the interface (subscriptions/pubs) \n";
+	std::cout<<"  --moos_print_version        : print the version of moos in play \n";
+	std::cout<<"  --moos_help                 : print help on moos switches\n";
+	std::cout<<"  --help                      : print help on moos switches and custom help\n";
+
 
 }
 
+void CMOOSApp::OnPrintVersionAndExit()
+{
+	std::cout<<"--------------------------------------------------\n";
+	std::cout<<"libMOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+	std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+	std::cout<<"--------------------------------------------------\n";
+	exit(0);
+}
+
+
+void CMOOSApp::OnPrintHelpAndExit()
+{
+	std::cout<<" distressingly, there is no custom help for this app\n";
+	exit(0);
+}
+
+
 //this is an overloaded 3 parameter version which allows explicit setting of the registration name
-bool CMOOSApp::Run(const char * sName,const char * sMissionFile,const char * sMOOSName)
+bool CMOOSApp::Run(const std::string & sName,const std::string & sMissionFile,const std::string & sMOOSName)
 {
     //fill in specialised MOOSName
     m_sMOOSName = sMOOSName;
     return Run(sName,sMissionFile);
 }
 
-//the main MOOSApp Run function
-bool CMOOSApp::Run( const char * sName,
-                    const char * sMissionFile)
+//this is an overloaded 3 parameter version which allows explicit setting of the registration name
+bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
 {
+	SetCommandLineParameters(argc,argv);
+	return Run(sName);
+}
 
-    //save absolutely crucial info...
-    m_sAppName      = sName;
-    m_sMissionFile  = sMissionFile;
-    m_MissionReader.SetAppName(m_sAppName);
+bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[])
+{
+	SetCommandLineParameters(argc,argv);
+	return Run(sName,sMissionFile);
+}
+
+//the main MOOSApp Run function
+bool CMOOSApp::Run( const std::string & sName,
+                    const std::string & sMissionFile)
+{
+	//save absolutely crucial info...
+	m_sAppName      = sName; //default
+	m_CommandLineParser.GetOption("--moos_app_name",m_sAppName);//overload
+
+	//but things might be overloaded
+	m_sMissionFile  = sMissionFile; //default
+	m_CommandLineParser.GetVariable("--moos_file",m_sMissionFile); //overload
+
+	m_MissionReader.SetAppName(m_sAppName);
+
+	//by default we will register with our application name
+	if(m_sMOOSName.empty()) //default
+		m_sMOOSName=m_sAppName;
+
+	m_CommandLineParser.GetVariable("--moos_name",m_sMOOSName); //overload
+
+
+	if(m_CommandLineParser.GetFlag("--moos_help"))
+	{
+		PrintDefaultCommandLineSwitches();
+		exit(0);
+	}
+
+	if(m_CommandLineParser.GetFlag("--help"))
+	{
+		PrintDefaultCommandLineSwitches();
+		OnPrintHelpAndExit();
+	}
+
+	if(m_CommandLineParser.GetFlag("--moos_print_example"))
+		OnPrintExampleAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_print_interface"))
+		OnPrintInterfaceAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_print_version"))
+		OnPrintVersionAndExit();
+
+	if(m_CommandLineParser.GetFlag("--moos_iterate_no_comms"))
+		EnableIterateWithoutComms(true);
+
+
+
+	//look at mission file etc
+	if(!Configure())
+	{
+		std::cerr<<"configure returned false. Quitting\n";
+		return false;
+	}
+
+	//here we give users a chance to alter configurations
+	//or do more work in configuring
+	if(m_CommandLineParser.IsAvailable())
+		OnProcessCommandLine();
     
-    //by default we will 
-	if(m_sMOOSName.empty())
-        m_sMOOSName=m_sAppName;
-    
+	//what time did we start?
+	m_dfAppStartTime = MOOSTime();
 
-    //can we see the mission file
-    if(sMissionFile!=NULL)
-    {
-        if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
-        {
-            MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
-        }
-        
-        if(1)
-        {
-			//what is the global time warp
-            double dfTimeWarp = 1.0;
-            if(m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
-            {
-                SetMOOSTimeWarp(dfTimeWarp);
-            }
-            
-            
-            //are we expected to use MOOS comms?
-            m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
-            
-            //are we being asked to sort mail by time..
-            m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
-            
-            //are we in debug mode
-            m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
-
-            //are we in simulator mode?
-            string sSim;
-            if(m_MissionReader.GetValue("SIMULATOR",sSim))
-            {
-                m_bSimMode = MOOSStrCmp(sSim,"TRUE");
-            }
-
-            //are we in playback mode
-            string sPlayBack;
-            if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
-            {
-                SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
-            }
-
-            //OK now figure out our tick speeds  above what is set by default
-            //in derived class constructors this can be set in the process config block
-            //by the mission architect
-            m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
-            
-
-            //do we want to enable command filtering (default is set in constructor)
-            m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
-        }
-    }
-
-    //what time did we start?
-    m_dfAppStartTime = MOOSTime();
-    
     //can we start the communications ?
     if(m_bUseMOOSComms)
     {
@@ -252,36 +343,166 @@ bool CMOOSApp::Run( const char * sName,
         return false;
     }
 
+    DoBanner();
 
-    MOOSTrace("%s is Running:\n",GetAppName().c_str());
-    MOOSTrace("\t AppTick   @ %.1f Hz\n",m_dfFreq);
-    MOOSTrace("\t CommsTick @ %d Hz\n",m_nCommsFreq);
-    if(GetMOOSTimeWarp()!=1.0)
-    	MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
+
 
 
     /****************************  THE MAIN MOOS APP LOOP **********************************/
 
     while(!m_bQuitRequested)
     {
-        if(!m_Comms.HasMailCallBack())
-        {
-            
-        	bool bOK = DoRunWork();
-            
-            if(m_bQuitOnIterateFail && !bOK)
-                return MOOSFail("MOOSApp Exiting as requested");
-        }
-        else
-            MOOSPause(1000);
-                
+		bool bOK = DoRunWork();
+
+		if(m_bQuitOnIterateFail && !bOK)
+			return MOOSFail("MOOSApp Exiting as requested");
     }
 
     /***************************   END OF MOOS APP LOOP ***************************************/
 
+    m_Comms.Close();
+
     return true;
 }
 
+bool CMOOSApp::Configure()
+{
+
+	//can we see the mission file
+
+	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
+	{
+		//MOOSTrace("Warning Mission File \"%s\" not found...\n",m_sMissionFile.c_str());
+	}
+
+
+	//what is the global time warp
+	double dfTimeWarp = 1.0;
+	if(m_CommandLineParser.GetOption("--moos_time_warp",dfTimeWarp) ||
+			m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
+	{
+		SetMOOSTimeWarp(dfTimeWarp);
+	}
+
+
+	//are we expected to use MOOS comms?
+	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
+	m_bUseMOOSComms = !m_CommandLineParser.GetFlag("--moos_no_comms");
+
+	//are we being asked to sort mail by time..
+	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
+	m_bSortMailByTime = !m_CommandLineParser.GetFlag("--moos_no_sort_mail");
+
+	//are we being asked to quit if iterate fails?
+	m_bQuitOnIterateFail |= m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
+
+	//are we in debug mode
+	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
+
+	//are we in simulator mode?
+	string sSim;
+	if(m_MissionReader.GetValue("SIMULATOR",sSim))
+	{
+		m_bSimMode = MOOSStrCmp(sSim,"TRUE");
+	}
+
+	//are we in playback mode
+	string sPlayBack;
+	if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
+	{
+		SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
+	}
+
+	//OK now figure out our tick speeds  above what is set by default
+	//in derived class constructors this can be set in the process config block
+	//by the mission architect
+	m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
+	m_CommandLineParser.GetVariable("--moos_app_tick",m_dfFreq);
+
+	m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
+	m_CommandLineParser.GetVariable("--moos_max_app_tick",m_dfMaxAppTick);
+
+	unsigned int nMode = 0;
+	m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
+	m_CommandLineParser.GetVariable("--moos_iterate_mode",nMode);
+
+	switch(nMode)
+	{
+		case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+		case 1: SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL); break;
+		case 2: SetIterateMode(REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL); break;
+		default:SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
+
+	}
+
+
+
+	//do we want to enable command filtering (default is set in constructor)
+	m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
+	m_bCommandMessageFiltering|=m_CommandLineParser.GetFlag("--moos_filter_command");
+
+
+
+	return IsConfigOK();
+
+}
+
+bool CMOOSApp::OnProcessCommandLine()
+{
+	//use things like
+	//m_CommandLineParser.GetVariable("--moos_name",std::string);
+
+	return true;
+}
+
+bool CMOOSApp::IsConfigOK()
+{
+	//put checks in here....if needed (or overload)
+	return true;
+}
+
+void CMOOSApp::DoBanner()
+{
+	MOOSTrace("%s is Running:\n",GetAppName().c_str());
+	MOOSTrace(" +Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+	if(m_Comms.IsAsynchronous())
+	{
+		MOOSTrace(" +Comms is Full Duplex and Asynchronous\n");
+		switch(m_IterationMode)
+		{
+		case REGULAR_ITERATE_AND_MAIL:
+			std::cout<<" +Iterate Mode 0 :\n   -Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
+			break;
+		case COMMS_DRIVEN_ITERATE_AND_MAIL:
+			std::cout<<" +Iterate Mode 1 :\n   -Dynamic iterate speed driven by message delivery ";
+			if(m_dfMaxAppTick==0.0)
+				std::cout<<"at an unlimited rate\n";
+			else
+				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
+			break;
+		case REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
+			std::cout<<" +Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   -Dynamic message delivery ";
+			if(m_dfMaxAppTick==0.0)
+				std::cout<<"at an unlimited rate\n";
+			else
+				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
+
+			break;
+		}
+	}
+	else
+	{
+		MOOSTrace("\t Comms is Synchronous\n");
+		MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
+	}
+
+	if(GetMOOSTimeWarp()!=1.0)
+		MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
+
+
+	std::cout<<"\n\n";
+
+}
 
 /*called by a third party to request a MOOS App to quit - only useful for 
  example if a MOOSApp is run in a secondary thread */
@@ -293,8 +514,16 @@ bool CMOOSApp::RequestQuit()
 
 bool CMOOSApp::DoRunWork()
 {
-    //look for mail
-    double dfT1 = MOOSLocalTime();
+
+	bool bIterateRequired = true;
+
+	SleepAsRequired(bIterateRequired);
+
+	//std::cerr<<"bIterate:"<<bIterateRequired<<"\n";
+
+    //store for derived class use the last time iterate was called;
+    m_dfLastRunTime = MOOSLocalTime();
+
     //local vars
     MOOSMSG_LIST MailIn;
     if(m_bUseMOOSComms)
@@ -316,17 +545,21 @@ bool CMOOSApp::DoRunWork()
             m_nMailCount++;
         }
         
+
         if(m_Comms.IsConnected() ||  CanIterateWithoutComms() )
         {
             //do private work
             IteratePrivate();
             
-            //////////////////////////////////////
-            //  do application specific processing
-            bool bOK = Iterate();
-            
-            if(m_bQuitOnIterateFail && !bOK)
-                return false;
+            if(bIterateRequired)
+            {
+				//////////////////////////////////////
+				//  do application specific processing
+				bool bOK = Iterate();
+
+				if(m_bQuitOnIterateFail && !bOK)
+					return false;
+            }
             
             m_nIterateCount++;
         }
@@ -335,41 +568,133 @@ bool CMOOSApp::DoRunWork()
     {
         //do private work
         IteratePrivate();
-        
-        /////////////////////////////////////////
-        //  do application specific processing
-        bool bOK = Iterate();
 
-        if(m_bQuitOnIterateFail && !bOK)
-            return false;
+        if(bIterateRequired)
+        {
+			/////////////////////////////////////////
+			//  do application specific processing
+			bool bOK = Iterate();
 
+			if(m_bQuitOnIterateFail && !bOK)
+				return false;
+        }
         
         m_nIterateCount++;
     }
     
-    //store for derived class use the last time iterate was called;
-    m_dfLastRunTime = MOOSLocalTime();
-    
-    //sleep
-    if(m_dfFreq>0)
-    {
-        int nElapsedTime_ms  = static_cast<int> (1000.0*(m_dfLastRunTime-dfT1));
-		int nRequiredWait_ms = static_cast<int> (1000.0/m_dfFreq);
 
-		if (nElapsedTime_ms < 0) nElapsedTime_ms = 0;
-		
-		int nSleep = (nRequiredWait_ms - nElapsedTime_ms);
-
-        //a 10 ms sleep is a good as you are likely to get, if we are being told to sleep less than this we may as well
-        //tick once more and let the OS schedule us appropriately
-        if(nSleep>10 && !m_Comms.HasMailCallBack())
-        {
-            MOOSPause(nSleep);
-        }
-    }
     
+
+
     return true;
     
+}
+
+bool CMOOSApp::SetIterateMode(IterateMode Mode)
+{
+	if(!m_Comms.IsAsynchronous() && Mode!=REGULAR_ITERATE_AND_MAIL)
+	{
+		std::cerr<<"can only set iterate mode to REGULAR_ITERATE_AND_MAIL"
+				" for old MOOS Clients\n"<<Mode;
+		m_IterationMode = REGULAR_ITERATE_AND_MAIL;
+		return false;
+	}
+
+	m_IterationMode =Mode;
+	return true;
+
+
+}
+
+void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
+{
+
+	bIterateShouldRun = true;
+
+	//do we need to sleep at all?
+	if(m_dfFreq<=0.0)
+	{
+		//no we are being told to go flat out
+		return;
+	}
+
+	//first thing we do is look to see how long we need to sleep in
+	//vanilla case
+	int nAppPeriod_ms = static_cast<int> (1000.0/m_dfFreq);
+
+	//how long since we ran?
+	int nElapsedTime_ms = static_cast<int> (1000.0*( MOOSLocalTime() - m_dfLastRunTime));
+
+	if (nElapsedTime_ms < 0){
+		nElapsedTime_ms = 0;
+	}
+
+	//so how long do we need to pause for
+	int nSleep = (nAppPeriod_ms - nElapsedTime_ms);
+	if(nSleep<1){
+		//std::cerr<<"no sleep for "<<nSleep<<"\n";
+		return;//nothing to do...
+	}
+
+	if(!m_Comms.IsAsynchronous())
+	{
+		//we just always sleep;
+		MOOSPause(nSleep);
+		return;
+	}
+
+#ifdef ASYNCHRONOUS_CLIENT
+
+
+	//OK, we are a modern client and we have three distinct behaviours
+	switch(m_IterationMode)
+	{
+	case  REGULAR_ITERATE_AND_MAIL:
+		//we always to sleep - this behaves like old MOOS did - AppTick governs it all
+		//std::cerr<<"sleeping for "<<nSleep<<"\n";
+		MOOSPause(nSleep);
+		break;
+	case  REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
+		//On NewMail is called as often as is needed but iterate is only called
+		//at AppTick rates.
+		if(m_Comms.GetNumberOfUnreadMessages() || m_pMailEvent->tryWait(nSleep))
+		{
+			if(MOOSLocalTime()-m_dfLastRunTime<1.0/m_dfFreq)
+			{
+				//we have mail but we are in a mode where we don't have
+				//to call Iterate
+				bIterateShouldRun= false;
+			}
+		}
+		break;
+	case COMMS_DRIVEN_ITERATE_AND_MAIL:
+		//both OnNewMail and Iterate will be called as fast as mail comes in up
+		//to a limiting speed.
+		if(m_Comms.GetNumberOfUnreadMessages()>0 || m_pMailEvent->tryWait(nSleep))
+		{
+
+			//we got woken by the arrival of mail.....
+			//do we need to sleep some more to ensure we don't iterate
+			//too fast?
+			double dfTimeSinceRun = MOOSLocalTime()-m_dfLastRunTime;
+			double dfMinPeriod = m_dfMaxAppTick> 0.0 ? 1.0/m_dfMaxAppTick : 0.0;
+			if(dfTimeSinceRun<dfMinPeriod)
+			{
+				//yes we do..
+				nSleep=static_cast<int> (1000*(dfMinPeriod-dfTimeSinceRun));
+				if(nSleep>0)
+				{
+					MOOSPause(nSleep);
+				}
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+#endif
+
 }
 
 
@@ -405,20 +730,22 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
     m_sAppError =  m_bAppError ? sErr : "";
 }
 
+void CMOOSApp::SetCommandLineParameters(int argc, char * argv[])
+{
+	m_CommandLineParser.Open(argc,argv);
+}
 
-/////////////////// EXPERIMENTAL July 2008 ////////////////////
+
+
 bool CMOOSApp::UseMailCallBack()
 {
-    /* by calling this function Iterate and OnNewMail will be
-     called from the thread that is servicing the MOOS Comms client. It
-     is provided to let really very specialised MOOSApps have very speedy
-     response times. It is not recommended for general use*/
+    /* This attaches a callback to thw comms object's mail handler*/
     m_Comms.SetOnMailCallBack(MOOSAPP_OnMail,this);
     return true;
 }
 
 ////////////////////// DEFAULT HANDLERS //////////////////////
-bool CMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
+bool CMOOSApp::OnNewMail(MOOSMSG_LIST &)
 {
     return true;
 }
@@ -454,7 +781,7 @@ bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, double 
 
 bool CMOOSApp::Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime)
 {
-	return m_Comms.Notify(sVar,sVal,dfTime);
+	return m_Comms.Notify(sVar,sVal,sSrcAux,dfTime);
 }
 
 bool CMOOSApp::Notify(const std::string &sVar, const char * sVal,double dfTime)
@@ -489,6 +816,16 @@ bool CMOOSApp::Notify(const std::string & sVar,void *  pData, unsigned int nData
 	return m_Comms.Notify(sVar,pData,nDataSize,sSrcAux,dfTime);
 }
 
+bool CMOOSApp::Notify(const std::string & sVar,const std::vector<unsigned char> & vData, double dfTime)
+{
+	return m_Comms.Notify(sVar,vData,dfTime);
+}
+
+bool CMOOSApp::Notify(const std::string & sVar,const std::vector<unsigned char> & vData,const std::string & sSrcAux, double dfTime)
+{
+	return m_Comms.Notify(sVar,vData,sSrcAux,dfTime);
+}
+
 
 
 /** Register for notification in changes of named variable*/
@@ -517,7 +854,13 @@ bool CMOOSApp::UnRegister(const std::string & sVar)
 /** this is a call back from MOOSComms and its use is specialised (not for general consumption)*/
 bool CMOOSApp::OnMailCallBack()
 {
-    return DoRunWork();
+#ifdef ASYNCHRONOUS_CLIENT
+    m_pMailEvent->set();
+    return true;
+#else
+    std::cerr<<"OnMailCallback is deprecated for Asynchronous Clients\n";
+    return false;
+#endif
 }
 
 bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
@@ -529,29 +872,29 @@ bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
 
 bool CMOOSApp::ConfigureComms()
 {
+	m_sServerHost = "LOCALHOST";
+	if(!m_CommandLineParser.GetVariable("--moos_host",m_sServerHost))
+	{
+		if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
+		{
+			//MOOSTrace("Warning Server host not read from mission file or command line: assuming %s\n",m_sServerHost.c_str());
+		}
+	}
 
+	m_lServerPort = 9000;
+	if(!m_CommandLineParser.GetVariable("--moos_port",m_lServerPort))
+	{
+		if(!m_MissionReader.GetValue("SERVERPORT",m_lServerPort))
+		{
+			//MOOSTrace("Warning Server port not read from mission file or command line: assuming %d\n",m_lServerPort);
+		}
+	}
 
-
-    if(!m_MissionReader.GetValue("SERVERHOST",m_sServerHost))
-    {
-        MOOSTrace("Warning Server host not read from mission file: assuming LOCALHOST\n");
-        m_sServerHost = "LOCALHOST";
-    }
-
-
-    if(!m_MissionReader.GetValue("SERVERPORT",m_sServerPort))
-    {
-        MOOSTrace("Warning Server port not read from mission file: assuming 9000\n");
-        m_sServerPort = "9000";
-    }
-
-    m_lServerPort = atoi(m_sServerPort.c_str());
-
-    if(m_lServerPort==0)
-    {
-        m_lServerPort = 9000;
-        MOOSTrace("Warning Server port not read from mission file: assuming 9000\n");
-    }
+	//this is to support an old mistake
+	//m_sServerPort shoudl never have been a string!
+	std::stringstream ss;
+	ss<<m_lServerPort;
+	m_sServerPort = ss.str();
 
     if(!CheckSetUp())
         return false;
@@ -560,6 +903,7 @@ bool CMOOSApp::ConfigureComms()
     //OK now figure out our speeds etc above what is set by default
     //in derived class constructors
     m_MissionReader.GetConfigurationParam("COMMSTICK",m_nCommsFreq);
+    m_CommandLineParser.GetOption("--moos_comms_tick",m_nCommsFreq);
     m_nCommsFreq = m_nCommsFreq <0 ? 1 : m_nCommsFreq;
 
     //register a callback for On Connect
@@ -593,11 +937,33 @@ double CMOOSApp::GetAppStartTime()
     return m_dfAppStartTime;
 }
 
-void CMOOSApp::SetAppFreq(double  dfFreq)
+/** return the application frequency*/
+double CMOOSApp::GetAppFreq()
+{
+	return m_dfFreq;
+}
+
+/** get the comms frequency*/
+unsigned int CMOOSApp::GetCommsFreq()
+{
+	return m_nCommsFreq;
+}
+
+
+void CMOOSApp::SetAppFreq(double  dfFreq,double dfMaxFreq)
 {
     if(m_dfFreq<=MOOS_MAX_APP_FREQ)
     {
         m_dfFreq = dfFreq;
+    }
+    else
+    {
+    	std::cerr<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
+    }
+
+    if(dfMaxFreq>=0.0)
+    {
+    	m_dfMaxAppTick = dfMaxFreq;
     }
 }
 
@@ -897,7 +1263,7 @@ void CMOOSApp::IteratePrivate()
 {
     if(fabs(m_dfLastStatusTime-MOOSTime())>STATUS_PERIOD)
     {
-        std::string sStatus = GetAppName()+"_STATUS";
+        std::string sStatus = MOOSToUpper(GetAppName())+"_STATUS";
         MOOSToUpper(sStatus);
         m_Comms.Notify(sStatus,MakeStatusString());
         m_dfLastStatusTime = MOOSTime();
