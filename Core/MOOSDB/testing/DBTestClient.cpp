@@ -17,9 +17,10 @@ void PrintHelp()
 
     MOOSTrace("\n\nPub/Sub  settings:\n");
     MOOSTrace("  -s=<string>            : list of subscriptions in form var_name@period eg -s=x,y,z\n");
-    MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_patterd@period eg -w=x*:*@0.1,*:GPS:0.0 z\n");
-    MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@period eg -p=x@0.5,y:2048@2.0\n");
+    MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_pattern@frequency_hz eg -w='x*:*@0.1,*:GPS@0.0' \n");
+    MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@frequency_hz eg -p=x@0.5,y:2048@2.0\n");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
+    MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --verbose              : verbose output\n");
 
 
@@ -30,9 +31,9 @@ void PrintHelp()
     MOOSTrace("  --application_failure_prob=<numeric>   : probability of application failing during DB-communication [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
-    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
-    MOOSTrace("  ./uDBTestClient C2 --simulate_network_failure --network_failure_prob=0.05 --network_failure_time=10.0 --application_failure_prob=0.05 -s=z \n");
-    MOOSTrace("  ./uDBTestClient --moos_name=C1 --moos_apptick=10  -s=x -p=y:4567@0.5,z@2.0\n");
+    MOOSTrace("  ./moos_test --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
+    MOOSTrace("  ./moos_test C2 --simulate_network_failure --network_failure_prob=0.05 --network_failure_time=10.0 --application_failure_prob=0.05 -s=z \n");
+    MOOSTrace("  ./moos_test --moos_name=C1 --moos_apptick=10  -s=x -p=y:4567@0.5,z@2.0\n");
 
 
 }
@@ -77,7 +78,7 @@ public:
         _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
         _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
-
+        _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
 
 
         std::vector<std::string>::iterator q;
@@ -100,23 +101,34 @@ public:
 
             }
 
-            if (!MOOSIsNumeric(sEntry) || sEntry.empty())
+            double dfPeriod = 1.0;
+
+            if(!sEntry.empty())
             {
-            	std::cerr<<"Entry:"<<sEntry<<std::endl;
-                std::cerr<<MOOS::ConsoleColours::red()<<"badly formatted publish directive name1@period1 name2@period 2\n"<<MOOS::ConsoleColours::reset();
-                exit(1);
+				if (!MOOSIsNumeric(sEntry))
+				{
+					std::cerr<<"Entry:"<<sEntry<<std::endl;
+					std::cerr<<MOOS::ConsoleColours::red()<<"badly formatted publish directive name1@frequency name2@frequency 2\n"<<MOOS::ConsoleColours::reset();
+					exit(1);
+				}
+				else
+				{
+					double dfF =atof(sEntry.c_str());
+					dfF = std::max<double>(dfF,0.01);
+					dfPeriod = 1.0/dfF;
+				}
             }
-            double dfPeriod = 1.0/atof(sEntry.c_str());
+
 
             if(nArraySize==0)
             {
             	_Jobs.push(Job(dfPeriod,sName));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" every "<<dfPeriod<<" seconds\n"<< MOOS::ConsoleColours::reset();
+                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
             else
             {
             	_Jobs.push(Job(dfPeriod,sName,nArraySize));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] bytes every "<<dfPeriod<<" seconds\n"<< MOOS::ConsoleColours::reset();
+                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
 
         }
@@ -155,14 +167,25 @@ public:
         MOOSMSG_LIST::iterator q;
 
         if(_bVerbose && !NewMail.empty())
+        {
         	std::cerr<<std::endl;
+        	std::cerr<<MOOS::ConsoleColours::Yellow();
+        	std::cerr<<std::left<<std::setw(10)<<"var";
+        	std::cerr<<std::left<<std::setw(15)<<"src";
+        	std::cerr<<std::left<<std::setw(20)<<"payload";
+        	std::cerr<<std::endl;
+        	std::cerr<<MOOS::ConsoleColours::reset();
+        }
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
         	if(_bVerbose)
         	{
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"received: "<<q->GetKey()<<":"<<q->GetAsString()<<"\n";
-                std::cerr<<MOOS::ConsoleColours::reset();
+        		std::cerr<<std::left<<std::setw(10)<<q->GetKey();
+        		std::cerr<<std::left<<std::setw(15)<<q->GetSource();
+        		std::cerr<<std::left<<std::setw(20)<<q->GetAsString();
+        		std::cerr<<std::endl;
+
         	}
         	if(_bShowLatency)
         	{
@@ -187,10 +210,13 @@ public:
 			bi  = m_Comms.GetNumBytesReceived();
 			bo = m_Comms.GetNumBytesSent();
 
-			std::cerr<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
-			std::cerr<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
-			std::cerr<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
-			std::cerr<<MOOS::ConsoleColours::reset();
+			if(_bShowBandwidth)
+			{
+				std::cerr<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
+				std::cerr<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
+				std::cerr<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+				std::cerr<<MOOS::ConsoleColours::reset();
+			}
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
 			dfT = MOOS::Time();
@@ -214,8 +240,19 @@ public:
         std::cerr<<MOOS::ConsoleColours::Green();
         for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
         {
-            m_Comms.Register(*q,0.0);
-            std::cerr<<"+Subscribing to "<<*q<<"\n";
+			std::string sEntry = *q;
+			std::string sVar = MOOSChomp(sEntry,"@");
+			double dfPeriod = 0.0;
+			if(MOOSIsNumeric(sEntry)&& !sEntry.empty())
+			{
+
+				double dfF = atof(sEntry.c_str());
+				if(dfF>0.0)
+					dfPeriod =1.0/dfF;
+			}
+			m_Comms.Register(sVar,dfPeriod);
+
+            std::cerr<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
         }
         std::cerr<<MOOS::ConsoleColours::reset();
 
@@ -227,10 +264,25 @@ public:
 			std::string sEntry = *w;
 			std::string sVarPattern = MOOSChomp(sEntry,":");
 			std::string sAppPattern = MOOSChomp(sEntry,"@");
-			double dfPeriod  = atoi(sEntry.c_str());
-			if(sVarPattern.empty()||sAppPattern.empty()||sEntry.empty())
+
+			double dfPeriod = 0.0;
+			if(!sEntry.empty())
 			{
-				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern@period\n";
+				if(MOOSIsNumeric(sEntry))
+				{
+					double dfF = atof(sEntry.c_str());
+					if(dfF>0.0)
+						dfPeriod =1.0/dfF;
+				}
+				else
+				{
+					std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern[@period]\n";
+					continue;
+				}
+			}
+			if(sVarPattern.empty()||sAppPattern.empty())
+			{
+				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern[@period]\n";
 				continue;
 			}
 
@@ -257,7 +309,6 @@ public:
 			while(!_Jobs.empty() && _Jobs.top().isActive(MOOS::Time()))
 			{
 
-				double T = MOOS::Time()-GetAppStartTime();
 
 				Job Active = _Jobs.top();
 				_Jobs.pop();
@@ -267,8 +318,10 @@ public:
 
 					if(_bVerbose)
 					{
+						/*
+						double T = MOOS::Time()-GetAppStartTime();
 						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing binary data: "<<Active._sName<<"="
-							<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();
+							<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();*/
 					}
 
 				}
@@ -277,7 +330,7 @@ public:
 					Notify(Active._sName,Active._nCount,MOOSTime());
 					if(_bVerbose)
 					{
-						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
+						//std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
 					}
 				}
 				Active.Reschedule();
@@ -349,6 +402,8 @@ private:
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
     bool _bVerbose;
+    bool _bShowLatency;
+    bool _bShowBandwidth;
 
 
 

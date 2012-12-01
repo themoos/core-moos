@@ -89,7 +89,7 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 
     m_Subscribers[sClient] = Info;
 
-    MOOSTrace("MOOSDB: Adding subscription of \"%s\" to \"%s\"\n",sClient.c_str(),m_sName.c_str());
+    MOOSTrace("MOOSDB: Adding subscription of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
 
     return true;
 

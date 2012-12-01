@@ -1,9 +1,9 @@
 #this builds a test application which can be used
 #to test and stress the MOOSDB
 
-set(EXECNAME1 uDBTestClient)
-set(EXECNAME2 uDBAsyncTest)
-set(EXECNAME3 uDBAppTest)
+set(EXECNAME1 moos_test)
+set(EXECNAME2 async_test)
+set(EXECNAME3 app_test)
 
 #what files are needed?
 SET(SRCS1 DBTestClient.cpp)

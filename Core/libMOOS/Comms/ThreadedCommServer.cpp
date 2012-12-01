@@ -246,9 +246,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 				//client call back failed!!
 				MOOSTrace(" CMOOSCommServer::ProcessClient()  pfnCallback failed\n");
 			}
+			else
+			{
+				//std::cerr<<"picked up "<<MsgLstTx.size()<<" messages for "<<sWho<<"\n";
+			}
 
-            if(m_bQuiet)
-                InhibitMOOSTraceInThisThread(true);
 
             if(pClient->IsSynchronous())
             {
@@ -303,6 +305,9 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                     		continue;
 
                     	//gPrinter.Print("sending message to "+q->first);
+
+        				//std::cerr<<"*pushing*  "<<MsgLstTx.size()<<" messages for "<<sWho<<"\n";
+
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
