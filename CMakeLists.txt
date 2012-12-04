@@ -117,9 +117,7 @@ endif()
 
 endif()
 
-#here we save a versiong file
-
-
+#here we save a version file
 set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
 configure_file( "cmake/ProjectConfigVersion.cmake.in" ${VERSION_FILE} @ONLY )
 
