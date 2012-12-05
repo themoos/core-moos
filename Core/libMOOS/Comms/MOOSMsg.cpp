@@ -561,15 +561,15 @@ string CMOOSMsg::GetAsString(int nFieldWidth/*=12*/, int nNumDP/*=5*/)
         {
 			os.setf(ios::fixed);
 
-            os<<setw(nFieldWidth)<<setprecision(nNumDP)<<m_dfVal<<ends;       
+            os<<setw(nFieldWidth)<<setprecision(nNumDP)<<m_dfVal;//<<ends;
         }
 		else if(IsDataType(MOOS_BINARY_STRING))
 		{
-			os<<"BINARY DATA ["<<m_sVal.size()/1000.0<<" kB]"<<ends;
+			os<<"BINARY DATA ["<<m_sVal.size()/1000.0<<" kB]";//<<ends;
 		}
         else 
         {
-            os<<m_sVal.c_str()<<ends;
+            os<<m_sVal;//.c_str()<<ends;
         }
     }
     else

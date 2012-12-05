@@ -21,6 +21,7 @@ namespace MOOS
 		virtual bool Close(bool Nice = true );
 
 	    bool ReadingLoop();
+
 	    bool WritingLoop();
 
 	    virtual bool Post(CMOOSMsg & Msg,bool bKeepMsgSourceName=false);
