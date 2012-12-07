@@ -14,7 +14,6 @@
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include <map>
 #include <numeric>
 #include <iterator>
@@ -97,8 +96,6 @@ void PrintHelpAndExit()
 
 int main(int argc, char * argv[])
 {
-
-	GetPot cl(argc,argv);
 
 	MOOS::CommandLineParser P(argc,argv);
 

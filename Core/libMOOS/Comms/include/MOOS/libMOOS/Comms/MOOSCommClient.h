@@ -101,7 +101,7 @@ public:
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
     @param dfInterval minimum time between notifications*/
-    bool Register(const std::string & sVar,double dfInterval);
+    bool Register(const std::string & sVar,double dfInterval=0);
 
     /**
      * Wild card registration

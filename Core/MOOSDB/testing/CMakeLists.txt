@@ -4,20 +4,23 @@
 set(EXECNAME1 moos_test)
 set(EXECNAME2 async_test)
 set(EXECNAME3 app_test)
+set(EXECNAME4 queue_test)
 
 #what files are needed?
 SET(SRCS1 DBTestClient.cpp)
 SET(SRCS2 DBAsyncTest.cpp)
 SET(SRCS3 DBAppTest.cpp)
+SET(SRCS4 QueueTest.cpp)
 
-include_directories( ${${EXECNAME1}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
+include_directories( ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME1} ${SRCS1} )
 target_link_libraries(${EXECNAME1} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
-include_directories( ${${EXECNAME2}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME2} ${SRCS2} )
 target_link_libraries(${EXECNAME2} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
-include_directories( ${${EXECNAME3}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME3} ${SRCS3} )
 target_link_libraries(${EXECNAME3} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+
+add_executable(${EXECNAME4} ${SRCS4} )
+target_link_libraries(${EXECNAME4} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
