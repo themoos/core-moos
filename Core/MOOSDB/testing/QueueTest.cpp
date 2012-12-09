@@ -24,13 +24,16 @@ bool on_connect(void * pParam)
 	return pC->Register("la") && pC->Register("di");
 }
 
+
 int main(int argc, char * argv[])
 {
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
 
-	C.AddActiveCallBack("la",func,NULL);
-	C.AddActiveCallBack("di",func,NULL);
+
+
+	C.AddMessageCallback("la",func,NULL);
+	C.AddMessageCallback("di",func,NULL);
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 

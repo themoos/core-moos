@@ -38,7 +38,7 @@ class ActiveMailQueue;
 
 	    virtual bool IsAsynchronous();
 
-	    bool AddActiveCallBack(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+	    bool AddMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
 
 	protected:
 

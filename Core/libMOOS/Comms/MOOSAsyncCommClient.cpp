@@ -110,7 +110,7 @@ bool MOOSAsyncCommClient::Flush()
 	return true;
 }
 
-bool MOOSAsyncCommClient::AddActiveCallBack(const std::string & sMsgName,
+bool MOOSAsyncCommClient::AddMessageCallback(const std::string & sMsgName,
 		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
 		void * pYourParam )
 {
