@@ -7,7 +7,7 @@ set(EXECNAME3 app_test)
 set(EXECNAME4 queue_test)
 
 #what files are needed?
-SET(SRCS1 DBTestClient.cpp)
+SET(SRCS1 moos_test.cpp)
 SET(SRCS2 DBAsyncTest.cpp)
 SET(SRCS3 DBAppTest.cpp)
 SET(SRCS4 QueueTest.cpp)
