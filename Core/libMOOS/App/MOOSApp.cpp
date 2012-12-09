@@ -112,6 +112,20 @@ bool MOOSAPP_OnMail(void *pParam)
     
 }
 
+bool MOOSAPP_OnMessage(CMOOSMsg & M, void *pParam)
+{
+
+    if(pParam!=NULL)
+    {
+        CMOOSApp* pApp = (CMOOSApp*)pParam;
+
+        //client mail work
+        return pApp->OnMessage(M);
+
+    }
+    return false;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -698,6 +712,17 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
+bool CMOOSApp::AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+{
+	return m_Comms.AddMessageCallback(sMsgName,pfn,pYourParam);
+}
+
+bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
+{
+	return m_Comms.AddMessageCallback(sMsgName,MOOSAPP_OnMessage,this);
+}
+
+
 
 void CMOOSApp::SetServer(const char *sServerHost, long lPort)
 {
@@ -763,6 +788,12 @@ bool CMOOSApp::OnConnectToServer()
 {
     MOOSTrace("- default OnConnectToServer called\n");
     return true;
+}
+
+bool CMOOSApp::OnMessage(CMOOSMsg &M)
+{
+	MOOSTrace("- default handler for %s invoked. Did you mean to write your own?",M.GetKey().c_str());
+	return true;
 }
 
 

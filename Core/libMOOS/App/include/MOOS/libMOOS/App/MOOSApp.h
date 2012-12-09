@@ -150,6 +150,9 @@ public:
     /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
     virtual bool OnDisconnectFromServer();
 
+    /** called by a separate thread if a callback has been installed by calling AddMessageCallback()*/
+    virtual bool OnMessage(CMOOSMsg & M);
+
 protected:
 
     /** notify the MOOS community that something has changed (string)
@@ -255,7 +258,7 @@ protected:
     /** Register for notification in changes of named variable
     @param sVar name of variable of interest
     @param dfInterval minimum time between notifications in seconds*/
-    bool Register(const std::string & sVar,double dfInterval);
+    bool Register(const std::string & sVar,double dfInterval=0.0);
 
     /** Register for notification in changes of variables which match variable and source patterns
      *
@@ -264,12 +267,31 @@ protected:
      * @param dfInterval minimum time between notifications in seconds
      * @return true on success
      */
-    bool Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval);
+    bool Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval=0.0);
 
 
     /** UnRegister for notification in changes of named variable
     @param sVar name of variable of interest*/
     bool UnRegister(const std::string & sVar);
+
+    /**
+     * Register a custom call back for a particular message. This call back will be called from its own thread.
+     * @param sMsgName name of message to watch for
+     * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+     * @param pYourParam a void * pointer to the thing we want passed as pParam above
+     * @return true on success
+     */
+    bool AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+
+    /**
+     * Add a callback to ::OnMessage() for a particular message. This will cause OnMessage() to be called from its own thread
+     * as soon as a message named as sMsgName arrives. You do need to be careful about thread safety if you use this facilty.
+     * remember OnMessage could be called simultaneously by N threads if you have N callbacks registered - don't get hurt by this.
+     * @param sMsgName
+     * @return true on success
+     */
+    bool AddMessageCallback(const std::string & sMsgName);
+
 
 
     /** The MOOSComms node. All communications happens by way of this object.*/
