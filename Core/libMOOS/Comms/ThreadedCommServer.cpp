@@ -452,7 +452,7 @@ bool ThreadedCommServer::ClientThread::Run()
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
-    double dfLastGoodComms = MOOS::Time();
+    double dfLastGoodComms = MOOSLocalTime();
 
     while(!_Worker.IsQuitRequested())
     {
@@ -496,17 +496,13 @@ bool ThreadedCommServer::ClientThread::Run()
 
         case 0:
             //timeout...nothing to read - spin
-        	if(MOOS::Time()-dfLastGoodComms>TOLERABLE_SILENCE)
+        	if(MOOSLocalTime()-dfLastGoodComms>TOLERABLE_SILENCE)
         	{
         		std::cout<<MOOS::ConsoleColours::Red();
         		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<TOLERABLE_SILENCE<<" seconds of silence\n";
         		std::cout<<MOOS::ConsoleColours::reset();
         		OnClientDisconnect();
         		return true;
-        	}
-        	else
-        	{
-        		dfLastGoodComms = MOOS::Time();
         	}
             break;
 
@@ -521,6 +517,9 @@ bool ThreadedCommServer::ClientThread::Run()
                     //MOOSTrace("socket thread for %s quits after disconnect",_sClientName.c_str());
                     return true;
                 }
+
+                //something good happened so record our success
+        		dfLastGoodComms = MOOSLocalTime();
             }
             else
             {
