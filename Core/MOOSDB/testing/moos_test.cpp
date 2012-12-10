@@ -112,7 +112,7 @@ public:
         	std::vector<std::string>::iterator q;
         	for(q=v.begin();q!=v.end();q++)
         	{
-        		_vWildSubscriptions.push_back("*:"+*q+"0.0");
+        		_vWildSubscriptions.push_back("*:"+*q+"@0.0");
         	}
         	_bVerbose = true;
         }
@@ -129,6 +129,11 @@ public:
         m_CommandLineParser.GetVariable("--application_failure_prob",_ApplicationExitProb);
 
         _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
+
+
+        //finalluy we will amke ouselves responsive!
+        SetAppFreq(10,400);
+        SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL);
 
 
         std::vector<std::string>::iterator q;
@@ -182,8 +187,6 @@ public:
             }
 
         }
-
-
 
         _BinaryArray.resize(MaxArraySize);
 
