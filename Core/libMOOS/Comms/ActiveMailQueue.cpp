@@ -24,6 +24,7 @@ ActiveMailQueue::ActiveMailQueue()
 
 ActiveMailQueue::~ActiveMailQueue() {
 	// TODO Auto-generated destructor stub
+	Stop();
 }
 
 bool ActiveMailQueue::Start()
