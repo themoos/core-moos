@@ -471,8 +471,14 @@ int main (int argc, char* argv[])
 
 	//here we do some command line parsing...
 	MOOS::CommandLineParser P(argc,argv);
-	//mission name can be the  second free parameter
-	std::string app_name = P.GetFreeParameter(1, "moos_test");
+
+	//we may want many instances run from command line so lets guess
+	//a random name. This is just to stop users having to specify
+	//--moos_name at the command line lots and lots...
+	std::stringstream default_name;
+	srand ( time(NULL) );
+	default_name<<"umm-"<< rand() %1024;
+	std::string app_name = P.GetFreeParameter(1, default_name.str());
 
     DBTestClient TC1;
 

@@ -1,13 +1,13 @@
 #this builds a test application which can be used
 #to test and stress the MOOSDB
 
-set(EXECNAME1 moos_test)
+set(EXECNAME1 umm)
 set(EXECNAME2 async_test)
 set(EXECNAME3 app_test)
 set(EXECNAME4 queue_test)
 
 #what files are needed?
-SET(SRCS1 moos_test.cpp)
+SET(SRCS1 umm.cpp)
 SET(SRCS2 DBAsyncTest.cpp)
 SET(SRCS3 DBAppTest.cpp)
 SET(SRCS4 QueueTest.cpp)
