@@ -1160,29 +1160,39 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 	MOOS::CMOOSSkewFilter::tSkewInfo skewinfo;
 	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
-	MOOSTrace("Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",dfRqTime,dfTxTime,dfRxTime,dfNewSkew);
 
 #else // MOOS_DETECT_CLOCK_DRIFT
 	
-	double dfMeasuredSkew = dfTxTime-dfRxTime;
+	double dfMeasuredSkewA = dfTxTime-dfRxTime;
+	double dfMeasuredSkewB = dfTxTime-dfRqTime;
+	double dfMeasuredSkew  = 0.5*(dfMeasuredSkewA+dfMeasuredSkewB);
 
 	double dfNewSkew;
 	if(dfOldSkew!=0.0)
 	{
 		dfNewSkew = 0.9*dfOldSkew+0.1*dfMeasuredSkew;	
-	/*	MOOSTrace("%s Tx Time host = %.4f DB time (@localhost) = %.4f received = %.4f smoothed skew = %.5f seconds\n",
-				m_sMyName.c_str(),
-				dfRqTime,
-				dfTxTime,
-				dfRxTime,
-				dfNewSkew);*/
 	}
 	else
 	{
 		dfNewSkew = dfMeasuredSkew;
 	}
 
+
+
+
 #endif // MOOS_DETECT_CLOCK_DRIFT
+
+//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+//			m_sMyName.c_str(),
+//			dfRqTime,
+//			dfTxTime,
+//			dfRxTime,
+//			dfNewSkew);
+//
+//	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+
+
+
 
 /*
 	if (SkewLog.get())
