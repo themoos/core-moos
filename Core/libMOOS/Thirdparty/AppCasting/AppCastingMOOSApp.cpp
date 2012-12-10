@@ -22,7 +22,10 @@
 
 #include <iostream>
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
-//#include "unistd.h"
+
+#ifndef _WIN32
+#include "unistd.h"
+#endif
 
 using namespace std;
 

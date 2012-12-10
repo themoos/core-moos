@@ -2,6 +2,11 @@
 #include "MOOS/libMOOS/Utils/SafeList.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <iostream>
+
+#ifndef _WIN32
+#include "unistd.h"
+#endif
+
 #ifdef _WIN32
 #include <io.h>
 #endif
