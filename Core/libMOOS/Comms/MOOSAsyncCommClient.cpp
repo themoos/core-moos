@@ -25,7 +25,7 @@
 namespace MOOS
 {
 
-#define TIMING_MESSAGE_PERIOD 3.0
+#define TIMING_MESSAGE_PERIOD 1.0
 
 bool AsyncCommsReaderDispatch(void * pParam)
 {
@@ -267,6 +267,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		if((MOOSLocalTime()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
+//			std::cerr<<"forming timing message "<<std::fixed<<std::setprecision(4)<<Msg.GetTime()<<std::endl;
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
 		}
@@ -407,10 +408,10 @@ bool MOOSAsyncCommClient::DoReading()
 					case MOOS_TIMING:
 					{
 						//we have a fancy new DB upstream...
-						//one that support Asynchronous Clients
-						UpdateMOOSSkew(q->GetDouble(),
-								q->GetTime(),
-								MOOSLocalTime());
+						//one that supports Asynchronous Clients
+						UpdateMOOSSkew(q->GetTime(),
+								q->GetDouble(),
+								dfLocalRxTime);
 
 						m_InBox.erase(q);
 
