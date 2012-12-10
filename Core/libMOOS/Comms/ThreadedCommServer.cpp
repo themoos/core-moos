@@ -234,8 +234,10 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             	bTimingPresent = true;
             	TimingMsg =MsgLstRx.front();
             	MsgLstRx.pop_front();
-
-            	TimingMsg.SetDouble( MOOSLocalTime() );
+            	TimingMsg.SetDouble( MOOSLocalTime());
+//            	std::cerr<<"timing:\n";
+//            	std::cerr<<" client posts "<<std::fixed<<std::setprecision(3)<<TimingMsg.GetTime()<<std::endl;
+//            	std::cerr<<" db replies   "<<std::fixed<<std::setprecision(3)<<TimingMsg.GetDouble()<<std::endl;
 
             }
 
