@@ -475,10 +475,12 @@ int main (int argc, char* argv[])
 	//we may want many instances run from command line so lets guess
 	//a random name. This is just to stop users having to specify
 	//--moos_name at the command line lots and lots...
-	std::stringstream default_name;
+	std::stringstream ss;
 	srand ( time(NULL) );
-	default_name<<"umm-"<< rand() %1024;
-	std::string app_name = P.GetFreeParameter(1, default_name.str());
+	ss<<"umm-"<< rand() %1024;
+	std::string default_name = ss.str();
+	std::string app_name = P.GetFreeParameter(1, default_name);
+	std::cerr<<app_name<<std::endl;
 
     DBTestClient TC1;
 
