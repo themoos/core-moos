@@ -101,6 +101,13 @@ bool MOOSAsyncCommClient::Close(bool  )
 	if(!WritingThread_.Stop())
 	    return false;
 
+	std::map<std::string,ActiveMailQueue*  >::iterator q;
+
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	{
+		delete q->second;
+	}
+	ActiveQueues_.clear();
 	return true;
 }
 
