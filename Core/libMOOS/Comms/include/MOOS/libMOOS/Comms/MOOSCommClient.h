@@ -34,14 +34,20 @@
 #if !defined(MOOSCommClientH)
 #define MOOSCommClientH
 
-#include "MOOS/libMOOS/Utils/MOOSLock.h"
-#include "MOOS/libMOOS/Utils/MOOSThread.h"
-#include "MOOS/libMOOS/Comms/MOOSCommObject.h"
+
 #include <iostream>
 #include <iomanip>
 #include <set>
+#include <map>
 #include <string>
 #include <memory>
+
+
+#include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Comms/MOOSCommObject.h"
+#include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
+
 
 
 #define OUTBOX_PENDING_LIMIT 1000
@@ -63,6 +69,7 @@ namespace MOOS
 {
   class CMOOSSkewFilter;
 }
+
 
 //extern std::auto_ptr<std::ofstream> SkewLog;
 
@@ -267,6 +274,16 @@ public:
      * if you want rapid response use V10 */
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
+    /**
+	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+	 * @param sMsgName name of message to watch for
+	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
+	 * @return true on success
+	 */
+    bool AddMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+
+
 
 
 protected:
@@ -405,6 +422,12 @@ protected:
     /** Skew filter keeps track of clock skew with server */
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
+    /**
+     * list of active mail queues. Each Queue invokes a callback. Keyed by message name
+     */
+    std::map<std::string,MOOS::ActiveMailQueue*  > ActiveQueues_;
+
+
     unsigned long long int m_nBytesReceived;
     unsigned long long int m_nBytesSent;
 

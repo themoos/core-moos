@@ -6,7 +6,6 @@
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/SafeList.h"
-#include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
 
 namespace MOOS
 {
@@ -58,14 +57,6 @@ class ActiveMailQueue;
 	     */
 	    virtual bool IsAsynchronous();
 
-	    /**
-		 * Register a custom call back for a particular message. This call back will be called from its own thread.
-		 * @param sMsgName name of message to watch for
-		 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
-		 * @param pYourParam a void * pointer to the thing we want passed as pParam above
-		 * @return true on success
-		 */
-	    bool AddMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
 
 		//some thread workers which need to be public so threads can run them
 	    //you won't be calling these yourself.
@@ -122,10 +113,6 @@ class ActiveMailQueue;
 
 	    MOOS::SafeList<CMOOSMsg> OutGoingQueue_; //queue of outgoing mail
 
-	    /**
-	     * list of active mail queues. Each Queue invokes a callback. Keyed by message name
-	     */
-	    std::map<std::string,ActiveMailQueue*  > ActiveQueues_;
 
 	};
 };

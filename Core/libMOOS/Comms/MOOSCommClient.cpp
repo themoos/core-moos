@@ -68,6 +68,7 @@
 
 
 
+
 using namespace std;
 
 
@@ -311,6 +312,25 @@ bool CMOOSCommClient::ClientLoop()
 }
 
 
+bool CMOOSCommClient::AddMessageCallback(const std::string & sMsgName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam )
+{
+	if(ActiveQueues_.find(sMsgName)!=ActiveQueues_.end())
+	{
+		ActiveQueues_[sMsgName]->Stop();
+		delete ActiveQueues_[sMsgName];
+	}
+	MOOS::ActiveMailQueue* pQ= new MOOS::ActiveMailQueue;
+	pQ->SetCallback(pfn,pYourParam);
+	pQ->Start();
+	ActiveQueues_[sMsgName] = pQ;
+
+	return true;
+
+}
+
+
 bool CMOOSCommClient::DoClientWork()
 {
 	//this existence of this object makes this scope
@@ -412,9 +432,26 @@ bool CMOOSCommClient::DoClientWork()
             {
 				UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
             }
+
+
+			//here we dispatch to special call backs managed by threads
+			MOOSMSG_LIST::iterator t = m_InBox.begin();
+			while(t!=m_InBox.end())
+			{
+				std::map<std::string, MOOS::ActiveMailQueue* >::iterator q = ActiveQueues_.find(t->GetKey());
+				if(q!=ActiveQueues_.end())
+				{
+					q->second->Push(*t);
+					t = m_InBox.erase(t);
+				}
+				else
+				{
+					t++;
+				}
+			}
             
        
-			m_bMailPresent = true;
+			m_bMailPresent = !m_InBox.empty();
 		}
 		m_InLock.UnLock();
 
@@ -1076,6 +1113,14 @@ bool CMOOSCommClient::Close(bool  )
 		m_ClientThread.Stop();
     
 	ClearResources();
+
+	std::map<std::string,MOOS::ActiveMailQueue*  >::iterator q;
+
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	{
+		delete q->second;
+	}
+	ActiveQueues_.clear();
 
 	return true;
 }
