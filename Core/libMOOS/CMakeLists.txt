@@ -121,16 +121,16 @@ MARK_AS_ADVANCED(ENABLE_V10_IVP_COMPATIBILITY)
 IF (ENABLE_V10_COMPATIBILITY)
     IF(ENABLE_V10_IVP_COMPATIBILITY)
         set(COMPATIBILITY_HEADER_ROOTS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core/MOOSLIB
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core/MOOSGenLib
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials/MOOSUtlityLib
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)        
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSLIB
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSGenLib
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials/MOOSUtlityLib
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)        
         message(WARNING "IVP V10 compatibility will be removed soon - please consider adding qualified include directories") 
     ELSE()
         set(COMPATIBILITY_HEADER_ROOTS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Core
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/Compatibility/Essentials)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)
     ENDIF()
 ENDIF ()
 
