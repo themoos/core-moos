@@ -141,6 +141,7 @@ CMOOSApp::CMOOSApp()
     m_dfAppStartTime = -1;
     m_bDebug = false;
     m_bSimMode = false;
+    m_bQuiet = false;
     m_bUseMOOSComms = true;
     m_dfLastRunTime = -1;
     m_bCommandMessageFiltering = false;
@@ -205,6 +206,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_filter_command       : enable command message filtering \n";
 	std::cout<<"  --moos_no_sort_mail         : don't sort mail by time \n";
 	std::cout<<"  --moos_no_comms             : don't start communications \n";
+	std::cout<<"  --moos_quiet                : don't print banner information \n";
 	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
 
 
@@ -301,6 +303,8 @@ bool CMOOSApp::Run( const std::string & sName,
 	if(m_CommandLineParser.GetFlag("--moos_iterate_no_comms"))
 		EnableIterateWithoutComms(true);
 
+	if(m_CommandLineParser.GetFlag("--moos_quiet"))
+		SetQuiet(true);
 
 
 	//look at mission file etc
@@ -475,8 +479,18 @@ bool CMOOSApp::IsConfigOK()
 	return true;
 }
 
+bool CMOOSApp::SetQuiet(bool bQ)
+{
+	m_bQuiet = bQ;
+	m_Comms.SetQuiet(m_bQuiet);
+	return true;
+}
+
 void CMOOSApp::DoBanner()
 {
+	if(m_bQuiet)
+		return;
+
 	MOOSTrace("%s is Running:\n",GetAppName().c_str());
 	MOOSTrace(" +Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
 	if(m_Comms.IsAsynchronous())

@@ -340,6 +340,8 @@ protected:
     void SetAppError(bool bFlag, const std::string & sReason);
 
 
+	bool SetQuiet(bool bQuiet);
+
 	
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -487,6 +489,9 @@ protected:
 	bool m_bQuitOnIterateFail;
     /** The start time of the application */
     double m_dfAppStartTime;
+
+    /** flag to say whether or not we should be quiet*/
+    bool m_bQuiet;
 
     /** Time at which the Run loop last ran (called Iterate)**/
     double m_dfLastRunTime;

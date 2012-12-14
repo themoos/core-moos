@@ -710,7 +710,8 @@ bool CMOOSCommClient::HandShake()
 		}
 		else
 		{
-        	std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+			if(!m_bQuiet)
+				std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n";
 
 
 			m_sCommunityName = WelcomeMsg.GetCommunity();
@@ -797,6 +798,9 @@ void CMOOSCommClient::DoBanner()
 
 bool CMOOSCommClient::UnRegister(const string &sVar)
 {
+	if(!IsConnected())
+		return false;
+
 	if(m_Registered.find(sVar)==m_Registered.end() || m_Registered.empty())
 	{
 		return true;
@@ -817,6 +821,9 @@ bool CMOOSCommClient::UnRegister(const string &sVar)
 
 bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 {
+	if(!IsConnected())
+		return false;
+
 	if(sVar.empty())
 		return MOOSFail("\n ** WARNING ** Cannot register for \"\" (empty string)\n");
 
