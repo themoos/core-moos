@@ -38,6 +38,7 @@ SET(UTILS_SOURCES
    Utils/KeyboardCapture.cpp
    Utils/ThreadPrint.cpp
    Utils/CommandLineParser.cpp
+   Utils/ProcInfo.cpp
    
    )
 

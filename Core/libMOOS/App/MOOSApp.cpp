@@ -36,6 +36,8 @@
 #pragma warning(disable : 4503)
 #endif
 
+
+
 #include "MOOS/libMOOS/Utils/MOOSPlaybackStatus.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
@@ -200,6 +202,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_max_app_tick=<number>: max frequency of application (if relevant) \n";
 	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
 	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
+	std::cout<<"  --moos_time_warp=<number>   : set time warp \n";
 
 	std::cout<<"\nflags:\n";
 	std::cout<<"  --moos_iterate_no_comms     : enable iterate without comms \n";

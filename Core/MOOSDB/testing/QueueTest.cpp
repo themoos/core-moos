@@ -10,7 +10,6 @@
 #include "MOOS/libMOOS/App/MOOSApp.h"
 
 
-
 MOOS::ThreadPrint gPrinter(std::cerr);
 
 bool func(CMOOSMsg & M, void *pParam)
@@ -46,6 +45,7 @@ int main(int argc, char * argv[])
 {
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
+
 
 	C.AddMessageCallback("la",func,NULL);
 	C.AddMessageCallback("di",func,NULL);
