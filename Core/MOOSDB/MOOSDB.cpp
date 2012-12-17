@@ -662,7 +662,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		}
 
 		std::cerr<<MOOS::ConsoleColours::yellow()
-				<<"MOOSDB: Adding subscription of \""
+				<<"+ subs of \""
 				<<Msg.GetSource()<<"\" to variables matching \""
 				<<var_pattern<<":"<<app_pattern<<"\""
 				<<MOOS::ConsoleColours::reset()<<std::endl;
@@ -719,7 +719,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 						{
 							//add the filter owner (client *g) as a subscriber
 							NewVar.AddSubscriber(g->first, h->period());
-							std::cerr<<"MOOSDB: adding subscription of \""<<g->first<<"\" to \""
+							std::cerr<<"+ subs of \""<<g->first<<"\" to \""
 									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
 									<<"\""<<std::endl;
 						}

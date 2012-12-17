@@ -254,8 +254,6 @@ bool MOOSAsyncCommClient::DoWriting()
 			return true;
 		}
 
-
-
 		//convert our out box to a single packet
 		CMOOSCommPkt PktTx;
 		try

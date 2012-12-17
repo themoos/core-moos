@@ -29,6 +29,8 @@ struct ClientAudit
 	long long unsigned int min_size_sent_;
 	int recent_packets_received_;
 	int recent_packets_sent_;
+	int recent_messages_sent_;
+	int recent_messages_received_;
 
 	void ClearAll()
 	{
@@ -42,6 +44,8 @@ struct ClientAudit
 		min_size_sent_ = 0;
 		recent_packets_received_ = 0;
 		recent_packets_sent_ = 0;
+		recent_messages_received_=0;
+		recent_messages_sent_=0;
 
 	}
 	void ClearRecents()
@@ -50,6 +54,8 @@ struct ClientAudit
 		recently_sent_ = 0;
 		recent_packets_received_ = 0;
 		recent_packets_sent_ = 0;
+		recent_messages_received_=0;
+		recent_messages_sent_=0;
 	}
 
 };
@@ -95,17 +101,28 @@ public:
 			long long unsigned int total_out = 0;
 			long long unsigned int total_packets_in = 0;
 			long long unsigned int total_packets_out = 0;
+			long long unsigned int total_messages_in = 0;
+			long long unsigned int total_messages_out = 0;
 
 			lock_.Lock();
 			{
 
-				ss<<std::endl<<std::setw(12)<<"client name"<<std::setw(10)<<"pkts in"<<std::setw(10)<<"pkts out"<<std::setw(10)<<"B/s in"<<std::setw(10)<<"B/s out\n";
+				ss<<std::endl<<std::setw(12)<<"client name"<<std::setw(10)
+					<<"pkts in"<<std::setw(10)
+					<<"pkts out"<<std::setw(10)
+					<<"msgs in"<<std::setw(10)
+					<<"msgs out"<<std::setw(10)
+					<<"B/s in"<<std::setw(10)
+					<<"B/s out\n";
+
 				std::map<std::string,ClientAudit>::iterator q;
 				for(q=Audits_.begin(); q!=Audits_.end();q++)
 				{
 					ss<<std::setw(10)<<q->first;
 					ss<<std::setw(10)<<q->second.recent_packets_received_;
 					ss<<std::setw(10)<<q->second.recent_packets_sent_;
+					ss<<std::setw(10)<<q->second.recent_messages_received_;
+					ss<<std::setw(10)<<q->second.recent_messages_sent_;
 					ss<<std::setw(10)<<q->second.recently_received_;
 					ss<<std::setw(10)<<q->second.recently_sent_;
 					ss<<std::endl;
@@ -114,6 +131,8 @@ public:
 					total_out+=q->second.recently_sent_;
 					total_packets_in+=q->second.recent_packets_received_;
 					total_packets_out+=q->second.recent_packets_sent_;
+					total_messages_in+=q->second.recent_messages_received_;
+					total_messages_out+=q->second.recent_messages_sent_;
 
 					q->second.ClearRecents();
 				}
@@ -122,6 +141,8 @@ public:
 				ss<<std::setw(10)<<"total";
 				ss<<std::setw(10)<<total_packets_in;
 				ss<<std::setw(10)<<total_packets_out;
+				ss<<std::setw(10)<<total_messages_in;
+				ss<<std::setw(10)<<total_messages_out;
 				ss<<std::setw(10)<<total_in;
 				ss<<std::setw(10)<<total_out;
 				ss<<std::endl;
@@ -169,7 +190,7 @@ public:
 		return true;
 	}
 
-	bool AddStatistic(const std::string sClient, unsigned int nBytes, double dfTime, bool bIncoming)
+	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
 	{
 		lock_.Lock();
 		ClientAudit & rA = Audits_[sClient];
@@ -180,6 +201,9 @@ public:
 			rA.max_size_received_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
 			rA.min_size_received_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
 			rA.recent_packets_received_+=1;
+			rA.recent_messages_received_+=nMessages;
+
+
 		}
 		else
 		{
@@ -188,6 +212,8 @@ public:
 			rA.max_size_sent_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
 			rA.min_size_sent_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
 			rA.recent_packets_sent_+=1;
+			rA.recent_messages_sent_+=nMessages;
+
 
 		}
 		lock_.UnLock();
@@ -236,10 +262,10 @@ bool ServerAudit::Remove(const std::string & sClient)
 }
 
 
-bool ServerAudit::AddStatistic(const std::string sClient, unsigned int nBytes, double dfTime, bool bIncoming)
+bool ServerAudit::AddStatistic(const std::string sClient, unsigned int nBytes,unsigned int nMessages, double dfTime, bool bIncoming)
 {
 
-	return Impl_->AddStatistic(sClient,nBytes,dfTime,bIncoming);
+	return Impl_->AddStatistic(sClient,nBytes,nMessages,dfTime,bIncoming);
 }
 
 

@@ -20,7 +20,7 @@ class ServerAudit {
 public:
 	ServerAudit();
 	virtual ~ServerAudit();
-	bool AddStatistic(const std::string sClient, unsigned int nBytes, double dfTime, bool bIncoming);
+	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming);
 	bool Run(const std::string & destination_host = "localhost", unsigned int port = DEFAULT_AUDIT_PORT);
 	bool Remove(const std::string & sClient);
 

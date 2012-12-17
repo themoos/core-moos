@@ -200,12 +200,15 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                 InhibitMOOSTraceInThisThread(false);
 
 
-            Auditor.AddStatistic(sWho,SDFromClient._pPkt->GetStreamLength(),MOOS::Time(),true);
+            double dfTNow = MOOS::Time();
 
             MOOSMSG_LIST MsgLstRx,MsgLstTx;
 
             //convert to list of messages
             SDFromClient._pPkt->Serialize(MsgLstRx,false);
+
+            Auditor.AddStatistic(sWho,SDFromClient._pPkt->GetStreamLength(),MsgLstRx.size(),dfTNow,true);
+
 
 			if(MsgLstRx.empty())
 			{
@@ -275,11 +278,13 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             if(!MsgLstTx.empty())
             {
+            	unsigned int nMessages = MsgLstTx.size();
 				//stuff reply message into a packet
 				SDDownStream._pPkt->Serialize(MsgLstTx,true);
 
 				Auditor.AddStatistic(sWho,
 									SDDownStream._pPkt->GetStreamLength(),
+									nMessages,
 									MOOS::Time(),
 									false);
 
@@ -315,10 +320,13 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                     			ClientThreadSharedData::PKT_WRITE);
 
                     	//stuff all notifications into a packet
+                    	unsigned int nMessages = MsgLstTx.size();
                     	SDAdditionalDownStream._pPkt->Serialize(MsgLstTx,true);
+
 
                         Auditor.AddStatistic(q->first,
                         		SDAdditionalDownStream._pPkt->GetStreamLength(),
+                        		nMessages,
                         		MOOS::Time(),
                         		false);
 
@@ -642,7 +650,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 			}
 		}
     }
-    catch (CMOOSException e)
+    catch (const CMOOSException & e)
 	{
 	   MOOSTrace("CMOOSCommServer::ClientThread::AsynchronousWriteLoop() Exception: %s\n", e.m_sReason);
 	   bResult = false;
@@ -668,7 +676,9 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 
         //read input
         if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
+        {
         	throw std::runtime_error("failed packet read and no exception handled");
+        }
 
 
 		_ClientSocket.SetReadTime(MOOS::Time());
@@ -701,9 +711,12 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 				std::cerr<<"logical error ThreadedCommServer::ClientThread::HandleClientWrite\n";
 			}
         }
+        else
+        {
+        }
 
     }
-    catch (CMOOSException e)
+    catch (const CMOOSException & e)
     {
         //MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
         bResult = false;

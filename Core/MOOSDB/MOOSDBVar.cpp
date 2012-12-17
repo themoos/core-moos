@@ -81,7 +81,7 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 
     if(sClient.empty())
     {
-       MOOSTrace("MOOSDB: Failed to add subscription to \"%s\" for a client with empty name \n",m_sName.c_str());
+       MOOSTrace("[X] Failed to add subscription to \"%s\" for a client with empty name \n",m_sName.c_str());
        return false;
     }
     Info.m_dfPeriod = dfPeriod;
@@ -89,7 +89,7 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 
     m_Subscribers[sClient] = Info;
 
-    MOOSTrace("MOOSDB: Adding subscription of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
+    MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
 
     return true;
 
