@@ -8,6 +8,7 @@
 #ifndef PROCINFO_H_
 #define PROCINFO_H_
 
+#include <memory>
 /*
  * simple class which estimates CPU usage for the calling process.
  */
