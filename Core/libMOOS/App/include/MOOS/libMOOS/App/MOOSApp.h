@@ -507,8 +507,11 @@ protected:
     /** flag specifying the error state of the App - set via SetAppError()*/
     bool m_bAppError;
     
+    /** a tootl for parsing command lines */
     MOOS::CommandLineParser m_CommandLineParser;
     
+    /** what is current CPU load?*/
+    double GetCPULoad();
 
     /** Time since last iterate was called*/
     double GetTimeSinceIterate();
@@ -591,7 +594,7 @@ private:
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
-
+protected:
     MOOS::ProcInfo m_CPULoadMonitor;
     
 };
