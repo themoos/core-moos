@@ -1272,6 +1272,12 @@ std::string CMOOSApp::MakeStatusString()
     
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
 
+    double dfCPULoad;
+    if(m_CPULoadMonitor.GetPercentageCPULoad(dfCPULoad))
+    {
+    	ssStatus<<"cpuload="<<std::setprecision(4)<<dfCPULoad<<",";
+    }
+
     ssStatus<<"MOOSName="<<GetAppName()<<",";
 
     ssStatus<<"Publishing=\"";

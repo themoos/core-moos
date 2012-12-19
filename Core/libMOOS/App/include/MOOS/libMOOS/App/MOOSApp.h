@@ -38,6 +38,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
+#include "MOOS/libMOOS/Utils/ProcInfo.h"
 
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -591,7 +592,7 @@ private:
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
 
-    
+    MOOS::ProcInfo m_CPULoadMonitor;
     
 };
 
