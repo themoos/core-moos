@@ -1259,6 +1259,12 @@ void CMOOSApp::EnableCommandMessageFiltering(bool bEnable)
     }
 }
 
+double CMOOSApp::GetCPULoad()
+{
+	double dfLoad=0;
+	m_CPULoadMonitor.GetPercentageCPULoad(dfLoad);
+	return dfLoad;
+}
 
 std::string CMOOSApp::MakeStatusString()
 {
