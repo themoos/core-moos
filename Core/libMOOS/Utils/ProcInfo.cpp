@@ -128,8 +128,12 @@ public:
 		    {
 			    Poco::FastMutex::ScopedLock Lock(_mutex);
 
-				cpu_load_ = 100.0*((uB.ru_utime.tv_sec-uA.ru_utime.tv_sec)+
-						(uB.ru_utime.tv_usec-uA.ru_utime.tv_usec)/1000000.0)/tAB;
+				cpu_load_ = 100.0*(
+						(uB.ru_utime.tv_sec-uA.ru_utime.tv_sec)+
+						(uB.ru_utime.tv_usec-uA.ru_utime.tv_usec)/1000000.0+
+						(uB.ru_stime.tv_sec-uA.ru_stime.tv_sec)+
+						(uB.ru_stime.tv_usec-uA.ru_stime.tv_usec)/1000000.0
+						)/tAB;
 		    }
 		    uA = uB;
 		    tA = tB;
