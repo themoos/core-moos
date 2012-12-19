@@ -336,9 +336,19 @@ public:
 					continue;
 				}
 			}
-			if(sVarPattern.empty()||sAppPattern.empty())
+			else
 			{
-				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern[@period]\n";
+				//there is no @ so assume Period = 0;
+
+				if(sAppPattern.empty()) //was there a :?
+				{
+					//there was no : so assume *
+					sAppPattern = "*";
+				}
+			}
+			if(sVarPattern.empty())
+			{
+				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern[:app_pattern[@period]]\n";
 				continue;
 			}
 
