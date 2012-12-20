@@ -170,7 +170,8 @@ bool MOOSAsyncCommClient::WritingLoop()
 
 		if(ConnectToServer())
 		{
-			int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
+			int nMSToWait  = 1000;
+
 			m_dfLastSendTime = MOOSLocalTime();
 
 			while(!WritingThread_.IsQuitRequested() && IsConnected() )
