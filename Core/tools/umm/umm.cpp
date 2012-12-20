@@ -10,6 +10,7 @@
 #include <iostream>
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <queue>
 
 #ifndef _WIN32
@@ -213,6 +214,8 @@ public:
         Scheduler.Initialise(ScheduleDispatch,this);
         Scheduler.Start();
 
+        _KeyBoardCapture.Start();
+
         return true;
     }
     bool OnNewMail(MOOSMSG_LIST & NewMail)
@@ -276,6 +279,20 @@ public:
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
 			dfT = MOOS::Time();
+
+		}
+
+		char c;
+		if(_KeyBoardCapture.GetKeyboardInput(c))
+		{
+			switch(c)
+			{
+			case 'C':
+                MOOSMSG_LIST List;
+                MOOSTrace("Sending \"DB_CLEAR\" signal\n");
+                m_Comms.ServerRequest("DB_CLEAR",List);
+                break;
+			}
 
 		}
 
@@ -470,6 +487,7 @@ private:
     bool _bVerbose;
     bool _bShowLatency;
     bool _bShowBandwidth;
+    MOOS::KeyboardCapture _KeyBoardCapture;
 
 
 
