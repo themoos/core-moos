@@ -112,14 +112,14 @@ public:
 		if(getrusage(0, &uA)!=0)
 			return false;
 
-		double tA = MOOS::Time();
+		double tA = MOOSLocalTime();
 
 		cpu_load_ = 0.0;
 
 		while(!Thread_.IsQuitRequested())
 		{
 			MOOSPause(sample_period_ms);
-			double tB = MOOS::Time();
+			double tB = MOOSLocalTime();
 			double tAB = tB-tA;
 
 		    if(getrusage(0, &uB)!=0)
