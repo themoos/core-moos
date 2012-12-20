@@ -44,6 +44,7 @@ bool AsyncCommsWriterDispatch(void * pParam)
 MOOSAsyncCommClient::MOOSAsyncCommClient()
 {
 	m_dfLastTimingMessage = 0.0;
+	m_dfOutGoingDelay = 0.0;
 }
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
@@ -284,27 +285,13 @@ bool MOOSAsyncCommClient::DoWriting()
 
 }
 
-#define OVERSPEED_WRITE_PERIOD 0.01
-#define MAX_SEQUENTIAL_OVERSPEED_WRITES 100
 bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 {
-	double dfNowTime = MOOSLocalTime();
-
-	double dfDelta = dfNowTime-m_dfLastSendTime;
-	if(dfDelta<OVERSPEED_WRITE_PERIOD)
+	unsigned int sleep_ms = m_dfOutGoingDelay*1000;
+	if(sleep_ms>0)
 	{
-		if(++m_nOverSpeedCount>=MAX_SEQUENTIAL_OVERSPEED_WRITES)
-		{
-			m_nOverSpeedCount=MAX_SEQUENTIAL_OVERSPEED_WRITES;
-			MOOSPause(10);
-			//std::cerr<<"Throttling\n!!";
-		}
+		MOOSPause(sleep_ms);
 	}
-	else
-	{
-		m_nOverSpeedCount/=2;
-	}
-	m_dfLastSendTime = dfNowTime;
 
 	return true;
 }
@@ -327,12 +314,13 @@ bool MOOSAsyncCommClient::ReadingLoop()
 
 				std::cerr<<"reading failed!\n";
 
-				while(IsConnected())
+				while(IsConnected())//wait for connection to terminate...
 					MOOSPause(200);
 			}
 		}
 		else
 		{
+			//we arent connected so do nothing...
 			MOOSPause(100);
 		}
 	}
@@ -387,6 +375,11 @@ bool MOOSAsyncCommClient::DoReading()
 						UpdateMOOSSkew(q->GetTime(),
 								q->GetDouble(),
 								dfLocalRxTime);
+
+						//and we can update the outgoing thread's speed
+						//as controlled by the DB.
+						m_dfOutGoingDelay = q->GetDoubleAux();
+
 
 						m_InBox.erase(q);
 

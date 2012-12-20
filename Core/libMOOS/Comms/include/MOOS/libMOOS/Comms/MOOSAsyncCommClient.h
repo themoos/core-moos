@@ -110,6 +110,7 @@ class ActiveMailQueue;
 	    double m_dfLastTimingMessage; //time last timing messae was sent
 	    double m_dfLastSendTime; 	//time last message was sent
 	    unsigned int m_nOverSpeedCount;
+	    double m_dfOutGoingDelay;
 
 	    MOOS::SafeList<CMOOSMsg> OutGoingQueue_; //queue of outgoing mail
 

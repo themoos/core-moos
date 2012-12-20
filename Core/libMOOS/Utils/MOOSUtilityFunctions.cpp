@@ -75,6 +75,7 @@
 #include <sys/timeb.h>
 #include <stdio.h>
 #include <iostream>
+#include <stdexcept>
 
 #define ENABLE_WIN32_HPMOOSTIME 0
 #define MAX_TIME_WARP 100
@@ -118,6 +119,13 @@ namespace MOOS
 			v.push_back(MOOS::Chomp(L,tok));
 		}
 		return v;
+	}
+
+	double StringToDouble(const std::string & sNum)
+	{
+		if(!MOOSIsNumeric(sNum))
+			throw std::runtime_error("MOOS::StringToDouble: "+sNum+" is not a number");
+		return atof(sNum.c_str());
 	}
 
 };

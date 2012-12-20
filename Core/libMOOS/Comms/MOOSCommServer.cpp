@@ -44,6 +44,7 @@
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -126,6 +127,12 @@ CMOOSCommServer::~CMOOSCommServer()
 
 }
 
+void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
+{
+	m_CommandLineParser.Open(argc,argv);
+}
+
+
 
 bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisableNameLookUp)
 {
@@ -135,6 +142,69 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
     m_lListenPort = lPort;
 	
 	m_bDisableNameLookUp = bDisableNameLookUp;
+
+
+
+	if(m_CommandLineParser.IsAvailable())
+	{
+		//here we look to parse latency
+		//--latency=y:10
+		std::string sLatency = "0";
+		m_CommandLineParser.GetVariable("--response",sLatency);
+		std::vector<std::string> sLL = MOOS::StringListToVector(sLatency);
+		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();q++)
+		{
+			try
+			{
+				std::string sNum=*q;
+				std::string sClient = "*";
+				if(sNum.find(":")!=std::string::npos)
+				{
+					sClient = MOOSChomp(sNum,":");
+				}
+				if(!MOOSIsNumeric(sNum))
+					throw std::runtime_error("error processing latency "+ *q + " expected form [client_name:]time_ms\n");
+
+				double dfT = MOOS::StringToDouble(sNum);
+
+				//we push specialisms to the front and wildcards to the back
+				if(sClient.find_first_of("*?")!=std::string::npos)
+				{
+					//this is not a wildcard
+					m_ClientTimingVector.push_front(std::make_pair(sClient,dfT));
+				}
+				else
+				{
+					//this is a wildcard
+					m_ClientTimingVector.push_back(std::make_pair(sClient,dfT));
+				}
+
+//				std::list< std::pair< std::string, double >  >::iterator q;
+//				for(q =  m_ClientTimingVector.begin();q!= m_ClientTimingVector.end();q++)
+//				{
+//					std::cerr<<q->first<<" : "<<q->second<<" ms\n";
+//				}
+
+
+			}
+			catch(const std::runtime_error & e)
+			{
+				std::cerr<<e.what()<<std::endl;
+				continue;
+			}
+
+		}
+
+	}
+
+
+
+
+
+
+
+
+
 
     if(!m_bQuiet)
     	DoBanner();

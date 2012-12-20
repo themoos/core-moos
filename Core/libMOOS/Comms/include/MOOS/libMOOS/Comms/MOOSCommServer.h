@@ -53,6 +53,7 @@
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
 
 class XPCTcpSocket;
 #include <list>
@@ -118,6 +119,7 @@ public:
     */
     virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
     
+    virtual void SetCommandLineParameters(int argc, char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
@@ -256,9 +258,13 @@ protected:
     /// name of community being served
     std::string  m_sCommunityName;
     
+    //something to help with CommandLine parseing
+    MOOS::CommandLineParser m_CommandLineParser;
+    
+    //details on timing info that can be sent to asynchronous clients
+	std::list< std::pair< std::string, double >  > m_ClientTimingVector;
     
     ///how quiet are we
-    
     bool m_bQuiet;
 };
 

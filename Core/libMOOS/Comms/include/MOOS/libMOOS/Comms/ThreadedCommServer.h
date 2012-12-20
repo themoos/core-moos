@@ -83,7 +83,7 @@ protected:
          * @param SharedData a sae list of ClientThreadSharedData object
          * @return
          */
-        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync = false );
+        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync,double dfConsolidationPeriodMS );
 
 
         /**
@@ -124,6 +124,7 @@ protected:
         bool IsSynchronous(){return !_bAsynchronous;};
         bool IsAsynchronous(){return _bAsynchronous;};
 
+        double GetConsolidationTime();
 
         bool Kill();
 
@@ -151,7 +152,11 @@ protected:
         //note that this one we own - its private to us
         ThreadedCommServer::SHARED_PKT_LIST _SharedDataOutgoing;
 
+        //is the client asynchronous?
         bool _bAsynchronous;
+
+        //what consolidation period are we asking clients to invoke?
+        double _dfConsolidationPeriod;
 
 
     };

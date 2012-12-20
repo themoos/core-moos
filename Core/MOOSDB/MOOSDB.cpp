@@ -142,55 +142,44 @@ void PrintHelpAndExit()
 	std::cerr<<MOOS::ConsoleColours::Yellow();
 	std::cerr<<"\nMOOSDB command line help:\n\n";
 	std::cerr<<MOOS::ConsoleColours::reset();
-	std::cerr<<"-m    (--mission_file)  <string>            specify mission file name (default mission.moos)\n";
-	std::cerr<<"-p    (--server_port)  <positive_integer>   specify server port number (default 9000)\n";
-	std::cerr<<"-s    (--single_threaded)                   run as a single thread (legacy mode)\n";
-	std::cerr<<"-w    (--time_warp)    <positive_float>     specify time warp\n";
-	std::cerr<<"-d    (--dns)                               run with dns lookup\n";
-	std::cerr<<"-c    (--community)    <string>             specify community name\n";
+	std::cerr<<"Common MOOS parameters:\n";
+	std::cerr<<"--moos_file=<string>               specify mission file name (default mission.moos)\n";
+	std::cerr<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
+	std::cerr<<"--moos_time_warp =<positive_float> specify time warp\n";
+	std::cerr<<"--moos_community=<string>          specify community name\n";
+
+	std::cerr<<"\nDB Control:\n";
+
+	std::cerr<<"--response=<string-list        specify tolerable client latencies in ms\n";
+	std::cerr<<"-d    (--dns)                      run with dns lookup\n";
+	std::cerr<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
 //#ifdef MOOSDB_HAS_WEBSERVER
-	std::cerr<<"-W    (--webserver)    <positive_integer>   run webserver on given port\n";
+	std::cerr<<"--webserver_port=<positive_integer> run webserver on given port\n";
 //#endif
-	std::cerr<<"-h    (--help)                              print help and exit\n";
+	std::cerr<<"--help                             print help and exit\n";
 	std::cerr<<"\nexample:\n";
-	std::cerr<<"  ./MOOSDB -p 9001 \n";
+	std::cerr<<"  ./MOOSDB -moos_port=9001 \n";
+	std::cerr<<"  ./MOOSDB -moos_port=9001 --rate_control=x_app:20,y_app:100,*_instrument:0\n";
 	exit(0);
 }
 
 bool CMOOSDB::Run(int argc, char * argv[] )
 {
+	MOOS::CommandLineParser P(argc,argv);
 
-    //here we make an object for command line overides
-    GetPot cl(argc,argv);
 
-    ///////////////////////////////////////////////////////////
-    //is the first argument an option? if not it is the mission file
-    std::string sMissionFile="mission.moos";
-
-    if(argc>1 && cl[1][0]!='-')
-    {
-    	//first arg is starting wuth "-" so it cannot be a file name
-    	sMissionFile = cl[1];
-    }
-    else
-    {
-    	//maybe it is an explicit command line switch
-    	sMissionFile = cl.follow(sMissionFile.c_str(),2,"-m","--mission_file");
-    }
+	//mission file could be first free parameter
+	std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
 
     //set up mission file
-    if(!m_MissionReader.SetFile(sMissionFile))
-    {
-        //MOOSTrace("no mission file called \"%s\" found \n- will use defaults or command line switches\n",sMissionFile.c_str());
-    }
+    m_MissionReader.SetFile(mission_file);
 	
     ///////////////////////////////////////////////////////////
     //what is our community name?
     m_MissionReader.GetValue("COMMUNITY",m_sCommunityName);
 
     //is the community name being specified on the cli?
-    m_sCommunityName = cl.follow(m_sCommunityName.c_str(),2,"-c","--community");
-
+    P.GetVariable("--moos_community",m_sCommunityName);
 
     ///////////////////////////////////////////////////////////
     // make the DB name
@@ -203,7 +192,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     if(m_MissionReader.GetValue("MOOSTimeWarp",dfWarp))
 		SetMOOSTimeWarp(dfWarp);
     //overridden in command line?
-    dfWarp = cl.follow(-1.0,2,"-w","--time_warp");
+    P.GetVariable("--moos_time_warp",dfWarp);
     if(dfWarp>0.0)
         SetMOOSTimeWarp(dfWarp);
 
@@ -213,8 +202,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 	bool bDisableNameLookUp = true;
     m_MissionReader.GetValue("NoNetwork",bDisableNameLookUp);
 
-    //overriddden in command line?
-    if(cl.search(1,"-d","--dns"))
+    if(P.GetFlag("-d","--dns"))
     	bDisableNameLookUp = false;
 
 
@@ -224,17 +212,15 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     m_MissionReader.GetValue("SERVERPORT",m_nPort);
     //command line overide?
-    m_nPort = cl.follow(m_nPort,2,"-p","--server_port");
+    P.GetVariable("--moos_port",m_nPort);
     
     ///////////////////////////////////////////////////////////
     //is there an indication in the mission file that a webserver should run?
 
     int  nWebServerPort = -1;
 	m_MissionReader.GetValue("WEBSERVERPORT",nWebServerPort);
+    P.GetVariable("--webserver_port",nWebServerPort);
 
-
-	//is it overloaded on the command line?
-	nWebServerPort = cl.follow(-1,1,"--webserver");
 
 	//if either the mission file or command line have set a webserver port then launch one
 	if(nWebServerPort>0)
@@ -243,12 +229,12 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     ///////////////////////////////////////////////////////////
     //are we using a network?
-    if(cl.search(2,"-h","--help"))
+    if(P.GetFlag("-h","--help"))
     	PrintHelpAndExit();
 
     ///////////////////////////////////////////////////////////
     //are we being asked to be old skool and use a single thread?
-    bool bSingleThreaded = cl.search(2,"-s","--single_threaded");
+    bool bSingleThreaded = P.GetFlag("-s","--single_threaded");
 
     
     LogStartTime();
@@ -269,6 +255,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
+    m_pCommServer->SetCommandLineParameters(argc,argv);
 
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 

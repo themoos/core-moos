@@ -129,6 +129,9 @@ public:
     /**return double val of message*/
     double GetDouble()const {return m_dfVal;};
 
+    /**return second double */
+    double GetDoubleAux()const {return m_dfVal2;};
+
     /**return string value of message*/
     std::string GetString()const {return m_sVal;};
 
@@ -154,6 +157,7 @@ public:
 
     /** set the Double value */
     void SetDouble(double dfD){m_dfVal = dfD;}
+    void SetDoubleAux(double dfD){m_dfVal2 = dfD;}
 
     /**what type of message is this? Notification,Command,Register etc*/
     char m_cMsgType;

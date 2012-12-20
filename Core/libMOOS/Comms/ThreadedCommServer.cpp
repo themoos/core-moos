@@ -104,12 +104,27 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
         }
     }
 
-
-
     //make a new client - and show it where to put data and how to talk to a client
     bool bAsync = m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end();
 
-    ClientThread* pNewClientThread =  new  ClientThread(sName,NewClientSocket,m_SharedDataListFromClient,bAsync);
+    //we need to look up timing information
+    double dfConsolidationTime = 0.0;
+    std::list< std::pair< std::string, double >  >::iterator v;
+    for(v = m_ClientTimingVector.begin();v!=m_ClientTimingVector.end();v++)
+    {
+    	if(MOOSWildCmp(v->first,sName))
+    	{
+    		dfConsolidationTime=v->second;
+    		break;
+    	}
+    }
+
+
+    ClientThread* pNewClientThread =  new  ClientThread(sName,
+    		NewClientSocket,
+    		m_SharedDataListFromClient,
+    		bAsync,
+    		dfConsolidationTime);
 
     //add to map
     m_ClientThreads[sName] = pNewClientThread;
@@ -195,10 +210,8 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
 			ClientThread* pClient = q->second;
 
-
             if(m_bQuiet)
                 InhibitMOOSTraceInThisThread(false);
-
 
             double dfTNow = MOOS::Time();
 
@@ -209,13 +222,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             Auditor.AddStatistic(sWho,SDFromClient._pPkt->GetStreamLength(),MsgLstRx.size(),dfTNow,true);
 
-
 			if(MsgLstRx.empty())
 			{
 				std::cerr<<"very strange there is no content in the Pkt\n";
 				return false;
 			}
-
 
             //is there any sort of notification going on here?
             bool bIsNotification = false;
@@ -238,10 +249,9 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             	TimingMsg =MsgLstRx.front();
             	MsgLstRx.pop_front();
             	TimingMsg.SetDouble( MOOSLocalTime());
-//            	std::cerr<<"timing:\n";
-//            	std::cerr<<" client posts "<<std::fixed<<std::setprecision(3)<<TimingMsg.GetTime()<<std::endl;
-//            	std::cerr<<" db replies   "<<std::fixed<<std::setprecision(3)<<TimingMsg.GetDouble()<<std::endl;
 
+            	//and here we control the speed of this clienttxt
+            	TimingMsg.SetDoubleAux(pClient->GetConsolidationTime());
             }
 
             //let owner figure out what to do !
@@ -433,11 +443,12 @@ ThreadedCommServer::ClientThread::~ClientThread()
 }
 
 
-ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync ):
+ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS ):
             _sClientName(sName),
             _ClientSocket(ClientSocket),
             _SharedDataIncoming(SharedDataIncoming),
-			_bAsynchronous(bAsync)
+			_bAsynchronous(bAsync),
+			_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0)
 {
     _Worker.Initialise(RunEntry,this);
 
@@ -596,6 +607,10 @@ bool ThreadedCommServer::ClientThread::Start()
     return true;
 }
 
+double ThreadedCommServer::ClientThread::GetConsolidationTime()
+{
+	return _dfConsolidationPeriod;
+}
 
 bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & OutGoing)
 {
@@ -667,8 +682,6 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 
     try
     {
-
-
 
         //prepare to send it up the chain
         ClientThreadSharedData SDUpChain(_sClientName);

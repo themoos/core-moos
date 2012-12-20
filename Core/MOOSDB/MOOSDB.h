@@ -143,8 +143,8 @@ private:
 
     //pointer to the comms server (could be a threaded one but base class is CMOOSCommServer
     std::auto_ptr<CMOOSCommServer> m_pCommServer;
-    //CMOOSCommServer m_CommServer;
-    //MOOS::ThreadedCommServer m_ThreadedCommServer;
+
+
 
 
 
