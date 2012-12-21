@@ -408,14 +408,14 @@ bool CMOOSApp::Configure()
 
 	//are we expected to use MOOS comms?
 	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
-	m_bUseMOOSComms = !m_CommandLineParser.GetFlag("--moos_no_comms");
+	m_bUseMOOSComms&=!m_CommandLineParser.GetFlag("--moos_no_comms");
 
 	//are we being asked to sort mail by time..
 	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
-	m_bSortMailByTime = !m_CommandLineParser.GetFlag("--moos_no_sort_mail");
+	m_bSortMailByTime&=!m_CommandLineParser.GetFlag("--moos_no_sort_mail");
 
 	//are we being asked to quit if iterate fails?
-	m_bQuitOnIterateFail |= m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
+	m_bQuitOnIterateFail|=m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
 
 	//are we in debug mode
 	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
