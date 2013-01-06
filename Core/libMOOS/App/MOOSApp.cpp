@@ -1030,6 +1030,15 @@ bool CMOOSApp::IsSimulateMode()
     return m_bSimMode;
 }
 
+void CMOOSApp::WaitForEmptyOutbox()
+{
+	while(m_Comms.GetNumberOfUnsentMessages())
+	{
+		MOOSPause(100);
+	}
+}
+
+
 bool CMOOSApp::AddMOOSVariable(string sName, string sSubscribeName, string sPublishName,double dfCommsTime)
 {
     CMOOSVariable NewVar(sName,sSubscribeName,sPublishName,dfCommsTime);

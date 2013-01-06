@@ -388,6 +388,14 @@ protected:
     /** return the application mission file name */
     std::string GetMissionFileName();
 
+    /** pause until all mail appears to have been sent.
+     * note if you are wanting to exit and hope this function
+     * completing before doing so there is a very small chance
+     * you could exit while the OS is still doing the low level
+     * socket work...
+     */
+    void WaitForEmptyOutbox();
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //  DYNAMIC VARIABLES  - AN OPTIONAL GARNISH
