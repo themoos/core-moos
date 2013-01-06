@@ -361,6 +361,9 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     
+	if(sTk.find(",")!=std::string::npos)
+		return false;
+
     size_t  nPos = string::npos;
     size_t k = 0;
     while((nPos = MOOSStrFind(sStr.substr(k),sTk,bInsensitive))!=string::npos)
@@ -368,8 +371,27 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
         nPos+=k;
         //we have the start of the token at nPos
         //we need to be carefull here = there could be many spaces between token and =
-        /*unsigned int*/ size_t  nEqualsPos = sStr.find('=',nPos);
-        
+        /*unsigned int*/
+        size_t nEqualsPos = sStr.find('=',nPos);
+        size_t nLastComma = sStr.find_last_of(",",nPos);
+        if(nLastComma==std::string::npos)
+        	nLastComma = 0;//there was no previous comma...
+
+        //starting from previous comma was when is the first non white space char?
+        size_t nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
+
+//        std::cerr<<"nPos: "<<nPos<<"\n";
+//        std::cerr<<"nEqualsPos: "<<nEqualsPos<<"\n";
+//        std::cerr<<"nLastComma: "<<nLastComma<<"\n";
+//        std::cerr<<"nLastChar: "<<nLastChar<<"\n";
+
+        if(nLastChar!=nPos)
+        {
+        	//this is not great extra chars found !
+        	k =nPos+1;
+        	continue;
+        }
+
     	//can we find an "="?
         if(nEqualsPos!=string::npos)
         {
@@ -389,6 +411,7 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
             int nCommaPos =sStr.find(',',nEqualsPos);
 
             sVal.append(sStr,nEqualsPos+1,nCommaPos-nEqualsPos-1);
+            MOOSTrimWhiteSpace(sVal);
                         
             return true;
         }
@@ -468,11 +491,16 @@ bool MOOSValFromString(bool  & bVal,const string & sStr,const string & sTk,bool 
     {
         MOOSRemoveChars(sVal," ");
         if(MOOSStrCmp(sVal,"true") || MOOSStrCmp(sVal,"1"))
+        {
             bVal =  true;
-        else
+            return true;
+        }
+        else if(MOOSStrCmp(sVal,"false") || MOOSStrCmp(sVal,"0"))
+        {
             bVal =  false;
+            return true;
+        }
 
-        return true;
     }
 
     return false;
@@ -568,7 +596,14 @@ bool MOOSVectorFromString(const string & sStr,std::vector<double> & dfValVec,int
     {
         for(int j = 1; j<=nCols;j++)
         {
-            double dfVal = atof(pStr+nPos+1);
+            //double dfVal = atof(pStr+nPos+1);
+            char * pN;
+            double dfVal = strtod(pStr+nPos+1,&pN);
+            if(pN==pStr+nPos+1)
+            {
+            	//this is bad the number was not converted!
+            	return false;
+            }
 
             dfValVec.push_back(dfVal);
             nPos = sStr.find(',',nPos+1);
@@ -619,7 +654,16 @@ bool MOOSVectorFromString(const string & sStr,std::vector<float> & fValVec,int &
     {
         for(int j = 1; j<=nCols;j++)
         {
-            double dfVal = atof(pStr+nPos+1);
+//            double dfVal = atof(pStr+nPos+1);
+
+            char * pN;
+            double dfVal = strtod(pStr+nPos+1,&pN);
+            if(pN==pStr+nPos+1)
+            {
+            	//this is bad the number was not converted!
+            	return false;
+
+            }
 
             fValVec.push_back(static_cast<float> (dfVal));
             nPos = sStr.find(',',nPos+1);
@@ -672,7 +716,15 @@ bool MOOSVectorFromString(const string & sStr,std::vector<unsigned int> & nValVe
     {
         for(int j = 1; j<=nCols;j++)
         {
-            unsigned int nVal = atoi(pStr+nPos+1);
+            //unsigned int nVal = atoi(pStr+nPos+1);
+
+            char * pN;
+            unsigned int nVal = strtoul(pStr+nPos+1,&pN,10);
+			if(pN==pStr+nPos+1)
+			{
+				//this is bad the number was not converted!
+            	return false;
+			}
 
             nValVec.push_back(nVal);
             nPos = sStr.find(',',nPos+1);
