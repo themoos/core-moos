@@ -222,6 +222,16 @@ unsigned int CMOOSCommClient::GetNumberOfUnreadMessages()
 
 }
 
+unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
+{
+	m_InLock.Lock();
+	unsigned int n = m_OutBox.size();
+	m_InLock.UnLock();
+	return n;
+
+}
+
+
 unsigned long long int CMOOSCommClient::GetNumBytesSent()
 {
 	return m_nBytesSent;

@@ -237,6 +237,10 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnreadMessages();
 
+    /** how much incoming mail is pending?*/
+    unsigned int GetNumberOfUnsentMessages();
+
+
     /** get total number of bytes sent*/
     unsigned long long int GetNumBytesSent();
 
