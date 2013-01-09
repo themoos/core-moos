@@ -188,7 +188,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     ///////////////////////////////////////////////////////////
     //what effective time speed up do we want?
-    double dfWarp;
+    double dfWarp=1.0;
     if(m_MissionReader.GetValue("MOOSTimeWarp",dfWarp))
 		SetMOOSTimeWarp(dfWarp);
     //overridden in command line?
