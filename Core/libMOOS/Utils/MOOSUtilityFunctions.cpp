@@ -374,11 +374,17 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
         /*unsigned int*/
         size_t nEqualsPos = sStr.find('=',nPos);
         size_t nLastComma = sStr.find_last_of(",",nPos);
-        if(nLastComma==std::string::npos)
-        	nLastComma = -1;//there was no previous comma...
 
-        //starting from previous comma was when is the first non white space char?
-        size_t nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
+        size_t nLastChar;
+        if(nLastComma==std::string::npos)
+        {
+        	nLastChar = sStr.find_first_not_of(" \t",0);
+        }
+        else
+        {
+        	//starting from previous comma was when is the first non white space char?
+        	nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
+        }
 
 //        std::cerr<<"nPos: "<<nPos<<"\n";
 //        std::cerr<<"nEqualsPos: "<<nEqualsPos<<"\n";
