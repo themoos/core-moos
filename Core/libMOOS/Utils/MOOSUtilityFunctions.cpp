@@ -375,7 +375,7 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
         size_t nEqualsPos = sStr.find('=',nPos);
         size_t nLastComma = sStr.find_last_of(",",nPos);
         if(nLastComma==std::string::npos)
-        	nLastComma = 0;//there was no previous comma...
+        	nLastComma = -1;//there was no previous comma...
 
         //starting from previous comma was when is the first non white space char?
         size_t nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
