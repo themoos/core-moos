@@ -337,7 +337,8 @@ struct CompareInsensitive: public std::binary_function< char, char, bool >
 //case insensitive find
 size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool bInsensitive)
 {
-    
+    if(sToken.empty())
+    	return std::string::npos;
 	if(bInsensitive)
     {
         std::string::const_iterator q = std::search(
