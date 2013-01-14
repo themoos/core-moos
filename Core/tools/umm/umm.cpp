@@ -41,9 +41,12 @@ void PrintHelp()
     MOOSTrace("  -s=<string>            : list of subscriptions in form var_name@period eg -s=x,y,z\n");
     MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_pattern@frequency_hz eg -w='x*:*@0.1,*:GPS@0.0' \n");
     MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@frequency_hz eg -p=x@0.5,y:2048@2.0\n");
+    MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --verbose              : verbose output\n");
+    MOOSTrace("  --log=<string>         : log received to file name given\n");
+
 
     MOOSTrace("\n\nspying helpful settings:\n");
     MOOSTrace("  --spy          		: spy on all variables at 1Hz\n");
@@ -79,6 +82,7 @@ public:
         _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
         _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
+
 
         std::string temp;
 
@@ -119,6 +123,9 @@ public:
         }
 
 
+        _TxCount = -1;
+        m_CommandLineParser.GetVariable("--num_tx",_TxCount);
+
 
         _NetworkStallProb=0.0;
         m_CommandLineParser.GetVariable("--network_failure_prob",_NetworkStallProb);
@@ -130,6 +137,18 @@ public:
         m_CommandLineParser.GetVariable("--application_failure_prob",_ApplicationExitProb);
 
         _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
+
+        _sLogFileName = "";
+        if(m_CommandLineParser.GetVariable("--log",_sLogFileName))
+        {
+        	_LogFile.open(_sLogFileName.c_str());
+        	if(!_LogFile)
+        	{
+        		std::cerr<<"could not open "<<_sLogFileName<<" exiting\n";
+        		exit(-1);
+        	}
+        }
+
 
 
         //finalluy we will amke ouselves responsive!
@@ -253,6 +272,13 @@ public:
         		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
         		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
                 std::cerr<<MOOS::ConsoleColours::reset();
+        	}
+
+        	if(_LogFile)
+        	{
+        		_LogFile<<std::left<<std::setw(20)<<q->GetKey();
+        		_LogFile<<std::left<<std::setw(20)<<q->GetSource();
+        		_LogFile<<q->GetAsString()<<std::endl;
         	}
         }
 
@@ -387,6 +413,8 @@ public:
 
     bool ScheduleLoop()
     {
+    	unsigned int nSent = 0;
+
     	while(!Scheduler.IsQuitRequested())
     	{
 			while(!_Jobs.empty() && _Jobs.top().isActive(MOOS::Time()))
@@ -397,7 +425,9 @@ public:
 				_Jobs.pop();
 				if(Active.IsBinary())
 				{
+
 					Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
+
 
 					if(_bVerbose)
 					{
@@ -416,6 +446,16 @@ public:
 						//std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
 					}
 				}
+
+				if(_TxCount >=0 && ++nSent==_TxCount)
+				{
+					std::cout<<" sent "<<nSent<<" messages and now exiting\n";
+					MOOSPause(100);
+					exit(0);
+				}
+
+
+
 				Active.Reschedule();
 				_Jobs.push(Active);
 			}
@@ -436,6 +476,15 @@ private:
     double _NetworkStallProb ;
     double _NetworkStallTime ;
     double _ApplicationExitProb;
+    std::string _sLogFileName;
+    bool _bVerbose;
+    bool _bShowLatency;
+    bool _bShowBandwidth;
+    std::ofstream _LogFile;
+    int _TxCount;
+
+
+
 
     struct Job
     {
@@ -484,9 +533,6 @@ private:
     };
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
-    bool _bVerbose;
-    bool _bShowLatency;
-    bool _bShowBandwidth;
     MOOS::KeyboardCapture _KeyBoardCapture;
 
 
