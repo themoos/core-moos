@@ -281,7 +281,7 @@ bool SetMOOSTimeWarp(double dfWarp)
         gdfMOOSTimeWarp = dfWarp;
         return true;
     }
-    return MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
+    return false;//MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
     
 }
 
