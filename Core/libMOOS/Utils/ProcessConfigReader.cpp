@@ -69,6 +69,68 @@ std::string CProcessConfigReader::GetFileName()
 }
 
 
+
+bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName, STRING_LIST &Params)
+{
+	Params.clear();
+
+	int nBrackets = 0;
+	Params.clear();
+
+	Reset();
+
+	std::string sKey = "PROCESSCONFIG="+sAppName;
+
+	if(GoTo(sKey))
+	{
+		std::string sBracket = GetNextValidLine();
+		if(sBracket.find("{")==0)
+		{
+			nBrackets++;
+			while(!GetFile()->eof())
+			{
+				std::string sLine = GetNextValidLine();
+				MOOSTrimWhiteSpace(sLine);
+
+				if(sLine.find("}")!=0)
+				{
+					std::string sVal(sLine);
+					std::string sTok = MOOSChomp(sVal, "=");
+					MOOSTrimWhiteSpace(sTok);
+					MOOSTrimWhiteSpace(sVal);
+
+					if (!sTok.empty())
+					{
+
+						if (!sVal.empty())
+						{
+							Params.push_back(sTok+"="+sVal);
+						}
+						else if(sLine.find("[")!=std::string::npos || sLine.find("]")!=std::string::npos)
+						{
+							Params.push_back(sLine);
+						}
+					}
+				}
+				else
+				{
+					return true;
+				}
+
+				//quick error check - we don't allow nested { on single lines
+				if(sLine.find("{")==0)
+				{
+					MOOSTrace("CProcessConfigReader::GetConfiguration() missing \"}\" syntax error in mission file\n");
+				}
+			}
+		}
+	}
+
+
+	return false;
+
+}
+
 //GET A STRING LIST OF SETTINGS
 
 bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &Params)
@@ -245,22 +307,23 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
     
     STRING_LIST sParams;
     
-    if(GetConfiguration( sAppName, sParams))
+    if(GetConfigurationAndPreserveSpace( sAppName, sParams))
     {
         STRING_LIST::iterator p;
         for(p = sParams.begin();p!=sParams.end();p++)
         {
             std::string sTmp = *p;
             std::string sTok = MOOSChomp(sTmp,"=");
-            
-            MOOSTrimWhiteSpace(sTmp);
-            
+            MOOSTrimWhiteSpace(sTok);
+
             if (sTmp.empty())
                 return false;
             
             if(MOOSStrCmp(sTok,sParam))
             {
-                sVal=sTmp;
+                MOOSTrimWhiteSpace(sTmp);
+
+            	sVal=sTmp;
                 return true;
             }
         }
@@ -269,7 +332,8 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 }
 
 
-bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::string & sVal)
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::string & sVal )
 {
     if(!m_sAppName.empty())
     {

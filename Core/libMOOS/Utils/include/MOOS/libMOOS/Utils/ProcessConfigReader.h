@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
 //
 //   MOOS - Mission Oriented Operating Suite 
 //  
@@ -102,8 +102,11 @@ public:
     /** return a list of strings of Token = Val for the specfied named application configuration block*/ 
     bool GetConfiguration(std::string sAppName,STRING_LIST & Params);
 
+    bool GetConfigurationAndPreserveSpace(std::string sAppName,STRING_LIST & Params);
+
     /** the name of process an instance this class will handle unless told otherwise */ 
     std::string m_sAppName;
+
 
 };
 
