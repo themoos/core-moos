@@ -488,10 +488,9 @@ private:
 
     struct Job
     {
-        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _pData(0)
+        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _DataSize(0)
         {
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
-            _DataSize = 0;
         }
 
         Job(double dfPeriod,std::string sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
@@ -509,7 +508,7 @@ private:
         }
         bool IsBinary()
         {
-        	return _pData!=NULL;
+        	return _DataSize!=0;
         }
 
         void Reschedule()
@@ -527,7 +526,6 @@ private:
         double _dfTimeScheduled;
         std::string _sName;
         int _nCount;
-        unsigned char * _pData;
         unsigned int _DataSize;
 
     };
