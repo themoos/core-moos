@@ -26,7 +26,6 @@
 #define INVALID_SOCKET_SELECT EBADF
 #endif
 
-#define TOLERABLE_SILENCE 5.0
 
 namespace MOOS
 {
@@ -124,7 +123,8 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     		NewClientSocket,
     		m_SharedDataListFromClient,
     		bAsync,
-    		dfConsolidationTime);
+    		dfConsolidationTime,
+    		m_dfClientTimeout);
 
     //add to map
     m_ClientThreads[sName] = pNewClientThread;
@@ -443,12 +443,13 @@ ThreadedCommServer::ClientThread::~ClientThread()
 }
 
 
-ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS ):
+ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS,double dfClientTimeout ):
             _sClientName(sName),
             _ClientSocket(ClientSocket),
             _SharedDataIncoming(SharedDataIncoming),
 			_bAsynchronous(bAsync),
-			_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0)
+			_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0),
+			_dfClientTimeout(dfClientTimeout)
 {
     _Worker.Initialise(RunEntry,this);
 
@@ -517,10 +518,10 @@ bool ThreadedCommServer::ClientThread::Run()
 
         case 0:
             //timeout...nothing to read - spin
-        	if(MOOSLocalTime()-dfLastGoodComms>TOLERABLE_SILENCE)
+        	if(MOOSLocalTime()-dfLastGoodComms>_dfClientTimeout)
         	{
         		std::cout<<MOOS::ConsoleColours::Red();
-        		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<TOLERABLE_SILENCE<<" seconds of silence\n";
+        		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<_dfClientTimeout<<" seconds of silence\n";
         		std::cout<<MOOS::ConsoleColours::reset();
         		OnClientDisconnect();
         		return true;

@@ -110,8 +110,9 @@ public:
 
     /** This function is the timer loop called from one of the three
     server threads. It makes sure all clients speak occasionally*/
-
     virtual bool TimerLoop();
+
+    bool  SetClientTimeout(double dfTimeoutPeriod);
 
 
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
@@ -266,6 +267,9 @@ protected:
     
     ///how quiet are we
     bool m_bQuiet;
+
+
+    double m_dfClientTimeout;
 };
 
 #endif // !defined(AFX_MOOSCOMMSERVER_H__2FDF870F_F998_4D3C_AD18_FCC2C5C12DDA__INCLUDED_)

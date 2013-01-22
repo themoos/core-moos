@@ -148,11 +148,15 @@ void PrintHelpAndExit()
 	std::cerr<<"--moos_time_warp =<positive_float> specify time warp\n";
 	std::cerr<<"--moos_community=<string>          specify community name\n";
 
+
+
 	std::cerr<<"\nDB Control:\n";
 
-	std::cerr<<"--response=<string-list        specify tolerable client latencies in ms\n";
+	std::cerr<<"--response=<string-list>           specify tolerable client latencies in ms\n";
 	std::cerr<<"-d    (--dns)                      run with dns lookup\n";
 	std::cerr<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
+	std::cerr<<"--moos_timeout=<positive_float>    specify client timeout\n";
+
 //#ifdef MOOSDB_HAS_WEBSERVER
 	std::cerr<<"--webserver_port=<positive_integer> run webserver on given port\n";
 //#endif
@@ -226,9 +230,13 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 	if(nWebServerPort>0)
 		m_pWebServer = std::auto_ptr<CMOOSDBHTTPServer> (new CMOOSDBHTTPServer(GetDBPort(), nWebServerPort));
 
+	double dfClientTimeout = 5.0;
+	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
+    P.GetVariable("--moos_timeout",dfClientTimeout);
+
 
     ///////////////////////////////////////////////////////////
-    //are we using a network?
+    //are we looking for help?
     if(P.GetFlag("-h","--help"))
     	PrintHelpAndExit();
 
@@ -255,6 +263,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
+    m_pCommServer->SetClientTimeout(dfClientTimeout);
 
     m_pCommServer->SetCommandLineParameters(argc,argv);
 
@@ -523,10 +533,13 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     }
     else
     {
-        MOOSTrace("Attempting to update var \"%s\" which is type %c with data type %c\n",
+        MOOSTrace("Attempting to update var \"%s\" which is type %c with data type %c by client %s (=%s)\n",
             Msg.m_sKey.c_str(),
             rVar.m_cDataType,
-            Msg.m_cDataType);
+            Msg.m_cDataType,
+            Msg.m_sSrc.c_str(),
+            Msg.GetAsString(20,4).c_str());
+
     }
     
     
@@ -731,7 +744,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         MOOSTrace("\nMaking new variable: \n");
         MOOSTrace("    Name=\"%s\"\n",NewVar.m_sName.c_str());
         MOOSTrace("    Src =\"%s\"\n",Msg.m_sSrc.c_str());
-        MOOSTrace("    Type =\"%s\"\n",NewVar.m_cDataType);
+        MOOSTrace("    Type =\"%c\"\n",NewVar.m_cDataType);
 #endif
     }
     

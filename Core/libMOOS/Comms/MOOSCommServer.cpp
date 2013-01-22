@@ -52,6 +52,8 @@ using namespace std;
     #include <sys/signal.h>
 #endif
 
+#define TOLERABLE_SILENCE 5.0
+
 
 #ifdef _WIN32
 #define INVALID_SOCKET_SELECT WSAEINVAL
@@ -120,6 +122,8 @@ CMOOSCommServer::CMOOSCommServer()
     m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
+
+	m_dfClientTimeout = TOLERABLE_SILENCE;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
@@ -230,8 +234,6 @@ bool CMOOSCommServer::TimerLoop()
     
     int nPeriod = 3000;
 
-    double dfTimeOut = 4.0;
-
     SOCKETLIST::iterator p,q;
 
     while(!m_bQuit)
@@ -250,7 +252,7 @@ bool CMOOSCommServer::TimerLoop()
             double dfLastCalled = (*p)->GetReadTime();
             q = p;
             ++q;
-            if(dfTimeNow-dfLastCalled>dfTimeOut)
+            if(dfTimeNow-dfLastCalled>m_dfClientTimeout)
             {
                 MOOSTrace("its been %f seconds since my last confession:\n",dfTimeNow-dfLastCalled);
                 MOOSTrace("\tTime Now %f\n\tLastReadTime %f\n",dfTimeNow,dfLastCalled );
@@ -268,6 +270,16 @@ bool CMOOSCommServer::TimerLoop()
     return true;
 
 }
+
+bool CMOOSCommServer::SetClientTimeout(double dfTimeoutPeriod)
+{
+	if(dfTimeoutPeriod<0)
+		return false;
+
+	m_dfClientTimeout = dfTimeoutPeriod;
+	return true;
+}
+
 
 bool  CMOOSCommServer::OnAbsentClient(XPCTcpSocket* pClient)
 {

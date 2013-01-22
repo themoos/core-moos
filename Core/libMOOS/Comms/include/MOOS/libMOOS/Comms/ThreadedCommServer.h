@@ -83,7 +83,8 @@ protected:
          * @param SharedData a sae list of ClientThreadSharedData object
          * @return
          */
-        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync,double dfConsolidationPeriodMS );
+        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming,
+        		bool bAsync,double dfConsolidationPeriodMS,double dfClientTimeout );
 
 
         /**
@@ -157,6 +158,9 @@ protected:
 
         //what consolidation period are we asking clients to invoke?
         double _dfConsolidationPeriod;
+
+        //how long can we tolerate silence
+        double _dfClientTimeout;
 
 
     };
