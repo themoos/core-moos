@@ -30,7 +30,7 @@
 namespace MOOS
 {
 
-ThreadPrint gPrinter(std::cerr);
+ThreadPrint gPrinter(std::cout);
 
 
 ThreadedCommServer::ThreadedCommServer()
@@ -672,7 +672,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 	   bResult = false;
 	}
 
-	std::cerr<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
+	std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
 
     return bResult;
 }

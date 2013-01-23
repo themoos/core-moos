@@ -1006,7 +1006,7 @@ void CMOOSApp::SetAppFreq(double  dfFreq,double dfMaxFreq)
     }
     else
     {
-    	std::cerr<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
+    	std::cout<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
     }
 
     if(dfMaxFreq>=0.0)

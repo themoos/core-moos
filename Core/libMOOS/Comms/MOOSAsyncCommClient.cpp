@@ -236,7 +236,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			if(q->IsType(MOOS_TERMINATE_CONNECTION))
 			{
-				std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
+				std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
 				return false;
 			}
 		}
@@ -313,7 +313,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			{
 				OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-",0)   );
 
-				std::cerr<<"reading failed!\n";
+				std::cout<<"reading failed!\n";
 
 				while(IsConnected())//wait for connection to terminate...
 					MOOSPause(200);
@@ -325,7 +325,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			MOOSPause(100);
 		}
 	}
-	std::cerr<<"READING LOOP quiting...\n";
+	std::cout<<"READING LOOP quiting...\n";
 	return true;
 }
 

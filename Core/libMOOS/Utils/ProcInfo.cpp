@@ -138,7 +138,6 @@ public:
 		    uA = uB;
 		    tA = tB;
 
-		    //std::cerr<<"cpu_load_ is "<<cpu_pc<<std::endl;
 		}
 #endif
 

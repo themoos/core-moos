@@ -139,31 +139,31 @@ CMOOSDB::~CMOOSDB()
 
 void PrintHelpAndExit()
 {
-	std::cerr<<MOOS::ConsoleColours::Yellow();
-	std::cerr<<"\nMOOSDB command line help:\n\n";
-	std::cerr<<MOOS::ConsoleColours::reset();
-	std::cerr<<"Common MOOS parameters:\n";
-	std::cerr<<"--moos_file=<string>               specify mission file name (default mission.moos)\n";
-	std::cerr<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
-	std::cerr<<"--moos_time_warp =<positive_float> specify time warp\n";
-	std::cerr<<"--moos_community=<string>          specify community name\n";
+	std::cout<<MOOS::ConsoleColours::Yellow();
+	std::cout<<"\nMOOSDB command line help:\n\n";
+	std::cout<<MOOS::ConsoleColours::reset();
+	std::cout<<"Common MOOS parameters:\n";
+	std::cout<<"--moos_file=<string>               specify mission file name (default mission.moos)\n";
+	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
+	std::cout<<"--moos_time_warp =<positive_float> specify time warp\n";
+	std::cout<<"--moos_community=<string>          specify community name\n";
 
 
 
-	std::cerr<<"\nDB Control:\n";
+	std::cout<<"\nDB Control:\n";
 
-	std::cerr<<"--response=<string-list>           specify tolerable client latencies in ms\n";
-	std::cerr<<"-d    (--dns)                      run with dns lookup\n";
-	std::cerr<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
-	std::cerr<<"--moos_timeout=<positive_float>    specify client timeout\n";
+	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
+	std::cout<<"-d    (--dns)                      run with dns lookup\n";
+	std::cout<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
+	std::cout<<"--moos_timeout=<positive_float>    specify client timeout\n";
 
 //#ifdef MOOSDB_HAS_WEBSERVER
-	std::cerr<<"--webserver_port=<positive_integer> run webserver on given port\n";
+	std::cout<<"--webserver_port=<positive_integer> run webserver on given port\n";
 //#endif
-	std::cerr<<"--help                             print help and exit\n";
-	std::cerr<<"\nexample:\n";
-	std::cerr<<"  ./MOOSDB -moos_port=9001 \n";
-	std::cerr<<"  ./MOOSDB -moos_port=9001 --rate_control=x_app:20,y_app:100,*_instrument:0\n";
+	std::cout<<"--help                             print help and exit\n";
+	std::cout<<"\nexample:\n";
+	std::cout<<"  ./MOOSDB -moos_port=9001 \n";
+	std::cout<<"  ./MOOSDB -moos_port=9001 --rate_control=x_app:20,y_app:100,*_instrument:0\n";
 	exit(0);
 }
 
@@ -249,7 +249,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     
     if(bSingleThreaded)
     {
-        std::cerr<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
 		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new CMOOSCommServer);
     }
     else
@@ -662,7 +662,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 			}
 		}
 
-		std::cerr<<MOOS::ConsoleColours::yellow()
+		std::cout<<MOOS::ConsoleColours::yellow()
 				<<"+ subs of \""
 				<<Msg.GetSource()<<"\" to variables matching \""
 				<<var_pattern<<":"<<app_pattern<<"\""
@@ -720,7 +720,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 						{
 							//add the filter owner (client *g) as a subscriber
 							NewVar.AddSubscriber(g->first, h->period());
-							std::cerr<<"+ subs of \""<<g->first<<"\" to \""
+							std::cout<<"+ subs of \""<<g->first<<"\" to \""
 									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
 									<<"\""<<std::endl;
 						}
@@ -758,7 +758,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
-    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -770,13 +770,11 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     }
     if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
     {
-        //std::cerr<<"  removing wildcard subscriptions\n";
     	m_ClientFilters[sClient].clear();
     }
     
-    //std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
-    std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
+    std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
     return true;
 }

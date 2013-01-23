@@ -274,10 +274,6 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 		*m_pNextData = bCompressed;
 		m_pNextData+=1;
 
-		if(nMessages==0)
-			std::cerr<<"no messages\n";
-
-
     }
     else
     {

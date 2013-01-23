@@ -73,9 +73,9 @@ void CMOOSCommObject::SimulateCommsError()
 {
     if(MOOSUniformRandom(0.0,1.0)<m_dfDodgeyCommsProbability)
     {
-        std::cerr<<MOOS::ConsoleColours::Yellow();
-        std::cerr<<"faking slow connection..."<<m_dfDodgeyCommsDelay<<"s sleep\n";
-        std::cerr<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::Yellow();
+        std::cout<<"faking slow connection..."<<m_dfDodgeyCommsDelay<<"s sleep\n";
+        std::cout<<MOOS::ConsoleColours::reset();
 
         MOOSPause((int)(m_dfDodgeyCommsDelay*1000));
 
@@ -84,9 +84,9 @@ void CMOOSCommObject::SimulateCommsError()
 
     if(MOOSUniformRandom(0.0,1.0)<m_dfTerminateProbability)
     {
-       std::cerr<<MOOS::ConsoleColours::Red();
-       std::cerr<<"faking application-abort mid transaction\n";
-       std::cerr<<MOOS::ConsoleColours::reset();
+       std::cout<<MOOS::ConsoleColours::Red();
+       std::cout<<"faking application-abort mid transaction\n";
+       std::cout<<MOOS::ConsoleColours::reset();
        exit(-1);
     }
 }

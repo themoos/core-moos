@@ -600,32 +600,32 @@ bool CMOOSCommServer::ProcessClient()
 
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
-    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
+    std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
     MOOSTrace("New client connected:\n");
 
     if(HandShake(pNewClient))
     {
-        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
 
         string sName = GetClientName(pNewClient);
 
         if(!sName.empty())
         {
-            std::cerr<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
+            std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
         }
         if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
         {
-        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
         }
         else
         {
-        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
         }
     }
     else
     {
-        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
 
         std::cerr<<MOOS::ConsoleColours::Red()<<"Handshaking failed - client is spurned\n"<<MOOS::ConsoleColours::reset();
         pNewClient->vCloseSocket();
@@ -633,7 +633,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         MOOSTrace("--------------------------------\n");
         return false;
     }
-    std::cerr<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
+    std::cout<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
 
 
     MOOSTrace("--------------------------------\n");
@@ -648,7 +648,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
-    std::cerr<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
+    std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;

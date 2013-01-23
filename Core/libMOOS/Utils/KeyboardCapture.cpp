@@ -47,7 +47,7 @@ bool KeyboardCapture::Capture()
 	if(isatty(0)==0)
 #endif
 	{
-		std::cerr<<"KeyboardCapture::Capture std::cin is not a tty. Thread exiting.\n";
+		std::cout<<"KeyboardCapture::Capture std::cin is not a tty. Thread exiting.\n";
 		return false;
 	}
 

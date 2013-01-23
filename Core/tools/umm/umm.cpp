@@ -198,12 +198,12 @@ public:
             if(nArraySize==0)
             {
             	_Jobs.push(Job(dfPeriod,sName));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
             else
             {
             	_Jobs.push(Job(dfPeriod,sName,nArraySize));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
 
         }
@@ -243,41 +243,43 @@ public:
 
         if(_bVerbose && !NewMail.empty())
         {
-        	std::cerr<<std::endl;
-        	std::cerr<<MOOS::ConsoleColours::Yellow();
-        	std::cerr<<std::left<<std::setw(20)<<"name";
-        	std::cerr<<std::left<<std::setw(20)<<"source";
-        	std::cerr<<std::left<<std::setw(30)<<"contents";
-        	std::cerr<<std::endl;
-        	std::cerr<<MOOS::ConsoleColours::reset();
+        	std::cout<<std::endl;
+        	std::cout<<MOOS::ConsoleColours::Yellow();
+        	std::cout<<std::left<<std::setw(20)<<"name";
+        	std::cout<<std::left<<std::setw(20)<<"source";
+        	std::cout<<std::left<<std::setw(30)<<"contents";
+        	std::cout<<std::endl;
+        	std::cout<<MOOS::ConsoleColours::reset();
         }
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
         	if(_bVerbose)
         	{
-        		std::cerr<<std::left<<std::setw(20)<<q->GetKey();
-        		std::cerr<<std::left<<std::setw(20)<<q->GetSource();
+        		std::cout<<std::left<<std::setw(20)<<q->GetKey();
+        		std::cout<<std::left<<std::setw(20)<<q->GetSource();
         		std::string sout = q->GetAsString();
         		if(sout.size()>GetScreenWidth()-43)
         			sout = sout.substr(0,GetScreenWidth()-43)+"...";
-        		std::cerr<<std::left<<std::setw(30)<<sout;
-        		std::cerr<<std::endl;
+        		std::cout<<std::left<<std::setw(30)<<sout;
+        		std::cout<<std::endl;
 
         	}
         	if(_bShowLatency)
         	{
         		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
-                std::cerr<<MOOS::ConsoleColours::reset();
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
+                std::cout<<MOOS::ConsoleColours::reset();
         	}
 
         	if(_LogFile)
         	{
         		_LogFile<<std::left<<std::setw(20)<<q->GetKey();
         		_LogFile<<std::left<<std::setw(20)<<q->GetSource();
+        		_LogFile<<std::left<<std::setw(20)<<std::setprecision(14)<<q->GetTime();
+        		_LogFile<<std::left<<std::setw(20)<<std::setprecision(14)<<MOOS::Time();
         		_LogFile<<q->GetAsString()<<std::endl;
         	}
         }
@@ -297,10 +299,10 @@ public:
 
 			if(_bShowBandwidth)
 			{
-				std::cerr<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
-				std::cerr<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
-				std::cerr<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
-				std::cerr<<MOOS::ConsoleColours::reset();
+				std::cout<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
+				std::cout<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
+				std::cout<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+				std::cout<<MOOS::ConsoleColours::reset();
 			}
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
@@ -336,7 +338,7 @@ public:
     {
         std::vector<std::string>::iterator q;
 
-        std::cerr<<MOOS::ConsoleColours::Green();
+        std::cout<<MOOS::ConsoleColours::Green();
         for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
         {
 			std::string sEntry = *q;
@@ -351,9 +353,9 @@ public:
 			}
 			m_Comms.Register(sVar,dfPeriod);
 
-            std::cerr<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
+            std::cout<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
         }
-        std::cerr<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::reset();
 
         std::vector<std::string>::iterator w;
 
@@ -427,24 +429,11 @@ public:
 				{
 
 					Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
-
-
-					if(_bVerbose)
-					{
-						/*
-						double T = MOOS::Time()-GetAppStartTime();
-						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing binary data: "<<Active._sName<<"="
-							<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();*/
-					}
-
 				}
 				else
 				{
 					Notify(Active._sName,Active._nCount,MOOSTime());
-					if(_bVerbose)
-					{
-						//std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
-					}
+
 				}
 
 				if(_TxCount >=0 && ++nSent==_TxCount)
@@ -552,7 +541,6 @@ int main (int argc, char* argv[])
 	ss<<"umm-"<< rand() %1024;
 	std::string default_name = ss.str();
 	std::string app_name = P.GetFreeParameter(1, default_name);
-	std::cerr<<app_name<<std::endl;
 
     DBTestClient TC1;
 

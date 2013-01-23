@@ -7,9 +7,6 @@ namespace MOOS
 {
 bool MsgFilter::Matches(const CMOOSMsg & M) const
 {
-	//std::cerr<<app_filter()<<"matches "<<M.GetSource()<<":"<<std::boolalpha<<MOOSWildCmp(app_filter(),M.GetSource())<<std::endl;
-	//std::cerr<<var_filter()<<"matches "<<M.GetKey()<<":"<<std::boolalpha<<MOOSWildCmp(var_filter(),M.GetKey() )<<std::endl;
-	//std::cerr<<std::noboolalpha;
 	return MOOSWildCmp(app_filter(),M.GetSource()) &&
 			MOOSWildCmp(var_filter(),M.GetKey() );
 }

@@ -79,8 +79,8 @@ public:
 		destination_host_ = destination_host;
 		destination_port_ = port;
 
-		std::cerr<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
-		std::cerr<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
+		std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
 
 		return thread_.Start();
 	}

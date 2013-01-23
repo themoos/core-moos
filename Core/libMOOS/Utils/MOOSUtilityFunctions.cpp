@@ -387,11 +387,6 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
         	nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
         }
 
-//        std::cerr<<"nPos: "<<nPos<<"\n";
-//        std::cerr<<"nEqualsPos: "<<nEqualsPos<<"\n";
-//        std::cerr<<"nLastComma: "<<nLastComma<<"\n";
-//        std::cerr<<"nLastChar: "<<nLastChar<<"\n";
-
         if(nLastChar!=nPos)
         {
         	//this is not great extra chars found !
@@ -1235,7 +1230,7 @@ void MOOSTrace(const char *FmtStr,...)
     // be processed by the _vsnprintf above, then placed in 'buf'.
     // Problem is that fprintf finds the '%' in buf and expects us to provide more arguments!
         //fprintf(stderr,buf);
-    fputs(buf, stderr);
+    fputs(buf, stdout);
 
     }
 }

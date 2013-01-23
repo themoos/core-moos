@@ -721,7 +721,7 @@ bool CMOOSCommClient::HandShake()
 		else
 		{
 			if(!m_bQuiet)
-				std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+				std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n";
 
 
 			m_sCommunityName = WelcomeMsg.GetCommunity();
@@ -731,7 +731,7 @@ bool CMOOSCommClient::HandShake()
             if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
 
-            std::cerr<<MOOS::ConsoleColours::reset();
+            std::cout<<MOOS::ConsoleColours::reset();
 
 		}
 	}
