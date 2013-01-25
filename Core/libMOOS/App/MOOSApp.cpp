@@ -358,9 +358,17 @@ bool CMOOSApp::Run( const std::string & sName,
 
 
     /** let derivatives do stuff before execution*/
+
     if(!OnStartUp())
     {
         MOOSTrace("Derived OnStartUp() returned false... Quitting\n");
+        return false;
+    }
+
+
+    if(!OnStartComplete())
+    {
+        MOOSTrace("Derived OnStartUpComplete() returned false... Quitting\n");
         return false;
     }
 
@@ -586,10 +594,22 @@ bool CMOOSApp::DoRunWork()
             {
 				//////////////////////////////////////
 				//  do application specific processing
-				bool bOK = Iterate();
 
+                /** called just after Iterate has finished - another place to overload*/
+            	bool bOK = true;
+            	bOK = OnIteratePrepare();
+            	if(m_bQuitOnIterateFail && !bOK)
+            		return false;
+
+				bOK = Iterate();
 				if(m_bQuitOnIterateFail && !bOK)
 					return false;
+
+				bOK = OnIterateComplete();
+            	if(m_bQuitOnIterateFail && !bOK)
+            		return false;
+
+
             }
             
             m_nIterateCount++;

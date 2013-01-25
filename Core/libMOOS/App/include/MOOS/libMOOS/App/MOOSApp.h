@@ -110,6 +110,13 @@ protected:
     nFreq = 1/AppTick Hz*/
     virtual bool Iterate();
 
+    /** called just after Iterate has finished - another place to overload*/
+    virtual bool OnIterateComplete(){return true;};
+
+    /** called just before Iterate is  called - another place to overload*/
+    virtual bool OnIteratePrepare(){return true;};
+
+
     /** called when new mail has arrived. Overload this method in a derived class to process new mail.
     It will be called at approximately 1/CommsTick Hz. In this function you'll most likely interate over the
     collection of mail message received or call a m_Comms::PeekMail() to look for a specific named message.
@@ -119,6 +126,9 @@ protected:
     /** called just before the main app loop is entered. Specific initialisation code can be written
     in an overloaded version of this function */
     virtual bool OnStartUp();
+
+    /** called just after startup has finished - another place to overload*/
+    virtual bool OnStartComplete(){return true;};
 
     /** optionally (see ::EnableCommandMessageFiltering() ) called when a command message (<MOOSNAME>_CMD) is recieved by the application.
     @param a copy of CmdMsg the message purporting to be a "command" - i.e. has the name <MOOSNAME>_CMD */
