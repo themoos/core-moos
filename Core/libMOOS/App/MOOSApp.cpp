@@ -361,6 +361,11 @@ bool CMOOSApp::Run( const std::string & sName,
 
 
     /** let derivatives do stuff before execution*/
+    if(!OnStartUpPrepare())
+    {
+        MOOSTrace("Derived OnStartUpPrepare() returned false... Quitting\n");
+        return false;
+    }
 
     if(!OnStartUp())
     {
@@ -368,12 +373,12 @@ bool CMOOSApp::Run( const std::string & sName,
         return false;
     }
 
-
-    if(!OnStartComplete())
+    if(!OnStartUpComplete())
     {
         MOOSTrace("Derived OnStartUpComplete() returned false... Quitting\n");
         return false;
     }
+
 
     DoBanner();
 

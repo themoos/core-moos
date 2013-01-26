@@ -127,8 +127,11 @@ protected:
     in an overloaded version of this function */
     virtual bool OnStartUp();
 
-    /** called just after startup has finished - another place to overload*/
-    virtual bool OnStartComplete(){return true;};
+    /** called just before OnStartUp is called - another place to overload*/
+    virtual bool OnStartUpPrepare(){return true;};
+
+    /** called just after OnStartUp has finished - another place to overload*/
+    virtual bool OnStartUpComplete(){return true;};
 
     /** optionally (see ::EnableCommandMessageFiltering() ) called when a command message (<MOOSNAME>_CMD) is recieved by the application.
     @param a copy of CmdMsg the message purporting to be a "command" - i.e. has the name <MOOSNAME>_CMD */
