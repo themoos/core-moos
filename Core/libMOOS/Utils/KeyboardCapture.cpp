@@ -10,7 +10,7 @@
 #ifdef _WIN32
 #include <io.h>
 #endif
-//#include <fstream>
+#include <fstream>
 
 namespace MOOS
 {
@@ -34,13 +34,13 @@ bool KeyboardCapture::dispatch(void * param)
 }
 bool KeyboardCapture::Capture()
 {
-	/*
-	std::ofstream iodebug("iodebug.txt");
+
+//	std::ofstream iodebug("iodebug.txt");
 //	MOOSPause(1000);
-	iodebug<<"cin :"<< isatty(0)<<std::endl;
-	iodebug<<"cout :"<< isatty(1)<<std::endl;
-	iodebug<<"cerr :"<< isatty(2)<<std::endl;
-	*/
+//	iodebug<<"cin :"<< isatty(0)<<std::endl;
+//	iodebug<<"cout :"<< isatty(1)<<std::endl;
+//	iodebug<<"cerr :"<< isatty(2)<<std::endl;
+
 #ifdef _WIN32
 	if(_isatty(0)==0)
 #else

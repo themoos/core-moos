@@ -265,6 +265,8 @@ bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile,
 bool CMOOSApp::Run( const std::string & sName,
                     const std::string & sMissionFile)
 {
+
+
 	//save absolutely crucial info...
 	m_sAppName      = sName; //default
 	m_CommandLineParser.GetOption("--moos_app_name",m_sAppName);//overload
@@ -328,6 +330,7 @@ bool CMOOSApp::Run( const std::string & sName,
     //can we start the communications ?
     if(m_bUseMOOSComms)
     {
+
         if(!ConfigureComms())
         {
             return false;
