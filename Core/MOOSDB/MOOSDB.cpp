@@ -162,8 +162,8 @@ void PrintHelpAndExit()
 //#endif
 	std::cout<<"--help                             print help and exit\n";
 	std::cout<<"\nexample:\n";
-	std::cout<<"  ./MOOSDB -moos_port=9001 \n";
-	std::cout<<"  ./MOOSDB -moos_port=9001 --rate_control=x_app:20,y_app:100,*_instrument:0\n";
+	std::cout<<"  ./MOOSDB --moos_port=9001 \n";
+	std::cout<<"  ./MOOSDB --moos_port=9001 --response=x_app:20,y_app:100,*_instrument:0\n";
 	exit(0);
 }
 

@@ -167,7 +167,7 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 					sClient = MOOSChomp(sNum,":");
 				}
 				if(!MOOSIsNumeric(sNum))
-					throw std::runtime_error("error processing latency "+ *q + " expected form [client_name:]time_ms\n");
+					throw std::runtime_error("error processing response "+ *q + " expected form [client_name:]time_ms\n");
 
 				double dfT = MOOS::StringToDouble(sNum);
 
