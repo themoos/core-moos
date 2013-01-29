@@ -291,6 +291,7 @@ bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 	unsigned int sleep_ms = m_dfOutGoingDelay*1000;
 	if(sleep_ms>0)
 	{
+		std::cerr<<"I'm sleeping for "<<m_dfOutGoingDelay<<" ms\n";
 		MOOSPause(sleep_ms);
 	}
 
@@ -409,21 +410,7 @@ bool MOOSAsyncCommClient::DoReading()
 				}
 			}
 
-			//here we dispatch to special call backs managed by threads
-			MOOSMSG_LIST::iterator t = m_InBox.begin();
-			while(t!=m_InBox.end())
-			{
-				std::map<std::string, MOOS::ActiveMailQueue* >::iterator q = ActiveQueues_.find(t->GetKey());
-				if(q!=ActiveQueues_.end())
-				{
-					q->second->Push(*t);
-					t = m_InBox.erase(t);
-				}
-				else
-				{
-					t++;
-				}
-			}
+			DispatchInBoxToActiveThreads();
 
 			m_bMailPresent = !m_InBox.empty();
 

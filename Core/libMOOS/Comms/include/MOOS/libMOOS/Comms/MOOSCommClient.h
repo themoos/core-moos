@@ -285,7 +285,12 @@ public:
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+    bool AddMessageCallback(const std::string & sCallbackName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam );
+
+    bool RemoveMessageCallback(const std::string & sCallbackName);
 
 
 
@@ -429,7 +434,10 @@ protected:
     /**
      * list of active mail queues. Each Queue invokes a callback. Keyed by message name
      */
-    std::map<std::string,MOOS::ActiveMailQueue*  > ActiveQueues_;
+    std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
+    std::map<std::string, std::string> ActiveQueueNames_;
+    CMOOSLock ActiveQueuesLock_;
+    bool DispatchInBoxToActiveThreads();
 
 
     unsigned long long int m_nBytesReceived;

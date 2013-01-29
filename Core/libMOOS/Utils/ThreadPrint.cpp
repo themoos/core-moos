@@ -62,6 +62,20 @@ void ThreadPrint::PrintStatus(bool bStatus,const std::string & sMessage)
 }
 
 
+void ThreadPrint::SimplyPrintTimeAndMessage(const std::string & sMessage )
+{
+	if(!_Impl->_Enable)
+		return;
+
+	_Impl->_Lock.Lock();
+
+	_Impl->_outstream.setf(std::ios::fixed);
+	_Impl->_outstream<<std::setprecision(4)<<MOOS::Time()<<"   "<<sMessage<<"\n";
+
+	_Impl->_Lock.UnLock();
+
+}
+
 
 void ThreadPrint::Print(const std::string & sMessage, const std::string & sPrompt,color_t color, bool bAppendNewLine )
 {
@@ -78,39 +92,39 @@ void ThreadPrint::Print(const std::string & sMessage, const std::string & sPromp
 #else
     pthread_t Me =  pthread_self();
 #endif
-    VENUE.setf(std::ios::fixed);
+    _Impl->_outstream.setf(std::ios::fixed);
 
-    VENUE<<std::setprecision(4)<<MOOS::Time()<<" "<<MOOS::ConsoleColours::yellow()<<std::left<< std::setw(15) << std::setfill(' ')<<Me<<"- ";
+    _Impl->_outstream<<std::setprecision(4)<<MOOS::Time()<<" "<<MOOS::ConsoleColours::yellow()<<std::left<< std::setw(15) << std::setfill(' ')<<Me<<"- ";
 
 	switch(color)
 	{
 		case RED:
-			VENUE<<MOOS::ConsoleColours::red();
+			_Impl->_outstream<<MOOS::ConsoleColours::red();
 			break;
 		case YELLOW:
-			VENUE<<MOOS::ConsoleColours::yellow();
+			_Impl->_outstream<<MOOS::ConsoleColours::yellow();
 			break;
 		case GREEN:
-			VENUE<<MOOS::ConsoleColours::green();
+			_Impl->_outstream<<MOOS::ConsoleColours::green();
 			break;
 		case MAGENTA:
-			VENUE<<MOOS::ConsoleColours::magenta();
+			_Impl->_outstream<<MOOS::ConsoleColours::magenta();
 			break;
 		case CYAN:
-			VENUE<<MOOS::ConsoleColours::cyan();
+			_Impl->_outstream<<MOOS::ConsoleColours::cyan();
 			break;
 		case NONE:
-			VENUE<<MOOS::ConsoleColours::reset();
+			_Impl->_outstream<<MOOS::ConsoleColours::reset();
 			break;
 
 	}
 
-	VENUE<< std::setw(25)<<sPrompt<<" "<<sMessage;
+	_Impl->_outstream<< std::setw(25)<<sPrompt<<" "<<sMessage;
 
 	if(bAppendNewLine)
-		VENUE<<std::endl;
+		_Impl->_outstream<<std::endl;
 
-	VENUE<<MOOS::ConsoleColours::reset();
+	_Impl->_outstream<<MOOS::ConsoleColours::reset();
 
 	_Impl->_Lock.UnLock();
 }

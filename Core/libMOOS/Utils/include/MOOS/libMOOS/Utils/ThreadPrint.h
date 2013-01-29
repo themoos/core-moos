@@ -43,6 +43,8 @@ public:
 
 	void PrintStatus(bool bStatus,const std::string & sMessage);
 
+	void SimplyPrintTimeAndMessage(const std::string & sMessage );
+
 
 
 	/**

@@ -757,14 +757,14 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
-bool CMOOSApp::AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+bool CMOOSApp::AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
 {
-	return m_Comms.AddMessageCallback(sMsgName,pfn,pYourParam);
+	return m_Comms.AddMessageCallback(sCallbackName,sMsgName,pfn,pYourParam);
 }
 
 bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
 {
-	return m_Comms.AddMessageCallback(sMsgName,MOOSAPP_OnMessage,this);
+	return m_Comms.AddMessageCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
 }
 
 

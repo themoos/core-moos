@@ -295,7 +295,7 @@ protected:
      * @param pYourParam a void * pointer to the thing we want passed as pParam above
      * @return true on success
      */
-    bool AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+    bool AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
 
     /**
      * Add a callback to ::OnMessage() for a particular message. This will cause OnMessage() to be called from its own thread

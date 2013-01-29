@@ -18,6 +18,12 @@ bool func(CMOOSMsg & M, void *pParam)
 	return true;
 }
 
+bool func_alt(CMOOSMsg & M, void *pParam)
+{
+	gPrinter.Print(MOOSFormat("in alternate callback for %s",M.GetKey().c_str()));
+	return true;
+}
+
 bool on_connect(void * pParam)
 {
 	CMOOSCommClient * pC = static_cast<CMOOSCommClient*> (pParam);
@@ -47,14 +53,25 @@ int main(int argc, char * argv[])
 	MOOS::CommandLineParser P(argc,argv);
 
 
-	C.AddMessageCallback("la",func,NULL);
-	C.AddMessageCallback("di",func,NULL);
+	C.AddMessageCallback("CallbackA","la",func,NULL);
+	C.AddMessageCallback("CallbackB","di",func,NULL);
+	C.AddMessageCallback("CallbackC","di",func,NULL);
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 
+	while(1)
+	{
+		MOOSPause(10000);
+		C.RemoveMessageCallback("CallbackB");
+		C.AddMessageCallback("CallbackB","di",func_alt,NULL);
+		MOOSPause(10000);
+		C.RemoveMessageCallback("CallbackB");
+		C.AddMessageCallback("CallbackB","di",func,NULL);
+	}
 
-	T theApp;
 
-	theApp.Run("queue_test_app",argc,argv);
+	//T theApp;
+
+	//theApp.Run("queue_test_app",argc,argv);
 
 }

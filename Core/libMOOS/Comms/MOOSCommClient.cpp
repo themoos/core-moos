@@ -321,20 +321,51 @@ bool CMOOSCommClient::ClientLoop()
 	return true;
 }
 
+bool CMOOSCommClient::RemoveMessageCallback(const std::string & sCallbackName)
+{
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	{
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			delete *p;
+			rQL.erase(p);
+			ActiveQueuesLock_.UnLock();
+			return true;
+		}
+	}
+	ActiveQueuesLock_.UnLock();
+	return false;
+}
 
-bool CMOOSCommClient::AddMessageCallback(const std::string & sMsgName,
+bool CMOOSCommClient::AddMessageCallback(const std::string & sCallbackName, const std::string & sMsgName,
 		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
 		void * pYourParam )
 {
+	ActiveQueuesLock_.Lock();
 	if(ActiveQueues_.find(sMsgName)!=ActiveQueues_.end())
 	{
-		ActiveQueues_[sMsgName]->Stop();
-		delete ActiveQueues_[sMsgName];
+		std::list<MOOS::ActiveMailQueue*>::iterator q;
+		for(q=ActiveQueues_[sMsgName].begin();q!=ActiveQueues_[sMsgName].end();q++)
+		{
+			MOOS::ActiveMailQueue* pqueue= *q;
+			if(pqueue->GetName()==sCallbackName)
+			{
+				pqueue->Stop();
+				delete pqueue;
+				ActiveQueues_[sMsgName].erase(q);
+			}
+		}
 	}
-	MOOS::ActiveMailQueue* pQ= new MOOS::ActiveMailQueue;
+	MOOS::ActiveMailQueue* pQ= new MOOS::ActiveMailQueue(sCallbackName);
 	pQ->SetCallback(pfn,pYourParam);
 	pQ->Start();
-	ActiveQueues_[sMsgName] = pQ;
+	ActiveQueues_[sMsgName].push_back(pQ);
+
+	ActiveQueuesLock_.UnLock();
 
 	return true;
 
@@ -445,20 +476,7 @@ bool CMOOSCommClient::DoClientWork()
 
 
 			//here we dispatch to special call backs managed by threads
-			MOOSMSG_LIST::iterator t = m_InBox.begin();
-			while(t!=m_InBox.end())
-			{
-				std::map<std::string, MOOS::ActiveMailQueue* >::iterator q = ActiveQueues_.find(t->GetKey());
-				if(q!=ActiveQueues_.end())
-				{
-					q->second->Push(*t);
-					t = m_InBox.erase(t);
-				}
-				else
-				{
-					t++;
-				}
-			}
+			DispatchInBoxToActiveThreads();
             
        
 			m_bMailPresent = !m_InBox.empty();
@@ -481,6 +499,32 @@ bool CMOOSCommClient::DoClientWork()
 		return false;//jump out to connect loop....				
 	}
 
+	return true;
+}
+
+bool CMOOSCommClient::DispatchInBoxToActiveThreads()
+{
+	//here we dispatch to special call backs managed by threads
+	MOOSMSG_LIST::iterator t = m_InBox.begin();
+	ActiveQueuesLock_.Lock();
+	while(t!=m_InBox.end())
+	{
+		std::map<std::string, std::list<MOOS::ActiveMailQueue*> >::iterator q = ActiveQueues_.find(t->GetKey());
+		if(q!=ActiveQueues_.end())
+		{
+			std::list<MOOS::ActiveMailQueue*>::iterator r;
+			for(r = q->second.begin();r!=q->second.end();r++)
+			{
+				(*r)->Push(*t);
+			}
+			t = m_InBox.erase(t);
+		}
+		else
+		{
+			t++;
+		}
+	}
+	ActiveQueuesLock_.UnLock();
 	return true;
 }
 
@@ -1131,13 +1175,22 @@ bool CMOOSCommClient::Close(bool  )
     
 	ClearResources();
 
-	std::map<std::string,MOOS::ActiveMailQueue*  >::iterator q;
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*>  >::iterator q;
 
 	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
 	{
-		delete q->second;
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			MOOS::ActiveMailQueue* pQueue = *p;
+			delete pQueue;
+		}
 	}
 	ActiveQueues_.clear();
+	ActiveQueuesLock_.UnLock();
+
 
 	return true;
 }

@@ -16,15 +16,21 @@ bool dispatch(void * pParam)
 	return pMe->DoWork();
 }
 
-ActiveMailQueue::ActiveMailQueue()
+ActiveMailQueue::ActiveMailQueue(const std::string & Name) : Name_(Name)
 {
 	// TODO Auto-generated constructor stub
+
 
 }
 
 ActiveMailQueue::~ActiveMailQueue() {
 	// TODO Auto-generated destructor stub
 	Stop();
+}
+
+std::string ActiveMailQueue::GetName()
+{
+	return Name_;
 }
 
 bool ActiveMailQueue::Start()

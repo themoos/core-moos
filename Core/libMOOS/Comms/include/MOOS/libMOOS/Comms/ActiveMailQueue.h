@@ -18,13 +18,14 @@ namespace MOOS {
 
 class ActiveMailQueue {
 public:
-	ActiveMailQueue();
+	ActiveMailQueue(const std::string &sName);
 	virtual ~ActiveMailQueue();
 	bool Push(const CMOOSMsg & M);
     void SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParamCaller), void * pCallerParam);
     bool DoWork();
     bool Stop();
     bool Start();
+    std::string GetName();
 protected:
 	MOOS::SafeList<CMOOSMsg> queue_;
 
@@ -33,6 +34,9 @@ protected:
     void * caller_param_;
 
     CMOOSThread thread_;
+
+    //this is a mick name for the Queue
+    std::string Name_;
 
 };
 
