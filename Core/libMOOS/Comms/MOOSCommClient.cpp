@@ -331,10 +331,13 @@ bool CMOOSCommClient::RemoveMessageCallback(const std::string & sCallbackName)
 		std::list<MOOS::ActiveMailQueue*>::iterator p;
 		for(p = rQL.begin();p!=rQL.end();p++)
 		{
-			delete *p;
-			rQL.erase(p);
-			ActiveQueuesLock_.UnLock();
-			return true;
+			if((*p)->GetName()==sCallbackName)
+			{
+				delete *p;
+				rQL.erase(p);
+				ActiveQueuesLock_.UnLock();
+				return true;
+			}
 		}
 	}
 	ActiveQueuesLock_.UnLock();
@@ -371,6 +374,30 @@ bool CMOOSCommClient::AddMessageCallback(const std::string & sCallbackName, cons
 
 }
 
+
+bool CMOOSCommClient::HasMessageCallback(const std::string & sCallbackName)
+{
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	{
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			if((*p)->GetName()==sCallbackName)
+			{
+				return true;
+				ActiveQueuesLock_.UnLock();
+			}
+		}
+	}
+
+	ActiveQueuesLock_.UnLock();
+
+	return false;
+
+}
 
 bool CMOOSCommClient::DoClientWork()
 {

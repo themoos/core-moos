@@ -292,6 +292,7 @@ public:
 
     bool RemoveMessageCallback(const std::string & sCallbackName);
 
+    bool HasMessageCallback(const std::string & sCallbackName);
 
 
 
