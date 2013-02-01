@@ -1,11 +1,15 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+#include "MOOS/libMOOS/Utils/ThreadPrint.h"
+
 
 int count=0;
 CMOOSLock L;
 
+MOOS::ThreadPrint gPrinter(std::cerr);
 
 bool func(CMOOSMsg & M, void *pParam)
 {
+	//gPrinter.SimplyPrintTimeAndMessage(M.GetAsString());
 	L.Lock();
 		count++;
 	L.UnLock();
@@ -23,7 +27,7 @@ bool on_connect(void * pParam)
 int main(int argc, char * argv[])
 {
 	MOOS::MOOSAsyncCommClient A,B;
-
+	//CMOOSCommClient A,B;
 	A.SetQuiet(true);
 	B.SetQuiet(true);
 
@@ -40,8 +44,11 @@ int main(int argc, char * argv[])
 	while(1)
 	{
 
+		std::cerr<<"1)closing all\n";
 		A.Close();
 		B.Close();
+		std::cerr<<"2)restarting all\n";
+
 		A.Run("localhost",9000,"C");
 		B.Run("localhost",9000,"D");
 
@@ -51,6 +58,7 @@ int main(int argc, char * argv[])
 		while(!B.IsConnected())
 			MOOSPause(10);
 
+		std::cerr<<"3)installing callbacks\n";
 		A.AddMessageCallback("CBA","X",func,NULL);
 		B.AddMessageCallback("CBB","X",func,NULL);
 
@@ -60,13 +68,14 @@ int main(int argc, char * argv[])
 		MOOSPause(100); //callback will have fired by now..
 
 		//reset count
-		std::cerr<<"clearing counter\n";
 		count = 0;
 
-		for(int i = 0;i<100;i++)
+		std::cerr<<"4)starting rapid fire notifications...\n";
+		int n = 30;
+		for(int i = 0;i<n;i++)
 		{
 			//send data from everyone to everyone
-			//two hundred notifications and two interested parties
+			//4 hundred notifications and two interested parties
 			A.Notify("X",i);
 			B.Notify("X",i);
 		}
@@ -74,8 +83,9 @@ int main(int argc, char * argv[])
 		//this should be fast no need to wait long
 		MOOSPause(100);
 
-		//by this point we shoudl have received 400 messages
-		std::cerr<<" received "<<count<< " and expected 400\n\n\n";
+		//by this point we shoudl have received n*4 messages
+		std::cerr<<"6)starting rapid fire notifications...\n";
+		std::cerr<<"7)testing\n\treceived "<<count<< " and expected "<<n*4<<":"<<(count==n*4?"PASS":"FAIL")<<"\n\n\n";
 
 	}
 
