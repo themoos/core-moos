@@ -106,6 +106,9 @@ CMOOSCommClient::CMOOSCommClient()
 	m_bFakeSource = false;
     m_bQuiet= false;
     
+    m_bPostNewestToFront = false;
+
+
     //by default this client will adjust the local time skew
     //by using time information sent by the CommServer sitting
     //at the other end of this conenection.
@@ -232,6 +235,8 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 }
 
 
+
+
 unsigned long long int CMOOSCommClient::GetNumBytesSent()
 {
 	return m_nBytesSent;
@@ -271,6 +276,17 @@ bool CMOOSCommClient::ClientLoop()
 
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
+
+
+		try
+		{
+			m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
+			m_pSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+		}
+		catch(  XPCException & e)
+		{
+			std::cerr<<"there was trouble configuring socket buffers: "<<e.sGetException()<<"\n";
+		}
 
 		if(ConnectToServer())
 		{
@@ -689,14 +705,21 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 	}
 
 
-	m_OutBox.push_front(Msg);
+	if(m_bPostNewestToFront)
+		m_OutBox.push_front(Msg);
+	else
+		m_OutBox.push_back(Msg);
 
 	if(m_OutBox.size()>m_nOutPendingLimit)
 	{	
 		MOOSTrace("\nThe outbox is very full. This is suspicious and dangerous.\n");
 		MOOSTrace("\nRemoving old unsent messages as new ones are added\n");
 		//remove oldest message...
-		m_OutBox.pop_back();
+
+		if(m_bPostNewestToFront)
+			m_OutBox.pop_back();
+		else
+			m_OutBox.pop_front();
 	}
 
 	m_OutLock.UnLock();

@@ -240,13 +240,25 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnsentMessages();
 
-
     /** get total number of bytes sent*/
     unsigned long long int GetNumBytesSent();
 
     /** get total number of bytes received*/
     unsigned long long int GetNumBytesReceived();
 
+	/**	 set the size of the receive  buffer of the underlying socket in KB.
+	 * Its unlikely you need to change this from the default
+	 * @param KBytes
+	 * @return true on success
+	 */
+    bool SetReceiveBufferSizeInKB(unsigned int KBytes);
+
+    /**	 set the size of the send  buffer of the underlying socket in KB.
+	* Its unlikely you need to change this from the default
+	* @param KBytes
+	* @return true on success
+	*/
+    bool SetSendBufferSizeInKB(unsigned int KBytes);
 
 
     /** used to control how verbose the connection process is */
@@ -280,6 +292,7 @@ public:
 
     /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+	 * @param sCallbackName name for callback
 	 * @param sMsgName name of message to watch for
 	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
@@ -290,8 +303,18 @@ public:
     		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
     		void * pYourParam );
 
+    /**
+     * remove the named callback
+     * @param sCallbackName
+     * @return
+     */
     bool RemoveMessageCallback(const std::string & sCallbackName);
 
+    /**
+     * Does this named callback exist?
+     * @param sCallbackName
+     * @return
+     */
     bool HasMessageCallback(const std::string & sCallbackName);
 
 
@@ -409,7 +432,7 @@ protected:
     bool (*m_pfnMailCallBack)(void* pParam);
     
     
-    /** funcdamental frequency with which comms with server occurs
+    /** fundamental frequency with which comms with server occurs
     @see Run
     */
     unsigned int m_nFundamentalFreq;
@@ -436,13 +459,35 @@ protected:
      * list of active mail queues. Each Queue invokes a callback. Keyed by message name
      */
     std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
-    std::map<std::string, std::string> ActiveQueueNames_;
+
+    /*
+     * a mutex protecting  ActiveQueues_
+     */
     CMOOSLock ActiveQueuesLock_;
+
+    /*
+     * an inernal helper function which sorts some mail into
+     * active queues (if any have been installed)
+     */
     bool DispatchInBoxToActiveThreads();
 
-
+    /*
+     * a counter for total bytes received
+     */
     unsigned long long int m_nBytesReceived;
+
+    /*
+     * a counter for total bytes received.
+     */
     unsigned long long int m_nBytesSent;
+
+
+    /**
+     * internal variable describing if mail should be
+     * posted to front or back of mailbox
+     */
+    bool m_bPostNewestToFront;
+
 
 
 };

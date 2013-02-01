@@ -569,7 +569,7 @@ bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
     //q->second is now a reference to a list of messages that will be
     //sent to sClient the next time it calls into the database...
     
-    q->second.push_front(Msg);
+    q->second.push_back(Msg);
     
     //MOOSTrace("%d messages held for client %s\n",q->second.size(),sClient.c_str());
 
