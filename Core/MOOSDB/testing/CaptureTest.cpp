@@ -13,15 +13,31 @@
 std::vector<std::string> vars;
 std::ofstream logfile("capture.txt");
 MOOS::ThreadPrint gPrinter(logfile);
+bool bLog=false;
+double dfStartTime=0;
+void PrintHelpAndExit()
+{
+	std::cerr<<"./capture --moos_host=[localhost] --moos_port=[9000] [--log]  X Y Z\n";
+	exit(0);
+}
 
 void LogMessage(CMOOSMsg & M)
 {
-	std::stringstream ss;
-	ss.setf(std::ios::fixed);
-	ss<<std::setprecision(4)<<M.GetTime()<<" ";
-	ss<<std::setprecision(4)<<MOOSLocalTime()<<" ";
-	ss<<M.GetKey();
-	gPrinter.SimplyPrintTimeAndMessage(ss.str());
+	double dfDelay = MOOSLocalTime()-M.GetTime();
+	if(dfDelay>30e-3)
+	{
+		std::cerr<<MOOSTime()-dfStartTime<<" ouch! delay is "<<dfDelay<<"\n";
+	}
+	if(bLog)
+	{
+		std::stringstream ss;
+		ss.setf(std::ios::fixed);
+		ss<<std::setprecision(4)<<M.GetTime()<<" ";
+		ss<<std::setprecision(4)<<MOOSLocalTime()<<" ";
+		ss<<M.GetKey();
+		gPrinter.SimplyPrintTimeAndMessage(ss.str());
+	}
+
 }
 
 bool func(CMOOSMsg & M, void *pParam)
@@ -57,9 +73,23 @@ bool on_connect(void * pParam)
 
 int main(int argc, char * argv[])
 {
+	dfStartTime = MOOSLocalTime();
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
+
+	if(P.GetFlag("--help"))
+		PrintHelpAndExit();
+
 	P.GetFreeParameters(vars);
+
+	std::string sHost = "localhost";
+	unsigned int port = 9000;
+	P.GetVariable("--moos_host",sHost);
+	P.GetVariable("--moos_port",port);
+
+	bLog = P.GetFlag("--log");
+
+
 
 	for(unsigned int k = 0;k<vars.size();k++)
 	{
@@ -69,7 +99,7 @@ int main(int argc, char * argv[])
 
 	C.SetOnMailCallBack(on_mail,&C);
 	C.SetOnConnectCallBack(on_connect, &C);
-	C.Run("localhost",9000,"capture_test");
+	C.Run(sHost,port,"capture_test");
 
 	while(1)
 	{
