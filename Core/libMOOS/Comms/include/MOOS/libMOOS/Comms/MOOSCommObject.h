@@ -73,6 +73,27 @@ public:
      */
     bool ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay,double dfTerminateProbability = 0.0);
 
+
+protected:
+    unsigned int m_nReceiveBufferSizeKB;
+    unsigned int m_nSendBufferSizeKB;
+
+
+    /**	 set the size of the receive  buffer of the underlying socket in KB.
+	 * Its unlikely you need to change this from the default
+	 * @param KBytes
+	 * @return true on success
+	 */
+	bool SetReceiveBufferSizeInKB(unsigned int KBytes);
+
+	/**	 set the size of the send  buffer of the underlying socket in KB.
+	* Its unlikely you need to change this from the default
+	* @param KBytes
+	* @return true on success
+	*/
+	bool SetSendBufferSizeInKB(unsigned int KBytes);
+
+
 private:
     //these are just here to help us test aspects of the communications
     bool m_bFakeDodgyComms;
