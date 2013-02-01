@@ -43,6 +43,11 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <iostream>
 
+
+
+#define DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
+#define DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB 128
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -53,6 +58,11 @@ CMOOSCommObject::CMOOSCommObject()
     m_dfDodgeyCommsDelay = 1.0;
     m_dfDodgeyCommsProbability = 0.5;
     m_dfTerminateProbability = 0.0;
+
+    SetReceiveBufferSizeInKB(DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB);
+    SetSendBufferSizeInKB(DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB);
+
+
 }
 
 CMOOSCommObject::~CMOOSCommObject()
@@ -68,6 +78,34 @@ bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,doub
     m_dfTerminateProbability = dfTerminateProbability;
     return true;
 }
+
+
+bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
+{
+	if(KBytes>0 && KBytes<2048)
+	{
+		m_nReceiveBufferSizeKB = KBytes;
+		return true;
+	}
+	return false;
+}
+
+
+/**	 set the size of the send  buffer of the underlying socket in MB.
+* Its unlikely you need to change this from the default
+* @param KBytes
+* @return true on success
+*/
+bool CMOOSCommObject::SetSendBufferSizeInKB(unsigned int KBytes)
+{
+	if(KBytes>0 && KBytes<2048)
+	{
+		m_nSendBufferSizeKB = KBytes;
+		return true;
+	}
+	return false;
+}
+
 
 void CMOOSCommObject::SimulateCommsError()
 {

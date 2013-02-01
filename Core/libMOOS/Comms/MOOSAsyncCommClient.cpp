@@ -45,6 +45,7 @@ MOOSAsyncCommClient::MOOSAsyncCommClient()
 {
 	m_dfLastTimingMessage = 0.0;
 	m_dfOutGoingDelay = 0.0;
+	m_bPostNewestToFront = false;
 }
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
@@ -163,6 +164,15 @@ bool MOOSAsyncCommClient::WritingLoop()
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
 
+		try
+		{
+			m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
+			m_pSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+		}
+		catch(  XPCException & e)
+		{
+			std::cerr<<"there was trouble configuring socket buffers: "<<e.sGetException()<<"\n";
+		}
 		//reset counters
 		m_nBytesSent = 0;
 		m_nBytesReceived = 0;
@@ -170,7 +180,7 @@ bool MOOSAsyncCommClient::WritingLoop()
 
 		if(ConnectToServer())
 		{
-			int nMSToWait  = 1000;
+			int nMSToWait  = 333;
 
 			m_dfLastSendTime = MOOSLocalTime();
 
@@ -207,8 +217,8 @@ bool MOOSAsyncCommClient::WritingLoop()
 		m_pSocket = NULL;
 	}
 
-	if(m_bQuiet)
-		MOOSTrace("CMOOSAsyncCommClient::WritingLoop() quits\n");
+	/*if(!m_bQuiet)
+		MOOSTrace("CMOOSAsyncCommClient::WritingLoop() quits\n");*/
 
 	m_bConnected = false;
 
@@ -236,7 +246,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			if(q->IsType(MOOS_TERMINATE_CONNECTION))
 			{
-				std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
+				//std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
 				return false;
 			}
 		}
@@ -246,7 +256,6 @@ bool MOOSAsyncCommClient::DoWriting()
 		if((MOOSLocalTime()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
-//			std::cerr<<"forming timing message "<<std::fixed<<std::setprecision(4)<<Msg.GetTime()<<std::endl;
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
 		}
@@ -314,7 +323,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			{
 				OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-",0)   );
 
-				std::cout<<"reading failed!\n";
+				//std::cout<<"reading failed!\n";
 
 				while(IsConnected())//wait for connection to terminate...
 					MOOSPause(200);
@@ -326,7 +335,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			MOOSPause(100);
 		}
 	}
-	std::cout<<"READING LOOP quiting...\n";
+	//std::cout<<"READING LOOP quiting...\n";
 	return true;
 }
 

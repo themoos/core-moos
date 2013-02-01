@@ -53,6 +53,9 @@ using namespace std;
 #endif
 
 #define TOLERABLE_SILENCE 5.0
+#define DEFAULT_SERVER_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
+#define DEFAULT_SERVER_SOCKET_SEND_BUFFER_SIZE_KB 128
+
 
 
 #ifdef _WIN32
@@ -183,11 +186,6 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 					m_ClientTimingVector.push_back(std::make_pair(sClient,dfT));
 				}
 
-//				std::list< std::pair< std::string, double >  >::iterator q;
-//				for(q =  m_ClientTimingVector.begin();q!= m_ClientTimingVector.end();q++)
-//				{
-//					std::cerr<<q->first<<" : "<<q->second<<" ms\n";
-//				}
 
 
 			}
@@ -200,14 +198,6 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 		}
 
 	}
-
-
-
-
-
-
-
-
 
 
     if(!m_bQuiet)
@@ -387,6 +377,16 @@ bool CMOOSCommServer::ListenLoop()
 				sClientName[0]='\0'; 
 			}
 			
+			try
+			{
+				pNewSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
+				pNewSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+			}
+			catch(  XPCException & e)
+			{
+				std::cerr<<"there was trouble configuring socket buffers: "<<e.sGetException()<<"\n";
+			}
+
             m_SocketListLock.Lock();
 
             if(OnNewClient(pNewSocket,sClientName))
