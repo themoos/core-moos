@@ -387,8 +387,8 @@ bool CMOOSCommClient::HasMessageCallback(const std::string & sCallbackName)
 		{
 			if((*p)->GetName()==sCallbackName)
 			{
-				return true;
 				ActiveQueuesLock_.UnLock();
+				return true;
 			}
 		}
 	}
