@@ -46,6 +46,7 @@
     #include <iostream>
     #include <sys/types.h>
     #include <sys/ioctl.h>
+	#include <netinet/tcp.h>
     #ifdef PLATFORM_LINUX
         #define FIONBIO 0x5421
     #endif

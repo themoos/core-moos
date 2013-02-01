@@ -81,6 +81,8 @@ public:
     // allows a read with a timeout to prevent from blocking indefinitely
     int iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, double dfTimeOut,int _iOption=0);
 
+    void vSetNoDelay(int _iToggle);
+
 };
 
 #endif
