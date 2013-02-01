@@ -322,5 +322,16 @@ int XPCTcpSocket::iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, do
     return iNumBytes;
 }
 
+void XPCTcpSocket::vSetNoDelay(int _iToggle)
+{
+	if (setsockopt(iSocket, IPPROTO_TCP, TCP_NODELAY, (char *)&_iToggle, sizeof(_iToggle)) == -1)
+	{
+		char sMsg[512];
+		sprintf(sMsg, "Error Setting NoDelay Option: %s", sGetError());
+		XPCException sockOptExcept(sMsg);
+		throw sockOptExcept;
+		return;
+	}
+}
 
 
