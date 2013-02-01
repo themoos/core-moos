@@ -73,6 +73,22 @@ bool on_connect(void * pParam)
 
 int main(int argc, char * argv[])
 {
+
+    int policy;
+    struct sched_param param;
+
+if(0)
+{
+	pthread_getschedparam(pthread_self(), &policy, &param);
+	std::cout<<"default priority"<< param.sched_priority<<"\n";
+	param.sched_priority = sched_get_priority_max(policy);
+	std::cout<<"max priority"<< param.sched_priority<<"\n";
+	if(pthread_setschedparam(pthread_self(), policy, &param)!=0)
+	{
+		std::cout<<"it did not work\n";
+	}
+}
+
 	dfStartTime = MOOSLocalTime();
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
