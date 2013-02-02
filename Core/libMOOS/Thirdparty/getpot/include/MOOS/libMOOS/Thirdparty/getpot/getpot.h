@@ -1,3 +1,4 @@
+
 //  -*- c++ -*-  vim: set syntax=cpp:
 //  GetPot Version $$Version$$                                    $$Date$$
 //

@@ -1,4 +1,4 @@
-//
+
 // Foundation.h
 //
 // $Id: //poco/svn/Foundation/include/Poco/Foundation.h#2 $

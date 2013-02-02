@@ -1,4 +1,4 @@
-//
+
 // Mutex.h
 //
 // $Id: //poco/svn/Foundation/include/Poco/Mutex.h#3 $

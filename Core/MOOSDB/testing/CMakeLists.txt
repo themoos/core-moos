@@ -13,8 +13,8 @@ target_link_libraries(app_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 add_executable(queue_test QueueTest.cpp )
 target_link_libraries(queue_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
-add_executable(abuse abuse_a_client.cpp )
-target_link_libraries(abuse ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+add_executable(io_test IOTest.cpp )
+target_link_libraries(io_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
 add_executable(capture_test CaptureTest.cpp )
 target_link_libraries(capture_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
