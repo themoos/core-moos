@@ -143,17 +143,19 @@ void PrintHelpAndExit()
 	std::cout<<"Common MOOS parameters:\n";
 	std::cout<<"--moos_file=<string>               specify mission file name (default mission.moos)\n";
 	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
-	std::cout<<"--moos_time_warp =<positive_float> specify time warp\n";
+	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
 	std::cout<<"--moos_community=<string>          specify community name\n";
 
 
 
 	std::cout<<"\nDB Control:\n";
 
-	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
 	std::cout<<"-d    (--dns)                      run with dns lookup\n";
 	std::cout<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
+	std::cout<<"-b    (--moos_boost)               boost priority of communications\n";
 	std::cout<<"--moos_timeout=<positive_float>    specify client timeout\n";
+	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
+
 
 //#ifdef MOOSDB_HAS_WEBSERVER
 	std::cout<<"--webserver_port=<positive_integer> run webserver on given port\n";
@@ -239,6 +241,11 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     	PrintHelpAndExit();
 
     ///////////////////////////////////////////////////////////
+	//are we looking for help?
+	bool bBoost = P.GetFlag("--moos_boost","-b");
+
+
+    ///////////////////////////////////////////////////////////
     //are we being asked to be old skool and use a single thread?
     bool bSingleThreaded = P.GetFlag("-s","--single_threaded");
 
@@ -263,6 +270,8 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
 
     m_pCommServer->SetClientTimeout(dfClientTimeout);
+
+    m_pCommServer->BoostIOPriority(bBoost);
 
     m_pCommServer->SetCommandLineParameters(argc,argv);
 

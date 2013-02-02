@@ -86,6 +86,12 @@ bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
 }
 
 
+void CMOOSCommObject::BoostIOPriority(bool bBoost)
+{
+	m_bBoostIOThreads = bBoost;
+}
+
+
 /**	 set the size of the send  buffer of the underlying socket in MB.
 * Its unlikely you need to change this from the default
 * @param KBytes

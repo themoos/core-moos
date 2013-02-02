@@ -41,6 +41,7 @@
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -125,6 +126,8 @@ CMOOSCommServer::CMOOSCommServer()
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
 
+	m_bBoostIOThreads= false;
+
 	m_dfClientTimeout = TOLERABLE_SILENCE;
 }
 
@@ -137,6 +140,7 @@ void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }
+
 
 
 
@@ -425,6 +429,8 @@ bool CMOOSCommServer::ServerLoop()
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
+    if(m_bBoostIOThreads)
+    	MOOS::BoostThisThread();
 
 
     while(!m_bQuit)
@@ -432,7 +438,7 @@ bool CMOOSCommServer::ServerLoop()
 
         if(m_ClientSocketList.empty())
         {
-            MOOSPause(1);
+            MOOSPause(100);
             continue;
         }
 
@@ -619,7 +625,16 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         }
         else
         {
-        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"Synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+
+        if(m_bBoostIOThreads)
+        {
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::Yellow()<<"raised"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::green()<<"normal"<<MOOS::ConsoleColours::reset()<<"\n";
         }
     }
     else

@@ -25,14 +25,6 @@
 **/
 
 
-
-
-/*
- * QueueTest.cpp
- *
- *  Created on: Dec 6, 2012
- *      Author: pnewman
- */
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
@@ -40,13 +32,28 @@
 
 
 std::vector<std::string> vars;
-std::ofstream logfile("capture.txt");
-MOOS::ThreadPrint gPrinter(logfile);
+std::ofstream of;
+MOOS::ThreadPrint gPrinter(of);
 bool bLog=false;
 double dfStartTime=0;
+
 void PrintHelpAndExit()
 {
-	std::cerr<<"./capture --moos_host=[localhost] --moos_port=[9000] [--log]  X Y Z\n";
+	std::cerr<<"\nA program which captures times of dispatch and arrival of named messages to file.\n\n";
+
+	std::cerr<<"\nUsage\n";
+	std::cerr<<"./capture [options] vars\n";
+
+	std::cerr<<"\nOptions\n";
+	std::cerr<<"--moos_host=[localhost]\n";
+	std::cerr<<"--moos_port=[9000]\n";
+    std::cerr<<"--log\n";
+    std::cerr<<"--log_file=[capture.txt]\n";
+    std::cerr<<"--moos_boost\n";
+
+	std::cerr<<"\nexamples\n";
+	std::cerr<<"   ./capture  --log --log_file=logX.txt  X \n";
+	std::cerr<<"   ./capture  --log --log_file=logX.txt --moos_boost  X \n";
 	exit(0);
 }
 
@@ -100,41 +107,35 @@ bool on_connect(void * pParam)
 	return true;
 }
 
+
 int main(int argc, char * argv[])
 {
-
-    int policy;
-    struct sched_param param;
-
-if(0)
-{
-	pthread_getschedparam(pthread_self(), &policy, &param);
-	std::cout<<"default priority"<< param.sched_priority<<"\n";
-	param.sched_priority = sched_get_priority_max(policy);
-	std::cout<<"max priority"<< param.sched_priority<<"\n";
-	if(pthread_setschedparam(pthread_self(), policy, &param)!=0)
-	{
-		std::cout<<"it did not work\n";
-	}
-}
 
 	dfStartTime = MOOSLocalTime();
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
+	P.GetFreeParameters(vars);
 
 	if(P.GetFlag("--help"))
 		PrintHelpAndExit();
 
-	P.GetFreeParameters(vars);
-
 	std::string sHost = "localhost";
-	unsigned int port = 9000;
 	P.GetVariable("--moos_host",sHost);
+
+	unsigned int port = 9000;
 	P.GetVariable("--moos_port",port);
+
+	bool bBoostIO = P.GetFlag("-b","--moos_boost");
+	C.BoostIOPriority(bBoostIO);
 
 	bLog = P.GetFlag("--log");
 
-
+	if(bLog)
+	{
+		std::string sLogFile = "capture.txt";
+		P.GetVariable("--log_file",sLogFile);
+		of.open(sLogFile.c_str());
+	}
 
 	for(unsigned int k = 0;k<vars.size();k++)
 	{

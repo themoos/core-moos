@@ -41,6 +41,7 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Comms/ServerAudit.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
@@ -65,7 +66,6 @@ ThreadPrint gPrinter(std::cout);
 ThreadedCommServer::ThreadedCommServer()
 {
     // TODO Auto-generated constructor stub
-
 }
 
 ThreadedCommServer::~ThreadedCommServer()
@@ -153,7 +153,8 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     		m_SharedDataListFromClient,
     		bAsync,
     		dfConsolidationTime,
-    		m_dfClientTimeout);
+    		m_dfClientTimeout,
+    		m_bBoostIOThreads);
 
     //add to map
     m_ClientThreads[sName] = pNewClientThread;
@@ -171,9 +172,17 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
  */
 bool ThreadedCommServer::ServerLoop()
 {
+
+
 	MOOS::ServerAudit Auditor;
 	Auditor.Run();
-    //eternally look at our incoming work list....
+
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
+
+	//eternally look at our incoming work list....
 	while(!m_ServerThread.IsQuitRequested())
     {
         ClientThreadSharedData SDFromClient;
@@ -472,13 +481,14 @@ ThreadedCommServer::ClientThread::~ClientThread()
 }
 
 
-ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS,double dfClientTimeout ):
+ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS,double dfClientTimeout, bool bBoost ):
             _sClientName(sName),
             _ClientSocket(ClientSocket),
             _SharedDataIncoming(SharedDataIncoming),
 			_bAsynchronous(bAsync),
 			_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0),
-			_dfClientTimeout(dfClientTimeout)
+			_dfClientTimeout(dfClientTimeout),
+			_bBoostThread(bBoost)
 {
     _Worker.Initialise(RunEntry,this);
 
@@ -504,6 +514,12 @@ bool ThreadedCommServer::ClientThread::Run()
     fd_set fdset;                // Set of "watched" file descriptors
 
     double dfLastGoodComms = MOOSLocalTime();
+
+    //this is an io-bound important thread...
+    if(_bBoostThread)
+    {
+    	MOOS::BoostThisThread();
+    }
 
     while(!_Worker.IsQuitRequested())
     {
@@ -655,6 +671,12 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 
     try
     {
+        if(_bBoostThread)
+        {
+        	MOOS::BoostThisThread();
+        }
+
+
 		while(!_Writer.IsQuitRequested())
 		{
 			ClientThreadSharedData SDDownChain;

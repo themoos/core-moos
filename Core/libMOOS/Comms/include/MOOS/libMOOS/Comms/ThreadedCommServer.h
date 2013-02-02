@@ -39,7 +39,8 @@
 namespace MOOS
 {
 
-
+//this is a small container structure used to hold data which is shared
+//between classes the in concert support teh threadedcommserver
 struct ClientThreadSharedData
 {
 
@@ -64,16 +65,12 @@ struct ClientThreadSharedData
 		_pPkt = new CMOOSCommPkt;
 	};
 
-
 	ClientThreadSharedData(){_Status =NOT_INITIALISED; };
-
-
-
 
 };
 
-class ServerAudit;
 
+class ServerAudit;
 
 class ThreadedCommServer : public CMOOSCommServer
 {
@@ -103,11 +100,20 @@ protected:
          *
          * @param sName name of client this object is encapsulating
          * @param ClientSocket reference to a socket at the other end of which is the client
-         * @param SharedData a sae list of ClientThreadSharedData object
+         * @param SharedData a safe list of ClientThreadSharedData objects
+         * @param bAsync is this an asynchronous client
+         * @param dfConsolidationPeriodMS how long should this client be told to pause between talking to DB
+         * @param dfClientTimeout how long will we tolerate silence before dumping this sorry soul
+         * @param are we wishing to boost the priority of this IO bound thread
          * @return
          */
-        ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming,
-        		bool bAsync,double dfConsolidationPeriodMS,double dfClientTimeout );
+        ClientThread(const std::string & sName,
+        		XPCTcpSocket & ClientSocket,
+        		SHARED_PKT_LIST & SharedDataIncoming,
+        		bool bAsync,
+        		double dfConsolidationPeriodMS,
+        		double dfClientTimeout,
+        		bool bBoostThread);
 
 
         /**
@@ -185,6 +191,9 @@ protected:
         //how long can we tolerate silence
         double _dfClientTimeout;
 
+        //are we asked to boost prioirty
+        bool _bBoostThread;
+
 
     };
 
@@ -219,6 +228,7 @@ protected:
 		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
 
 		std::map<std::string,ClientThread*> m_ClientThreads;
+
 
 
 

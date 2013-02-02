@@ -112,6 +112,11 @@ public:
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
         _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
 
+        if(m_CommandLineParser.GetFlag("--moos_boost"))
+        {
+        	m_Comms.BoostIOPriority(true);
+        }
+
 
         std::string temp;
 

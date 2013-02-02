@@ -57,6 +57,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -268,6 +269,12 @@ bool CMOOSCommClient::IsRunning()
 bool CMOOSCommClient::ClientLoop()
 {
     double dfTDebug = MOOSLocalTime();
+
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
+
 	while(!m_ClientThread.IsQuitRequested())
 	{
 		m_nBytesReceived=0;
@@ -591,6 +598,8 @@ bool CMOOSCommClient::ConnectToServer()
 	}
 
 	int nAttempt=0;
+
+
 
     if(!m_bQuiet)
 	    MOOSTrace("\n---------------MOOS CONNECT-----------------------\n");

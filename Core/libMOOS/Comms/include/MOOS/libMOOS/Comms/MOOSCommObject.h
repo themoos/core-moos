@@ -68,9 +68,14 @@ public:
     bool ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay,double dfTerminateProbability = 0.0);
 
 
+    /**
+     * boost (or don't) the priority of all threads involved in IO
+     * @param bBoost
+     */
+    void BoostIOPriority(bool bBoost);
+
+
 protected:
-    unsigned int m_nReceiveBufferSizeKB;
-    unsigned int m_nSendBufferSizeKB;
 
 
     /**	 set the size of the receive  buffer of the underlying socket in KB.
@@ -86,6 +91,12 @@ protected:
 	* @return true on success
 	*/
 	bool SetSendBufferSizeInKB(unsigned int KBytes);
+
+
+	unsigned int m_nReceiveBufferSizeKB;
+    unsigned int m_nSendBufferSizeKB;
+    //should we boost the priority of all IO threads?
+	bool m_bBoostIOThreads;
 
 
 private:

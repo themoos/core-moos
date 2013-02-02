@@ -47,6 +47,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -186,6 +187,10 @@ bool MOOSAsyncCommClient::WritingLoop()
     signal(SIGPIPE,SIG_IGN);
 #endif
 
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
 
 	while(!WritingThread_.IsQuitRequested())
 	{
@@ -343,6 +348,12 @@ bool MOOSAsyncCommClient::ReadingLoop()
 #ifndef _WIN32
     signal(SIGPIPE,SIG_IGN);
 #endif	
+
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
+
 
 	while(!ReadingThread_.IsQuitRequested())
 	{

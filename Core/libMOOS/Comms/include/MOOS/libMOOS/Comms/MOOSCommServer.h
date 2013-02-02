@@ -106,7 +106,14 @@ public:
     server threads. It makes sure all clients speak occasionally*/
     virtual bool TimerLoop();
 
+    /**
+     * specify how long the sever will tolerate silence from a client
+     * @param dfTimeoutPeriod positive float in seconds
+     * @return true on success
+     */
     bool  SetClientTimeout(double dfTimeoutPeriod);
+
+
 
 
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
@@ -264,8 +271,9 @@ protected:
     ///how quiet are we
     bool m_bQuiet;
 
-
+    //how long will we tolerate a cleint not talking to us?
     double m_dfClientTimeout;
+
 
 
 
