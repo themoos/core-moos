@@ -28,7 +28,6 @@
 #endif
 
 using namespace std;
-
 //----------------------------------------------------------------
 // Constructor(s)
 
@@ -69,11 +68,15 @@ void AppCastingMOOSApp::PostReport(const string& directive)
     return;
 
   // By default
-  bool term_reporting = m_term_reporting;
-  if(directive == "noterm")
+  bool term_reporting  = m_term_reporting;
+  bool appcast_allowed = true;
+  if(directive.find("noterm") != string::npos)
     term_reporting = false;
-  else if(directive == "doterm")
+  else if(directive.find("doterm") != string::npos)
     term_reporting = true;
+
+  if(directive.find("noappcast") != string::npos)
+    appcast_allowed = false;
 
   double moos_elapsed_time_term = m_curr_time - m_last_report_time;
   double real_elapsed_time_term = moos_elapsed_time_term / m_time_warp;
@@ -85,7 +88,9 @@ void AppCastingMOOSApp::PostReport(const string& directive)
      (real_elapsed_time_appcast < m_term_report_interval))
     return;
 
-  bool appcast_pending = appcastRequested() || (m_iteration < 2);
+  bool appcast_pending = false;
+  if(appcast_allowed)
+    appcast_pending = appcastRequested() || (m_iteration < 2);
 
   // If no report for terminal and no report for appcast, just return!
   if(!term_reporting && !appcast_pending)
@@ -130,6 +135,32 @@ void AppCastingMOOSApp::PostReport(const string& directive)
 
 bool AppCastingMOOSApp::OnStartUp()
 {
+  return(OnStartUpDirectives());
+}
+
+//----------------------------------------------------------------
+// Procedure: OnStartUpDirectives
+
+bool AppCastingMOOSApp::OnStartUpDirectives(string directives)
+{
+  // First handle any special directives
+  bool   must_have_moosblock = true;
+  string alt_config_block_name;
+
+  while(directives != "") {
+    string directive = MOOSChomp(directives, ",");
+    MOOSTrimWhiteSpace(directive);
+    string left  = MOOSChomp(directive, "=");
+    string right = directive;
+    MOOSTrimWhiteSpace(left);
+    MOOSTrimWhiteSpace(right);
+    if(MOOSStrCmp(left, "must_have_moosblock"))
+      must_have_moosblock = MOOSStrCmp(right, "true");
+    else if(MOOSStrCmp(left, "alt_config_block_name"))
+      alt_config_block_name = right;
+  }
+  // Done handling special directives
+
   bool   return_value = true;
   string appstart = GetAppName() + " starting ...";
 
@@ -142,7 +173,7 @@ bool AppCastingMOOSApp::OnStartUp()
   // returned, but continue starting up. Let the individual app 
   // developer decide how to interpret a return of false.
   if(!m_MissionReader.GetValue("COMMUNITY", m_host_community)) {
-    reportConfigWarning("Community name not found in mission file");
+    reportConfigWarning("Community/Vehicle name not found in mission file");
     return_value = false;
   }
 
@@ -159,7 +190,18 @@ bool AppCastingMOOSApp::OnStartUp()
 
   // #3 Allow certain appcasting defaults to be overridden
   STRING_LIST sParams;
-  m_MissionReader.GetConfiguration(GetAppName(), sParams);
+  string config_block = GetAppName();
+  if(alt_config_block_name != "")
+    config_block = alt_config_block_name;
+
+  // #4 Check if there is a config block and if config block is mandatory
+  if(!m_MissionReader.GetConfiguration(config_block, sParams)) {
+    if(must_have_moosblock) {
+      reportConfigWarning("No mission config block found for " + config_block);
+      return_value = false;
+    }
+  }
+
   STRING_LIST::iterator p;
   for(p=sParams.begin(); p!=sParams.end(); p++) {
     string line  = *p;
@@ -202,16 +244,16 @@ bool AppCastingMOOSApp::OnStartUp()
     }
   }    
 
-  // #4 Initialize the AppCast Instance
+  // #5 Initialize the AppCast Instance
   m_ac.setNodeName(m_host_community);
   m_ac.setProcName(GetAppName());
 
-  // #5 Set key member variables base on basic MOOS calls
+  // #6 Set key member variables base on basic MOOS calls
   m_curr_time  = MOOSTime();
   m_start_time = MOOSTime();
   m_time_warp  = GetMOOSTimeWarp();
   
-  // #6 A negative or zero time warp is insane. Report this as a warning
+  // #7 A negative or zero time warp is insane. Report this as a warning
   // and set to something that won't produce a NaN when dividing by 
   // time_warp to convert from moos_elapsed_time to real_elapsed_time.
   if(m_time_warp <= 0) {

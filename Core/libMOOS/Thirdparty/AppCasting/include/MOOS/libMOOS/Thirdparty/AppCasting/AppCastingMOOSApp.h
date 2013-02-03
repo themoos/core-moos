@@ -56,6 +56,7 @@ public:
   void         reportRunWarning(const std::string&);
   void         retractRunWarning(const std::string&);
   unsigned int getWarningCount(const std::string&) const;
+  bool 			OnStartUpDirectives(std::string directives="");
 
  private:
   void         handleMailAppCastRequest(const std::string&);
