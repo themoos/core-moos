@@ -36,6 +36,24 @@
 
 void PrintHelpAndExit()
 {
+	std::cout<<"This program simply send/receives a hundred or so bytes over a vanilla tcp/ip socket. "
+			"It is provided as a baseline for MOOS communications performance. MOOS will never be faster than this. "
+			"All, transit times (Tx->Rx) or latencies, are logged to file and a message is written to "
+			"stdout if a threshold is exceeded\n\n";
+	std::cout<<"Usage:\n";
+	std::cout<<"	./cmp2sock [options]\n";
+	std::cout<<"Options:\n";
+	std::cout<<"	--send                be a sender of data\n";
+	std::cout<<"	--receive             be a receiver of data\n";
+	std::cout<<"	--host                host to send to (default localhost)\n";
+	std::cout<<"	--port                port to send to or receive on (default 9007)\n";
+	std::cout<<"	--threshold=<float>   latency (s) above which print alert\n";
+	std::cout<<"	--log_file=string     file to log to (default cmp2sock.txt)\n";
+	std::cout<<"Example:\n";
+	std::cout<<"    ./cmp2sock --send\n";
+	std::cout<<"    ./cmp2sock --receive --threshold=0.01\n";
+
+
 	exit(0);
 }
 
@@ -60,6 +78,13 @@ int main(int argc, char * argv[])
 
 	P.GetVariable("--host",sHost);
 	P.GetVariable("--port",nPort);
+
+	double dfThreshold = 0.0;
+	P.GetVariable("--threshold",dfThreshold);
+
+	std::string sLogFile = "cmp2sock.txt";
+	P.GetVariable("--log_file",sLogFile);
+
 
 	if(P.GetFlag("--send"))
 	{
@@ -93,7 +118,7 @@ int main(int argc, char * argv[])
 
 	if(P.GetFlag("--receive"))
 	{
-		std::ofstream f("cm2sock.txt");
+		std::ofstream f(sLogFile.c_str());
 		MOOS::ThreadPrint gPrinter(f);
 
 		XPCTcpSocket* pListenSocket = new XPCTcpSocket((long)nPort);
@@ -114,6 +139,7 @@ int main(int argc, char * argv[])
 		{
 			Msg M;
 			XPCTcpSocket* pSocket;
+			double dfT0 = MOOSLocalTime();
 			try
 			{
 				pListenSocket->vListen(5);
@@ -125,8 +151,8 @@ int main(int argc, char * argv[])
 					{
 						double dfT = MOOSLocalTime()-M.time;
 						gPrinter.SimplyPrintTimeAndMessage(MOOSFormat("%f",dfT));
-						if(dfT>10e-3)
-							std::cerr<<dfT<<"\n";
+						if(dfT>dfThreshold)
+							std::cerr<<MOOSLocalTime()-dfT0<<" : "<<dfT<<" s lag\n";
 					}
 				}
 
