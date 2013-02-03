@@ -20,3 +20,5 @@ target_link_libraries(io_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 add_executable(capture_test CaptureTest.cpp )
 target_link_libraries(capture_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
+add_executable(cmp2sock cmp2sock.cpp )
+target_link_libraries(cmp2sock ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
