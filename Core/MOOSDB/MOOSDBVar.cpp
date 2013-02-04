@@ -14,9 +14,7 @@
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
-//   http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-//          
-//   This program is distributed in the hope that it will be useful, 
+//   http://www.gnu.org/licenses/lgpl.txt  This program is distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
