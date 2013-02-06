@@ -92,6 +92,8 @@ void MOOSAsyncCommClient::DoBanner()
     if(m_bQuiet)
         return ;
 
+    return;
+
 	MOOSTrace("----------------------------------------------------\n");
 	MOOSTrace("|       This is an Asynchronous MOOS Client        |\n");
 	MOOSTrace("|       c. P. Newman U. Oxford 2001-2012           |\n");
@@ -425,10 +427,12 @@ bool MOOSAsyncCommClient::DoReading()
 								q->GetDouble(),
 								dfLocalRxTime);
 
-						//and we can update the outgoing thread's speed
-						//as controlled by the DB.
-						m_dfOutGoingDelay = q->GetDoubleAux();
-
+						if(m_bDBIsAsynchronous)
+						{
+							//and we can update the outgoing thread's speed
+							//as controlled by the DB.
+							m_dfOutGoingDelay = q->GetDoubleAux();
+						}
 
 						m_InBox.erase(q);
 
@@ -476,7 +480,7 @@ bool MOOSAsyncCommClient::DoReading()
 	}
 	catch(const CMOOSException & e)
 	{
-		MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
+		//MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
 		return false;
 	}
 

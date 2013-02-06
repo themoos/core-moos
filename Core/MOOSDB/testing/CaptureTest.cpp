@@ -57,12 +57,40 @@ void PrintHelpAndExit()
 	exit(0);
 }
 
+
+std::string GetTimeStampString()
+{
+    struct tm *Now;
+    time_t aclock;
+    time( &aclock );
+
+    Now = localtime( &aclock );
+    //change suggested by toby schneider April 2009
+    //Now = gmtime( &aclock );
+    char sTmp[1000];
+
+    // Print local time as a string
+
+    //14_5_1993_____9_30
+    sprintf(sTmp, "_%d_%d_%d_____%.2d_%.2d.%2d",
+        Now->tm_mday,
+        Now->tm_mon+1,
+        Now->tm_year+1900,
+        Now->tm_hour,
+        Now->tm_min,
+        Now->tm_sec);
+
+
+    return std::string(sTmp);
+
+}
+
 void LogMessage(CMOOSMsg & M)
 {
 	double dfDelay = MOOSLocalTime()-M.GetTime();
 	if(dfDelay>30e-3)
 	{
-		std::cerr<<MOOSTime()-dfStartTime<<" ouch! delay is "<<dfDelay<<"\n";
+		std::cerr<<GetTimeStampString()<<" "<<MOOSTime()-dfStartTime<<" ouch! delay is "<<dfDelay<<"\n";
 	}
 	if(bLog)
 	{

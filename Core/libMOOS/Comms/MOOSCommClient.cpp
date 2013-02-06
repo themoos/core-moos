@@ -113,6 +113,9 @@ CMOOSCommClient::CMOOSCommClient()
     m_bDoLocalTimeCorrection = true;
 	
 	m_bMailPresent = false;
+
+	//assume an old DB
+	m_bDBIsAsynchronous = false;
     
     SetVerboseDebug(false);
 
@@ -600,8 +603,7 @@ bool CMOOSCommClient::ConnectToServer()
 
 
     if(!m_bQuiet)
-	    MOOSTrace("\n---------------MOOS CONNECT-----------------------\n");
-
+	    MOOSTrace("\n-------------- moos connect ----------------------\n");
 
 	while(!m_bQuit)
 	{
@@ -633,9 +635,6 @@ bool CMOOSCommClient::ConnectToServer()
 		MOOSTrace("ConnectToServer returns early\n");
 		return false;
 	}
-
-    if(!m_bQuiet)
-	    MOOSTrace("\n  Contact Made\n");
 
 
 	if(HandShake())
@@ -753,16 +752,7 @@ bool CMOOSCommClient::Fetch(MOOSMSG_LIST &MsgList)
 	MOOSMSG_LIST::iterator p;
 
 	m_InBox.remove_if(IsNullMsg);
-//	for(p = m_InBox.begin();p!=m_InBox.end();p++)
-//	{
-//		CMOOSMsg & rMsg = *p;
-//		if(!rMsg.IsType(MOOS_NULL_MSG))
-//		{
-//			//only give client non NULL Msgs
-//
-//			MsgList.push_front(rMsg);
-//		}
-//	}
+
 
 	MsgList.splice(MsgList.begin(),m_InBox,m_InBox.begin(),m_InBox.end());
 
@@ -787,7 +777,7 @@ bool CMOOSCommClient::HandShake()
 	try
 	{
         if(!m_bQuiet)
-		    MOOSTrace("  Handshaking as \"%s\"........ ",m_sMyName.c_str());
+		    MOOSTrace("\n  Handshaking as \"%s\"........ ",m_sMyName.c_str());
 
         if(m_bDoLocalTimeCorrection)
 		    SetMOOSSkew(0);
@@ -820,8 +810,6 @@ bool CMOOSCommClient::HandShake()
 		}
 		else
 		{
-			if(!m_bQuiet)
-				std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n";
 
 
 			m_sCommunityName = WelcomeMsg.GetCommunity();
@@ -830,6 +818,28 @@ bool CMOOSCommClient::HandShake()
 			double dfSkew = WelcomeMsg.m_dfVal;
             if(m_bDoLocalTimeCorrection)
 			    SetMOOSSkew(dfSkew);
+
+            m_bDBIsAsynchronous = MOOSStrCmp(WelcomeMsg.GetString(),"asynchronous");
+
+
+			if(!m_bQuiet)
+				std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+            if(!m_bQuiet)
+            {
+                std::cout<<MOOS::ConsoleColours::reset();
+
+            	std::cout<<"  DB reports async support is  ";
+            	if(m_bDBIsAsynchronous)
+            	{
+                    std::cout<<MOOS::ConsoleColours::Green()<<"available\n";
+            	}
+            	else
+            	{
+                    std::cout<<MOOS::ConsoleColours::Red()<<"not available\n";
+            	}
+
+            }
+
 
             std::cout<<MOOS::ConsoleColours::reset();
 
@@ -899,6 +909,7 @@ void CMOOSCommClient::DoBanner()
     if(m_bQuiet)
         return ;
 
+    return;
 	MOOSTrace("****************************************************\n");
 	MOOSTrace("*       This is MOOS Client                        *\n");
 	MOOSTrace("*       c. P Newman 2001-2012                      *\n");

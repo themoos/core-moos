@@ -505,26 +505,25 @@ void CMOOSApp::DoBanner()
 {
 	if(m_bQuiet)
 		return;
-
 	MOOSTrace("%s is Running:\n",GetAppName().c_str());
-	MOOSTrace(" +Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+	MOOSTrace(" |-Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
 	if(m_Comms.IsAsynchronous())
 	{
-		MOOSTrace(" +Comms is Full Duplex and Asynchronous\n");
+		MOOSTrace(" |--Comms is Full Duplex and Asynchronous\n");
 		switch(m_IterationMode)
 		{
 		case REGULAR_ITERATE_AND_MAIL:
-			std::cout<<" +Iterate Mode 0 :\n   -Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
+			std::cout<<" -Iterate Mode 0 :\n   |-Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
 			break;
 		case COMMS_DRIVEN_ITERATE_AND_MAIL:
-			std::cout<<" +Iterate Mode 1 :\n   -Dynamic iterate speed driven by message delivery ";
+			std::cout<<" |--Iterate Mode 1 :\n   |-Dynamic iterate speed driven by message delivery ";
 			if(m_dfMaxAppTick==0.0)
 				std::cout<<"at an unlimited rate\n";
 			else
 				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
 			break;
 		case REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
-			std::cout<<" +Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   -Dynamic message delivery ";
+			std::cout<<" |--Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   |-Dynamic message delivery ";
 			if(m_dfMaxAppTick==0.0)
 				std::cout<<"at an unlimited rate\n";
 			else
@@ -535,8 +534,8 @@ void CMOOSApp::DoBanner()
 	}
 	else
 	{
-		MOOSTrace("\t Comms is Synchronous\n");
-		MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
+		MOOSTrace(" |\t Comms is Synchronous\n");
+		MOOSTrace(" |\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
 	}
 
 	if(GetMOOSTimeWarp()!=1.0)

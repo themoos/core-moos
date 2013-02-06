@@ -482,6 +482,9 @@ protected:
      */
     bool m_bPostNewestToFront;
 
+    /** true if after handshaking DB announces its ability to support aysnc comms*/
+    bool m_bDBIsAsynchronous;
+
 
 
 };

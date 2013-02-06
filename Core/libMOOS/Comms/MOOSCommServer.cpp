@@ -831,6 +831,9 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         //send a message back to the client saying welcome
         CMOOSMsg MsgW(MOOS_WELCOME,"",dfSkew);
+
+        //we are a V10 DB we can support AysncComms
+        MsgW.m_sVal = "asynchronous";
         MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 
