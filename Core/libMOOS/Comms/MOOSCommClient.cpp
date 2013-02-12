@@ -610,6 +610,9 @@ bool CMOOSCommClient::ConnectToServer()
         if(!m_bQuiet)
 		    MOOSTrace("  contacting a MOOS server %s:%d -  try %.5d ",m_sDBHost.c_str(),m_lPort,++nAttempt);
 
+        if(m_bDisableNagle)
+        	m_pSocket->vSetNoDelay(1);
+
 		try
 		{
 			m_pSocket->vConnect(m_sDBHost.c_str());

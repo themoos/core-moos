@@ -200,6 +200,9 @@ bool MOOSAsyncCommClient::WritingLoop()
 
 		try
 		{
+	        if(m_bDisableNagle)
+	        	m_pSocket->vSetNoDelay(1);
+
 			m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
 			m_pSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
 		}

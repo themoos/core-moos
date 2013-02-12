@@ -240,20 +240,6 @@ public:
     /** get total number of bytes received*/
     unsigned long long int GetNumBytesReceived();
 
-	/**	 set the size of the receive  buffer of the underlying socket in KB.
-	 * Its unlikely you need to change this from the default
-	 * @param KBytes
-	 * @return true on success
-	 */
-    bool SetReceiveBufferSizeInKB(unsigned int KBytes);
-
-    /**	 set the size of the send  buffer of the underlying socket in KB.
-	* Its unlikely you need to change this from the default
-	* @param KBytes
-	* @return true on success
-	*/
-    bool SetSendBufferSizeInKB(unsigned int KBytes);
-
 
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};

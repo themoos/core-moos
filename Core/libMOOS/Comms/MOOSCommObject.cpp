@@ -51,6 +51,9 @@ CMOOSCommObject::CMOOSCommObject()
     m_dfDodgeyCommsDelay = 1.0;
     m_dfDodgeyCommsProbability = 0.5;
     m_dfTerminateProbability = 0.0;
+    m_bDisableNagle = false;
+    m_bBoostIOThreads = false;
+
 
     SetReceiveBufferSizeInKB(DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB);
     SetSendBufferSizeInKB(DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB);
@@ -69,6 +72,8 @@ bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,doub
     m_dfDodgeyCommsProbability = dfDodgeyCommsProbability;
     m_dfDodgeyCommsDelay = dfDodgeyCommsDelay;
     m_dfTerminateProbability = dfTerminateProbability;
+
+
     return true;
 }
 
@@ -82,6 +87,13 @@ bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
 	}
 	return false;
 }
+
+
+void CMOOSCommObject::SetTCPNoDelay(bool bTCPNoDelay)
+{
+	m_bDisableNagle = bTCPNoDelay;
+}
+
 
 
 void CMOOSCommObject::BoostIOPriority(bool bBoost)

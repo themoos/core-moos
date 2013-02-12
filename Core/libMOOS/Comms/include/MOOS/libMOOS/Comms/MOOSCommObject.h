@@ -74,6 +74,9 @@ public:
      */
     void BoostIOPriority(bool bBoost);
 
+    /*enable or don't the NAGLE algorithm for sockets */
+    void SetTCPNoDelay(bool bTCPNoDelay);
+
 
 protected:
 
@@ -97,6 +100,8 @@ protected:
     unsigned int m_nSendBufferSizeKB;
     //should we boost the priority of all IO threads?
 	bool m_bBoostIOThreads;
+
+	bool m_bDisableNagle;
 
 
 private:

@@ -114,6 +114,12 @@ public:
     bool  SetClientTimeout(double dfTimeoutPeriod);
 
 
+    /** specify a threshold above which the DB will print a warning if the time between
+     * the time stamp in a message and it being printed is exceeded
+     * @param dfPeriod
+     * @return
+     */
+    void SetWarningLatencyMS(double dfPeriod);
 
 
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
@@ -274,7 +280,9 @@ protected:
     //how long will we tolerate a cleint not talking to us?
     double m_dfClientTimeout;
 
-
+    //what threshold in transit time from client to DB worries us
+    //and will cause us to issue a warning
+    double m_dfCommsLatencyConcern;
 
 
 };

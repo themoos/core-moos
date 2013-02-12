@@ -155,6 +155,9 @@ void PrintHelpAndExit()
 	std::cout<<"-b    (--moos_boost)               boost priority of communications\n";
 	std::cout<<"--moos_timeout=<positive_float>    specify client timeout\n";
 	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
+	std::cout<<"--warn_latency=<positive_float>    specify latency above which warning is issued in ms\n";
+	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
+
 
 
 //#ifdef MOOSDB_HAS_WEBSERVER
@@ -236,6 +239,21 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
 
     ///////////////////////////////////////////////////////////
+	double dfWarningLatencyMS = 15;
+	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
+    P.GetVariable("--warning_latency",dfWarningLatencyMS);
+
+
+
+	bool bTCPNoDelay = false;
+    m_MissionReader.GetValue("tcpnodelay",bTCPNoDelay);
+
+    if(P.GetFlag("--tcpnodelay"))
+    	bTCPNoDelay = true;
+
+
+
+    ///////////////////////////////////////////////////////////
     //are we looking for help?
     if(P.GetFlag("-h","--help"))
     	PrintHelpAndExit();
@@ -270,6 +288,10 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
 
     m_pCommServer->SetClientTimeout(dfClientTimeout);
+
+    m_pCommServer->SetWarningLatencyMS(dfWarningLatencyMS);
+
+    m_pCommServer->SetTCPNoDelay(bTCPNoDelay);
 
     m_pCommServer->BoostIOPriority(bBoost);
 

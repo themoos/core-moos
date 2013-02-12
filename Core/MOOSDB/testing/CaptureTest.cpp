@@ -163,6 +163,9 @@ int main(int argc, char * argv[])
 		std::string sLogFile = "capture.txt";
 		P.GetVariable("--log_file",sLogFile);
 		of.open(sLogFile.c_str());
+
+		if(of)
+			std::cerr<<"logging to "<<sLogFile<<"\n";
 	}
 
 	for(unsigned int k = 0;k<vars.size();k++)

@@ -53,6 +53,7 @@ using namespace std;
 #endif
 
 #define TOLERABLE_SILENCE 5.0
+#define TOLERABLE_TRANSIT_TIME 0.015;
 #define DEFAULT_SERVER_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
 #define DEFAULT_SERVER_SOCKET_SEND_BUFFER_SIZE_KB 128
 
@@ -129,6 +130,7 @@ CMOOSCommServer::CMOOSCommServer()
 	m_bBoostIOThreads= false;
 
 	m_dfClientTimeout = TOLERABLE_SILENCE;
+	m_dfCommsLatencyConcern = TOLERABLE_TRANSIT_TIME;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
@@ -141,7 +143,10 @@ void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
 	m_CommandLineParser.Open(argc,argv);
 }
 
-
+void CMOOSCommServer::SetWarningLatencyMS(double dfPeriod)
+{
+	m_dfCommsLatencyConcern = dfPeriod/1000.0;
+}
 
 
 bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisableNameLookUp)
