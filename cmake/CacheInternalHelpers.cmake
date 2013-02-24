@@ -16,6 +16,24 @@ function(cache_internal_init_unique VAR_NAME)
 endfunction()
 
 
+function(cache_internal_remove VAR_NAME)
+	if(NOT ARGN)
+        	message(SEND_ERROR "Error: cache_internal_remove() called without any elements")
+        	return()
+    	endif()
+
+	if(NOT ${VAR_NAME})
+		return()
+	endif()
+
+	foreach(ELEMENT ${ARGN})
+	        list(REMOVE_ITEM ${VAR_NAME} ${ELEMENT})
+	endforeach()
+	set(${VAR_NAME} ${${VAR_NAME}} CACHE INTERNAL "")
+endfunction()
+
+
+
 # This function appends items to a CACHE INTERNAL variable
 # and removes duplicates
 # Example usage:

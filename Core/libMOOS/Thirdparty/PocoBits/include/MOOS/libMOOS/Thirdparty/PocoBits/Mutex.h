@@ -1,4 +1,4 @@
-//
+
 // Mutex.h
 //
 // $Id: //poco/svn/Foundation/include/Poco/Mutex.h#3 $
@@ -55,6 +55,7 @@
 
 namespace Poco {
 
+template< class T > void deliberately_unused(const T &) {};
 
 class Foundation_API Mutex: private MutexImpl
 	/// A Mutex (mutual exclusion) is a synchronization 
@@ -198,6 +199,7 @@ public:
 #ifdef _WIN32
 		UNREFERENCED_PARAMETER(milliseconds);
 #endif
+		 deliberately_unused(milliseconds);
 
 	}
 

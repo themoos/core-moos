@@ -1,32 +1,29 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
-//    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
-//          
-//   This program is distributed in the hope that it will be useful, 
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   This file is part of the MOOS project
 //
-//////////////////////////    END_GPL    //////////////////////////////////
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
+
 // ProcessConfigReader.cpp: implementation of the CProcessConfigReader class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -68,6 +65,68 @@ std::string CProcessConfigReader::GetFileName()
     return m_sFileName;
 }
 
+
+
+bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName, STRING_LIST &Params)
+{
+	Params.clear();
+
+	int nBrackets = 0;
+	Params.clear();
+
+	Reset();
+
+	std::string sKey = "PROCESSCONFIG="+sAppName;
+
+	if(GoTo(sKey))
+	{
+		std::string sBracket = GetNextValidLine();
+		if(sBracket.find("{")==0)
+		{
+			nBrackets++;
+			while(!GetFile()->eof())
+			{
+				std::string sLine = GetNextValidLine();
+				MOOSTrimWhiteSpace(sLine);
+
+				if(sLine.find("}")!=0)
+				{
+					std::string sVal(sLine);
+					std::string sTok = MOOSChomp(sVal, "=");
+					MOOSTrimWhiteSpace(sTok);
+					MOOSTrimWhiteSpace(sVal);
+
+					if (!sTok.empty())
+					{
+
+						if (!sVal.empty())
+						{
+							Params.push_back(sTok+"="+sVal);
+						}
+						else if(sLine.find("[")!=std::string::npos || sLine.find("]")!=std::string::npos)
+						{
+							Params.push_back(sLine);
+						}
+					}
+				}
+				else
+				{
+					return true;
+				}
+
+				//quick error check - we don't allow nested { on single lines
+				if(sLine.find("{")==0)
+				{
+					MOOSTrace("CProcessConfigReader::GetConfiguration() missing \"}\" syntax error in mission file\n");
+				}
+			}
+		}
+	}
+
+
+	return false;
+
+}
 
 //GET A STRING LIST OF SETTINGS
 
@@ -245,22 +304,23 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
     
     STRING_LIST sParams;
     
-    if(GetConfiguration( sAppName, sParams))
+    if(GetConfigurationAndPreserveSpace( sAppName, sParams))
     {
         STRING_LIST::iterator p;
         for(p = sParams.begin();p!=sParams.end();p++)
         {
             std::string sTmp = *p;
             std::string sTok = MOOSChomp(sTmp,"=");
-            
-            MOOSTrimWhiteSpace(sTmp);
-            
+            MOOSTrimWhiteSpace(sTok);
+
             if (sTmp.empty())
                 return false;
             
             if(MOOSStrCmp(sTok,sParam))
             {
-                sVal=sTmp;
+                MOOSTrimWhiteSpace(sTmp);
+
+            	sVal=sTmp;
                 return true;
             }
         }
@@ -269,7 +329,8 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 }
 
 
-bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::string & sVal)
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::string & sVal )
 {
     if(!m_sAppName.empty())
     {

@@ -1,3 +1,30 @@
+
+///////////////////////////////////////////////////////////////////////////
+//
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 /*
  * MOOSAsyncCommClient.cpp
  *
@@ -18,6 +45,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -44,6 +72,8 @@ bool AsyncCommsWriterDispatch(void * pParam)
 MOOSAsyncCommClient::MOOSAsyncCommClient()
 {
 	m_dfLastTimingMessage = 0.0;
+	m_dfOutGoingDelay = 0.0;
+	m_bPostNewestToFront = false;
 }
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient()
@@ -61,6 +91,8 @@ void MOOSAsyncCommClient::DoBanner()
 {
     if(m_bQuiet)
         return ;
+
+    return;
 
 	MOOSTrace("----------------------------------------------------\n");
 	MOOSTrace("|       This is an Asynchronous MOOS Client        |\n");
@@ -155,6 +187,10 @@ bool MOOSAsyncCommClient::WritingLoop()
     signal(SIGPIPE,SIG_IGN);
 #endif
 
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
 
 	while(!WritingThread_.IsQuitRequested())
 	{
@@ -162,6 +198,18 @@ bool MOOSAsyncCommClient::WritingLoop()
 		//this is the connect loop...
 		m_pSocket = new XPCTcpSocket(m_lPort);
 
+		try
+		{
+	        if(m_bDisableNagle)
+	        	m_pSocket->vSetNoDelay(1);
+
+			m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
+			m_pSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+		}
+		catch(  XPCException & e)
+		{
+			std::cerr<<"there was trouble configuring socket buffers: "<<e.sGetException()<<"\n";
+		}
 		//reset counters
 		m_nBytesSent = 0;
 		m_nBytesReceived = 0;
@@ -169,7 +217,8 @@ bool MOOSAsyncCommClient::WritingLoop()
 
 		if(ConnectToServer())
 		{
-			int nMSToWait  = (int)(1000.0/m_nFundamentalFreq);
+			int nMSToWait  = 333;
+
 			m_dfLastSendTime = MOOSLocalTime();
 
 			while(!WritingThread_.IsQuitRequested() && IsConnected() )
@@ -205,8 +254,8 @@ bool MOOSAsyncCommClient::WritingLoop()
 		m_pSocket = NULL;
 	}
 
-	if(m_bQuiet)
-		MOOSTrace("CMOOSAsyncCommClient::WritingLoop() quits\n");
+	/*if(!m_bQuiet)
+		MOOSTrace("CMOOSAsyncCommClient::WritingLoop() quits\n");*/
 
 	m_bConnected = false;
 
@@ -234,7 +283,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			if(q->IsType(MOOS_TERMINATE_CONNECTION))
 			{
-				std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
+				//std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
 				return false;
 			}
 		}
@@ -244,7 +293,6 @@ bool MOOSAsyncCommClient::DoWriting()
 		if((MOOSLocalTime()-m_dfLastTimingMessage)>TIMING_MESSAGE_PERIOD  )
 		{
 			CMOOSMsg Msg(MOOS_TIMING,"_async_timing",0.0,MOOSLocalTime());
-//			std::cerr<<"forming timing message "<<std::fixed<<std::setprecision(4)<<Msg.GetTime()<<std::endl;
 			StuffToSend.push_front(Msg);
 			m_dfLastTimingMessage= Msg.GetTime();
 		}
@@ -253,8 +301,6 @@ bool MOOSAsyncCommClient::DoWriting()
 		{
 			return true;
 		}
-
-
 
 		//convert our out box to a single packet
 		CMOOSCommPkt PktTx;
@@ -286,27 +332,14 @@ bool MOOSAsyncCommClient::DoWriting()
 
 }
 
-#define OVERSPEED_WRITE_PERIOD 0.01
-#define MAX_SEQUENTIAL_OVERSPEED_WRITES 100
 bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 {
-	double dfNowTime = MOOSLocalTime();
-
-	double dfDelta = dfNowTime-m_dfLastSendTime;
-	if(dfDelta<OVERSPEED_WRITE_PERIOD)
+	unsigned int sleep_ms = m_dfOutGoingDelay*1000;
+	if(sleep_ms>0)
 	{
-		if(++m_nOverSpeedCount>=MAX_SEQUENTIAL_OVERSPEED_WRITES)
-		{
-			m_nOverSpeedCount=MAX_SEQUENTIAL_OVERSPEED_WRITES;
-			MOOSPause(10);
-			//std::cerr<<"Throttling\n!!";
-		}
+		std::cerr<<"I'm sleeping for "<<m_dfOutGoingDelay<<" ms\n";
+		MOOSPause(sleep_ms);
 	}
-	else
-	{
-		m_nOverSpeedCount/=2;
-	}
-	m_dfLastSendTime = dfNowTime;
 
 	return true;
 }
@@ -319,6 +352,12 @@ bool MOOSAsyncCommClient::ReadingLoop()
     signal(SIGPIPE,SIG_IGN);
 #endif	
 
+    if(m_bBoostIOThreads)
+    {
+    	MOOS::BoostThisThread();
+    }
+
+
 	while(!ReadingThread_.IsQuitRequested())
 	{
 		if(IsConnected())
@@ -327,18 +366,19 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			{
 				OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-",0)   );
 
-				std::cerr<<"reading failed!\n";
+				//std::cout<<"reading failed!\n";
 
-				while(IsConnected())
+				while(IsConnected())//wait for connection to terminate...
 					MOOSPause(200);
 			}
 		}
 		else
 		{
+			//we arent connected so do nothing...
 			MOOSPause(100);
 		}
 	}
-	std::cerr<<"READING LOOP quiting...\n";
+	//std::cout<<"READING LOOP quiting...\n";
 	return true;
 }
 
@@ -390,6 +430,13 @@ bool MOOSAsyncCommClient::DoReading()
 								q->GetDouble(),
 								dfLocalRxTime);
 
+						if(m_bDBIsAsynchronous)
+						{
+							//and we can update the outgoing thread's speed
+							//as controlled by the DB.
+							m_dfOutGoingDelay = q->GetDoubleAux();
+						}
+
 						m_InBox.erase(q);
 
 						break;
@@ -417,21 +464,7 @@ bool MOOSAsyncCommClient::DoReading()
 				}
 			}
 
-			//here we dispatch to special call backs managed by threads
-			MOOSMSG_LIST::iterator t = m_InBox.begin();
-			while(t!=m_InBox.end())
-			{
-				std::map<std::string, MOOS::ActiveMailQueue* >::iterator q = ActiveQueues_.find(t->GetKey());
-				if(q!=ActiveQueues_.end())
-				{
-					q->second->Push(*t);
-					t = m_InBox.erase(t);
-				}
-				else
-				{
-					t++;
-				}
-			}
+			DispatchInBoxToActiveThreads();
 
 			m_bMailPresent = !m_InBox.empty();
 
@@ -450,7 +483,7 @@ bool MOOSAsyncCommClient::DoReading()
 	}
 	catch(const CMOOSException & e)
 	{
-		MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
+		//MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
 		return false;
 	}
 

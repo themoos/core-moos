@@ -1,32 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite
+//   This file is part of the MOOS project
 //
-//   A suit of Applications and Libraries for Mobile Robotics Research
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and
-//   Oxford University.
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
 //
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk.
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
 //
-//   This file is part of a  MOOS Core Component.
+//   email: pnewman@robots.ox.ac.uk.
 //
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License as
-//   published by the Free Software Foundation; either version 2 of the
-//   License, or (at your option) any later version.
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
 //
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-//   General Public License for more details.
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//   02111-1307, USA.
-//
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 // MOOSCommServer.h: interface for the CMOOSCommServer class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -53,6 +47,7 @@
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
 
 class XPCTcpSocket;
 #include <list>
@@ -109,8 +104,22 @@ public:
 
     /** This function is the timer loop called from one of the three
     server threads. It makes sure all clients speak occasionally*/
-
     virtual bool TimerLoop();
+
+    /**
+     * specify how long the sever will tolerate silence from a client
+     * @param dfTimeoutPeriod positive float in seconds
+     * @return true on success
+     */
+    bool  SetClientTimeout(double dfTimeoutPeriod);
+
+
+    /** specify a threshold above which the DB will print a warning if the time between
+     * the time stamp in a message and it being printed is exceeded
+     * @param dfPeriod
+     * @return
+     */
+    void SetWarningLatencyMS(double dfPeriod);
 
 
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
@@ -118,9 +127,12 @@ public:
     */
     virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
     
+    virtual void SetCommandLineParameters(int argc, char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
+
+
 
 
     /// default constructor
@@ -256,10 +268,23 @@ protected:
     /// name of community being served
     std::string  m_sCommunityName;
     
+    //something to help with CommandLine parseing
+    MOOS::CommandLineParser m_CommandLineParser;
+    
+    //details on timing info that can be sent to asynchronous clients
+	std::list< std::pair< std::string, double >  > m_ClientTimingVector;
     
     ///how quiet are we
-    
     bool m_bQuiet;
+
+    //how long will we tolerate a cleint not talking to us?
+    double m_dfClientTimeout;
+
+    //what threshold in transit time from client to DB worries us
+    //and will cause us to issue a warning
+    double m_dfCommsLatencyConcern;
+
+
 };
 
 #endif // !defined(AFX_MOOSCOMMSERVER_H__2FDF870F_F998_4D3C_AD18_FCC2C5C12DDA__INCLUDED_)

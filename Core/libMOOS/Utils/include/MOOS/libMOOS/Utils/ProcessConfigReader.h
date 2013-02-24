@@ -1,32 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
 //    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
 //          
 //   This program is distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 // ProcessConfigReader.h: interface for the CProcessConfigReader class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -102,8 +96,11 @@ public:
     /** return a list of strings of Token = Val for the specfied named application configuration block*/ 
     bool GetConfiguration(std::string sAppName,STRING_LIST & Params);
 
+    bool GetConfigurationAndPreserveSpace(std::string sAppName,STRING_LIST & Params);
+
     /** the name of process an instance this class will handle unless told otherwise */ 
     std::string m_sAppName;
+
 
 };
 

@@ -1,3 +1,28 @@
+///////////////////////////////////////////////////////////////////////////
+//
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+////////////////////////////////////////////////////////////////////////////
+
+
+
+
 /*
  * QueueTest.cpp
  *
@@ -15,6 +40,12 @@ MOOS::ThreadPrint gPrinter(std::cerr);
 bool func(CMOOSMsg & M, void *pParam)
 {
 	gPrinter.Print(MOOSFormat("in callback for %s",M.GetKey().c_str()));
+	return true;
+}
+
+bool func_alt(CMOOSMsg & M, void *pParam)
+{
+	gPrinter.Print(MOOSFormat("in alternate callback for %s",M.GetKey().c_str()));
 	return true;
 }
 
@@ -47,14 +78,25 @@ int main(int argc, char * argv[])
 	MOOS::CommandLineParser P(argc,argv);
 
 
-	C.AddMessageCallback("la",func,NULL);
-	C.AddMessageCallback("di",func,NULL);
+	C.AddMessageCallback("CallbackA","la",func,NULL);
+	C.AddMessageCallback("CallbackB","di",func,NULL);
+	C.AddMessageCallback("CallbackC","di",func,NULL);
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 
+	while(1)
+	{
+		MOOSPause(10000);
+		C.RemoveMessageCallback("CallbackB");
+		C.AddMessageCallback("CallbackB","di",func_alt,NULL);
+		MOOSPause(10000);
+		C.RemoveMessageCallback("CallbackB");
+		C.AddMessageCallback("CallbackB","di",func,NULL);
+	}
 
-	T theApp;
 
-	theApp.Run("queue_test_app",argc,argv);
+	//T theApp;
+
+	//theApp.Run("queue_test_app",argc,argv);
 
 }

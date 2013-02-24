@@ -1,3 +1,30 @@
+/**
+///////////////////////////////////////////////////////////////////////////
+//
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
+
+
 /*
  * DBTestClient.cpp
  *
@@ -10,6 +37,7 @@
 #include <iostream>
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <queue>
 
 #ifndef _WIN32
@@ -40,9 +68,12 @@ void PrintHelp()
     MOOSTrace("  -s=<string>            : list of subscriptions in form var_name@period eg -s=x,y,z\n");
     MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_pattern@frequency_hz eg -w='x*:*@0.1,*:GPS@0.0' \n");
     MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@frequency_hz eg -p=x@0.5,y:2048@2.0\n");
+    MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --verbose              : verbose output\n");
+    MOOSTrace("  --log=<string>         : log received to file name given\n");
+
 
     MOOSTrace("\n\nspying helpful settings:\n");
     MOOSTrace("  --spy          		: spy on all variables at 1Hz\n");
@@ -78,6 +109,12 @@ public:
         _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
         _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
+
+        if(m_CommandLineParser.GetFlag("--moos_boost"))
+        {
+        	m_Comms.BoostIOPriority(true);
+        }
+
 
         std::string temp;
 
@@ -118,6 +155,9 @@ public:
         }
 
 
+        _TxCount = -1;
+        m_CommandLineParser.GetVariable("--num_tx",_TxCount);
+
 
         _NetworkStallProb=0.0;
         m_CommandLineParser.GetVariable("--network_failure_prob",_NetworkStallProb);
@@ -129,6 +169,18 @@ public:
         m_CommandLineParser.GetVariable("--application_failure_prob",_ApplicationExitProb);
 
         _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
+
+        _sLogFileName = "";
+        if(m_CommandLineParser.GetVariable("--log",_sLogFileName))
+        {
+        	_LogFile.open(_sLogFileName.c_str());
+        	if(!_LogFile)
+        	{
+        		std::cerr<<"could not open "<<_sLogFileName<<" exiting\n";
+        		exit(-1);
+        	}
+        }
+
 
 
         //finalluy we will amke ouselves responsive!
@@ -178,12 +230,12 @@ public:
             if(nArraySize==0)
             {
             	_Jobs.push(Job(dfPeriod,sName));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
             else
             {
             	_Jobs.push(Job(dfPeriod,sName,nArraySize));
-                std::cerr<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
 
         }
@@ -213,6 +265,8 @@ public:
         Scheduler.Initialise(ScheduleDispatch,this);
         Scheduler.Start();
 
+        _KeyBoardCapture.Start();
+
         return true;
     }
     bool OnNewMail(MOOSMSG_LIST & NewMail)
@@ -221,35 +275,44 @@ public:
 
         if(_bVerbose && !NewMail.empty())
         {
-        	std::cerr<<std::endl;
-        	std::cerr<<MOOS::ConsoleColours::Yellow();
-        	std::cerr<<std::left<<std::setw(20)<<"name";
-        	std::cerr<<std::left<<std::setw(20)<<"source";
-        	std::cerr<<std::left<<std::setw(30)<<"contents";
-        	std::cerr<<std::endl;
-        	std::cerr<<MOOS::ConsoleColours::reset();
+        	std::cout<<std::endl;
+        	std::cout<<MOOS::ConsoleColours::Yellow();
+        	std::cout<<std::left<<std::setw(20)<<"name";
+        	std::cout<<std::left<<std::setw(20)<<"source";
+        	std::cout<<std::left<<std::setw(30)<<"contents";
+        	std::cout<<std::endl;
+        	std::cout<<MOOS::ConsoleColours::reset();
         }
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
         	if(_bVerbose)
         	{
-        		std::cerr<<std::left<<std::setw(20)<<q->GetKey();
-        		std::cerr<<std::left<<std::setw(20)<<q->GetSource();
+        		std::cout<<std::left<<std::setw(20)<<q->GetKey();
+        		std::cout<<std::left<<std::setw(20)<<q->GetSource();
         		std::string sout = q->GetAsString();
         		if(sout.size()>GetScreenWidth()-43)
         			sout = sout.substr(0,GetScreenWidth()-43)+"...";
-        		std::cerr<<std::left<<std::setw(30)<<sout;
-        		std::cerr<<std::endl;
+        		std::cout<<std::left<<std::setw(30)<<sout;
+        		std::cout<<std::endl;
 
         	}
         	if(_bShowLatency)
         	{
         		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
-        		std::cerr<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
-                std::cerr<<MOOS::ConsoleColours::reset();
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
+                std::cout<<MOOS::ConsoleColours::reset();
+        	}
+
+        	if(_LogFile)
+        	{
+        		_LogFile<<std::left<<std::setw(20)<<q->GetKey();
+        		_LogFile<<std::left<<std::setw(20)<<q->GetSource();
+        		_LogFile<<std::left<<std::setw(20)<<std::setprecision(14)<<q->GetTime();
+        		_LogFile<<std::left<<std::setw(20)<<std::setprecision(14)<<MOOS::Time();
+        		_LogFile<<q->GetAsString()<<std::endl;
         	}
         }
 
@@ -268,14 +331,28 @@ public:
 
 			if(_bShowBandwidth)
 			{
-				std::cerr<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
-				std::cerr<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
-				std::cerr<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
-				std::cerr<<MOOS::ConsoleColours::reset();
+				std::cout<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
+				std::cout<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
+				std::cout<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+				std::cout<<MOOS::ConsoleColours::reset();
 			}
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
 			dfT = MOOS::Time();
+
+		}
+
+		char c;
+		if(_KeyBoardCapture.GetKeyboardInput(c))
+		{
+			switch(c)
+			{
+			case 'C':
+                MOOSMSG_LIST List;
+                MOOSTrace("Sending \"DB_CLEAR\" signal\n");
+                m_Comms.ServerRequest("DB_CLEAR",List);
+                break;
+			}
 
 		}
 
@@ -293,7 +370,7 @@ public:
     {
         std::vector<std::string>::iterator q;
 
-        std::cerr<<MOOS::ConsoleColours::Green();
+        std::cout<<MOOS::ConsoleColours::Green();
         for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
         {
 			std::string sEntry = *q;
@@ -308,9 +385,9 @@ public:
 			}
 			m_Comms.Register(sVar,dfPeriod);
 
-            std::cerr<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
+            std::cout<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
         }
-        std::cerr<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::reset();
 
         std::vector<std::string>::iterator w;
 
@@ -336,9 +413,19 @@ public:
 					continue;
 				}
 			}
-			if(sVarPattern.empty()||sAppPattern.empty())
+			else
 			{
-				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern:app_pattern[@period]\n";
+				//there is no @ so assume Period = 0;
+
+				if(sAppPattern.empty()) //was there a :?
+				{
+					//there was no : so assume *
+					sAppPattern = "*";
+				}
+			}
+			if(sVarPattern.empty())
+			{
+				std::cerr<<MOOS::ConsoleColours::red()<<*w<<" does not have format var_pattern[:app_pattern[@period]]\n";
 				continue;
 			}
 
@@ -360,6 +447,8 @@ public:
 
     bool ScheduleLoop()
     {
+    	unsigned int nSent = 0;
+
     	while(!Scheduler.IsQuitRequested())
     	{
 			while(!_Jobs.empty() && _Jobs.top().isActive(MOOS::Time()))
@@ -370,25 +459,24 @@ public:
 				_Jobs.pop();
 				if(Active.IsBinary())
 				{
+
 					Notify(Active._sName,&_BinaryArray[0],Active._DataSize, MOOS::Time() );
-
-					if(_bVerbose)
-					{
-						/*
-						double T = MOOS::Time()-GetAppStartTime();
-						std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing binary data: "<<Active._sName<<"="
-							<<Active._nCount<<" "<<Active._DataSize<<" bytes"<<std::endl<<MOOS::ConsoleColours::reset();*/
-					}
-
 				}
 				else
 				{
 					Notify(Active._sName,Active._nCount,MOOSTime());
-					if(_bVerbose)
-					{
-						//std::cerr<<T<<MOOS::ConsoleColours::Yellow()<<" publishing: "<<Active._sName<<"="<<Active._nCount<<std::endl<<MOOS::ConsoleColours::reset();
-					}
+
 				}
+
+				if(_TxCount >=0 && ++nSent==_TxCount)
+				{
+					std::cout<<" sent "<<nSent<<" messages and now exiting\n";
+					MOOSPause(100);
+					exit(0);
+				}
+
+
+
 				Active.Reschedule();
 				_Jobs.push(Active);
 			}
@@ -409,13 +497,21 @@ private:
     double _NetworkStallProb ;
     double _NetworkStallTime ;
     double _ApplicationExitProb;
+    std::string _sLogFileName;
+    bool _bVerbose;
+    bool _bShowLatency;
+    bool _bShowBandwidth;
+    std::ofstream _LogFile;
+    int _TxCount;
+
+
+
 
     struct Job
     {
-        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _pData(0)
+        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _DataSize(0)
         {
             _dfTimeScheduled = MOOSTime()+_dfPeriod;
-            _DataSize = 0;
         }
 
         Job(double dfPeriod,std::string sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
@@ -433,7 +529,7 @@ private:
         }
         bool IsBinary()
         {
-        	return _pData!=NULL;
+        	return _DataSize!=0;
         }
 
         void Reschedule()
@@ -451,15 +547,12 @@ private:
         double _dfTimeScheduled;
         std::string _sName;
         int _nCount;
-        unsigned char * _pData;
         unsigned int _DataSize;
 
     };
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
-    bool _bVerbose;
-    bool _bShowLatency;
-    bool _bShowBandwidth;
+    MOOS::KeyboardCapture _KeyBoardCapture;
 
 
 
@@ -480,7 +573,6 @@ int main (int argc, char* argv[])
 	ss<<"umm-"<< rand() %1024;
 	std::string default_name = ss.str();
 	std::string app_name = P.GetFreeParameter(1, default_name);
-	std::cerr<<app_name<<std::endl;
 
     DBTestClient TC1;
 

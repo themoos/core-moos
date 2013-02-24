@@ -1,3 +1,30 @@
+/**
+///////////////////////////////////////////////////////////////////////////
+//
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
+
+
 /*
  * ProcInfo.cpp
  *
@@ -111,14 +138,14 @@ public:
 		if(getrusage(0, &uA)!=0)
 			return false;
 
-		double tA = MOOS::Time();
+		double tA = MOOSLocalTime();
 
 		cpu_load_ = 0.0;
 
 		while(!Thread_.IsQuitRequested())
 		{
 			MOOSPause(sample_period_ms);
-			double tB = MOOS::Time();
+			double tB = MOOSLocalTime();
 			double tAB = tB-tA;
 
 		    if(getrusage(0, &uB)!=0)
@@ -127,13 +154,16 @@ public:
 		    {
 			    Poco::FastMutex::ScopedLock Lock(_mutex);
 
-				cpu_load_ = 100.0*((uB.ru_utime.tv_sec-uA.ru_utime.tv_sec)+
-						(uB.ru_utime.tv_usec-uA.ru_utime.tv_usec)/1000000.0)/tAB;
+				cpu_load_ = 100.0*(
+						(uB.ru_utime.tv_sec-uA.ru_utime.tv_sec)+
+						(uB.ru_utime.tv_usec-uA.ru_utime.tv_usec)/1000000.0+
+						(uB.ru_stime.tv_sec-uA.ru_stime.tv_sec)+
+						(uB.ru_stime.tv_usec-uA.ru_stime.tv_usec)/1000000.0
+						)/tAB;
 		    }
 		    uA = uB;
 		    tA = tB;
 
-		    //std::cerr<<"cpu_load_ is "<<cpu_pc<<std::endl;
 		}
 #endif
 

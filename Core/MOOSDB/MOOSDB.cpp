@@ -1,32 +1,30 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
 //    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Public License
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/gpl.txt
 //          
 //   This program is distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
 // MOOSDB.cpp: implementation of the CMOOSDB class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -139,58 +137,56 @@ CMOOSDB::~CMOOSDB()
 
 void PrintHelpAndExit()
 {
-	std::cerr<<MOOS::ConsoleColours::Yellow();
-	std::cerr<<"\nMOOSDB command line help:\n\n";
-	std::cerr<<MOOS::ConsoleColours::reset();
-	std::cerr<<"-m    (--mission_file)  <string>            specify mission file name (default mission.moos)\n";
-	std::cerr<<"-p    (--server_port)  <positive_integer>   specify server port number (default 9000)\n";
-	std::cerr<<"-s    (--single_threaded)                   run as a single thread (legacy mode)\n";
-	std::cerr<<"-w    (--time_warp)    <positive_float>     specify time warp\n";
-	std::cerr<<"-d    (--dns)                               run with dns lookup\n";
-	std::cerr<<"-c    (--community)    <string>             specify community name\n";
+	std::cout<<MOOS::ConsoleColours::Yellow();
+	std::cout<<"\nMOOSDB command line help:\n\n";
+	std::cout<<MOOS::ConsoleColours::reset();
+	std::cout<<"Common MOOS parameters:\n";
+	std::cout<<"--moos_file=<string>               specify mission file name (default mission.moos)\n";
+	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
+	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
+	std::cout<<"--moos_community=<string>          specify community name\n";
+
+
+
+	std::cout<<"\nDB Control:\n";
+
+	std::cout<<"-d    (--dns)                      run with dns lookup\n";
+	std::cout<<"-s    (--single_threaded)          run as a single thread (legacy mode)\n";
+	std::cout<<"-b    (--moos_boost)               boost priority of communications\n";
+	std::cout<<"--moos_timeout=<positive_float>    specify client timeout\n";
+	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
+	std::cout<<"--warn_latency=<positive_float>    specify latency above which warning is issued in ms\n";
+	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
+
+
+
 //#ifdef MOOSDB_HAS_WEBSERVER
-	std::cerr<<"-W    (--webserver)    <positive_integer>   run webserver on given port\n";
+	std::cout<<"--webserver_port=<positive_integer> run webserver on given port\n";
 //#endif
-	std::cerr<<"-h    (--help)                              print help and exit\n";
-	std::cerr<<"\nexample:\n";
-	std::cerr<<"  ./MOOSDB -p 9001 \n";
+	std::cout<<"--help                             print help and exit\n";
+	std::cout<<"\nexample:\n";
+	std::cout<<"  ./MOOSDB --moos_port=9001 \n";
+	std::cout<<"  ./MOOSDB --moos_port=9001 --response=x_app:20,y_app:100,*_instrument:0\n";
 	exit(0);
 }
 
 bool CMOOSDB::Run(int argc, char * argv[] )
 {
+	MOOS::CommandLineParser P(argc,argv);
 
-    //here we make an object for command line overides
-    GetPot cl(argc,argv);
 
-    ///////////////////////////////////////////////////////////
-    //is the first argument an option? if not it is the mission file
-    std::string sMissionFile="mission.moos";
-
-    if(argc>1 && cl[1][0]!='-')
-    {
-    	//first arg is starting wuth "-" so it cannot be a file name
-    	sMissionFile = cl[1];
-    }
-    else
-    {
-    	//maybe it is an explicit command line switch
-    	sMissionFile = cl.follow(sMissionFile.c_str(),2,"-m","--mission_file");
-    }
+	//mission file could be first free parameter
+	std::string mission_file = P.GetFreeParameter(0, "Mission.moos");
 
     //set up mission file
-    if(!m_MissionReader.SetFile(sMissionFile))
-    {
-        //MOOSTrace("no mission file called \"%s\" found \n- will use defaults or command line switches\n",sMissionFile.c_str());
-    }
+    m_MissionReader.SetFile(mission_file);
 	
     ///////////////////////////////////////////////////////////
     //what is our community name?
     m_MissionReader.GetValue("COMMUNITY",m_sCommunityName);
 
     //is the community name being specified on the cli?
-    m_sCommunityName = cl.follow(m_sCommunityName.c_str(),2,"-c","--community");
-
+    P.GetVariable("--moos_community",m_sCommunityName);
 
     ///////////////////////////////////////////////////////////
     // make the DB name
@@ -199,11 +195,11 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     ///////////////////////////////////////////////////////////
     //what effective time speed up do we want?
-    double dfWarp;
+    double dfWarp=1.0;
     if(m_MissionReader.GetValue("MOOSTimeWarp",dfWarp))
 		SetMOOSTimeWarp(dfWarp);
     //overridden in command line?
-    dfWarp = cl.follow(-1.0,2,"-w","--time_warp");
+    P.GetVariable("--moos_time_warp",dfWarp);
     if(dfWarp>0.0)
         SetMOOSTimeWarp(dfWarp);
 
@@ -213,8 +209,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 	bool bDisableNameLookUp = true;
     m_MissionReader.GetValue("NoNetwork",bDisableNameLookUp);
 
-    //overriddden in command line?
-    if(cl.search(1,"-d","--dns"))
+    if(P.GetFlag("-d","--dns"))
     	bDisableNameLookUp = false;
 
 
@@ -224,38 +219,60 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     m_MissionReader.GetValue("SERVERPORT",m_nPort);
     //command line overide?
-    m_nPort = cl.follow(m_nPort,2,"-p","--server_port");
+    P.GetVariable("--moos_port",m_nPort);
     
     ///////////////////////////////////////////////////////////
     //is there an indication in the mission file that a webserver should run?
 
     int  nWebServerPort = -1;
 	m_MissionReader.GetValue("WEBSERVERPORT",nWebServerPort);
+    P.GetVariable("--webserver_port",nWebServerPort);
 
-
-	//is it overloaded on the command line?
-	nWebServerPort = cl.follow(-1,1,"--webserver");
 
 	//if either the mission file or command line have set a webserver port then launch one
 	if(nWebServerPort>0)
 		m_pWebServer = std::auto_ptr<CMOOSDBHTTPServer> (new CMOOSDBHTTPServer(GetDBPort(), nWebServerPort));
 
+	double dfClientTimeout = 5.0;
+	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
+    P.GetVariable("--moos_timeout",dfClientTimeout);
+
 
     ///////////////////////////////////////////////////////////
-    //are we using a network?
-    if(cl.search(2,"-h","--help"))
+	double dfWarningLatencyMS = 15;
+	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
+    P.GetVariable("--warning_latency",dfWarningLatencyMS);
+
+
+
+	bool bTCPNoDelay = false;
+    m_MissionReader.GetValue("tcpnodelay",bTCPNoDelay);
+
+    if(P.GetFlag("--tcpnodelay"))
+    	bTCPNoDelay = true;
+
+
+
+    ///////////////////////////////////////////////////////////
+    //are we looking for help?
+    if(P.GetFlag("-h","--help"))
     	PrintHelpAndExit();
 
     ///////////////////////////////////////////////////////////
+	//are we looking for help?
+	bool bBoost = P.GetFlag("--moos_boost","-b");
+
+
+    ///////////////////////////////////////////////////////////
     //are we being asked to be old skool and use a single thread?
-    bool bSingleThreaded = cl.search(2,"-s","--single_threaded");
+    bool bSingleThreaded = P.GetFlag("-s","--single_threaded");
 
     
     LogStartTime();
     
     if(bSingleThreaded)
     {
-        std::cerr<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
 		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new CMOOSCommServer);
     }
     else
@@ -269,6 +286,16 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
+
+    m_pCommServer->SetClientTimeout(dfClientTimeout);
+
+    m_pCommServer->SetWarningLatencyMS(dfWarningLatencyMS);
+
+    m_pCommServer->SetTCPNoDelay(bTCPNoDelay);
+
+    m_pCommServer->BoostIOPriority(bBoost);
+
+    m_pCommServer->SetCommandLineParameters(argc,argv);
 
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
 
@@ -535,10 +562,13 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     }
     else
     {
-        MOOSTrace("Attempting to update var \"%s\" which is type %c with data type %c\n",
+        MOOSTrace("Attempting to update var \"%s\" which is type %c with data type %c by client %s (=%s)\n",
             Msg.m_sKey.c_str(),
             rVar.m_cDataType,
-            Msg.m_cDataType);
+            Msg.m_cDataType,
+            Msg.m_sSrc.c_str(),
+            Msg.GetAsString(20,4).c_str());
+
     }
     
     
@@ -568,7 +598,7 @@ bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
     //q->second is now a reference to a list of messages that will be
     //sent to sClient the next time it calls into the database...
     
-    q->second.push_front(Msg);
+    q->second.push_back(Msg);
     
     //MOOSTrace("%d messages held for client %s\n",q->second.size(),sClient.c_str());
 
@@ -661,8 +691,8 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 			}
 		}
 
-		std::cerr<<MOOS::ConsoleColours::yellow()
-				<<"MOOSDB: Adding subscription of \""
+		std::cout<<MOOS::ConsoleColours::yellow()
+				<<"+ subs of \""
 				<<Msg.GetSource()<<"\" to variables matching \""
 				<<var_pattern<<":"<<app_pattern<<"\""
 				<<MOOS::ConsoleColours::reset()<<std::endl;
@@ -719,7 +749,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 						{
 							//add the filter owner (client *g) as a subscriber
 							NewVar.AddSubscriber(g->first, h->period());
-							std::cerr<<"MOOSDB: adding subscription of \""<<g->first<<"\" to \""
+							std::cout<<"+ subs of \""<<g->first<<"\" to \""
 									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
 									<<"\""<<std::endl;
 						}
@@ -743,7 +773,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         MOOSTrace("\nMaking new variable: \n");
         MOOSTrace("    Name=\"%s\"\n",NewVar.m_sName.c_str());
         MOOSTrace("    Src =\"%s\"\n",Msg.m_sSrc.c_str());
-        MOOSTrace("    Type =\"%s\"\n",NewVar.m_cDataType);
+        MOOSTrace("    Type =\"%c\"\n",NewVar.m_cDataType);
 #endif
     }
     
@@ -757,7 +787,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
-    std::cerr<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -769,13 +799,11 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     }
     if(m_ClientFilters.find(sClient)!=m_ClientFilters.end())
     {
-        //std::cerr<<"  removing wildcard subscriptions\n";
     	m_ClientFilters[sClient].clear();
     }
     
-    //std::cerr<<"  removing held mail\n";
     m_HeldMailMap.erase(sClient);
-    std::cerr<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
+    std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
     return true;
 }

@@ -1,35 +1,28 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
 //    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
-//          
-//   This program is distributed in the hope that it will be useful, 
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
-//////////////////////////    END_GPL    //////////////////////////////////
-// MOOSCommObject.cpp: implementation of the CMOOSCommObject class.
-//
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
 #ifdef _WIN32
     #pragma warning(disable : 4786)
     #pragma warning(disable : 4503)
@@ -43,6 +36,11 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include <iostream>
 
+
+
+#define DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
+#define DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB 128
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -53,6 +51,14 @@ CMOOSCommObject::CMOOSCommObject()
     m_dfDodgeyCommsDelay = 1.0;
     m_dfDodgeyCommsProbability = 0.5;
     m_dfTerminateProbability = 0.0;
+    m_bDisableNagle = false;
+    m_bBoostIOThreads = false;
+
+
+    SetReceiveBufferSizeInKB(DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB);
+    SetSendBufferSizeInKB(DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB);
+
+
 }
 
 CMOOSCommObject::~CMOOSCommObject()
@@ -66,16 +72,59 @@ bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,doub
     m_dfDodgeyCommsProbability = dfDodgeyCommsProbability;
     m_dfDodgeyCommsDelay = dfDodgeyCommsDelay;
     m_dfTerminateProbability = dfTerminateProbability;
+
+
     return true;
 }
+
+
+bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
+{
+	if(KBytes>0 && KBytes<2048)
+	{
+		m_nReceiveBufferSizeKB = KBytes;
+		return true;
+	}
+	return false;
+}
+
+
+void CMOOSCommObject::SetTCPNoDelay(bool bTCPNoDelay)
+{
+	m_bDisableNagle = bTCPNoDelay;
+}
+
+
+
+void CMOOSCommObject::BoostIOPriority(bool bBoost)
+{
+	m_bBoostIOThreads = bBoost;
+}
+
+
+/**	 set the size of the send  buffer of the underlying socket in MB.
+* Its unlikely you need to change this from the default
+* @param KBytes
+* @return true on success
+*/
+bool CMOOSCommObject::SetSendBufferSizeInKB(unsigned int KBytes)
+{
+	if(KBytes>0 && KBytes<2048)
+	{
+		m_nSendBufferSizeKB = KBytes;
+		return true;
+	}
+	return false;
+}
+
 
 void CMOOSCommObject::SimulateCommsError()
 {
     if(MOOSUniformRandom(0.0,1.0)<m_dfDodgeyCommsProbability)
     {
-        std::cerr<<MOOS::ConsoleColours::Yellow();
-        std::cerr<<"faking slow connection..."<<m_dfDodgeyCommsDelay<<"s sleep\n";
-        std::cerr<<MOOS::ConsoleColours::reset();
+        std::cout<<MOOS::ConsoleColours::Yellow();
+        std::cout<<"faking slow connection..."<<m_dfDodgeyCommsDelay<<"s sleep\n";
+        std::cout<<MOOS::ConsoleColours::reset();
 
         MOOSPause((int)(m_dfDodgeyCommsDelay*1000));
 
@@ -84,9 +133,9 @@ void CMOOSCommObject::SimulateCommsError()
 
     if(MOOSUniformRandom(0.0,1.0)<m_dfTerminateProbability)
     {
-       std::cerr<<MOOS::ConsoleColours::Red();
-       std::cerr<<"faking application-abort mid transaction\n";
-       std::cerr<<MOOS::ConsoleColours::reset();
+       std::cout<<MOOS::ConsoleColours::Red();
+       std::cout<<"faking application-abort mid transaction\n";
+       std::cout<<MOOS::ConsoleColours::reset();
        exit(-1);
     }
 }

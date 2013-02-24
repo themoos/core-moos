@@ -1,32 +1,28 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite
+//   This file is part of the MOOS project
 //
-//   A suit of Applications and Libraries for Mobile Robotics Research
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and
-//   Oxford University.
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt  This program is distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk.
-//
-//   This file is part of a  MOOS Core Component.
-//
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License as
-//   published by the Free Software Foundation; either version 2 of the
-//   License, or (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-//   General Public License for more details.
-//
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//   02111-1307, USA.
-//
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
 
 // MOOSApp.cpp: implementation of the CMOOSApp class.
 //
@@ -265,6 +261,8 @@ bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile,
 bool CMOOSApp::Run( const std::string & sName,
                     const std::string & sMissionFile)
 {
+
+
 	//save absolutely crucial info...
 	m_sAppName      = sName; //default
 	m_CommandLineParser.GetOption("--moos_app_name",m_sAppName);//overload
@@ -328,6 +326,7 @@ bool CMOOSApp::Run( const std::string & sName,
     //can we start the communications ?
     if(m_bUseMOOSComms)
     {
+
         if(!ConfigureComms())
         {
             return false;
@@ -358,11 +357,24 @@ bool CMOOSApp::Run( const std::string & sName,
 
 
     /** let derivatives do stuff before execution*/
+    if(!OnStartUpPrepare())
+    {
+        MOOSTrace("Derived OnStartUpPrepare() returned false... Quitting\n");
+        return false;
+    }
+
     if(!OnStartUp())
     {
         MOOSTrace("Derived OnStartUp() returned false... Quitting\n");
         return false;
     }
+
+    if(!OnStartUpComplete())
+    {
+        MOOSTrace("Derived OnStartUpComplete() returned false... Quitting\n");
+        return false;
+    }
+
 
     DoBanner();
 
@@ -408,14 +420,14 @@ bool CMOOSApp::Configure()
 
 	//are we expected to use MOOS comms?
 	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
-	m_bUseMOOSComms = !m_CommandLineParser.GetFlag("--moos_no_comms");
+	m_bUseMOOSComms&=!m_CommandLineParser.GetFlag("--moos_no_comms");
 
 	//are we being asked to sort mail by time..
 	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
-	m_bSortMailByTime = !m_CommandLineParser.GetFlag("--moos_no_sort_mail");
+	m_bSortMailByTime&=!m_CommandLineParser.GetFlag("--moos_no_sort_mail");
 
 	//are we being asked to quit if iterate fails?
-	m_bQuitOnIterateFail |= m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
+	m_bQuitOnIterateFail|=m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
 
 	//are we in debug mode
 	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
@@ -493,26 +505,25 @@ void CMOOSApp::DoBanner()
 {
 	if(m_bQuiet)
 		return;
-
 	MOOSTrace("%s is Running:\n",GetAppName().c_str());
-	MOOSTrace(" +Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
+	MOOSTrace(" |-Baseline AppTick   @ %.1f Hz\n",m_dfFreq);
 	if(m_Comms.IsAsynchronous())
 	{
-		MOOSTrace(" +Comms is Full Duplex and Asynchronous\n");
+		MOOSTrace(" |--Comms is Full Duplex and Asynchronous\n");
 		switch(m_IterationMode)
 		{
 		case REGULAR_ITERATE_AND_MAIL:
-			std::cout<<" +Iterate Mode 0 :\n   -Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
+			std::cout<<" -Iterate Mode 0 :\n   |-Regular iterate and message delivery at "<<m_dfFreq<<" Hz\n";
 			break;
 		case COMMS_DRIVEN_ITERATE_AND_MAIL:
-			std::cout<<" +Iterate Mode 1 :\n   -Dynamic iterate speed driven by message delivery ";
+			std::cout<<" |--Iterate Mode 1 :\n   |-Dynamic iterate speed driven by message delivery ";
 			if(m_dfMaxAppTick==0.0)
 				std::cout<<"at an unlimited rate\n";
 			else
 				std::cout<<"at up to "<<m_dfMaxAppTick<<"Hz\n";
 			break;
 		case REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL:
-			std::cout<<" +Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   -Dynamic message delivery ";
+			std::cout<<" |--Iterate Mode 2 :\n   -Regular iterate at "<<m_dfFreq<<" Hz. \n   |-Dynamic message delivery ";
 			if(m_dfMaxAppTick==0.0)
 				std::cout<<"at an unlimited rate\n";
 			else
@@ -523,8 +534,8 @@ void CMOOSApp::DoBanner()
 	}
 	else
 	{
-		MOOSTrace("\t Comms is Synchronous\n");
-		MOOSTrace("\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
+		MOOSTrace(" |\t Comms is Synchronous\n");
+		MOOSTrace(" |\t Baseline CommsTick @ %d Hz\n",m_nCommsFreq);
 	}
 
 	if(GetMOOSTimeWarp()!=1.0)
@@ -586,10 +597,22 @@ bool CMOOSApp::DoRunWork()
             {
 				//////////////////////////////////////
 				//  do application specific processing
-				bool bOK = Iterate();
 
+                /** called just after Iterate has finished - another place to overload*/
+            	bool bOK = true;
+            	bOK = OnIteratePrepare();
+            	if(m_bQuitOnIterateFail && !bOK)
+            		return false;
+
+				bOK = Iterate();
 				if(m_bQuitOnIterateFail && !bOK)
 					return false;
+
+				bOK = OnIterateComplete();
+            	if(m_bQuitOnIterateFail && !bOK)
+            		return false;
+
+
             }
             
             m_nIterateCount++;
@@ -729,14 +752,14 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
-bool CMOOSApp::AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+bool CMOOSApp::AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
 {
-	return m_Comms.AddMessageCallback(sMsgName,pfn,pYourParam);
+	return m_Comms.AddMessageCallback(sCallbackName,sMsgName,pfn,pYourParam);
 }
 
 bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
 {
-	return m_Comms.AddMessageCallback(sMsgName,MOOSAPP_OnMessage,this);
+	return m_Comms.AddMessageCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
 }
 
 
@@ -1006,7 +1029,7 @@ void CMOOSApp::SetAppFreq(double  dfFreq,double dfMaxFreq)
     }
     else
     {
-    	std::cerr<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
+    	std::cout<<"Setting baseline apptick to allowable maximum of "<<MOOS_MAX_APP_FREQ<<std::endl;
     }
 
     if(dfMaxFreq>=0.0)
@@ -1029,6 +1052,15 @@ bool CMOOSApp::IsSimulateMode()
 {
     return m_bSimMode;
 }
+
+void CMOOSApp::WaitForEmptyOutbox()
+{
+	while(m_Comms.GetNumberOfUnsentMessages())
+	{
+		MOOSPause(100);
+	}
+}
+
 
 bool CMOOSApp::AddMOOSVariable(string sName, string sSubscribeName, string sPublishName,double dfCommsTime)
 {
@@ -1259,6 +1291,12 @@ void CMOOSApp::EnableCommandMessageFiltering(bool bEnable)
     }
 }
 
+double CMOOSApp::GetCPULoad()
+{
+	double dfLoad=0;
+	m_CPULoadMonitor.GetPercentageCPULoad(dfLoad);
+	return dfLoad;
+}
 
 std::string CMOOSApp::MakeStatusString()
 {
@@ -1271,6 +1309,12 @@ std::string CMOOSApp::MakeStatusString()
         ssStatus<<"AppErrorReason="<<m_sAppError<<",";
     
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
+
+    double dfCPULoad;
+    if(m_CPULoadMonitor.GetPercentageCPULoad(dfCPULoad))
+    {
+    	ssStatus<<"cpuload="<<std::setprecision(4)<<dfCPULoad<<",";
+    }
 
     ssStatus<<"MOOSName="<<GetAppName()<<",";
 

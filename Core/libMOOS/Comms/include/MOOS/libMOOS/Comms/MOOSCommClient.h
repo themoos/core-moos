@@ -1,32 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
 //    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
 //          
 //   This program is distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 // MOOSCommClient.h: interface for the CMOOSCommClient class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -237,12 +231,14 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnreadMessages();
 
+    /** how much incoming mail is pending?*/
+    unsigned int GetNumberOfUnsentMessages();
+
     /** get total number of bytes sent*/
     unsigned long long int GetNumBytesSent();
 
     /** get total number of bytes received*/
     unsigned long long int GetNumBytesReceived();
-
 
 
     /** used to control how verbose the connection process is */
@@ -276,13 +272,30 @@ public:
 
     /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+	 * @param sCallbackName name for callback
 	 * @param sMsgName name of message to watch for
 	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+    bool AddMessageCallback(const std::string & sCallbackName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam );
 
+    /**
+     * remove the named callback
+     * @param sCallbackName
+     * @return
+     */
+    bool RemoveMessageCallback(const std::string & sCallbackName);
+
+    /**
+     * Does this named callback exist?
+     * @param sCallbackName
+     * @return
+     */
+    bool HasMessageCallback(const std::string & sCallbackName);
 
 
 
@@ -399,7 +412,7 @@ protected:
     bool (*m_pfnMailCallBack)(void* pParam);
     
     
-    /** funcdamental frequency with which comms with server occurs
+    /** fundamental frequency with which comms with server occurs
     @see Run
     */
     unsigned int m_nFundamentalFreq;
@@ -425,11 +438,39 @@ protected:
     /**
      * list of active mail queues. Each Queue invokes a callback. Keyed by message name
      */
-    std::map<std::string,MOOS::ActiveMailQueue*  > ActiveQueues_;
+    std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
 
+    /*
+     * a mutex protecting  ActiveQueues_
+     */
+    CMOOSLock ActiveQueuesLock_;
 
+    /*
+     * an inernal helper function which sorts some mail into
+     * active queues (if any have been installed)
+     */
+    bool DispatchInBoxToActiveThreads();
+
+    /*
+     * a counter for total bytes received
+     */
     unsigned long long int m_nBytesReceived;
+
+    /*
+     * a counter for total bytes received.
+     */
     unsigned long long int m_nBytesSent;
+
+
+    /**
+     * internal variable describing if mail should be
+     * posted to front or back of mailbox
+     */
+    bool m_bPostNewestToFront;
+
+    /** true if after handshaking DB announces its ability to support aysnc comms*/
+    bool m_bDBIsAsynchronous;
+
 
 
 };

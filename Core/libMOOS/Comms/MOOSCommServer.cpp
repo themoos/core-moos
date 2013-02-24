@@ -1,32 +1,31 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite
+//   This file is part of the MOOS project
 //
-//   A suit of Applications and Libraries for Mobile Robotics Research
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and
-//   Oxford University.
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
+//          
+//   This program is distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk.
-//
-//   This file is part of a  MOOS Core Component.
-//
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License as
-//   published by the Free Software Foundation; either version 2 of the
-//   License, or (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-//   General Public License for more details.
-//
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//   02111-1307, USA.
-//
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
+
 // MOOSCommServer.cpp: implementation of the CMOOSCommServer class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -42,14 +41,22 @@
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
+#include "MOOS/libMOOS/Utils/ThreadPriority.h"
 
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
 #ifndef _WIN32
     #include <sys/signal.h>
 #endif
+
+#define TOLERABLE_SILENCE 5.0
+#define TOLERABLE_TRANSIT_TIME 0.015;
+#define DEFAULT_SERVER_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
+#define DEFAULT_SERVER_SOCKET_SEND_BUFFER_SIZE_KB 128
+
 
 
 #ifdef _WIN32
@@ -119,11 +126,26 @@ CMOOSCommServer::CMOOSCommServer()
     m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
+
+	m_bBoostIOThreads= false;
+
+	m_dfClientTimeout = TOLERABLE_SILENCE;
+	m_dfCommsLatencyConcern = TOLERABLE_TRANSIT_TIME;
 }
 
 CMOOSCommServer::~CMOOSCommServer()
 {
 
+}
+
+void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
+{
+	m_CommandLineParser.Open(argc,argv);
+}
+
+void CMOOSCommServer::SetWarningLatencyMS(double dfPeriod)
+{
+	m_dfCommsLatencyConcern = dfPeriod/1000.0;
 }
 
 
@@ -135,6 +157,56 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
     m_lListenPort = lPort;
 	
 	m_bDisableNameLookUp = bDisableNameLookUp;
+
+
+
+	if(m_CommandLineParser.IsAvailable())
+	{
+		//here we look to parse latency
+		//--latency=y:10
+		std::string sLatency = "0";
+		m_CommandLineParser.GetVariable("--response",sLatency);
+		std::vector<std::string> sLL = MOOS::StringListToVector(sLatency);
+		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();q++)
+		{
+			try
+			{
+				std::string sNum=*q;
+				std::string sClient = "*";
+				if(sNum.find(":")!=std::string::npos)
+				{
+					sClient = MOOSChomp(sNum,":");
+				}
+				if(!MOOSIsNumeric(sNum))
+					throw std::runtime_error("error processing response "+ *q + " expected form [client_name:]time_ms\n");
+
+				double dfT = MOOS::StringToDouble(sNum);
+
+				//we push specialisms to the front and wildcards to the back
+				if(sClient.find_first_of("*?")!=std::string::npos)
+				{
+					//this is not a wildcard
+					m_ClientTimingVector.push_front(std::make_pair(sClient,dfT));
+				}
+				else
+				{
+					//this is a wildcard
+					m_ClientTimingVector.push_back(std::make_pair(sClient,dfT));
+				}
+
+
+
+			}
+			catch(const std::runtime_error & e)
+			{
+				std::cerr<<e.what()<<std::endl;
+				continue;
+			}
+
+		}
+
+	}
+
 
     if(!m_bQuiet)
     	DoBanner();
@@ -160,8 +232,6 @@ bool CMOOSCommServer::TimerLoop()
     
     int nPeriod = 3000;
 
-    double dfTimeOut = 4.0;
-
     SOCKETLIST::iterator p,q;
 
     while(!m_bQuit)
@@ -180,7 +250,7 @@ bool CMOOSCommServer::TimerLoop()
             double dfLastCalled = (*p)->GetReadTime();
             q = p;
             ++q;
-            if(dfTimeNow-dfLastCalled>dfTimeOut)
+            if(dfTimeNow-dfLastCalled>m_dfClientTimeout)
             {
                 MOOSTrace("its been %f seconds since my last confession:\n",dfTimeNow-dfLastCalled);
                 MOOSTrace("\tTime Now %f\n\tLastReadTime %f\n",dfTimeNow,dfLastCalled );
@@ -198,6 +268,16 @@ bool CMOOSCommServer::TimerLoop()
     return true;
 
 }
+
+bool CMOOSCommServer::SetClientTimeout(double dfTimeoutPeriod)
+{
+	if(dfTimeoutPeriod<0)
+		return false;
+
+	m_dfClientTimeout = dfTimeoutPeriod;
+	return true;
+}
+
 
 bool  CMOOSCommServer::OnAbsentClient(XPCTcpSocket* pClient)
 {
@@ -305,6 +385,16 @@ bool CMOOSCommServer::ListenLoop()
 				sClientName[0]='\0'; 
 			}
 			
+			try
+			{
+				pNewSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
+				pNewSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+			}
+			catch(  XPCException & e)
+			{
+				std::cerr<<"there was trouble configuring socket buffers: "<<e.sGetException()<<"\n";
+			}
+
             m_SocketListLock.Lock();
 
             if(OnNewClient(pNewSocket,sClientName))
@@ -344,6 +434,8 @@ bool CMOOSCommServer::ServerLoop()
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
+    if(m_bBoostIOThreads)
+    	MOOS::BoostThisThread();
 
 
     while(!m_bQuit)
@@ -351,7 +443,7 @@ bool CMOOSCommServer::ServerLoop()
 
         if(m_ClientSocketList.empty())
         {
-            MOOSPause(1);
+            MOOSPause(100);
             continue;
         }
 
@@ -518,32 +610,41 @@ bool CMOOSCommServer::ProcessClient()
 
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
-    std::cerr<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
+    std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
     MOOSTrace("New client connected:\n");
 
     if(HandShake(pNewClient))
     {
-        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
 
         string sName = GetClientName(pNewClient);
 
         if(!sName.empty())
         {
-            std::cerr<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
+            std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
         }
         if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
         {
-        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
         }
         else
         {
-        	std::cerr<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"Synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+
+        if(m_bBoostIOThreads)
+        {
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::Yellow()<<"raised"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::green()<<"normal"<<MOOS::ConsoleColours::reset()<<"\n";
         }
     }
     else
     {
-        std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
 
         std::cerr<<MOOS::ConsoleColours::Red()<<"Handshaking failed - client is spurned\n"<<MOOS::ConsoleColours::reset();
         pNewClient->vCloseSocket();
@@ -551,7 +652,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         MOOSTrace("--------------------------------\n");
         return false;
     }
-    std::cerr<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
+    std::cout<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
 
 
     MOOSTrace("--------------------------------\n");
@@ -566,7 +667,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
-    std::cerr<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
+    std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
@@ -735,6 +836,9 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         //send a message back to the client saying welcome
         CMOOSMsg MsgW(MOOS_WELCOME,"",dfSkew);
+
+        //we are a V10 DB we can support AysncComms
+        MsgW.m_sVal = "asynchronous";
         MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 

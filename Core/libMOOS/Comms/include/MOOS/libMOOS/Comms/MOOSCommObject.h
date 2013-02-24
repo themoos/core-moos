@@ -1,32 +1,26 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite 
-//  
-//   A suit of Applications and Libraries for Mobile Robotics Research 
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and 
-//   Oxford University. 
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
 //    
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford 
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk. 
-//      
-//   This file is part of a  MOOS Core Component. 
-//        
-//   This program is free software; you can redistribute it and/or 
-//   modify it under the terms of the GNU General Public License as 
-//   published by the Free Software Foundation; either version 2 of the 
-//   License, or (at your option) any later version. 
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
 //          
 //   This program is distributed in the hope that it will be useful, 
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-//   General Public License for more details. 
-//            
-//   You should have received a copy of the GNU General Public License 
-//   along with this program; if not, write to the Free Software 
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 
-//   02111-1307, USA. 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 // MOOSCommObject.h: interface for the CMOOSCommObject class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -72,6 +66,43 @@ public:
      * @return
      */
     bool ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay,double dfTerminateProbability = 0.0);
+
+
+    /**
+     * boost (or don't) the priority of all threads involved in IO
+     * @param bBoost
+     */
+    void BoostIOPriority(bool bBoost);
+
+    /*enable or don't the NAGLE algorithm for sockets */
+    void SetTCPNoDelay(bool bTCPNoDelay);
+
+
+protected:
+
+
+    /**	 set the size of the receive  buffer of the underlying socket in KB.
+	 * Its unlikely you need to change this from the default
+	 * @param KBytes
+	 * @return true on success
+	 */
+	bool SetReceiveBufferSizeInKB(unsigned int KBytes);
+
+	/**	 set the size of the send  buffer of the underlying socket in KB.
+	* Its unlikely you need to change this from the default
+	* @param KBytes
+	* @return true on success
+	*/
+	bool SetSendBufferSizeInKB(unsigned int KBytes);
+
+
+	unsigned int m_nReceiveBufferSizeKB;
+    unsigned int m_nSendBufferSizeKB;
+    //should we boost the priority of all IO threads?
+	bool m_bBoostIOThreads;
+
+	bool m_bDisableNagle;
+
 
 private:
     //these are just here to help us test aspects of the communications

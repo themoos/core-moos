@@ -1,32 +1,32 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite
+//   This file is part of the MOOS project
 //
-//   A suit of Applications and Libraries for Mobile Robotics Research
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and
-//   Oxford University.
+//   MOOS : Mission Oriented Operating Suite A suit of 
+//   Applications and Libraries for Mobile Robotics Research 
+//   Copyright (C) Paul Newman
+//    
+//   This software was written by Paul Newman at MIT 2001-2002 and 
+//   the University of Oxford 2003-2013 
+//   
+//   email: pnewman@robots.ox.ac.uk. 
+//              
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
+//          
+//   This program is distributed in the hope that it will be useful, 
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk.
-//
-//   This file is part of a  MOOS Core Component.
-//
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License as
-//   published by the Free Software Foundation; either version 2 of the
-//   License, or (at your option) any later version.
-//
-//   This program is distributed in the hope that it will be useful,
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-//   General Public License for more details.
-//
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//   02111-1307, USA.
-//
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+**/
+
+
+
+
 #ifdef _WIN32
 #pragma warning(disable : 4786)
 #endif
@@ -75,6 +75,7 @@
 #include <sys/timeb.h>
 #include <stdio.h>
 #include <iostream>
+#include <stdexcept>
 
 #define ENABLE_WIN32_HPMOOSTIME 0
 #define MAX_TIME_WARP 100
@@ -118,6 +119,13 @@ namespace MOOS
 			v.push_back(MOOS::Chomp(L,tok));
 		}
 		return v;
+	}
+
+	double StringToDouble(const std::string & sNum)
+	{
+		if(!MOOSIsNumeric(sNum))
+			throw std::runtime_error("MOOS::StringToDouble: "+sNum+" is not a number");
+		return atof(sNum.c_str());
 	}
 
 };
@@ -273,7 +281,7 @@ bool SetMOOSTimeWarp(double dfWarp)
         gdfMOOSTimeWarp = dfWarp;
         return true;
     }
-    return MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
+    return false;//MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
     
 }
 
@@ -329,7 +337,8 @@ struct CompareInsensitive: public std::binary_function< char, char, bool >
 //case insensitive find
 size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool bInsensitive)
 {
-    
+    if(sToken.empty())
+    	return std::string::npos;
 	if(bInsensitive)
     {
         std::string::const_iterator q = std::search(
@@ -353,6 +362,9 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     
+	if(sTk.find(",")!=std::string::npos)
+		return false;
+
     size_t  nPos = string::npos;
     size_t k = 0;
     while((nPos = MOOSStrFind(sStr.substr(k),sTk,bInsensitive))!=string::npos)
@@ -360,8 +372,28 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
         nPos+=k;
         //we have the start of the token at nPos
         //we need to be carefull here = there could be many spaces between token and =
-        /*unsigned int*/ size_t  nEqualsPos = sStr.find('=',nPos);
-        
+        /*unsigned int*/
+        size_t nEqualsPos = sStr.find('=',nPos);
+        size_t nLastComma = sStr.find_last_of(",",nPos);
+
+        size_t nLastChar;
+        if(nLastComma==std::string::npos)
+        {
+        	nLastChar = sStr.find_first_not_of(" \t",0);
+        }
+        else
+        {
+        	//starting from previous comma was when is the first non white space char?
+        	nLastChar = sStr.find_first_not_of(" \t",nLastComma+1);
+        }
+
+        if(nLastChar!=nPos)
+        {
+        	//this is not great extra chars found !
+        	k =nPos+1;
+        	continue;
+        }
+
     	//can we find an "="?
         if(nEqualsPos!=string::npos)
         {
@@ -381,6 +413,7 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
             int nCommaPos =sStr.find(',',nEqualsPos);
 
             sVal.append(sStr,nEqualsPos+1,nCommaPos-nEqualsPos-1);
+            MOOSTrimWhiteSpace(sVal);
                         
             return true;
         }
@@ -460,11 +493,16 @@ bool MOOSValFromString(bool  & bVal,const string & sStr,const string & sTk,bool 
     {
         MOOSRemoveChars(sVal," ");
         if(MOOSStrCmp(sVal,"true") || MOOSStrCmp(sVal,"1"))
+        {
             bVal =  true;
-        else
+            return true;
+        }
+        else if(MOOSStrCmp(sVal,"false") || MOOSStrCmp(sVal,"0"))
+        {
             bVal =  false;
+            return true;
+        }
 
-        return true;
     }
 
     return false;
@@ -560,7 +598,14 @@ bool MOOSVectorFromString(const string & sStr,std::vector<double> & dfValVec,int
     {
         for(int j = 1; j<=nCols;j++)
         {
-            double dfVal = atof(pStr+nPos+1);
+            //double dfVal = atof(pStr+nPos+1);
+            char * pN;
+            double dfVal = strtod(pStr+nPos+1,&pN);
+            if(pN==pStr+nPos+1)
+            {
+            	//this is bad the number was not converted!
+            	return false;
+            }
 
             dfValVec.push_back(dfVal);
             nPos = sStr.find(',',nPos+1);
@@ -611,7 +656,16 @@ bool MOOSVectorFromString(const string & sStr,std::vector<float> & fValVec,int &
     {
         for(int j = 1; j<=nCols;j++)
         {
-            double dfVal = atof(pStr+nPos+1);
+//            double dfVal = atof(pStr+nPos+1);
+
+            char * pN;
+            double dfVal = strtod(pStr+nPos+1,&pN);
+            if(pN==pStr+nPos+1)
+            {
+            	//this is bad the number was not converted!
+            	return false;
+
+            }
 
             fValVec.push_back(static_cast<float> (dfVal));
             nPos = sStr.find(',',nPos+1);
@@ -664,7 +718,15 @@ bool MOOSVectorFromString(const string & sStr,std::vector<unsigned int> & nValVe
     {
         for(int j = 1; j<=nCols;j++)
         {
-            unsigned int nVal = atoi(pStr+nPos+1);
+            //unsigned int nVal = atoi(pStr+nPos+1);
+
+            char * pN;
+            unsigned int nVal = strtoul(pStr+nPos+1,&pN,10);
+			if(pN==pStr+nPos+1)
+			{
+				//this is bad the number was not converted!
+            	return false;
+			}
 
             nValVec.push_back(nVal);
             nPos = sStr.find(',',nPos+1);
@@ -1168,7 +1230,7 @@ void MOOSTrace(const char *FmtStr,...)
     // be processed by the _vsnprintf above, then placed in 'buf'.
     // Problem is that fprintf finds the '%' in buf and expects us to provide more arguments!
         //fprintf(stderr,buf);
-    fputs(buf, stderr);
+    fputs(buf, stdout);
 
     }
 }

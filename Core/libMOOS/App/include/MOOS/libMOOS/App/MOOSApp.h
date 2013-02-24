@@ -1,32 +1,27 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-//   MOOS - Mission Oriented Operating Suite
+//   This file is part of the MOOS project
 //
-//   A suit of Applications and Libraries for Mobile Robotics Research
-//   Copyright (C) 2001-2005 Massachusetts Institute of Technology and
-//   Oxford University.
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
 //
-//   This software was written by Paul Newman at MIT 2001-2002 and Oxford
-//   University 2003-2005. email: pnewman@robots.ox.ac.uk.
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
 //
-//   This file is part of a  MOOS Core Component.
+//   email: pnewman@robots.ox.ac.uk.
 //
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the GNU General Public License as
-//   published by the Free Software Foundation; either version 2 of the
-//   License, or (at your option) any later version.
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
 //
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-//   General Public License for more details.
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
-//   You should have received a copy of the GNU General Public License
-//   along with this program; if not, write to the Free Software
-//   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-//   02111-1307, USA.
-//
-//////////////////////////    END_GPL    //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
 // MOOSApp.h: interface for the CMOOSApp class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -38,6 +33,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
+#include "MOOS/libMOOS/Utils/ProcInfo.h"
 
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -109,6 +105,13 @@ protected:
     nFreq = 1/AppTick Hz*/
     virtual bool Iterate();
 
+    /** called just after Iterate has finished - another place to overload*/
+    virtual bool OnIterateComplete(){return true;};
+
+    /** called just before Iterate is  called - another place to overload*/
+    virtual bool OnIteratePrepare(){return true;};
+
+
     /** called when new mail has arrived. Overload this method in a derived class to process new mail.
     It will be called at approximately 1/CommsTick Hz. In this function you'll most likely interate over the
     collection of mail message received or call a m_Comms::PeekMail() to look for a specific named message.
@@ -118,6 +121,12 @@ protected:
     /** called just before the main app loop is entered. Specific initialisation code can be written
     in an overloaded version of this function */
     virtual bool OnStartUp();
+
+    /** called just before OnStartUp is called - another place to overload*/
+    virtual bool OnStartUpPrepare(){return true;};
+
+    /** called just after OnStartUp has finished - another place to overload*/
+    virtual bool OnStartUpComplete(){return true;};
 
     /** optionally (see ::EnableCommandMessageFiltering() ) called when a command message (<MOOSNAME>_CMD) is recieved by the application.
     @param a copy of CmdMsg the message purporting to be a "command" - i.e. has the name <MOOSNAME>_CMD */
@@ -281,7 +290,7 @@ protected:
      * @param pYourParam a void * pointer to the thing we want passed as pParam above
      * @return true on success
      */
-    bool AddCustomMessageCallback(const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+    bool AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
 
     /**
      * Add a callback to ::OnMessage() for a particular message. This will cause OnMessage() to be called from its own thread
@@ -386,6 +395,14 @@ protected:
 
     /** return the application mission file name */
     std::string GetMissionFileName();
+
+    /** pause until all mail appears to have been sent.
+     * note if you are wanting to exit and hope this function
+     * completing before doing so there is a very small chance
+     * you could exit while the OS is still doing the low level
+     * socket work...
+     */
+    void WaitForEmptyOutbox();
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -506,8 +523,11 @@ protected:
     /** flag specifying the error state of the App - set via SetAppError()*/
     bool m_bAppError;
     
+    /** a tootl for parsing command lines */
     MOOS::CommandLineParser m_CommandLineParser;
     
+    /** what is current CPU load?*/
+    double GetCPULoad();
 
     /** Time since last iterate was called*/
     double GetTimeSinceIterate();
@@ -590,8 +610,8 @@ private:
 	
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
-
-    
+protected:
+    MOOS::ProcInfo m_CPULoadMonitor;
     
 };
 

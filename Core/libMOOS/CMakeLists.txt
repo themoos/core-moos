@@ -39,6 +39,7 @@ SET(UTILS_SOURCES
    Utils/ThreadPrint.cpp
    Utils/CommandLineParser.cpp
    Utils/ProcInfo.cpp
+   Utils/ThreadPriority.cpp
    
    )
 
@@ -75,6 +76,10 @@ OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
 IF (USE_ASYNC_COMMS)
     cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
     ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
+ELSE (USE_ASYNC_COMMS)
+    message(STATUS "removing ASYNCHRONOUS_CLIENT")
+    cache_internal_remove(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
+    REMOVE_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
 ENDIF (USE_ASYNC_COMMS)
 
 

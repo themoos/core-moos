@@ -14,47 +14,43 @@
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
-//   http://www.gnu.org/licenses/lgpl.txt
-//
-//   This program is distributed in the hope that it will be useful,
+//   http://www.gnu.org/licenses/lgpl.txtgram is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+
+
+
 /*
- * ProcInfo.h
+ * ThreadPriority.h
  *
- *  Created on: Dec 15, 2012
+ *  Created on: Feb 2, 2013
  *      Author: pnewman
  */
 
-#ifndef PROCINFO_H_
-#define PROCINFO_H_
+#ifndef THREADPRIORITY_H_
+#define THREADPRIORITY_H_
 
-#include <memory>
-/*
- * simple class which estimates CPU usage for the calling process.
- */
-namespace MOOS {
-
-class ProcInfo {
-public:
-	ProcInfo();
-	virtual ~ProcInfo();
+namespace MOOS
+{
+	/**
+	 * Boost the calling thread priority to half way between current
+	 * priority and max allowable. Use with care. Make sure you know
+	 * what you are doing....
+	 * @return
+	 */
+	bool BoostThisThread();
 
 	/**
-	 * estimate the percentage CPU load of this process
-	 * @param cpu_load
-	 * @return true on success
+	 * extract the calling threads priority and the maximum it
+	 * could be
+	 * @param Priority
+	 * @param MaxAllowed
+	 * @return
 	 */
-	bool GetPercentageCPULoad(double &cpu_load);
-
-
-private:
-	class Impl;
-	std::auto_ptr<Impl> Impl_;
+	bool GetThisThreadsPriority(int & Priority, int & MaxAllowed);
 };
 
-}
-
-#endif /* PROCINFO_H_ */
+#endif /* THREADPRIORITY_H_ */

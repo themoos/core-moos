@@ -1,4 +1,4 @@
-//
+
 // Platform_WIN32.h
 //
 // $Id: //poco/svn/Foundation/include/Poco/Platform_WIN32.h#3 $
