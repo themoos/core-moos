@@ -55,7 +55,9 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#ifdef WIN32
 #include <windows.h>
+#endif
 
 #if !defined(POCO_NO_UNWINDOWS)
 // A list of annoying macros to #undef.

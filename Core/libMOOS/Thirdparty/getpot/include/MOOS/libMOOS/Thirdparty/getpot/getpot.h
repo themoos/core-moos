@@ -59,7 +59,10 @@ extern "C" {
 #include <iostream> // not every compiler distribution includes <iostream> 
 //                  // with <fstream>
 
+
+
 typedef  std::vector<std::string>  STRING_VECTOR;
+template< class T > void GetPotNotUsed(const T &) {};
 
 #define victorate(TYPE, VARIABLE, ITERATOR)                        \
   std::vector<TYPE>::const_iterator ITERATOR = (VARIABLE).begin(); \
@@ -1574,11 +1577,11 @@ GetPot::set(const char* VarName, const char* Value, const bool Requested /* = ye
 
 inline void
 GetPot::set(const char* VarName, const double& Value, const bool Requested /* = yes */)
-{ __set_variable(VarName, __double2string(Value).c_str()); Requested;}
+{ __set_variable(VarName, __double2string(Value).c_str()); GetPotNotUsed(Requested);}
 
 inline void 
 GetPot::set(const char* VarName, const int Value, const bool Requested /* = yes */)
-{ __set_variable(VarName, __int2string(Value).c_str());Requested; }
+{ __set_variable(VarName, __int2string(Value).c_str());GetPotNotUsed(Requested); }
 
 
 inline unsigned
@@ -2408,7 +2411,7 @@ GetPot::variable::take(const char* Value, const char* FieldSeparator)
 
     // separate string by white space delimiters using 'strtok'
     // thread safe usage of strtok (no static members)
-    //char* spt = 0;
+    char* spt = 0;
     // make a copy of the 'Value'
     char* copy = new char[strlen(Value)+1];
     strcpy(copy, Value);
