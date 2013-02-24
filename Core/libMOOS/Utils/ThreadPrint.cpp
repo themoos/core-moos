@@ -95,15 +95,39 @@ void ThreadPrint::PrintStatus(bool bStatus,const std::string & sMessage)
 }
 
 
-void ThreadPrint::SimplyPrintTimeAndMessage(const std::string & sMessage )
+void ThreadPrint::SimplyPrintTimeAndMessage(const std::string & sMessage,color_t color )
 {
 	if(!_Impl->_Enable)
 		return;
 
 	_Impl->_Lock.Lock();
 
+	switch(color)
+	{
+		case RED:
+			_Impl->_outstream<<MOOS::ConsoleColours::red();
+			break;
+		case YELLOW:
+			_Impl->_outstream<<MOOS::ConsoleColours::yellow();
+			break;
+		case GREEN:
+			_Impl->_outstream<<MOOS::ConsoleColours::green();
+			break;
+		case MAGENTA:
+			_Impl->_outstream<<MOOS::ConsoleColours::magenta();
+			break;
+		case CYAN:
+			_Impl->_outstream<<MOOS::ConsoleColours::cyan();
+			break;
+		case NONE:
+			_Impl->_outstream<<MOOS::ConsoleColours::reset();
+			break;
+
+	}
+
 	_Impl->_outstream.setf(std::ios::fixed);
 	_Impl->_outstream<<std::setprecision(4)<<MOOS::Time()<<"   "<<sMessage<<"\n";
+	_Impl->_outstream<<MOOS::ConsoleColours::reset();
 
 	_Impl->_Lock.UnLock();
 
