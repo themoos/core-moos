@@ -4,6 +4,10 @@
  *  Created on: Dec 15, 2012
  *      Author: pnewman
  */
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <iostream>
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
@@ -12,16 +16,9 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
 
+#ifndef _WIN32
 #include <sys/resource.h>
-
-
-
-namespace MOOS {
-
-const int sample_period_ms =500;
-
-#ifdef _WIN32
-#include <Windows.h>
+#else
 
 ULONGLONG subtractTime(const FILETIME &a, const FILETIME &b)
 {
@@ -33,11 +30,13 @@ ULONGLONG subtractTime(const FILETIME &a, const FILETIME &b)
 
     return la.QuadPart - lb.QuadPart;
 }
+
 #endif
 
 
+namespace MOOS {
 
-
+const int sample_period_ms =500;
 
 class ProcInfo::Impl
 {
@@ -69,12 +68,12 @@ public:
 
 #ifdef _WIN32
 		FILETIME sysIdleA, sysKernelA, sysUserA,sysIdleB, sysKernelB, sysUserB;
-		FILETIME procCreation, procExit,
+		FILETIME procCreation, procExit;
 		FILETIME procKernelA, procUserA, procKernelB, procUserB;
 
 		if (!GetSystemTimes(&sysIdleA, &sysKernelA, &sysUserA) ||
-			!GetProcessTimes(GetCurrentProcess(), &procCreationA,
-					&procExitA, &procKernelA, &procUserA))		{
+			!GetProcessTimes(GetCurrentProcess(), &procCreation,
+					&procExit, &procKernelA, &procUserA))		{
 			return false;
 		}
 
@@ -89,7 +88,7 @@ public:
 			}
 
 			ULONGLONG sysKernelDiff = subtractTime(sysKernelB, sysKernelA);
-			ULONGLONG sysUserDiff = subtractTime(sysUserB, SysUserA);
+			ULONGLONG sysUserDiff = subtractTime(sysUserB, sysUserA);
 			ULONGLONG procKernelDiff = subtractTime(procKernelB, procKernelA);
 			ULONGLONG procUserDiff = subtractTime(procUserB, procUserA);
 			ULONGLONG sysTotal = sysKernelDiff + sysUserDiff;
