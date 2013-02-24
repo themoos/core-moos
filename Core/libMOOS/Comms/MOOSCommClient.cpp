@@ -909,14 +909,14 @@ bool CMOOSCommClient::OnCloseConnection()
 
 void CMOOSCommClient::DoBanner()
 {
-    if(m_bQuiet)
-        return ;
+//    if(m_bQuiet)
+//        return ;
 
     return;
-	MOOSTrace("****************************************************\n");
-	MOOSTrace("*       This is MOOS Client                        *\n");
-	MOOSTrace("*       c. P Newman 2001-2012                      *\n");
-	MOOSTrace("****************************************************\n");
+//	MOOSTrace("****************************************************\n");
+//	MOOSTrace("*       This is MOOS Client                        *\n");
+//	MOOSTrace("*       c. P Newman 2001-2012                      *\n");
+//	MOOSTrace("****************************************************\n");
 
 }
 

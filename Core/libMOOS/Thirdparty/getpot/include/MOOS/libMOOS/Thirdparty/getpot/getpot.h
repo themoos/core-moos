@@ -706,12 +706,12 @@ GetPot::__get_next_token(std::istream& istr)
             continue;
         }
         else if( tmp == '$' && last_letter == '\\') {
-            token += tmp; tmp = 0;  //  so that last_letter will become = 0, not '$';
+            token += (char)tmp; tmp = 0;  //  so that last_letter will become = 0, not '$';
             continue;
         }
         else if( tmp == '\\' && last_letter != '\\')
             continue;              // don't append un-backslashed backslashes
-        token += tmp;
+        token += (char)tmp;
     }
 }
 
@@ -729,7 +729,7 @@ GetPot::__get_string(std::istream& istr)
         else if( tmp == '\'' && last_letter != '\\')  return str;
         else if( tmp == '\\' && last_letter != '\\')  continue; // don't append
 
-        str += tmp;
+        str += (char)tmp;
     }
 }
 
@@ -752,7 +752,7 @@ GetPot::__get_until_closing_bracket(std::istream& istr)
             else if( tmp == '\\' && last_letter != '\\')
                 continue;  // do not append an unbackslashed backslash
         }
-        str += tmp;
+        str += (char)tmp;
     }
 }
 
@@ -1574,11 +1574,11 @@ GetPot::set(const char* VarName, const char* Value, const bool Requested /* = ye
 
 inline void
 GetPot::set(const char* VarName, const double& Value, const bool Requested /* = yes */)
-{ __set_variable(VarName, __double2string(Value).c_str()); }
+{ __set_variable(VarName, __double2string(Value).c_str()); Requested;}
 
 inline void 
 GetPot::set(const char* VarName, const int Value, const bool Requested /* = yes */)
-{ __set_variable(VarName, __int2string(Value).c_str()); }
+{ __set_variable(VarName, __int2string(Value).c_str());Requested; }
 
 
 inline unsigned
@@ -2408,7 +2408,7 @@ GetPot::variable::take(const char* Value, const char* FieldSeparator)
 
     // separate string by white space delimiters using 'strtok'
     // thread safe usage of strtok (no static members)
-    char* spt = 0;
+    //char* spt = 0;
     // make a copy of the 'Value'
     char* copy = new char[strlen(Value)+1];
     strcpy(copy, Value);

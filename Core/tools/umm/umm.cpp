@@ -39,6 +39,7 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <queue>
+#include <ctime>
 
 #ifndef _WIN32
 #include <termios.h>
@@ -52,12 +53,12 @@ unsigned int GetScreenWidth()
    return ws.ws_col;
 }
 #else
+
+unsigned int GetScreenWidth()
 {
-	unsigned int GetScreenWidth()
-	{
-		return 80;
-	}
+	return 80;
 }
+
 #endif
 
 
@@ -447,7 +448,7 @@ public:
 
     bool ScheduleLoop()
     {
-    	unsigned int nSent = 0;
+    	int nSent = 0;
 
     	while(!Scheduler.IsQuitRequested())
     	{
@@ -569,7 +570,7 @@ int main (int argc, char* argv[])
 	//a random name. This is just to stop users having to specify
 	//--moos_name at the command line lots and lots...
 	std::stringstream ss;
-	srand ( time(NULL) );
+	srand ( static_cast<unsigned int>( time(NULL)) );
 	ss<<"umm-"<< rand() %1024;
 	std::string default_name = ss.str();
 	std::string app_name = P.GetFreeParameter(1, default_name);

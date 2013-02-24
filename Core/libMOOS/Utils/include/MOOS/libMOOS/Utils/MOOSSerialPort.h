@@ -74,6 +74,7 @@ public:
     class CMOOSSerialTelegram
     {
     public:
+		CMOOSSerialTelegram(){};
         CMOOSSerialTelegram(const std::string & sWhat,double dfWhen):
           m_sTelegram(sWhat),m_dfTime(dfWhen){};
 

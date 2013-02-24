@@ -46,6 +46,9 @@ private:
     std::ostringstream & m_Stream;
     std::string m_sTag;
     std::string m_sOptions;
+	CHTMLTag();
+	CHTMLTag(const CHTMLTag&);
+	CHTMLTag& operator = (const CHTMLTag&);
 
 public:
     CHTMLTag(std::ostringstream & sStream ,
@@ -56,6 +59,7 @@ public:
     {
         Open(sStream,m_sTag,sOptions,sContents,bNewLine);
     }
+	
 
     ~CHTMLTag()
     {

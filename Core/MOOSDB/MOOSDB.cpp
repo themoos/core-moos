@@ -970,6 +970,9 @@ bool CMOOSDB::OnVarSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 
 bool CMOOSDB::OnClearRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
+	MOOS::DeliberatelyNotUsed(Msg);
+	MOOS::DeliberatelyNotUsed(MsgTxList);
+
     MOOSTrace("Clear Down Requested:\n");
     
     MOOSTrace("    Resetting %d variables...",m_VarMap.size());
@@ -1008,31 +1011,7 @@ void CMOOSDB::LogStartTime()
     m_dfStartTime = MOOSTime();
     
     return;
-    string sKey = "DB_START_TIME";
-    
-    
-    DBVAR_MAP::iterator p = m_VarMap.find("DB_START_TIME");
-    
-    if(p==m_VarMap.end())
-    {
-        
-        CMOOSDBVar NewVar(sKey);
-        
-        NewVar.m_cDataType = MOOS_DOUBLE;
-        NewVar.m_dfVal  = m_dfStartTime;
-        NewVar.m_dfTime = m_dfStartTime;
-        NewVar.m_sWhoChangedMe   = m_sDBName;
-        NewVar.m_sOriginatingCommunity = m_sCommunityName;
-        
-        m_VarMap[sKey] = NewVar;
-        
-    }
-    else
-    {
-        CMOOSDBVar & rVar = p->second;
-        rVar.m_dfVal = m_dfStartTime;
-        rVar.m_dfTime = m_dfStartTime;
-    }
+  
     
 }
 

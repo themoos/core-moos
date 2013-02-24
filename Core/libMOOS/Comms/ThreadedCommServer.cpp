@@ -52,6 +52,9 @@
 
 #ifdef _WIN32
 #define INVALID_SOCKET_SELECT WSAEINVAL
+#pragma warning(disable:4018) // signed/unsigned comparison
+#pragma warning(disable:4389) // signed/unsigned comparison
+#pragma warning(disable:4127) // conditional expression is constant
 #else
 #define INVALID_SOCKET_SELECT EBADF
 #endif
@@ -787,6 +790,7 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
     }
     catch (const CMOOSException & e)
     {
+		MOOS::DeliberatelyNotUsed(e);
         //MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
         bResult = false;
     }

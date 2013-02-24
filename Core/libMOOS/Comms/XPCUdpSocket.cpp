@@ -63,7 +63,7 @@ bool XPCUdpSocket::GetAddress(long int nPort,const std::string & sHost,sockaddr_
     {
         
 		Address.sin_family = AF_INET;
-    	Address.sin_port = htons(nPort);
+    	Address.sin_port = htons(static_cast<unsigned short>(nPort));
         
         hostType HostType;
         if(sHost.find_first_not_of("0123456789. ")!=std::string::npos)
@@ -116,7 +116,6 @@ int XPCUdpSocket::iSendMessageTo(void *_vMessage, int _iMessageSize,long int nPo
         char sMsg[512];        
         sprintf(sMsg, "Error sending socket message: %s", sGetError());
         throw XPCException(sMsg);
-        return 0;
     }
     return iNumBytes;
     

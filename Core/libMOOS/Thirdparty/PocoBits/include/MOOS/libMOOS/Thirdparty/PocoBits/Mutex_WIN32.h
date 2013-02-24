@@ -79,8 +79,9 @@ inline void MutexImpl::lockImpl()
 	}
 	catch (...)
 	{
-		throw SystemException("cannot lock mutex");
+		
 	}
+	throw SystemException("cannot lock mutex");
 }
 
 

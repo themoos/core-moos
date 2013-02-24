@@ -38,7 +38,7 @@ namespace MOOS
 class ScopedLock
 {
 public:
-    ScopedLock(CMOOSLock & Lock):_Lock(Lock)
+    explicit ScopedLock(CMOOSLock & Lock):_Lock(Lock)
     {
         _Lock.Lock();
     }
@@ -48,6 +48,9 @@ public:
     }
 private:
     CMOOSLock & _Lock;
+	ScopedLock();
+	ScopedLock(const ScopedLock&);
+	ScopedLock& operator = (const ScopedLock&);
 
 
 };

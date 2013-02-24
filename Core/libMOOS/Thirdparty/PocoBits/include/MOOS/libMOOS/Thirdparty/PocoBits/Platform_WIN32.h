@@ -57,7 +57,7 @@
 // Reduce bloat imported by "Poco/UnWindows.h"
 #if defined(_WIN32)
 	#if !defined(_WIN32_WINNT)
-		#define _WIN32_WINNT 0x0500
+		#define _WIN32_WINNT 0x0501
 	#endif
 	#if !defined(WIN32_LEAN_AND_MEAN) && !defined(POCO_BLOATED_WIN32)
 		#define WIN32_LEAN_AND_MEAN
@@ -79,6 +79,8 @@
 	#pragma warning(disable:4996) // VC++ 8.0 deprecation warnings
 	#pragma warning(disable:4351) // new behavior: elements of array '...' will be default initialized
 	#pragma warning(disable:4675) // resolved overload was found by argument-dependent lookup
+	#pragma warning(disable:4127) // conditional is constant
+
 #endif
 
 

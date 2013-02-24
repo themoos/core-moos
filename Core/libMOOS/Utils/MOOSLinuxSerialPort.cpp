@@ -113,6 +113,8 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
     tcflush(m_nPortFD, TCIFLUSH);
     tcsetattr(m_nPortFD,TCSANOW,&m_PortOptions);
 
+#else
+	MOOS::DeliberatelyNotUsed(nBaudRate);
 #endif
 
 	if(m_nPortFD!=0)
@@ -146,6 +148,9 @@ int CMOOSLinuxSerialPort::GrabN(char * pBuffer,int nRequired)
         m_PortLock.UnLock();
         return nRead;
     #else
+		MOOS::DeliberatelyNotUsed(nRequired);
+		MOOS::DeliberatelyNotUsed(pBuffer);
+
         return 0;
     #endif
 }
@@ -175,36 +180,14 @@ int CMOOSLinuxSerialPort::Write(const char* Str,int nLen,double* pTime)
     m_PortLock.Lock();
 #ifndef _WIN32
     nChars = write(m_nPortFD, Str,nLen);
+#else
+	MOOS::DeliberatelyNotUsed(nLen);
+	MOOS::DeliberatelyNotUsed(Str);
 #endif
     m_PortLock.UnLock();
 
     return nChars;
 
-
-    for(int i = 0; i<nLen;i++)
-    {
-        #ifndef _WIN32
-
-        if(write(m_nPortFD, &Str[i],1)!=1)
-        {
-            MOOSTrace("Write Failed\n");
-            nChars = -1;
-            break;
-        }
-        else
-        {
-
-        nChars++;
-        }
-        #else
-
-        #endif
-    }
-
-    m_PortLock.UnLock();
-    //how many chars did we write?
-
-    return nChars;
 }
 
 /**

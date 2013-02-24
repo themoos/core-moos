@@ -31,6 +31,9 @@
 //////////////////////////    END_GPL    //////////////////////////////////
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #ifdef _WIN32
+#pragma warning(disable:4018) // signed/unsigned comparison
+#pragma warning(disable:4389) // signed/unsigned comparison
+#pragma warning(disable:4127) // conditional expression is constant
 #else
 #include <sys/time.h>
 #endif
@@ -44,7 +47,7 @@ void XPCTcpSocket::vConnect(const char *_sHost)
     struct sockaddr_in serverAddress;
     
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(iPort);
+    serverAddress.sin_port = htons((unsigned short) iPort);
     
     // Resolve the IP address of the given host name
     std::string sHost(_sHost);
@@ -86,14 +89,13 @@ XPCTcpSocket *XPCTcpSocket::Accept(char *_sHost)
     int iClientAddressLen = sizeof(clientAddress);
     
     // Accepts a new client connection and stores its socket file descriptor
-    if ((iNewSocket = accept(iSocket, (struct sockaddr *)&clientAddress,(socklen_t*)&iClientAddressLen)) == -1)
+    if ((iNewSocket = (short)accept(iSocket, (struct sockaddr *)&clientAddress,(socklen_t*)&iClientAddressLen)) == -1)
     {
         char sMsg[512];
         
         sprintf(sMsg, "Error Accepting Socket. %s", sGetError());
         XPCException socketExcept(sMsg);
         throw socketExcept;
-        return NULL;
     } 
     
     // If the host name is requested
@@ -154,7 +156,6 @@ int XPCTcpSocket::iSendMessage(void *_vMessage, int _iMessageSize)
         char sMsg[512];        
         sprintf(sMsg, "Error sending socket message: %s", sGetError());
         throw XPCException(sMsg);
-        return 0;
     }
     return iNumBytes;
 }
@@ -186,7 +187,6 @@ int XPCTcpSocket::iRecieveMessageAll(void *_vMessage, int _iMessageSize)
             sprintf(sMsg, "Error receiving on socket: %s", sGetError());
             XPCException socketExcept(sMsg);
             throw socketExcept;
-            return iNumBytes;
         }
         else if (iNumBytes == 0)
             return iNumBytes;
@@ -266,7 +266,7 @@ int XPCTcpSocket::iReadMessageWithTimeOut(void *_vMessage, int _iMessageSize, do
     // descriptor set.
     FD_ZERO(&fdset);
     
-    FD_SET((unsigned int)iGetSocketFd(), &fdset);
+    FD_SET(iGetSocketFd(), &fdset);
     
     
     // The select system call is set to timeout after 1 seconds with no data existing

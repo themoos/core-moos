@@ -33,6 +33,9 @@
 #ifdef _WIN32
     #pragma warning(disable : 4786)
     #pragma warning(disable : 4503)
+	#pragma warning(disable:4018) // signed/unsigned comparison
+	#pragma warning(disable:4389) // signed/unsigned operation
+	#pragma warning(disable:4127) // conditional expression is constant
 #endif
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
@@ -365,7 +368,7 @@ bool CMOOSCommServer::ListenLoop()
         return false;
     }
 
-    while(1)
+    for(;;)
     {
 
         try
@@ -415,7 +418,7 @@ bool CMOOSCommServer::ListenLoop()
 
     }
 
-    delete m_pListenSocket;
+    //delete m_pListenSocket;
 }
 
 
@@ -582,7 +585,7 @@ bool CMOOSCommServer::ProcessClient()
             //PMN changes this in 2007 as part of the new timing scheme
             //every packet will no begin with a NULL message the double val
             //of which will be the current time on the BD's machine
-            if( 1 || MsgLstTx.size()==0)
+            //if( 1 || MsgLstTx.size()==0)
             {
                 //add a default packet so client doesn't block
                 CMOOSMsg NullMsg;
@@ -610,6 +613,7 @@ bool CMOOSCommServer::ProcessClient()
 
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
+	MOOS::DeliberatelyNotUsed(sName);
     std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
     MOOSTrace("New client connected:\n");

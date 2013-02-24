@@ -53,6 +53,10 @@ public:
 	std::ostream & _outstream;
     static CMOOSLock _Lock;
     bool _Enable;
+private:
+	Impl();
+	Impl(const Impl&);
+	Impl& operator = (const Impl&);
 };
 
 CMOOSLock ThreadPrint::Impl::_Lock;

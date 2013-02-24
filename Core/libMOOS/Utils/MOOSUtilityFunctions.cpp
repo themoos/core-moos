@@ -777,7 +777,10 @@ bool MOOSValFromString(long long  & nVal,const string & sStr,const string & sTk,
 
     if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
     {
-        return (std::stringstream(sVal) >> nVal);
+        if( !(std::stringstream(sVal) >> nVal))
+			return false;
+		else
+			return true;
     }
 
     return false;
@@ -985,12 +988,7 @@ string MOOSGetTimeStampString()
 
 void MOOSToUpper(string &str)
 {
-    string::iterator p;
-
-    for(p = str.begin();p!=str.end();p++)
-    {
-        *p = toupper(*p);
-    }
+	std::transform(str.begin(), str.end(),str.begin(), ::toupper); 
 }
 
 std::string MOOSToUpper(const std::string & str)
@@ -1479,7 +1477,6 @@ bool GetDirectoryContents(const std::string & sPath,
     WIN32_FIND_DATA sfd;
     std::string sTemplate = sPath+"/*.*";
     HANDLE h = FindFirstFile( sTemplate.c_str(), &sfd );
-    int n = 0;
     if ( h != INVALID_HANDLE_VALUE )
     {
         do

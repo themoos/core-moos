@@ -89,16 +89,7 @@ std::string MOOSAsyncCommClient::HandShakeKey()
 
 void MOOSAsyncCommClient::DoBanner()
 {
-    if(m_bQuiet)
-        return ;
-
     return;
-
-	MOOSTrace("----------------------------------------------------\n");
-	MOOSTrace("|       This is an Asynchronous MOOS Client        |\n");
-	MOOSTrace("|       c. P. Newman U. Oxford 2001-2012           |\n");
-	MOOSTrace("----------------------------------------------------\n");
-
 }
 
 
@@ -312,6 +303,7 @@ bool MOOSAsyncCommClient::DoWriting()
 		catch (const CMOOSException & e)
 		{
 			//clear the outbox
+			MOOS::DeliberatelyNotUsed(e);
 			throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
 		}
 
@@ -334,7 +326,7 @@ bool MOOSAsyncCommClient::DoWriting()
 
 bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 {
-	unsigned int sleep_ms = m_dfOutGoingDelay*1000;
+	unsigned int sleep_ms = static_cast<unsigned int>(m_dfOutGoingDelay*1000);
 	if(sleep_ms>0)
 	{
 		std::cerr<<"I'm sleeping for "<<m_dfOutGoingDelay<<" ms\n";
@@ -483,6 +475,7 @@ bool MOOSAsyncCommClient::DoReading()
 	}
 	catch(const CMOOSException & e)
 	{
+		MOOS::DeliberatelyNotUsed(e);
 		//MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
 		return false;
 	}

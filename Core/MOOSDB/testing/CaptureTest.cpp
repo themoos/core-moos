@@ -29,7 +29,7 @@
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
-
+#include <ctime>
 
 std::vector<std::string> vars;
 std::ofstream of;
@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run(sHost,port,"capture_test");
 
-	while(1)
+	for(;;)
 	{
 		MOOSPause(10000);
 	}

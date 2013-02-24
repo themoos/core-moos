@@ -177,8 +177,8 @@ endif(UNIX)
 
 IF(WIN32)
   set(DEPENDENCIES wsock32 comctl32)
-  cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x500)
-  add_definitions(-D_WIN32_WINNT=0x500 )
+  cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x501)
+  add_definitions(-D_WIN32_WINNT=0x501 )
 ENDIF(WIN32)
     
 

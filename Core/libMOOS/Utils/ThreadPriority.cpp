@@ -35,7 +35,10 @@ namespace MOOS
 {
 bool BoostThisThread()
 {
-
+#ifdef WIN32
+	std::cerr<<"MOOS::BoostThisThread is not supported in WIN32 (yet)\n";
+	return false;
+#else
 	try
 	{
 		int policy;
@@ -70,10 +73,18 @@ bool BoostThisThread()
 
 	return true;
 
+#endif
+
 }
 
 bool GetThisThreadsPriority(int & Priority, int & MaxAllowed)
 {
+#ifdef WIN32
+	Priority;
+	MaxAllowed;
+	std::cerr<<"MOOS::GetThisThreadsPriority is not supported in WIN32 (yet)\n";
+	return false;
+#else
 	int policy;
 	struct sched_param param;
 	int max_priority;
@@ -101,6 +112,7 @@ bool GetThisThreadsPriority(int & Priority, int & MaxAllowed)
 	MaxAllowed = max_priority ;
 
 	return true;
+#endif
 
 }
 

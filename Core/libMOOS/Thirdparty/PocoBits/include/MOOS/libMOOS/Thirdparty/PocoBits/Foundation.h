@@ -45,7 +45,7 @@
 //
 // Version Information
 //
-#define POCO_VERSION 0x010400D0
+//#define POCO_VERSION 0x010400D0
 
 
 //

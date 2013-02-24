@@ -25,6 +25,8 @@
 
 #ifndef _WIN32
 #include "unistd.h"
+#else
+#include "io.h"
 #endif
 
 using namespace std;
@@ -266,7 +268,11 @@ bool AppCastingMOOSApp::OnStartUpDirectives(string directives)
 
   // Use isatty to detect if stdout is going to /dev/null/
   // If so, set m_term_reporting to false.
+#ifndef WIN32
   if(isatty(1) == 0)
+#else
+  if(_isatty(1) == 0)
+#endif
     m_term_reporting = false;
   
   return(return_value);

@@ -80,7 +80,7 @@ XPCSocket::XPCSocket(const char *_sProtocol, int _iPort)
     // The client address is initialized to all addresses at the specified port
     clientAddress.sin_family = AF_INET;
     clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    clientAddress.sin_port = htons(iPort);
+    clientAddress.sin_port = htons((short)iPort);
 }
 
 void XPCSocket::vSetDebug(int _iToggle)
@@ -239,7 +239,6 @@ int XPCSocket::iGetDebug()
         sprintf(sMsg, "Error Recieving Debug Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iGetOption;
 }
@@ -257,7 +256,6 @@ int XPCSocket::iGetBroadcast()
         sprintf(sMsg, "Error Extracting Broadcast Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iGetOption;
 }
@@ -275,7 +273,6 @@ int XPCSocket::iGetReuseAddr()
         sprintf(sMsg, "Error Extracting Resuseaddr Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iGetOption;
 }
@@ -293,7 +290,6 @@ int XPCSocket::iGetKeepAlive()
         sprintf(sMsg, "Error Extracting Keepalive Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iGetOption;
 }
@@ -327,7 +323,6 @@ int XPCSocket::iGetSendBuf()
         sprintf(sMsg, "Error Extracting SendBuf Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iSendBuf;
 }
@@ -345,7 +340,6 @@ int XPCSocket::iGetRecieveBuf()
         sprintf(sMsg, "Error Extracting RcvBuf Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return -1;
     }
     return iRcvBuf;
 }

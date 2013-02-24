@@ -137,6 +137,7 @@ bool CMOOSNTSerialPort::Create(const char * pPortNum,
 
 int CMOOSNTSerialPort::Write(const char *pData, int nLen,double *pTime)
 {
+	MOOS::DeliberatelyNotUsed(pTime);
     LONG    lLastError = ERROR_SUCCESS;
 
     DWORD WriteTimeOut = 2000;

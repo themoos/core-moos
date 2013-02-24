@@ -199,6 +199,7 @@ public:
 			catch(const XPCException & e)
 			{
 				//this is bad news! can't send audits
+				MOOS::DeliberatelyNotUsed(e);
 				std::cerr<<"failed to send audit - won't try again\n";
 				return false;
 			}
@@ -219,6 +220,8 @@ public:
 
 	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
 	{
+		MOOS::DeliberatelyNotUsed(dfTime);
+
 		lock_.Lock();
 		ClientAudit & rA = Audits_[sClient];
 		if(bIncoming)

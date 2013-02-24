@@ -29,6 +29,8 @@
 
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
+#include "MOOS/libMOOS/Utils/CommandLineParser.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 
 
 int count=0;
@@ -38,6 +40,8 @@ MOOS::ThreadPrint gPrinter(std::cerr);
 
 bool func(CMOOSMsg & M, void *pParam)
 {
+	MOOS::DeliberatelyNotUsed(pParam);
+	MOOS::DeliberatelyNotUsed(M);
 	//gPrinter.SimplyPrintTimeAndMessage(M.GetAsString());
 	L.Lock();
 		count++;
@@ -55,6 +59,9 @@ bool on_connect(void * pParam)
 
 int main(int argc, char * argv[])
 {
+    //here we do some command line parsing...
+	MOOS::CommandLineParser P(argc,argv);
+
 	MOOS::MOOSAsyncCommClient A,B;
 	//CMOOSCommClient A,B;
 	A.SetQuiet(true);
