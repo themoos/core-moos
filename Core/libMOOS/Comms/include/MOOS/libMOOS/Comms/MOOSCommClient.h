@@ -118,6 +118,10 @@ public:
     @param sVar name of variable of interest*/
     bool UnRegister(const std::string & sVar);
 
+    /** Wildcard unregister */
+    bool UnRegister(const std::string &sVarPattern, const std::string & sAppPattern);
+
+
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
 

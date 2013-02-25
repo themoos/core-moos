@@ -943,6 +943,31 @@ bool CMOOSCommClient::UnRegister(const string &sVar)
 
 }
 
+bool CMOOSCommClient::UnRegister(const string &sVarPattern, const string & sAppPattern)
+{
+	if(!IsConnected())
+		return false;
+
+	if(m_Registered.empty())
+	{
+		return true;
+	}
+
+	std::string sMsg;
+
+	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
+	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
+	MOOSAddValToString(sMsg,"Interval",0.0);
+
+	CMOOSMsg MsgUR(MOOS_WILDCARD_UNREGISTER,m_sMyName,sMsg);
+
+	return Post(MsgUR);
+
+}
+
+
+
+
 bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 {
 	if(!IsConnected())

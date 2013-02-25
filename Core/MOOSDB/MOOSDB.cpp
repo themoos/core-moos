@@ -434,6 +434,7 @@ bool CMOOSDB::ProcessMsg(CMOOSMsg &MsgRx,MOOSMSG_LIST & MsgListTx)
     case MOOS_NOTIFY:    //NOTIFICATION
         return OnNotify(MsgRx);
         break;
+    case MOOS_WILDCARD_UNREGISTER:
     case MOOS_UNREGISTER:
         return OnUnRegister(MsgRx);
         break;
@@ -610,16 +611,43 @@ bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
 request is received */
 bool CMOOSDB::OnUnRegister(CMOOSMsg &Msg)
 {
-    //what are we looking to un register for?
-    
-    //if the variable already exists then post a notification message
-    //to the client
-    bool bAlreadyThere = VariableExists(Msg.m_sKey);
-    if(bAlreadyThere)
-    {
-        CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
-        rVar.RemoveSubscriber(Msg.m_sSrc);
-    }
+	if(Msg.IsType(MOOS_UNREGISTER))
+	{
+		//what are we looking to un register for?
+		bool bAlreadyThere = VariableExists(Msg.m_sKey);
+		if(bAlreadyThere)
+		{
+			CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
+			rVar.RemoveSubscriber(Msg.m_sSrc);
+		}
+	}
+	else if (Msg.IsType(MOOS_WILDCARD_UNREGISTER))
+	{
+		//here we parse out the filter
+		std::string app_pattern = "";
+		std::string var_pattern = "";
+		double period = 0.0;
+
+
+		MOOSValFromString(app_pattern,Msg.GetString(),"AppPattern");
+		MOOSValFromString(var_pattern,Msg.GetString(),"VarPattern");
+		MOOS::MsgFilter F(app_pattern,var_pattern,period);
+
+		DBVAR_MAP::iterator q;
+		for(q = m_VarMap.begin();q!=m_VarMap.end();q++)
+		{
+			CMOOSMsg M;
+			Var2Msg(q->second,M);
+			if(F.Matches(M))
+			{
+				M.m_cMsgType = MOOS_UNREGISTER;
+				M.m_cDataType = MOOS_STRING;
+				M.m_sSrc = Msg.GetSource();
+				M.m_sKey = q->first;
+				OnUnRegister(M);//smart...
+			}
+		}
+	}
     
     return true;
 }

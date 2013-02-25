@@ -41,6 +41,7 @@
 #define MOOS_REGISTER 'R'
 #define MOOS_UNREGISTER 'U'
 #define MOOS_WILDCARD_REGISTER '*'
+#define MOOS_WILDCARD_UNREGISTER '/' //opposite of * is /
 #define MOOS_NOT_SET '~'
 #define MOOS_COMMAND 'C'
 #define MOOS_ANONYMOUS 'A'
