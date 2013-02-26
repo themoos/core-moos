@@ -95,7 +95,9 @@ void CMOOSDBVar::RemoveSubscriber(string &sWho)
     if(p!=m_Subscribers.end())
     {
     //MOOSTrace("MOOSDB: Removing \"%s\"'s subscription to \"%s\"\n",sWho.c_str(),m_sName.c_str());
-    m_Subscribers.erase(p);
+    	m_Subscribers.erase(p);
+    	MOOSTrace("- subs of \"%s\" to \"%s\" \n",sWho.c_str(),m_sName.c_str());
+
     }
 }
 

@@ -976,7 +976,8 @@ bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 	if(sVar.empty())
 		return MOOSFail("\n ** WARNING ** Cannot register for \"\" (empty string)\n");
 
-	if(m_Registered.find(sVar)==m_Registered.end() || m_Registered.empty())
+	//if(m_Registered.find(sVar)==m_Registered.end() || m_Registered.empty())
+	if(1)
 	{
 		CMOOSMsg MsgR(MOOS_REGISTER,sVar.c_str(),dfInterval);
 		bool bSuccess =  Post(MsgR);
