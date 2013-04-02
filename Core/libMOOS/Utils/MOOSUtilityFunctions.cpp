@@ -106,6 +106,11 @@ namespace MOOS
 		return MOOSTime();
 	}
 
+	void Pause(int milliseconds,bool bApplyTimeWarp)
+	{
+		MOOSPause(milliseconds,bApplyTimeWarp);
+	}
+
 	std::string Chomp(string &sStr, const string &sTk,bool bInsensitive)
 	{
 		return MOOSChomp(sStr,sTk,bInsensitive);

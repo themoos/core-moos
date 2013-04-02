@@ -40,6 +40,8 @@ SET(UTILS_SOURCES
    Utils/CommandLineParser.cpp
    Utils/ProcInfo.cpp
    Utils/ThreadPriority.cpp
+   Utils/PeriodicEvent.cpp
+   
    
    )
 
@@ -226,6 +228,9 @@ include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS}
 add_library(${LIBNAME} STATIC ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
+
+
+
 #######################################
 # install headers
 install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
@@ -238,4 +243,5 @@ INSTALL(TARGETS ${LIBNAME}
 )
 
 
+add_subdirectory(testing)
 
