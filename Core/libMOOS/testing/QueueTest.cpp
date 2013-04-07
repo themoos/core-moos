@@ -49,38 +49,50 @@ bool func_alt(CMOOSMsg & M, void *pParam)
 	return true;
 }
 
+bool func_wild(CMOOSMsg & M, void *pParam)
+{
+	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
+	return true;
+}
+
+
 bool on_connect(void * pParam)
 {
 	CMOOSCommClient * pC = static_cast<CMOOSCommClient*> (pParam);
-	return pC->Register("la") && pC->Register("di");
+	return pC->Register("la") && pC->Register("di") && pC->Register("da");
 }
 
-class T : public CMOOSApp
+void PrintHelpAndExit()
 {
-	bool OnMessage(CMOOSMsg & M)
-	{
-		gPrinter.Print("handling "+M.GetKey());
-		return true;
-	}
-	bool OnStartUp()
-	{
-		return AddMessageCallback("la");
-	}
-	bool OnConnectToServer()
-	{
-		return Register("la");
-	}
-};
+	std::cerr<<"quick test for active queues on a comms client\n\n";
+	std::cerr<<"    stimulate with umm -p=la,di,da\n\n";
+	std::cerr<<"you should see :\n";
+	std::cerr<<" a) la appearing in callback \"func\"\n";
+	std::cerr<<" b) di appearing in callback \"func\" and \"func_alt\"\n";
+	std::cerr<<" c) di appearing in callback \"func_wild\" because it is caught by the wildcard queue\n";
+	exit(0);
+
+}
+
 
 int main(int argc, char * argv[])
 {
 	MOOS::MOOSAsyncCommClient C;
 	MOOS::CommandLineParser P(argc,argv);
 
+	if(P.GetFlag("-h","--help"))
+	{
+		PrintHelpAndExit();
+	}
+
 
 	C.AddMessageCallback("CallbackA","la",func,NULL);
 	C.AddMessageCallback("CallbackB","di",func,NULL);
-	C.AddMessageCallback("CallbackC","di",func,NULL);
+
+	C.AddMessageCallback("CallbackC","di",func_alt,NULL);
+
+	C.AddMessageCallback("Wildcard","*", func_wild,NULL);
+
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 
@@ -95,8 +107,6 @@ int main(int argc, char * argv[])
 	}
 
 
-	//T theApp;
 
-	//theApp.Run("queue_test_app",argc,argv);
 
 }
