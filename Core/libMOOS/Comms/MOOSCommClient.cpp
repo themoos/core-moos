@@ -552,6 +552,7 @@ bool CMOOSCommClient::DoClientWork()
 	return true;
 }
 
+
 bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 {
 	//here we dispatch to special call backs managed by threads
@@ -562,6 +563,16 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 		std::map<std::string, std::list<MOOS::ActiveMailQueue*> >::iterator q = ActiveQueues_.find(t->GetKey());
 		if(q!=ActiveQueues_.end())
 		{
+			std::list<MOOS::ActiveMailQueue*>::iterator r;
+			for(r = q->second.begin();r!=q->second.end();r++)
+			{
+				(*r)->Push(*t);
+			}
+			t = m_InBox.erase(t);
+		}
+		else if((q=ActiveQueues_.find("*"))!=ActiveQueues_.end())
+		{
+			//we have one or more wildcard queue installed
 			std::list<MOOS::ActiveMailQueue*>::iterator r;
 			for(r = q->second.begin();r!=q->second.end();r++)
 			{
