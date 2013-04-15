@@ -39,33 +39,35 @@
 namespace MOOS
 {
 
-/* ability to change console text
+/** ability to change console text
  *     //use as follows std::cerr<<MOOS::ConsoleColours()<<red();
  *
- */
+ **/
+//! class for changing console text color
 struct ConsoleColours
 {
 #ifndef _WIN32
 
-    static const char* red() {return "\x1b[31m";};
-    static const char* Red() {return "\x1b[1;31m";};
 
-    static const char* green() {return "\x1b[32m";};
-    static const char* Green() {return "\x1b[1;32m";};
+    static const char* red() {return control("\x1b[31m");};
+    static const char* Red() {return control("\x1b[1;31m");};
 
-    static const char* yellow() {return "\x1b[33m";};
-    static const char* Yellow() {return "\x1b[1;33m";};
+    static const char* green() {return control("\x1b[32m");};
+    static const char* Green() {return control("\x1b[1;32m");};
 
-    static const char* blue() {return "\x1b[34m";};
-    static const char* Blue() {return "\x1b[1;34m";};
+    static const char* yellow() {return control("\x1b[33m");};
+    static const char* Yellow() {return control("\x1b[1;33m");};
 
-    static const char* magenta() {return "\x1b[35m";};
-    static const char* Magenta() {return "\x1b[1;35m";};
+    static const char* blue() {return control("\x1b[34m");};
+    static const char* Blue() {return control("\x1b[1;34m");};
 
-    static const char* cyan() {return "\x1b[36m";};
-    static const char* Cyan() {return "\x1b[1;36m";};
+    static const char* magenta() {return control("\x1b[35m");};
+    static const char* Magenta() {return control("\x1b[1;35m");};
 
-    static const char* reset() {return "\x1b[0m";};
+    static const char* cyan() {return control("\x1b[36m");};
+    static const char* Cyan() {return control("\x1b[1;36m");};
+
+    static const char* reset() {return control("\x1b[0m");};
 #else
 	
 	static const char* red() {return " \010";};
@@ -115,6 +117,21 @@ struct ConsoleColours
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),15);
 		return " \010";};
 #endif
+
+    static void Enable(bool bEnable)
+    {
+    	disable_color_ = ! bEnable;
+    }
+private:
+    static const char* control(const char * s)
+	{
+		if(!disable_color_)
+			return s;
+		else
+			return " \010";
+	}
+
+    static bool disable_color_;
 };
 
 }

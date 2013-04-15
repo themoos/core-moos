@@ -62,8 +62,12 @@
 //5 seconds time difference between client clock and MOOSDB clock will be allowed
 #define SKEW_TOLERANCE 5
 
-/// MOOS Comms Messaging class. This is a class encapsulating the data which the MOOS Comms API shuttles
-/// between the MOOSDB and other clients 
+/** @brief MOOS Comms Messaging class.
+This is a class encapsulating the data which the MOOS Comms API shuttles
+between the MOOSDB and other clients. It is the fundamental datatype of
+the communications architecture.
+@ingroup Comms
+*/
 class CMOOSMsg  
 {
 public:

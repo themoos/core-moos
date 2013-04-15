@@ -31,7 +31,13 @@
 
 namespace MOOS
 {
-class ActiveMailQueue;
+	//forward dec;aration
+	class ActiveMailQueue;
+
+	/** @brief A new comms client class introduced in V10 which offers minimal latency
+	* and asynchronous messaging.
+	* @ingroup Comms
+	*/
 
 	class MOOSAsyncCommClient : public CMOOSCommClient
 	{

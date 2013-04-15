@@ -41,6 +41,7 @@ SET(UTILS_SOURCES
    Utils/ProcInfo.cpp
    Utils/ThreadPriority.cpp
    Utils/PeriodicEvent.cpp
+   Utils/ConsoleColours.cpp
    
    
    )

@@ -207,6 +207,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_no_comms             : don't start communications \n";
 	std::cout<<"  --moos_quiet                : don't print banner information \n";
 	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
+	std::cout<<"  --moos_no_colour            : disable colour printing \n";
 
 
 	std::cout<<"\nhelp:\n";
@@ -261,6 +262,13 @@ bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile,
 bool CMOOSApp::Run( const std::string & sName,
                     const std::string & sMissionFile)
 {
+
+	//straight away do we want colour in this application?
+	if(m_CommandLineParser.GetFlag("--moos_no_colour"))
+	{
+		//std::cerr<<"turning off colour\n";
+		MOOS::ConsoleColours::Enable(false);
+	}
 
 
 	//save absolutely crucial info...
@@ -461,6 +469,7 @@ bool CMOOSApp::Configure()
 	m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
 	m_CommandLineParser.GetVariable("--moos_iterate_mode",nMode);
 
+
 	switch(nMode)
 	{
 		case 0: SetIterateMode(REGULAR_ITERATE_AND_MAIL); break;
@@ -475,6 +484,7 @@ bool CMOOSApp::Configure()
 	//do we want to enable command filtering (default is set in constructor)
 	m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
 	m_bCommandMessageFiltering|=m_CommandLineParser.GetFlag("--moos_filter_command");
+
 
 
 

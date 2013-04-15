@@ -39,6 +39,7 @@ class GetPot;
 
 namespace MOOS {
 
+//! class for parsing command line parameters
 class CommandLineParser {
 public:
 	CommandLineParser();

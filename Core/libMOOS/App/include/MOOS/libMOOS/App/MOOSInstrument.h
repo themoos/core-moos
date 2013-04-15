@@ -29,7 +29,11 @@
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
 
-/** Class that derives from CMOOSApp and adds functionality of cross platform serial ports*/
+
+/** @brief Class that derives from CMOOSApp and adds functionality of cross platform serial ports.
+* @author Paul Newman
+* @ingroup App
+*/
 class CMOOSInstrument : public CMOOSApp  
 {
 public:

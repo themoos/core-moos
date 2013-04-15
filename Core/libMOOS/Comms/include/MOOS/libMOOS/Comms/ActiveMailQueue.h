@@ -34,10 +34,18 @@
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/SafeList.h"
 
-/*
- *
- */
+
 namespace MOOS {
+
+/** \internal
+	@brief provides a queue (serviced by a thread and callback) of CMOOSMsg's
+
+	Used in CommsClient classes to support AddMessageCallback function
+
+    @author Paul Newman
+
+	\endinternal
+*/
 
 class ActiveMailQueue {
 public:

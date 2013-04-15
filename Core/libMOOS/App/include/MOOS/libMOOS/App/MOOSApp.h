@@ -59,11 +59,18 @@ class Event;
 }
 #endif
 
-/** This is a class from which all MOOS component applications can be derived
-main() will typically end with a call to MOOSAppDerivedClass::Run(). It provides
-automatic connection to the MOOSDB, provides slots for Mail Processing and application
-work, callbacks for connection/disconnection to MOOSDB, Configuration file reading and
-dynamic (runtime) variables. Definately worth getting to know. */
+
+
+/** @brief Commonly used based class for writing MOOS Applications.
+* This is a class from which  MOOS component applications may be derived
+* main() will typically end with a call to MOOSAppDerivedClass::Run(). It provides
+* automatic connection to the MOOSDB, provides slots for Mail Processing and application
+* work, callbacks for connection/disconnection to MOOSDB, Configuration file reading and
+* dynamic (runtime) variables. Definitely worth getting to know.
+* @author Paul Newman
+* @ingroup App
+*
+*/
 class CMOOSApp
 {
 public:
@@ -348,7 +355,7 @@ protected:
     /** sets the error state of the app and a comment  - this is published as a field in <PROCNAME>_STATUS */
     void SetAppError(bool bFlag, const std::string & sReason);
 
-
+    /** make the whole application print not many things */
 	bool SetQuiet(bool bQuiet);
 
 	
