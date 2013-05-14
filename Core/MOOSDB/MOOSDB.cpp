@@ -155,7 +155,7 @@ void PrintHelpAndExit()
 	std::cout<<"-b    (--moos_boost)               boost priority of communications\n";
 	std::cout<<"--moos_timeout=<positive_float>    specify client timeout\n";
 	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
-	std::cout<<"--warn_latency=<positive_float>    specify latency above which warning is issued in ms\n";
+	std::cout<<"--warning_latency=<positive_float>    specify latency above which warning is issued in ms\n";
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
 
 
