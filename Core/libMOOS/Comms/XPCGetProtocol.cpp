@@ -55,7 +55,7 @@ XPCGetProtocol::XPCGetProtocol(int _iProtocol)
         // Retrieves the protocol structure by number
         char buf[1024];
 
-        getprotobyname_r(_iProtocol,protocol,
+        getprotobynumber_r(_iProtocol,&protocol,
                           buf, sizeof(buf), &protocolPtr);
 
 
