@@ -88,9 +88,9 @@ double CMOOSCommPkt::GetCompression()
 
 int CMOOSCommPkt::GetBytesRequired()
 {
-    if(m_nByteCount==0)
+    if(m_nByteCount<sizeof(int))
     {
-        return sizeof(int);
+        return sizeof(int)-m_nByteCount;
     }
     else
     {
@@ -100,21 +100,6 @@ int CMOOSCommPkt::GetBytesRequired()
 
 bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 {
-    
-    if(    m_nByteCount ==0)
-    {
-        //here we figure out how many bytes we are expecting
-        assert(nData==sizeof(int));
-
-        memcpy((void*)(&m_nMsgLen),(void*)InData,sizeof(int));
-
-        //look to swap byte order if this machine is Big End in
-        if(!IsLittleEndian())
-        {
-            m_nMsgLen = SwapByteOrder<int>(m_nMsgLen);
-        }
-
-    }
 
     if(m_nByteCount+nData>=m_nStreamSpace)
     {
@@ -123,6 +108,30 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
     memcpy(m_pNextData,InData,nData);
     m_pNextData+=nData;
     m_nByteCount+=nData;
+    
+
+    if( m_nByteCount <=sizeof(int))
+	{
+		//here we figure out how many bytes we are expecting
+		if(m_nByteCount!=sizeof(int))
+		{
+			std::cerr<<"Bug of Alon I thwart thee\n";
+		}
+
+		if(m_nByteCount==sizeof(int))
+		{
+			std::cerr<<"Bug of Alon avoided\n";
+			memcpy((void*)(&m_nMsgLen),(void*)m_pStream,sizeof(int));
+
+			//look to swap byte order if this machine is Big End in
+			if(!IsLittleEndian())
+			{
+				m_nMsgLen = SwapByteOrder<int>(m_nMsgLen);
+			}
+		}
+
+	}
+
 
     return true;
 }
