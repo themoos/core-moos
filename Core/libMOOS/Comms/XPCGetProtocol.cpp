@@ -53,7 +53,13 @@ XPCGetProtocol::XPCGetProtocol(int _iProtocol)
 #endif
 #ifdef __linux
         // Retrieves the protocol structure by number
-        protocolPtr = getprotobynumber_r(_iProtocol);//thread safe fix suggested by Mark Moseley
+        char buf[1024];
+
+        getprotobyname_r(_iProtocol,protocol,
+                          buf, sizeof(buf), &protocolPtr);
+
+
+        //protocolPtr = getprotobynumber_r(_iProtocol);//thread safe fix suggested by Mark Moseley
 #else
         // Retrieves the protocol structure by number
         protocolPtr = getprotobynumber(_iProtocol);
