@@ -113,14 +113,18 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
     if( m_nByteCount <=sizeof(int))
 	{
 		//here we figure out how many bytes we are expecting
+    	bool bBOA = false;
 		if(m_nByteCount!=sizeof(int))
 		{
 			std::cerr<<"Bug of Alon I thwart thee\n";
+			std::cerr<<"m_nByteCount "<<m_nByteCount<<"\n";
+			std::cerr<<"nData "<<nData<<"\n";
+			std::cerr<<"GetBytesRequired() would have returned "<<GetBytesRequired()<<"\n";
+			bBOA = true;
 		}
 
 		if(m_nByteCount==sizeof(int))
 		{
-			std::cerr<<"Bug of Alon avoided\n";
 			memcpy((void*)(&m_nMsgLen),(void*)m_pStream,sizeof(int));
 
 			//look to swap byte order if this machine is Big End in
@@ -128,6 +132,12 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 			{
 				m_nMsgLen = SwapByteOrder<int>(m_nMsgLen);
 			}
+
+			if(bBOA)
+			{
+				std::cerr<<"calculated m_nMsgLen as "<<m_nMsgLen<<"\n";
+			}
+
 		}
 
 	}
