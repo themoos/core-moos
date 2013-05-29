@@ -239,7 +239,7 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
 
     ///////////////////////////////////////////////////////////
-	double dfWarningLatencyMS = 15;
+	double dfWarningLatencyMS = 50;
 	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
     P.GetVariable("--warning_latency",dfWarningLatencyMS);
 
