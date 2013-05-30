@@ -41,9 +41,9 @@ class XPCGetProtocol
 {
 #ifdef UNIX
     char cIteratorFlag;        // Protocol database iteration flag
+    struct protoent protocol;
 #endif
     struct protoent *protocolPtr;    // Pointer to protocol database entry
-    struct protoent protocol;
 public:
 #ifdef UNIX
     // Default constructor.  Opens the protocol database
