@@ -466,6 +466,29 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     if(rVar.m_nWrittenTo==0)
     {
         rVar.m_cDataType=Msg.m_cDataType;
+
+
+        //look to see if any existing wildcards make us want to subscribe
+		//to this new message
+		std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
+		for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
+		{
+			//for every client
+			std::set<MOOS::MsgFilter>::const_iterator h;
+			for (h = g->second.begin(); h != g->second.end(); h++)
+			{
+				//for every filter
+				if (h->Matches(Msg))
+				{
+					//add the filter owner (client *g) as a subscriber
+					rVar.AddSubscriber(g->first, h->period());
+					std::cout<<"+ subs of \""<<g->first<<"\" to \""
+							<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+							<<"\""<<std::endl;
+				}
+			}
+		}
+
     }
     
     if(rVar.m_cDataType==Msg.m_cDataType)
@@ -715,15 +738,17 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 				M.m_cDataType = MOOS_DOUBLE;
 				M.m_dfVal = period;
 				M.m_sSrc = Msg.GetSource();
+
+				std::cout<<MOOS::ConsoleColours::yellow()
+						<<"+ subs of \""
+						<<Msg.GetSource()<<"\" to variables matching \""
+						<<var_pattern<<":"<<app_pattern<<"\""
+						<<MOOS::ConsoleColours::reset()<<std::endl;
+
 				OnRegister(M);//smart...
 			}
 		}
 
-		std::cout<<MOOS::ConsoleColours::yellow()
-				<<"+ subs of \""
-				<<Msg.GetSource()<<"\" to variables matching \""
-				<<var_pattern<<":"<<app_pattern<<"\""
-				<<MOOS::ConsoleColours::reset()<<std::endl;
 
 
 	}
@@ -742,6 +767,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
     //look up this variable name
     DBVAR_MAP::iterator p = m_VarMap.find(Msg.m_sKey);
     
+
     if(p==m_VarMap.end())
     {
         //we need to make a new variable here for this key
@@ -749,45 +775,26 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         
         CMOOSDBVar NewVar(Msg.m_sKey);
         
-        if(Msg.m_cMsgType==MOOS_REGISTER)
+        switch(Msg.m_cMsgType)
         {
-            //interesting case is when this method is being used to 
-            //register for a variable that has not been written to. Here
-            //we simply make the variable but don't commit to its data type
-            NewVar.m_cDataType = MOOS_NOT_SET;
+        case MOOS_REGISTER:
+        	//interesting case is when this method is being used to
+        	//register for a variable that has not been written to. Here
+        	//we simply make the variable but don't commit to its data type
+        	NewVar.m_cDataType = MOOS_NOT_SET;
+        	break;
+        case MOOS_NOTIFY:
+        	//we are making a new variable
+    		//new variable will have data type of request message
+        	NewVar.m_cDataType = Msg.m_cDataType;
+        	break;
+        default:
+        	///nothing to do  - I wonder what this is?
+        	break;
         }
-        else
-        {
-            //new variable will have data type of request message
-            NewVar.m_cDataType = Msg.m_cDataType;
-
-            if(!VariableExists(Msg.GetKey()))
-			{
-				//look to see if any existing wildcards make us want to subscribe
-				//to this new message
-				std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
-				for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
-				{
-					//for every client
-					std::set<MOOS::MsgFilter>::const_iterator h;
-					for (h = g->second.begin(); h != g->second.end(); h++)
-					{
-						//for every filter
-						if (h->Matches(Msg))
-						{
-							//add the filter owner (client *g) as a subscriber
-							NewVar.AddSubscriber(g->first, h->period());
-							std::cout<<"+ subs of \""<<g->first<<"\" to \""
-									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
-									<<"\""<<std::endl;
-						}
-					}
-				}
-			}
 
 
-        }
-        
+
         //index our new creation
         m_VarMap[Msg.m_sKey] = NewVar;
         
