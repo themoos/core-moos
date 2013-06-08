@@ -41,7 +41,9 @@ class XPCGetProtocol
 {
 #ifdef UNIX
     char cIteratorFlag;        // Protocol database iteration flag
+#ifdef __linux
     struct protoent protocol;
+#endif
 #endif
     struct protoent *protocolPtr;    // Pointer to protocol database entry
 public:
