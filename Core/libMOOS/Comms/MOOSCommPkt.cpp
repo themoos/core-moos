@@ -88,7 +88,7 @@ double CMOOSCommPkt::GetCompression()
 
 int CMOOSCommPkt::GetBytesRequired()
 {
-    if(m_nByteCount<sizeof(int))
+    if(m_nByteCount<(int)sizeof(int))
     {
         return sizeof(int)-m_nByteCount;
     }
@@ -110,7 +110,7 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
     m_nByteCount+=nData;
     
 
-    if( m_nByteCount <=sizeof(int))
+    if( m_nByteCount <=(int)sizeof(int))
 	{
 		//here we figure out how many bytes we are expecting
 //    	bool bBOA = false;
