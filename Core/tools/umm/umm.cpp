@@ -69,6 +69,8 @@ void PrintHelp()
     MOOSTrace("  -s=<string>            : list of subscriptions in form var_name@period eg -s=x,y,z\n");
     MOOSTrace("  -w=<string>            : list of wildcard subscriptions in form var_pattern:app_pattern@frequency_hz eg -w='x*:*@0.1,*:GPS@0.0' \n");
     MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@frequency_hz eg -p=x@0.5,y:2048@2.0\n");
+    MOOSTrace("  -b=<string>            : bounce or reflect variables back under new name using syntax name:new_name,{name:new_name] eg -b=x:y,u:v\n");
+
     MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --bandwidth            : print bandwidth\n");
@@ -134,6 +136,28 @@ public:
         {
         	_vWildSubscriptions = MOOS::StringListToVector(temp);
         }
+
+
+        std::vector<std::string> vBounce;
+        if(m_CommandLineParser.GetVariable("-b",temp))
+        {
+        	vBounce = MOOS::StringListToVector(temp);
+        	std::vector<std::string>::iterator q;
+        	for(q=vBounce.begin();q!=vBounce.end();q++)
+        	{
+
+        		std::string v  = MOOS::Chomp(*q,":");
+        		if(!q->empty())
+        		{
+        			_Map[v]=*q;
+        			_vSubscribe.push_back(v);
+        			std::cout<<"mapping "<<v<<" to "<<*q<<std::endl;
+        		}
+
+        	}
+        }
+
+
         if(m_CommandLineParser.GetFlag("--spy"))
         {
         	_vWildSubscriptions.push_back("*:*@1.0");
@@ -185,7 +209,7 @@ public:
 
 
         //finalluy we will amke ouselves responsive!
-        SetAppFreq(10,400);
+        SetAppFreq(100,400);
         SetIterateMode(COMMS_DRIVEN_ITERATE_AND_MAIL);
 
 
@@ -285,6 +309,8 @@ public:
         	std::cout<<MOOS::ConsoleColours::reset();
         }
 
+        bool bMap = ! _Map.empty();
+
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
         	if(_bVerbose)
@@ -305,6 +331,16 @@ public:
         		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
         		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
                 std::cout<<MOOS::ConsoleColours::reset();
+        	}
+
+        	if(bMap)
+        	{
+        		std::map<std::string,std::string >::iterator w = _Map.find(q->GetKey());
+        		if(w!=_Map.end())
+        		{
+        			q->m_sKey = w->second;
+        			m_Comms.Post(*q);
+        		}
         	}
 
         	if(_LogFile)
@@ -554,6 +590,8 @@ private:
     std::priority_queue<Job> _Jobs;
     std::vector <unsigned char  >_BinaryArray;
     MOOS::KeyboardCapture _KeyBoardCapture;
+    std::map<std::string,std::string > _Map;
+
 
 
 
