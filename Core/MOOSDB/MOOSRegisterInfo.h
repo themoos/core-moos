@@ -39,6 +39,8 @@ class CMOOSRegisterInfo
 {
 public:
     void SetLastTimeSent(double dfTimeSent);
+    double GetLastTimeSent();
+
     bool Expired(double dfTimeNow);
     double m_dfPeriod;
     string m_sClientName;

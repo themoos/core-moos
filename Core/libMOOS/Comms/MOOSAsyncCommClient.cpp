@@ -403,6 +403,15 @@ bool MOOSAsyncCommClient::DoReading()
 			//extract... and please leave NULL messages there
 			PktRx.Serialize(m_InBox,false,false,NULL);
 
+
+			MOOSMSG_LIST::iterator q;
+			std::cerr<<"MOOSAsyncCommClient::DoReading ("<<nur<<","<<m_InBox.size()<<")\n";
+			for(q= m_InBox.begin();q!=m_InBox.end();q++)
+			{
+				std::cerr<<" "<<q->GetKey()<<std::endl;
+			}
+
+
 			//now Serialize simply adds to the front of a list so looking
 			//at the first element allows us to check for timing information
 			//as supported by the threaded server class

@@ -56,6 +56,8 @@ public:
 
 
     bool AddSubscriber(const string & sClient, double dfPeriod);
+    bool HasSubscriber(const string & sClient);
+
     CMOOSDBVar(const string & sName);
     CMOOSDBVar();
     virtual ~CMOOSDBVar();
