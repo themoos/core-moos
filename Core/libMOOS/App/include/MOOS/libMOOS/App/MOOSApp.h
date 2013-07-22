@@ -376,6 +376,9 @@ protected:
     application - if so call this function with a false parameter*/
     bool UseMOOSComms(bool bUse);
 
+    /** Set the MOOSName - ie the name this appl will use when talking MOOS*/
+    void SetMOOSName(const std::string &sMOOSName);
+
     /** call to say if you want mail to be delivered sorted by time*/
     void SortMailByTime(bool bSort=true){m_bSortMailByTime = bSort;};
     

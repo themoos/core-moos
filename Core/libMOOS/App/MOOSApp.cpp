@@ -298,6 +298,7 @@ bool CMOOSApp::Run( const std::string & sName,
 	{
 		PrintDefaultCommandLineSwitches();
 		OnPrintHelpAndExit();
+		exit(0);
 	}
 
 	if(m_CommandLineParser.GetFlag("--moos_print_example"))
@@ -512,6 +513,12 @@ bool CMOOSApp::SetQuiet(bool bQ)
 	m_Comms.SetQuiet(m_bQuiet);
 	return true;
 }
+
+void CMOOSApp::SetMOOSName(const std::string &sMOOSName)
+{
+	m_sMOOSName=sMOOSName;
+}
+
 
 void CMOOSApp::DoBanner()
 {
