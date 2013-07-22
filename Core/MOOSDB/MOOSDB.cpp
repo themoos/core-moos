@@ -579,6 +579,15 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 
                 AddMessageToClientBox(sClient,Msg);
                 
+                if(Msg.GetKey()=="X")
+                {
+                	std::cerr.setf(std::ios::fixed);
+                	std::cerr<<std::setprecision(4)<<MOOS::Time()<<" ";
+                	std::cerr<<MOOS::ConsoleColours::Red()<<"sending X ->"<<sClient<<"\n"<<MOOS::ConsoleColours::reset();
+
+                	Msg.Trace();
+                }
+
                 //finally we remember when we sent this to the client in question
                 rInfo.SetLastTimeSent(dfTimeNow);
             }
@@ -691,8 +700,12 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 
 		CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
 
+		if(rVar.HasSubscriber(Msg.m_sSrc))
+			return true;
+
 		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
 			return false;
+
 
 		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
 		{
@@ -704,6 +717,8 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 			ReplyMsg.m_cMsgType = MOOS_NOTIFY;
 
 			AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);
+
+        	rVar.m_Subscribers[Msg.m_sSrc].SetLastTimeSent(MOOS::Time());
 
 		}
 	}
@@ -931,7 +946,6 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 
 bool CMOOSDB::OnServerAllRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
-    
     
     DBVAR_MAP::iterator p;
     

@@ -41,6 +41,12 @@ CMOOSRegisterInfo::~CMOOSRegisterInfo()
 
 }
 
+double CMOOSRegisterInfo::GetLastTimeSent()
+{
+	return m_dfLastTimeSent;
+}
+
+
 
 bool CMOOSRegisterInfo::Expired(double dfTimeNow)
 {
