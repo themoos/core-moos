@@ -579,14 +579,6 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 
                 AddMessageToClientBox(sClient,Msg);
                 
-                if(Msg.GetKey()=="X")
-                {
-                	std::cerr.setf(std::ios::fixed);
-                	std::cerr<<std::setprecision(4)<<MOOS::Time()<<" ";
-                	std::cerr<<MOOS::ConsoleColours::Red()<<"sending X ->"<<sClient<<"\n"<<MOOS::ConsoleColours::reset();
-
-                	Msg.Trace();
-                }
 
                 //finally we remember when we sent this to the client in question
                 rInfo.SetLastTimeSent(dfTimeNow);
