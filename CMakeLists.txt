@@ -1,9 +1,8 @@
 
 ###########################################################
-#   Top level CMakeLists.txt file for the MOOS Project
+#   Top level CMakeLists.txt file for the core-moos Project
 #   pnewman@robots.ox.ac.uk
 ###########################################################
-
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
