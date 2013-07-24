@@ -69,6 +69,7 @@ namespace MOOS
 		bool Stop()
 		{
 			Thread_.Stop();
+			return true;
 		}
 
 

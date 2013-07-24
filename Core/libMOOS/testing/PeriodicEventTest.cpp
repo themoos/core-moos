@@ -24,7 +24,8 @@ bool f(double TimeNow,double TimeLastRun,double TimeScheduled, void * pParamCall
 
 	//some stats
 	double dfE =  TimeNow-TimeScheduled;
-	dfMean = dfMean*(++N-1)/N+(dfE)/N;
+	N=N+1;
+	dfMean = dfMean*(N-1)/N+(dfE)/N;
 
 	if(N>1)
 		dfVar = dfE/(N-1)+(N-1)/N*dfVar;

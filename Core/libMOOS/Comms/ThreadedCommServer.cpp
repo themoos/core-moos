@@ -277,7 +277,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             	{
             		if(dfTNow-q->GetTime()>m_dfCommsLatencyConcern)
             		{
-            			std::cout<<"WARNING : Message "<<q->GetKey()<<" from "<<q->GetSource()<<" is "<<dfTNow-q->GetTime()<<" ms delayed\n";
+            			std::cout<<"WARNING : Message "<<q->GetKey()<<" from "<<q->GetSource()<<" is "<<(dfTNow-q->GetTime())*1000<<" ms delayed\n";
             		}
             		bIsNotification= true;
             		break;
