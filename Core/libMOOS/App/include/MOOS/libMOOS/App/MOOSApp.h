@@ -166,7 +166,8 @@ public:
     /** Called when the class has disconnects from  the server. Put code you want to run when this happens in a virtual version of this method*/
     virtual bool OnDisconnectFromServer();
 
-    /** called by a separate thread if a callback has been installed by calling AddMessageCallback()*/
+    /** called by a separate thread if a callback
+     * has been installed by calling AddMessageCallback()*/
     virtual bool OnMessage(CMOOSMsg & M);
 
 protected:
@@ -291,13 +292,18 @@ protected:
     bool UnRegister(const std::string & sVar);
 
     /**
-     * Register a custom call back for a particular message. This call back will be called from its own thread.
+     * Register a custom call back for a particular message. This call back
+     * will be called from its own thread.
      * @param sMsgName name of message to watch for
-     * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+     * @param pfn  pointer to your function should be type
+     * bool func(CMOOSMsg &M, void *pParam)
      * @param pYourParam a void * pointer to the thing we want passed as pParam above
      * @return true on success
      */
-    bool AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam );
+    bool AddCustomMessageCallback(const std::string & sCallbackName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam );
 
     /**
      * Add a callback to ::OnMessage() for a particular message. This will cause OnMessage() to be called from its own thread
