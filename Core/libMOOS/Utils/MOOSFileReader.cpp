@@ -45,6 +45,7 @@
 #include "MOOS/libMOOS/Utils/MOOSFileReader.h"
 #include "assert.h"
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSLuaConfig.h"
 
 #define MAXLINESIZE 2000
 using namespace std;
@@ -59,6 +60,8 @@ CMOOSFileReader::CMOOSFileReader()
 	//strings
 	EnableVerbatimQuoting(true);
     m_pLock = new CMOOSLock();
+
+    m_LuaCfg = NULL;
 }
 
 CMOOSFileReader::~CMOOSFileReader()
@@ -71,11 +74,38 @@ CMOOSFileReader::~CMOOSFileReader()
 	delete m_pLock;
 	m_pLock = NULL;
 
+    delete m_LuaCfg;
+    m_LuaCfg = NULL;
+    
 	ClearFileMap();
 }
 
 bool CMOOSFileReader::SetFile(const std::string  & sFile)
 {
+    delete m_LuaCfg;
+
+    // create a LuaConfig object, with an empty API 
+    m_LuaCfg = new CMOOSLuaConfig("MOOSFileReader", *(new LUA_API_MAP), "");
+
+    int retcode = m_LuaCfg->Load(sFile);
+
+    // if file was loaded, we are done.
+    if (0 == retcode)
+    {
+        return true; 
+    }
+
+    //else fail.
+    MOOSTrace("Couldn't parse config file as Lua (error: %s)\n",
+              CMOOSLuaEnvironment::LuaErrorDesc(retcode).c_str());
+
+    delete m_LuaCfg;
+    m_LuaCfg = NULL;
+
+    
+    // BACKWARDS COMPATIBILITY.
+    // If we get here, we're (probably) reading a classic .moos file
+    
     m_sFileName = sFile;
     
     //quick check that we can open a file
@@ -247,6 +277,11 @@ bool CMOOSFileReader::GetValue(std::string sName,int  & nResult)
 bool CMOOSFileReader::GetValue(std::string sName,std::string & sResult)
 {
 
+    // try Lua first
+    if (m_LuaCfg)
+    {
+        return m_LuaCfg->GetValue(sName, sResult);
+    }
     
     if(IsOpen())
     {
