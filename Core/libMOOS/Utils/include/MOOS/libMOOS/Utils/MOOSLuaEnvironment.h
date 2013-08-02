@@ -66,7 +66,7 @@ public:
     //get the last error message from a load operation
     string LastLoadError();
 
-    //identifier for this mission container (safety, surface, mission)
+    //identifier for this environment, used in debug messages
     string Identifier() { return m_sIdentifier; }
 
     //filename
