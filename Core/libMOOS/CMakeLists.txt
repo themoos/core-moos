@@ -42,8 +42,8 @@ SET(UTILS_SOURCES
    Utils/ThreadPriority.cpp
    Utils/PeriodicEvent.cpp
    Utils/ConsoleColours.cpp
-   
-   
+   Utils/MOOSLuaEnvironment.cpp
+   Utils/MOOSLuaConfig.cpp
    )
 
 IF(WIN32)
@@ -174,8 +174,22 @@ set(${LIBNAME}_DEPEND_INCLUDE_DIRS
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
+
+############# Lua
+
+FIND_PACKAGE(Lua51 REQUIRED)
+IF(LUA51_FOUND)
+  message( "-- Lua 5.1 found" )
+ELSE(LUA51_FOUND)
+  message( FATAL_ERROR "Error: Lua 5.1 library not found, it is required to build" )
+ENDIF(LUA51_FOUND)
+
+INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
+
+
+
 if(UNIX)
-    set(DEPENDENCIES pthread m)
+    set(DEPENDENCIES pthread m lua5.1)
 endif(UNIX)
 
 IF(WIN32)

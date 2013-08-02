@@ -39,6 +39,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include "MOOS/libMOOS/Utils/MOOSLuaConfig.h"
 
 #ifdef _WIN32
     typedef std::map<int,std::ifstream*> THREAD2FILE_MAP;
@@ -117,7 +118,8 @@ protected:
 		}
 		m_FileMap.clear();
 	}
-	
+
+    CMOOSLuaConfig* m_LuaCfg;
 	
     std::ifstream * GetFile();
     CMOOSLock *m_pLock;
