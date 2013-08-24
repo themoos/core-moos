@@ -66,7 +66,7 @@ protected:
 
     CMOOSThread thread_;
 
-    //this is a mick name for the Queue
+    //this is a nick name for the Queue
     std::string Name_;
 
 };
