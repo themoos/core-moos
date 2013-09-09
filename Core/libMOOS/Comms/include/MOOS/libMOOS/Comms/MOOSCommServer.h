@@ -125,7 +125,7 @@ public:
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
     @param lPort port number to listen on
     */
-    virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
+    virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false, unsigned int nAuditPort = 9020);
     
     virtual void SetCommandLineParameters(int argc, char * argv[]);
     
@@ -283,6 +283,9 @@ protected:
     //what threshold in transit time from client to DB worries us
     //and will cause us to issue a warning
     double m_dfCommsLatencyConcern;
+
+    //what port will we broadcast stats on by default
+    unsigned int m_nAuditPort;
 
 
 };

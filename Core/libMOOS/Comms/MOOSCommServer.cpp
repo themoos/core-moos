@@ -152,7 +152,7 @@ void CMOOSCommServer::SetWarningLatencyMS(double dfPeriod)
 }
 
 
-bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisableNameLookUp)
+bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisableNameLookUp,unsigned int nAuditPort)
 {
 
     m_sCommunityName = sCommunityName;
@@ -161,10 +161,15 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 	
 	m_bDisableNameLookUp = bDisableNameLookUp;
 
+	m_nAuditPort = nAuditPort;
+
 
 
 	if(m_CommandLineParser.IsAvailable())
 	{
+
+
+
 		//here we look to parse latency
 		//--latency=y:10
 		std::string sLatency = "0";

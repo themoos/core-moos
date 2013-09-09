@@ -178,7 +178,9 @@ bool ThreadedCommServer::ServerLoop()
 
 
 	MOOS::ServerAudit Auditor;
-	Auditor.Run();
+
+
+	Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
     {
