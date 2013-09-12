@@ -311,7 +311,13 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     return true;
 }
 
+bool CMOOSDB::IsRunning()
+{
+	if(m_pCommServer.get()==NULL)
+		return false;
 
+	return m_pCommServer->IsRunning();
+}
 
 
 void CMOOSDB::UpdateDBClientsVar()

@@ -132,6 +132,9 @@ public:
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
+    /** return true if server is running */
+    bool IsRunning(){return m_bQuit!=false;};
+
 
 
 

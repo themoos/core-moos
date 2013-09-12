@@ -78,6 +78,8 @@ public:
     and returns */
     bool Run(int argc = 0, char * argv[] =0);
 
+    bool IsRunning();
+
     /** returns the port on which this DB is listening */
     long GetDBPort(){return m_nPort;};
 

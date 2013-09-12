@@ -129,6 +129,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_sCommunityName = "#1";
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
+	m_bQuit = false;
 
 	m_bBoostIOThreads= false;
 

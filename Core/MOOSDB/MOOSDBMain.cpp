@@ -39,9 +39,9 @@ int main(int argc , char * argv[])
 
     //nothing to do - all the threads in the DB object
     //do the work
-    while(1)
+    while(DB.IsRunning())
     {
-        MOOSPause(100000);
+        MOOSPause(1000);
     }
 
     return 0;
