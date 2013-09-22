@@ -133,7 +133,7 @@ public:
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
     /** return true if server is running */
-    bool IsRunning(){return m_bQuit!=false;};
+    bool IsRunning(){return m_bQuit==false;};
 
 
 
