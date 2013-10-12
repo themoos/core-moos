@@ -677,6 +677,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
+
     std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
@@ -776,8 +777,8 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
 //here we can check that the client is speaking the correct wire protocol
 //we begin by reading a string and checking it is what we are expecting
 //note we are only reading a few bytes so this lets us catch the case where
-//an old client that doesn't send a string simpy sends a COmmPkt first
-//chances of a comm packete spelling at a ptotocl name are pretty damns slim.....
+//an old client that doesn't send a string simp;y sends a COmmPkt first
+//chances of a comm packet spelling out a protocol name are pretty damn slim.....
 bool CheckProtocol(XPCTcpSocket *pNewClient)
 {
 	char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1];

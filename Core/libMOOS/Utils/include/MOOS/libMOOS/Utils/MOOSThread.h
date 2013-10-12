@@ -54,6 +54,8 @@ public:
 #endif
         m_nThreadID = 0;
         
+        Verbose(false);
+
     }
     
     
@@ -162,7 +164,8 @@ public:
         }
 #endif
 
-        std::cerr<<"Thread "<<Name()<<" started\n";
+        if(!Name().empty() && m_bVerbose)
+        	std::cerr<<"Thread "<<Name()<<" started\n";
 
 
  
@@ -218,7 +221,7 @@ public:
 
         SetRunningFlag(false);
 
-        if(!Name().empty())
+        if(!Name().empty() && m_bVerbose)
         	std::cerr<<"Thread "<<Name()<<" stopped\n";
 
 
@@ -266,6 +269,10 @@ private:
         m_lock.UnLock();
     }
     
+    void Verbose(bool bV){
+    	m_bVerbose = bV;
+    }
+
     bool GetQuitFlag() {
         bool bState = false;
         m_lock.Lock();
@@ -319,6 +326,8 @@ private:
     // functions with mutexes
     bool m_bRunning;
     bool m_bQuitRequested;
+    bool m_bVerbose;
+
     ////////////////
     
     // This is where we store the address of the function

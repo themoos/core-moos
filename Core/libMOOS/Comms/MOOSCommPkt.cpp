@@ -112,17 +112,6 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 
     if( m_nByteCount <=(int)sizeof(int))
 	{
-		//here we figure out how many bytes we are expecting
-//    	bool bBOA = false;
-//		if(0 && (m_nByteCount!=sizeof(int)))
-//		{
-//			std::cerr<<"Bug of Alon I thwart thee\n";
-//			std::cerr<<"m_nByteCount "<<m_nByteCount<<"\n";
-//			std::cerr<<"nData "<<nData<<"\n";
-//			std::cerr<<"GetBytesRequired() would have returned "<<GetBytesRequired()<<"\n";
-//			bBOA = true;
-//		}
-
 		if(m_nByteCount==sizeof(int))
 		{
 			memcpy((void*)(&m_nMsgLen),(void*)m_pStream,sizeof(int));
@@ -132,14 +121,7 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 			{
 				m_nMsgLen = SwapByteOrder<int>(m_nMsgLen);
 			}
-
-//			if(bBOA)
-//			{
-//				std::cerr<<"calculated m_nMsgLen as "<<m_nMsgLen<<"\n";
-//			}
-
 		}
-
 	}
 
 
@@ -152,6 +134,11 @@ int CMOOSCommPkt::GetStreamLength()
     return m_nMsgLen;
 }
 
+
+unsigned int CMOOSCommPkt::GetNumMessagesSerialisedToStream()
+{
+	return m_nToStreamCount;
+}
 
 /** This function stuffs messages in/from a packet */
 bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, double * pdfPktTime)
@@ -180,8 +167,8 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 
 
         MOOSMSG_LIST::iterator p;
-        int nCount = 0;
-        for(p = List.begin();p!=List.end();p++,nCount++)
+        m_nToStreamCount = 0;
+        for(p = List.begin();p!=List.end();p++,m_nToStreamCount++)
         {
         
             unsigned int nRequiredSize = p->GetSizeInBytesWhenSerialised();
