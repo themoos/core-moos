@@ -26,7 +26,9 @@
 #define MOOSThreadh
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include <iostream>
 #ifndef _WIN32
 #include <errno.h>
 #endif
@@ -75,7 +77,8 @@ public:
     //! Destructor just stops the thread if there's one running
     ~CMOOSThread()
     {
-        Stop();
+    	if(IsThreadRunning())
+    		Stop();
     }
     
     
@@ -107,6 +110,16 @@ public:
         return GetRunningFlag();
     }
 
+
+    inline void Name(const std::string & sName)
+    {
+    	m_sName = sName;
+    }
+
+    inline std::string  Name()
+    {
+    	return m_sName;
+    }
 
 
     //! Starts the thread running (as long as the class has been properly initialised!)
@@ -148,6 +161,10 @@ public:
             return false;
         }
 #endif
+
+        std::cerr<<"Thread "<<Name()<<" started\n";
+
+
  
         return true;
     }
@@ -162,15 +179,11 @@ public:
     // of this class, to find out whether it needs to stop itself.
     bool Stop()
     {
-        m_lock.Lock();
-        {
-            if (!m_bRunning || m_bQuitRequested) {
-                m_lock.UnLock();
-                return true;
-            }
-            m_bQuitRequested = true;
-        }
-        m_lock.UnLock();
+
+    	if(!IsThreadRunning())
+    		return true;
+
+    	SetQuitFlag(true);
         
         // Now wait for the thread to finish.  It's important that the
         // mutex isn't locked during the wait, because the thread may
@@ -181,9 +194,7 @@ public:
             WaitForSingleObject(m_hThread,INFINITE);
         }
 #else
-        // This should not be necessary... Why was it here again ?
-		//yes it is needed - we need to wait for the thread!
-        
+
         void * Result;
         int retval = pthread_join( m_nThreadID,&Result);
         if (retval != 0)
@@ -202,11 +213,14 @@ public:
         }
         
 #endif
+
         
-        // There is the potential for a race condition here, if some other
-        // code tries to read and act on the running flag between pthread_join
-        // finishing and the running flag being set to false.  Yikes!
+
         SetRunningFlag(false);
+
+        if(!Name().empty())
+        	std::cerr<<"Thread "<<Name()<<" stopped\n";
+
 
         return true;
     }
@@ -319,6 +333,8 @@ private:
     // to the owner to decide.
     void *m_pThreadData;
     
+    std::string m_sName;
+
 };
 #endif
 
