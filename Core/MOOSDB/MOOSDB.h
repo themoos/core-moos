@@ -45,8 +45,13 @@
 
 using namespace std;
 
-typedef map<string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
-typedef map<string,CMOOSDBVar> DBVAR_MAP;
+//typedef map<string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
+//typedef map<string,CMOOSDBVar> DBVAR_MAP;
+
+
+#include <tr1/unordered_map>
+typedef tr1::unordered_map<string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
+typedef tr1::unordered_map<string,CMOOSDBVar> DBVAR_MAP;
 
 
 #define DEFAULT_MOOS_SERVER_PORT 9000
