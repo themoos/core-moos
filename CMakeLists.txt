@@ -35,8 +35,14 @@ if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 endif()
 
 
+
+
 set(CMakeScripts_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
+
+# Look at system to see what if any options are available because
+# of build environment
+include(SystemDefines)
 
 
 # Turn on all compiler warnings
