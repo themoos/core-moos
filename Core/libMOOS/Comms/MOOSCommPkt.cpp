@@ -81,10 +81,6 @@ CMOOSCommPkt::~CMOOSCommPkt()
     }
 }
 
-double CMOOSCommPkt::GetCompression()
-{
-	return m_dfCompression;
-}
 
 int CMOOSCommPkt::GetBytesRequired()
 {
@@ -112,17 +108,6 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 
     if( m_nByteCount <=(int)sizeof(int))
 	{
-		//here we figure out how many bytes we are expecting
-//    	bool bBOA = false;
-//		if(0 && (m_nByteCount!=sizeof(int)))
-//		{
-//			std::cerr<<"Bug of Alon I thwart thee\n";
-//			std::cerr<<"m_nByteCount "<<m_nByteCount<<"\n";
-//			std::cerr<<"nData "<<nData<<"\n";
-//			std::cerr<<"GetBytesRequired() would have returned "<<GetBytesRequired()<<"\n";
-//			bBOA = true;
-//		}
-
 		if(m_nByteCount==sizeof(int))
 		{
 			memcpy((void*)(&m_nMsgLen),(void*)m_pStream,sizeof(int));
@@ -132,16 +117,8 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData)
 			{
 				m_nMsgLen = SwapByteOrder<int>(m_nMsgLen);
 			}
-
-//			if(bBOA)
-//			{
-//				std::cerr<<"calculated m_nMsgLen as "<<m_nMsgLen<<"\n";
-//			}
-
 		}
-
 	}
-
 
     return true;
 }
@@ -163,114 +140,38 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
     {
 
         m_nMsgLen=0;
-        m_pNextData = m_pStream;
         m_nByteCount = 0;
 
-        //we need to leave space at the start of the packet for total
-        //length and number of include messages
-		
-        m_pNextData+=nHeaderSize; 
+        //lets figure out how much space we need?
+        unsigned int nBufferSize=nHeaderSize; //some head room
+        MOOSMSG_LIST::iterator p;
+        for(p = List.begin();p!=List.end();p++)
+        {
+        	nBufferSize+=p->GetSizeInBytesWhenSerialised();
+        }
+
+        InflateTo(nBufferSize);
+
+        m_pNextData = m_pStream+nHeaderSize;
         m_nByteCount+= nHeaderSize;
 
-
-        //assume to start with that mesages are reasonably sized -if they aren't we'll make an adjustment
-        unsigned int nWorkingMemoryCurrentSize = DEFAULT_ASSUMMED_MAX_MOOS_MSG_SIZE;
-        unsigned char * pTmpBuffer =new unsigned char[nWorkingMemoryCurrentSize] ;
-
-
-
-        MOOSMSG_LIST::iterator p;
-        int nCount = 0;
-        for(p = List.begin();p!=List.end();p++,nCount++)
+        for(p = List.begin();p!=List.end();p++)
         {
-        
-            unsigned int nRequiredSize = p->GetSizeInBytesWhenSerialised();
 
-            if(nRequiredSize>nWorkingMemoryCurrentSize)
+            int nCopied = p->Serialize(m_pNextData,nBufferSize-m_nByteCount);
+
+            if(nCopied==-1)
             {
-                //std::cerr<<"making more space "<<nWorkingMemoryCurrentSize<<" -> "<<nRequiredSize<<std::endl;
-                nWorkingMemoryCurrentSize = nRequiredSize;
-                delete [] pTmpBuffer;
-
-                pTmpBuffer = new unsigned  char [nWorkingMemoryCurrentSize];
+            	std::cerr<<"big problem failed serialisation: "<<__PRETTY_FUNCTION__<<"\n";
+            	return false;
             }
 
-            //MOOSTrace("Sending %s \n",p->m_sKey.c_str());
-            //int nTmpSize = MAX_MOOS_MSG_SIZE;
-
-            int nCopied = (*p).Serialize(pTmpBuffer,nWorkingMemoryCurrentSize);
-
-            if(nCopied !=(int)nRequiredSize )
-            {
-                std::cerr<<"bad news expected "<<nWorkingMemoryCurrentSize<<" but serialisation took "<<nCopied<<std::endl;
-                p->Trace();
-            }
-
-            if(nCopied!=-1)
-            {
-                //now copy to our stream...
-                CopyToStream(pTmpBuffer,nCopied);
-            }
-            else
-            {
-                delete [] pTmpBuffer;
-                return false;
-            }
+            m_pNextData+=nCopied;
+        	m_nByteCount+=nCopied;
 
         }
 
-        delete [] pTmpBuffer;
-
-
-
-
-
 		unsigned char bCompressed = 0;
-#ifdef COMPRESSED_MOOS_PROTOCOL
-		
-		//we only compress if it is worth it
-		if(m_nByteCount>COMPRESSION_PACKET_SIZE_THRESHOLD)
-		{
-			
-			unsigned long int nDataLength = m_nByteCount-nHeaderSize;
-			
-			//we require .1% extra and 12 bytes
-			unsigned long int nZBSize = (unsigned int) ((float)nDataLength*1.01+13);
-			unsigned char * ZipBuffer = new unsigned char[nZBSize];		
-			
-			int nZipResult = compress(ZipBuffer,&nZBSize,m_pStream+nHeaderSize,nDataLength);
-			
-			
-			switch (nZipResult) {
-				case Z_OK:
-					break;
-				case Z_BUF_ERROR:
-					throw CMOOSException("failed to compress outgoing data - looks like compression actually expanded data!");
-					break;
-				case Z_MEM_ERROR:
-					throw CMOOSException("zlib memory error!");
-					break;
-				default:
-					break;
-			}
-			
-			//MOOSTrace("Compressed out going buffer is %d bytes and original is %d\n",nZBSize,nDataLength);
-			
-			memcpy(m_pStream+nHeaderSize,ZipBuffer,nZBSize);
-
-			//maybe useful to record what compression ration we are getting
-			m_dfCompression = (double)m_nByteCount/nZBSize;
-
-			//now we have a new byte count 			
-			m_nByteCount = nZBSize+nHeaderSize;
-			
-			delete ZipBuffer;
-			
-			bCompressed = 1;
-			
-		}
-		
-#endif
 
         //finally write how many bytes we have written at the start
         //look for need to swap byte order if required
@@ -291,6 +192,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 		*m_pNextData = bCompressed;
 		m_pNextData+=1;
 
+
     }
     else
     {
@@ -305,6 +207,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
         m_nMsgLen = IsLittleEndian() ? m_nMsgLen : SwapByteOrder<int>(m_nMsgLen);
         m_pNextData+=sizeof(m_nMsgLen);
         m_nByteCount+=sizeof(m_nMsgLen);
+
 
         int nSpaceFree=m_nMsgLen - sizeof(m_nMsgLen);
 
@@ -321,92 +224,6 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
 		m_pNextData+=sizeof(unsigned char);
         nSpaceFree-=sizeof(unsigned char);
         m_nByteCount+=sizeof(unsigned char);
-		
-		
-		
-#ifdef COMPRESSED_MOOS_PROTOCOL		
-		unsigned char bCompressed = m_pStream[nHeaderSize-1];
-		//we will only have compressed if it is worth it
-		
-		//MOOSTrace("Message is %s compressed\n",bCompressed? "":"not");
-		if(bCompressed)
-		{
-			
-			unsigned long int nDataLength = m_nMsgLen-nHeaderSize;
-			
-			//we'd be surprised if we had more tha 90% compression
-			int nCompressionFactor = 10;
-			unsigned char * ZipBuffer = NULL;
-			unsigned long int nZBSize;
-			
-			int nZipResult = -1;
-			
-			do
-			{
-				
-				nZBSize = nCompressionFactor*nDataLength;
-				
-				ZipBuffer = new unsigned char[nZBSize];
-				
-				nZipResult = uncompress(ZipBuffer,&nZBSize,m_pStream+nHeaderSize,nDataLength);
-				
-				switch (nZipResult) 
-				{
-					case Z_MEM_ERROR:
-						throw CMOOSException("ZLIB out of memory");
-						break;
-						
-					case Z_BUF_ERROR:
-					{
-						//if we get here we need more space
-						delete ZipBuffer;
-						nCompressionFactor *=8;
-						
-						if(nCompressionFactor>MAX_BELIEVABLE_ZLIB_COMPRESSION)
-						{
-							//this is very suspcious
-							throw CMOOSException("error in decompressing CMOOSPkt stream");
-						}
-					}
-						break;
-						
-					case Z_DATA_ERROR:
-						throw CMOOSException("ZLIB received corrupted data - this is really bad news.");
-						break;
-						
-						
-					default:
-						break;
-				}
-			}while(nZipResult!=Z_OK);
-			
-			
-			//MOOSTrace("received %d data bytes and uncompressed them to %d  bytes\n",nDataLength,nZBSize);
-			
-			//maybe useful to record what compression ration we are getting
-			m_dfCompression = (double)nZBSize/nDataLength;
-
-			
-			//we have a new message length
-			m_nMsgLen = nZBSize+nHeaderSize;
-			
-			//check we have allocated enough memory
-			if(m_nMsgLen>m_nStreamSpace)
-			{
-				//interesting case we are out of memory - we need some more
-				InflateTo(m_nMsgLen);
-			}
-			
-			//copy the uncompressed data into our stream
-			memcpy(m_pStream+nHeaderSize,ZipBuffer,nZBSize);
-			
-			//recalculate space free
-			nSpaceFree= m_nMsgLen-nHeaderSize;
-			
-			//be a good citizen
-			delete ZipBuffer;
-		}
-#endif
 		
 
         for(int i = 0; i<nMessages;i++)
@@ -447,35 +264,17 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List, bool bToStream, bool bNoNULL, d
     //here at the last moment we can fill in our totalm length for safe keeping
     m_nMsgLen = m_nByteCount;
 
-    return true;
-}
-
-bool CMOOSCommPkt::CopyToStream(unsigned char *pData, int nBytes)
-{
-    //well do we have enough space to do this?
-    if(m_nByteCount+nBytes>=m_nStreamSpace)
-    {
-        //no..better inflate ourselves...
-        InflateTo(2*(m_nStreamSpace+nBytes));
-    }
-
-    //by this point we are guaranteed enough space..
-    //unless (new has failed which is really the end of the world and we will be dead :-(  )
-
-    //copy temporary buffer to our main buffer
-    memcpy(m_pNextData,pData,nBytes);
-
-    //increment hot spot
-    m_pNextData+=nBytes;
-
-    //increment byte count
-    m_nByteCount+=nBytes;
 
     return true;
 }
 
 bool CMOOSCommPkt::InflateTo(int nNewStreamSize)
 {
+	//maybe there is nothing to do....
+	if(nNewStreamSize<=MOOS_PKT_DEFAULT_SPACE)
+	{
+		return true;
+	}
     //make more space then..
     m_nStreamSpace = nNewStreamSize;
 

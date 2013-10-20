@@ -483,7 +483,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 
         //look to see if any existing wildcards make us want to subscribe
 		//to this new message
-		std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
+		HASH_MAP_TYPE<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
 		for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
 		{
 			//for every client
