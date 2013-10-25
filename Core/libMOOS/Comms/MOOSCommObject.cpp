@@ -217,13 +217,13 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
             //this is some very low level cruft that is only hear to provide
         	//some gruesome testing - normal programmers should ignore this
         	//block of code
-        	nSent+=pSocket->iSendMessage(PktTx.m_pStream,sizeof(int));
+        	nSent+=pSocket->iSendMessage(PktTx.Stream(),sizeof(int));
         	SimulateCommsError();
-        	nSent+=pSocket->iSendMessage(&(PktTx.m_pStream[sizeof(int)]),PktTx.GetStreamLength()-sizeof(int));
+        	nSent+=pSocket->iSendMessage(PktTx.Stream()+sizeof(int),PktTx.GetStreamLength()-sizeof(int));
         }
         else
         {
-        	nSent = pSocket->iSendMessage(PktTx.m_pStream,PktTx.GetStreamLength());
+        	nSent = pSocket->iSendMessage(PktTx.Stream(),PktTx.GetStreamLength());
         }
     }
     catch(XPCException e)

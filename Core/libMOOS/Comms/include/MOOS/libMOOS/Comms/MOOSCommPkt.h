@@ -48,27 +48,44 @@ object. It is never used by a user of MOOSLib */
 class CMOOSCommPkt  
 {
 public:
-    bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
-    int     GetStreamLength();
-    bool    Fill(unsigned char * InData,int nData);
-    int     GetBytesRequired();
-
     CMOOSCommPkt();
     virtual ~CMOOSCommPkt();
 
-    unsigned char * m_pStream;
-    unsigned char * m_pNextData;
-    int             m_nStreamSpace;
-    unsigned char   DefaultStream[MOOS_PKT_DEFAULT_SPACE];
+    /**
+     * serialise to or from a list of CMOOSMsgs
+     */
+    bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
+
+    /*
+     * have serialisation use external storage
+     */
+    void    UseThisExternalStorage(std::vector<unsigned char > * pStorage);
+
+    /**
+     * return length of serialised stream
+     */
+    int     GetStreamLength();
+
+    bool    Fill(unsigned char * InData,int nData);
+    int     GetBytesRequired();
+    unsigned char * Stream();
+
+
+
 
 protected:
     bool InflateTo(int nNewStreamSize);
     int m_nByteCount;
     int m_nMsgLen;
+
+    unsigned char * m_pStream;
+    unsigned char * m_pNextData;
+    int             m_nStreamSpace;
+
     /**true if the packet has been inflated to increase capicity and m_pStream no longer
     points to DefaultStream but to heap space allocated with new */
-    bool    m_bAllocated;
-	double m_dfCompression;
+	std::vector<unsigned char >* m_pStorage;
+	std::vector<unsigned char > m_DefaultStorage;
 
 };
 

@@ -143,6 +143,10 @@ namespace MOOS
 	    MOOS::SafeList<CMOOSMsg> OutGoingQueue_; //queue of outgoing mail
 
 
+	    std::vector<unsigned char> OutgoingStorage_;
+        std::vector<unsigned char> IncomingStorage_;
+
+
 	};
 };
 

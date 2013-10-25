@@ -194,6 +194,10 @@ protected:
         //are we asked to boost prioirty
         bool _bBoostThread;
 
+        std::vector<unsigned char  > _IncomingStorage;
+        std::vector<unsigned char  > _OutgoingStorage;
+
+
 
     };
 
@@ -228,6 +232,8 @@ protected:
 		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
 
 		std::map<std::string,ClientThread*> m_ClientThreads;
+
+		std::vector<unsigned char  > m_SerialisationStorage;
 
 
 
