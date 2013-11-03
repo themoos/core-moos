@@ -50,32 +50,38 @@ typedef map<string,CMOOSRegisterInfo> REGISTER_INFO_MAP;
 class CMOOSDBVar  
 {
 public:
-    bool Reset();
-    void RemoveSubscriber(string & sWho);
-
-
-
-    bool AddSubscriber(const string & sClient, double dfPeriod);
-    bool HasSubscriber(const string & sClient);
-
     CMOOSDBVar(const string & sName);
     CMOOSDBVar();
     virtual ~CMOOSDBVar();
 
+
+    bool Reset();
+    void RemoveSubscriber(string & sWho);
+    bool AddSubscriber(const string & sClient, double dfPeriod);
+    bool HasSubscriber(const string & sClient);
+
+
     char   m_cDataType;
+    string m_sName;
     double m_dfTime;
     double m_dfVal;
     double m_dfWriteFreq;
-    int m_nOverTicks;
     double m_dfWrittenTime;
     string m_sVal;
     string m_sWhoChangedMe;
 	string m_sSrcAux;
-
-    int     m_nWrittenTo;
-    string m_sName;
-
     string m_sOriginatingCommunity;
+
+	struct
+	{
+	    double m_dfLastStatsTime;
+	    int     m_nLastStatsWrites;
+	} m_Stats;
+
+
+	//number of times written to
+    int     m_nWrittenTo;
+
 
     REGISTER_INFO_MAP m_Subscribers;
     STRING_SET m_Writers;

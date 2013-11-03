@@ -101,10 +101,10 @@ void PrintHelp()
 
 
 
-class DBTestClient : public CMOOSApp
+class UMMClient : public CMOOSApp
 {
 public:
-    DBTestClient(){};
+    UMMClient(){};
 
     bool OnProcessCommandLine()
     {
@@ -478,7 +478,7 @@ public:
 public:
     static bool ScheduleDispatch(void * pParam)
     {
-    	DBTestClient* pMe = (DBTestClient*)pParam;
+    	UMMClient* pMe = (UMMClient*)pParam;
     	return pMe->ScheduleLoop();
     }
 
@@ -548,13 +548,13 @@ private:
     {
         Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _DataSize(0)
         {
-            _dfTimeScheduled = MOOSTime()+_dfPeriod;
+            _dfTimeScheduled = MOOSLocalTime()+_dfPeriod;
         }
 
         Job(double dfPeriod,std::string sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
         {
         	_DataSize = nSize;
-        	_dfTimeScheduled = MOOSTime()+_dfPeriod;
+        	_dfTimeScheduled = MOOSLocalTime()+_dfPeriod;
         }
 
         ~Job()
@@ -572,7 +572,13 @@ private:
         void Reschedule()
         {
             _nCount++;
-            _dfTimeScheduled = MOOSTime()+_dfPeriod;
+            double dfTerr =  MOOSLocalTime()-_dfTimeScheduled;
+
+            _dfTimeScheduled = MOOSLocalTime()+_dfPeriod;
+            // usually we will want to apply a correction - on reason not to is to
+            // stop drift over vast periodsdfTerr
+            if(_nCount%100!=0)
+                _dfTimeScheduled-=dfTerr;
         }
 
         bool isActive(double TimeNow) const
@@ -613,7 +619,7 @@ int main (int argc, char* argv[])
 	std::string default_name = ss.str();
 	std::string app_name = P.GetFreeParameter(1, default_name);
 
-    DBTestClient TC1;
+    UMMClient TC1;
 
     TC1.Run(app_name,argc,argv);
 }

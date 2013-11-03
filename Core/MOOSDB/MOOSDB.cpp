@@ -506,7 +506,6 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     
     if(rVar.m_cDataType==Msg.m_cDataType)
     {
-        double dfLastWrittenTime = rVar.m_dfWrittenTime;
         
         rVar.m_dfWrittenTime = dfTimeNow;
         
@@ -546,8 +545,9 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         rVar.m_nWrittenTo++;
         
         //how often is it being written?
-        double dfDT = (dfTimeNow-dfLastWrittenTime);
-        if(dfDT>0)
+        double dfDT = (dfTimeNow-rVar.m_Stats.m_dfLastStatsTime);
+        int nWrites  = rVar.m_nWrittenTo-rVar.m_Stats.m_nLastStatsWrites;
+        if(dfDT>0.5)
         {
             //this looks a little hookey - the numbers are arbitrary to give sensible
             //looking frequencies when timing is coarse
@@ -559,14 +559,13 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
             else
             {
                 //IIR FILTER COOEFFICENT
-                double dfAlpha = 0.95;
-                rVar.m_dfWriteFreq = dfAlpha*rVar.m_dfWriteFreq + (1.0-dfAlpha)/(dfDT/++rVar.m_nOverTicks);
-                rVar.m_nOverTicks=0;
+                double dfAlpha = 0.5;
+                double df = dfDT/nWrites;
+
+                rVar.m_dfWriteFreq = dfAlpha*rVar.m_dfWriteFreq + (1.0-dfAlpha)/(df);
             }
-        }
-        else
-        {
-            rVar.m_nOverTicks++;
+            rVar.m_Stats.m_nLastStatsWrites = rVar.m_nWrittenTo;
+            rVar.m_Stats.m_dfLastStatsTime = dfTimeNow;
         }
         
         //now comes the intersting part...

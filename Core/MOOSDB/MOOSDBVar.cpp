@@ -45,7 +45,8 @@ CMOOSDBVar::CMOOSDBVar()
     m_sWhoChangedMe = "";
     m_nWrittenTo = 0;
     m_dfWrittenTime = -1;
-    m_nOverTicks = 0;
+    m_Stats.m_dfLastStatsTime = -1.0;
+    m_Stats.m_nLastStatsWrites = 0;
 }
 
 
@@ -60,7 +61,6 @@ CMOOSDBVar::CMOOSDBVar(const string & sName)
     m_nWrittenTo = 0;
     m_dfWriteFreq = 0;
     m_dfWrittenTime = -1;
-    m_nOverTicks = 0;
 
 }
 
