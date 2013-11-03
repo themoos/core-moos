@@ -45,11 +45,10 @@ using namespace std;
 
 CMOOSCommPkt::CMOOSCommPkt() {
 
-    //m_DefaultStorage.reserve(MOOS_PKT_DEFAULT_SPACE);
-    m_pStorage = &m_DefaultStorage;
-    m_pStream = m_pStorage->data();
+    m_Storage.resize(MOOS_PKT_DEFAULT_SPACE);
+    m_nStreamSpace = m_pStorage.size();
 
-    m_nStreamSpace = m_pStorage->capacity();
+    m_pStream = m_Storage.data();
     m_pNextData = m_pStream;
     m_nByteCount = 0;
     m_nMsgLen = 0;
@@ -67,6 +66,20 @@ int CMOOSCommPkt::GetBytesRequired() {
         return m_nMsgLen - m_nByteCount;
     }
 }
+
+bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
+    //maybe there is nothing to do....
+    if (nNewStreamSize <= m_Storage.size) {
+        return true;
+    }
+    m_Storage.resize(nNewStreamSize);
+    m_pStream = m_Storage.data();
+    m_nStreamSpace = nNewStreamSize;
+    m_pNextData = m_pStream + m_nByteCount;
+
+    return true;
+}
+
 
 bool CMOOSCommPkt::Fill(unsigned char *InData, int nData) {
 
@@ -95,11 +108,6 @@ int CMOOSCommPkt::GetStreamLength() {
     return m_nByteCount;
 }
 
-void CMOOSCommPkt::UseThisExternalStorage(std::vector<unsigned char> * pStorage)
-{
-    pStorage->swap(*m_pStorage);
-    m_pStorage = pStorage;
-}
 
 unsigned char * CMOOSCommPkt::Stream(){
     return m_pStream;
@@ -240,15 +248,3 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
     return true;
 }
 
-bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
-    //maybe there is nothing to do....
-    if (nNewStreamSize <= m_pStorage->capacity()) {
-        return true;
-    }
-    m_pStorage->resize(nNewStreamSize);
-    m_pStream = m_pStorage->data();
-    m_nStreamSpace = nNewStreamSize;
-    m_pNextData = m_pStream + m_nByteCount;
-
-    return true;
-}

@@ -84,8 +84,7 @@ protected:
 
     /**true if the packet has been inflated to increase capicity and m_pStream no longer
     points to DefaultStream but to heap space allocated with new */
-	std::vector<unsigned char >* m_pStorage;
-	std::vector<unsigned char > m_DefaultStorage;
+	std::vector<unsigned char > m_Storage;
 
 };
 
