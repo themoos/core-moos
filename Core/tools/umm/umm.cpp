@@ -105,7 +105,10 @@ void PrintHelp()
 class UMMClient : public CMOOSApp
 {
 public:
-    UMMClient(){};
+    UMMClient()
+    {
+        _dfMeanLatency = 0;
+    };
 
     bool OnProcessCommandLine()
     {
@@ -330,9 +333,11 @@ public:
         	if(_bShowLatency)
         	{
         		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(2)<<dfLatencyMS<<" ms\n";
+        		_dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
+        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(3)<<dfLatencyMS<<" ms\n";
         		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
         		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
+                std::cout<<MOOS::ConsoleColours::yellow()<<"         mean: "<<std::setprecision(3)<<_dfMeanLatency<<" ms\n";
                 std::cout<<MOOS::ConsoleColours::reset();
         	}
 
@@ -546,6 +551,7 @@ private:
     std::string _sLogFileName;
     bool _bVerbose;
     bool _bShowLatency;
+    double _dfMeanLatency;
     bool _bShowBandwidth;
     bool _bShowTimingAdjustment;
     std::ofstream _LogFile;
