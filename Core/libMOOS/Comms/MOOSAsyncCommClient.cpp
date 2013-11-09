@@ -385,6 +385,8 @@ bool MOOSAsyncCommClient::DoReading()
 
 		ReadPkt(m_pSocket,PktRx);
 
+		m_nPktsReceived++;
+
 		m_nBytesReceived+=PktRx.GetStreamLength();
 
 
@@ -405,59 +407,66 @@ bool MOOSAsyncCommClient::DoReading()
 			//extract... and please leave NULL messages there
 			PktRx.Serialize(m_InBox,false,false,NULL);
 
+			m_nMsgsReceived+=m_InBox.size()-nur;
+
 
 			//now Serialize simply adds to the front of a list so looking
 			//at the first element allows us to check for timing information
 			//as supported by the threaded server class
-			if(m_bDoLocalTimeCorrection)
-			{
 
-				MOOSMSG_LIST::iterator q = m_InBox.begin();
-				std::advance(q,nur);
+            MOOSMSG_LIST::iterator q = m_InBox.begin();
+            std::advance(q,nur);
 
-				switch(q->GetType())
-				{
-					case MOOS_TIMING:
-					{
-						//we have a fancy new DB upstream...
-						//one that supports Asynchronous Clients
-						UpdateMOOSSkew(q->GetTime(),
-								q->GetDouble(),
-								dfLocalRxTime);
+            switch(q->GetType())
+            {
+                case MOOS_TIMING:
+                {
+                    //we have a fancy new DB upstream...
+                    //one that supports Asynchronous Clients
 
-						if(m_bDBIsAsynchronous)
-						{
-							//and we can update the outgoing thread's speed
-							//as controlled by the DB.
-							m_dfOutGoingDelay = q->GetDoubleAux();
-						}
+                    if(m_bDoLocalTimeCorrection && GetNumPktsReceived()>1)
+                    {
+                        std::cerr<<"yes sir";
+                        UpdateMOOSSkew(q->GetTime(),
+                                q->GetDouble(),
+                                dfLocalRxTime);
+                    }
 
-						m_InBox.erase(q);
+                    if(m_bDBIsAsynchronous)
+                    {
+                        //and we can update the outgoing thread's speed
+                        //as controlled by the DB.
+                        m_dfOutGoingDelay = q->GetDoubleAux();
+                    }
 
-						break;
-					}
-					case MOOS_NULL_MSG:
-					{
-						//looks like we have an old fashioned DB which sends timing
-						//info at the front of every packet in a null message
-						//we have no corresponding outgoing packet so not much we can
-						//do other than imagine it tooks as long to send to the
-						//DB as to receive...
-						double dfTimeSentFromDB = m_InBox.front().GetDouble();
-						double dfSkew = dfTimeSentFromDB-dfLocalRxTime;
-						double dfTimeSentToDBApprox =dfTimeSentFromDB+dfSkew;
+                    m_InBox.erase(q);
 
-						m_InBox.pop_front();
+                    break;
+                }
+                case MOOS_NULL_MSG:
+                {
+                    //looks like we have an old fashioned DB which sends timing
+                    //info at the front of every packet in a null message
+                    //we have no corresponding outgoing packet so not much we can
+                    //do other than imagine it tooks as long to send to the
+                    //DB as to receive...
+                    double dfTimeSentFromDB = m_InBox.front().GetDouble();
+                    double dfSkew = dfTimeSentFromDB-dfLocalRxTime;
+                    double dfTimeSentToDBApprox =dfTimeSentFromDB+dfSkew;
 
-						UpdateMOOSSkew(dfTimeSentToDBApprox,
-								dfTimeSentFromDB,
-								dfLocalRxTime);
+                    m_InBox.pop_front();
 
-						break;
+                    if(m_bDoLocalTimeCorrection)
+                    {
+                        UpdateMOOSSkew(dfTimeSentToDBApprox,
+                                dfTimeSentFromDB,
+                                dfLocalRxTime);
+                    }
 
-					}
-				}
-			}
+                    break;
+
+                }
+            }
 
 			DispatchInBoxToActiveThreads();
 

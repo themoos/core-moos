@@ -203,10 +203,6 @@ public:
     /** Have a peek at mail box and remove a particular message, by default all other messages
     are removed. Note this is quite different from ::PeekMail*/
     bool Peek(MOOSMSG_LIST &List, int nIDRequired, bool bClearBox = true);
-
-
-    /** return a string of the host machines's IP adress*/
-    static std::string GetLocalIPAddress();
     
     /** describe this client in a string */
     std::string GetDescription();
@@ -243,6 +239,10 @@ public:
 
     /** get total number of bytes received*/
     unsigned long long int GetNumBytesReceived();
+
+    /** get total number of messages recieved*/
+    unsigned long long int GetNumMsgsReceived();
+
 
 
     /** used to control how verbose the connection process is */
@@ -314,7 +314,8 @@ protected:
     /** called when connection to server is closed */
     virtual bool OnCloseConnection();
     
-
+    /** get total number of Message Packets recieved*/
+    unsigned long long int GetNumPktsReceived();
 
     /** true if we are connected to the server */
     bool m_bConnected;
@@ -464,6 +465,17 @@ protected:
      * a counter for total bytes received.
      */
     unsigned long long int m_nBytesSent;
+
+
+    /*
+     * a counter for total bytes received.
+     */
+    unsigned long long int m_nPktsReceived;
+
+     /*
+     * a counter for total bytes received.
+     */
+    unsigned long long int m_nMsgsReceived;
 
 
     /**

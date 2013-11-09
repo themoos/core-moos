@@ -850,6 +850,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         //we are a V10 DB we can support AysncComms
         MsgW.m_sVal = "asynchronous";
+        MsgW.m_sSrcAux = GetLocalIPAddress();
         MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 

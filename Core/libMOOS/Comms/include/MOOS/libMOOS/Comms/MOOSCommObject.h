@@ -77,6 +77,10 @@ public:
     /*enable or don't the NAGLE algorithm for sockets */
     void SetTCPNoDelay(bool bTCPNoDelay);
 
+    /** return a string of the host machines's IP adress*/
+    static std::string GetLocalIPAddress();
+
+
 
 protected:
 

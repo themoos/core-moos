@@ -71,9 +71,10 @@ void PrintHelp()
     MOOSTrace("  -p=<string>            : list of publications in form var_name[:optional_binary_size]@frequency_hz eg -p=x@0.5,y:2048@2.0\n");
     MOOSTrace("  -b=<string>            : bounce or reflect variables back under new name using syntax name:new_name,{name:new_name] eg -b=x:y,u:v\n");
 
-    MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages");
+    MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages\n");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --bandwidth            : print bandwidth\n");
+    MOOSTrace("  --skew                 : print timing adjustment relative to the MOOSDB\n");
     MOOSTrace("  --verbose              : verbose output\n");
     MOOSTrace("  --log=<string>         : log received to file name given\n");
 
@@ -112,6 +113,8 @@ public:
         _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
         _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
+        _bShowTimingAdjustment  = m_CommandLineParser.GetFlag("-k","--skew");
+
 
         if(m_CommandLineParser.GetFlag("--moos_boost"))
         {
@@ -373,6 +376,12 @@ public:
 				std::cout<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
 				std::cout<<MOOS::ConsoleColours::reset();
 			}
+
+			if(_bShowTimingAdjustment)
+			{
+			    std::cout<<MOOS::ConsoleColours::yellow()<<"Skew relative to MOOSDB : "<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
+                std::cout<<MOOS::ConsoleColours::reset();
+			}
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
 			dfT = MOOS::Time();
@@ -538,6 +547,7 @@ private:
     bool _bVerbose;
     bool _bShowLatency;
     bool _bShowBandwidth;
+    bool _bShowTimingAdjustment;
     std::ofstream _LogFile;
     int _TxCount;
 
