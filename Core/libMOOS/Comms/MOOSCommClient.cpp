@@ -104,6 +104,10 @@ CMOOSCommClient::CMOOSCommClient()
 	m_bFakeSource = false;
     m_bQuiet= false;
     
+
+    m_nMsgsReceived = 0;
+    m_nPktsReceived = 0;
+
     m_bPostNewestToFront = false;
 
 
@@ -247,6 +251,15 @@ unsigned long long int CMOOSCommClient::GetNumBytesReceived()
 	return m_nBytesReceived;
 }
 
+unsigned long long int CMOOSCommClient::GetNumPktsReceived()
+{
+    return m_nPktsReceived;
+}
+
+unsigned long long int CMOOSCommClient::GetNumMsgsReceived()
+{
+    return m_nMsgsReceived;
+}
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
@@ -480,8 +493,11 @@ bool CMOOSCommClient::DoClientWork()
         }
 
         SendPkt(m_pSocket,PktTx);
-		ReadPkt(m_pSocket,PktRx);
 		
+        ReadPkt(m_pSocket,PktRx);
+
+		m_nPktsReceived++;
+
 #ifdef DEBUG_PROTOCOL_COMPRESSION
 		MOOSTrace("Outgoing Compression = %.3f\n",PktTx.GetCompression());
 		MOOSTrace("Incoming Compression = %.3f\n",PktRx.GetCompression());
@@ -499,9 +515,10 @@ bool CMOOSCommClient::DoClientWork()
 
 		m_InLock.Lock();
 		{
-			if(m_InBox.size()>m_nInPendingLimit)
+		    unsigned int num_pending = m_InBox.size();
+			if(num_pending>m_nInPendingLimit)
 			{
-				MOOSTrace("Too many unread incoming messages [%d] : purging\n",m_InBox.size());
+				MOOSTrace("Too many unread incoming messages [%d] : purging\n",num_pending);
 				MOOSTrace("The user must read mail occasionally");
 				m_InBox.clear();
 			}
@@ -517,6 +534,8 @@ bool CMOOSCommClient::DoClientWork()
 
 			//extract...
 			PktRx.Serialize(m_InBox,false,true,&dfServerPktTxTime);
+
+			m_nMsgsReceived+=m_InBox.size()-num_pending;
 
 			//did you manage to grab the DB time while you were there?
 			if(m_bDoLocalTimeCorrection && !isnan(dfServerPktTxTime))
@@ -790,11 +809,14 @@ bool CMOOSCommClient::HandShake()
 {
 	try
 	{
-        if(!m_bQuiet)
-		    MOOSTrace("\n  Handshaking as \"%s\"........ ",m_sMyName.c_str());
-
         if(m_bDoLocalTimeCorrection)
-		    SetMOOSSkew(0);
+            SetMOOSSkew(0);
+
+	    if(!m_bQuiet)
+        {
+            std::cout<<"\n";
+            std::cout<<std::left<<std::setw(40)<<("  Handshaking as "+m_sMyName);
+        }
 		
 		//announce the protocl we will be talking...
 		m_pSocket->iSendMessage((void*)MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
@@ -828,34 +850,64 @@ bool CMOOSCommClient::HandShake()
 
 			m_sCommunityName = WelcomeMsg.GetCommunity();
 
-			//read our skew
-			double dfSkew = WelcomeMsg.m_dfVal;
-            if(m_bDoLocalTimeCorrection)
-			    SetMOOSSkew(dfSkew);
 
             m_bDBIsAsynchronous = MOOSStrCmp(WelcomeMsg.GetString(),"asynchronous");
 
-
 			if(!m_bQuiet)
-				std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n";
+			{
+				std::cout<<MOOS::ConsoleColours::Green()<<"[ok]\n";
+	            std::cout<<MOOS::ConsoleColours::reset();
+
+			}
+
             if(!m_bQuiet)
             {
-                std::cout<<MOOS::ConsoleColours::reset();
-
+                std::cout<<std::left<<std::setw(40);
             	std::cout<<"  DB reports async support is  ";
             	if(m_bDBIsAsynchronous)
             	{
-                    std::cout<<MOOS::ConsoleColours::Green()<<"available\n";
+                    std::cout<<MOOS::ConsoleColours::Green()<<"[on]\n";
             	}
             	else
             	{
-                    std::cout<<MOOS::ConsoleColours::Red()<<"not available\n";
+                    std::cout<<MOOS::ConsoleColours::Red()<<"[off]\n";
             	}
+
+                std::cout<<MOOS::ConsoleColours::reset();
+
+
+            	if(!WelcomeMsg.m_sSrcAux.empty())
+            	{
+                    std::cout<<std::left<<std::setw(40);
+                    std::cout<<"  DB is running on ";
+                    std::cout<<MOOS::ConsoleColours::Green()<<WelcomeMsg.m_sSrcAux<<"\n";
+                    std::cout<<MOOS::ConsoleColours::reset();
+
+                    std::cout<<std::left<<std::setw(40);
+                    std::cout<<"  Timing skew estimation is ";
+                    if(GetLocalIPAddress()!=WelcomeMsg.m_sSrcAux)
+                    {
+                        std::cout<<MOOS::ConsoleColours::Green()<<"[on]\n";
+                        DoLocalTimeCorrection(true);
+                    }
+                    else
+                    {
+                        std::cout<<MOOS::ConsoleColours::yellow();
+                        std::cout<<"[off] (not needed)\n";
+                        DoLocalTimeCorrection(false);
+                    }
+            	}
+                std::cout<<MOOS::ConsoleColours::reset();
+
+
 
             }
 
+            //read our skew
+            double dfSkew = WelcomeMsg.m_dfVal;
+            if(m_bDoLocalTimeCorrection)
+                SetMOOSSkew(dfSkew);
 
-            std::cout<<MOOS::ConsoleColours::reset();
 
 		}
 	}
@@ -1330,17 +1382,6 @@ string CMOOSCommClient::GetDescription()
 	return MOOSFormat("%s:%d",m_sDBHost.c_str(),m_lPort);
 }
 
-string CMOOSCommClient::GetLocalIPAddress()
-{
-	char Name[255];
-	if(gethostname(Name,sizeof(Name))!=0)
-	{
-		MOOSTrace("Error getting host name\n");
-		return "unknown";
-	}
-	return std::string(Name);
-}
-
 bool CMOOSCommClient::Flush()
 {
 	return DoClientWork();
@@ -1351,6 +1392,8 @@ bool CMOOSCommClient::Flush()
 
 bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double dfRxTime)
 {
+
+
 	double dfOldSkew = GetMOOSSkew();
 
 	// This function needs to be provided MOOSLocal time stamps!
@@ -1404,17 +1447,18 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-//			m_sMyName.c_str(),
-//			dfRqTime,
-//			dfTxTime,
-//			dfRxTime,
-//			dfNewSkew);
-//
-//	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+			m_sMyName.c_str(),
+			dfRqTime,
+			dfTxTime,
+			dfRxTime,
+			dfNewSkew);
+
+	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
 
 
 
+	std::cerr<<GetLocalIPAddress()<<"\n";
 
 /*
 	if (SkewLog.get())

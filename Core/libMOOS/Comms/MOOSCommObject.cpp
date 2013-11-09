@@ -345,6 +345,19 @@ bool CMOOSCommObject::ReadMsg(XPCTcpSocket *pSocket,CMOOSMsg &Msg, int nSecondsT
 }
 
 
+
+std::string CMOOSCommObject::GetLocalIPAddress()
+{
+    char Name[255];
+    if(gethostname(Name,sizeof(Name))!=0)
+    {
+        MOOSTrace("Error getting host name\n");
+        return "unknown";
+    }
+    return std::string(Name);
+}
+
+
 bool CMOOSCommObject::SocketsInit()
 {
 

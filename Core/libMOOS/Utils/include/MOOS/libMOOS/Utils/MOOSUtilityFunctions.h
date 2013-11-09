@@ -127,7 +127,6 @@ bool MOOSWildCmp(const std::string & sPattern, const std::string & sString ) ;
 ////////////////////// TIMING TOOLS  ///////////////////////////////
 
 /**generic timing functions*/
-double GetMOOSSkew();
 void SetMOOSSkew(double dfSkew);
 
 /** return the offset between DB time and client time*/
