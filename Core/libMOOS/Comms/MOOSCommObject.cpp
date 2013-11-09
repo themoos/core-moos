@@ -144,13 +144,13 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
 {
     #define CHUNK_READ 8192
     unsigned char Buffer[CHUNK_READ];
-    unsigned char *pBuffer = Buffer;
+    //unsigned char *pBuffer = Buffer;
 
     //now receive a message back..
     int nRqd=0;
     while((nRqd=PktRx.GetBytesRequired())!=0)
     {
-        std::cerr<<"I'm asking for "<<nRqd<<"\n";
+        //std::cerr<<"I'm asking for "<<nRqd<<"\n";
         int nRxd = 0;
 
         try

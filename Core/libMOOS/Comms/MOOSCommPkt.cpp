@@ -64,7 +64,7 @@ CMOOSCommPkt::~CMOOSCommPkt()
 bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
     //maybe there is nothing to do....
 
-    std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
+    //std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
     if (nNewStreamSize <= m_Storage.size()) {
         return true;
     }
@@ -79,7 +79,7 @@ bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
 
 bool CMOOSCommPkt::OnBytesWritten(unsigned char * PositionWrittento,int nData)
 {
-    std::cerr<<__PRETTY_FUNCTION__<<" "<<nData<<"\n";
+    //std::cerr<<__PRETTY_FUNCTION__<<" "<<nData<<"\n";
 
     m_nByteCount += nData;
     m_pNextData += nData;
