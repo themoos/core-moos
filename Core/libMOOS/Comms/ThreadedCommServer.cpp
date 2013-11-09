@@ -763,6 +763,7 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
         SDUpChain._Status = ClientThreadSharedData::PKT_READ;
 
         //read input
+
         if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
         {
         	throw std::runtime_error("failed packet read and no exception handled");

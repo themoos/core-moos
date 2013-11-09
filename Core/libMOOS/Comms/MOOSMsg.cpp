@@ -215,25 +215,15 @@ void  CMOOSMsg::operator << (string &   sVal)
 }
 
 void  CMOOSMsg::operator >> (string & sVal)
-{/*
-    int nSize = strlen((char*)m_pSerializeBuffer)+1;
-
-    if(CanSerialiseN(nSize))
-    {
-        sVal.insert(0,(char*)m_pSerializeBuffer,nSize-1);
-        m_pSerializeBuffer+=nSize;
-    }
-    else
-    {
-        throw CMOOSException("CMOOSMsg::operator >> Out Of Space");
-    }
-  */
+{
 	int nSize;
 	*this>>nSize;
 	
     if(CanSerialiseN(nSize))
     {
-        sVal.insert(0,(char*)m_pSerializeBuffer,nSize);
+        //sVal.insert(0,(char*)m_pSerializeBuffer,nSize);
+
+        sVal.assign((const char *)m_pSerializeBuffer,nSize);
         m_pSerializeBuffer+=nSize;
     }
     else
@@ -357,7 +347,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             //from whence does it come
             (*this)<<m_sSrc;
-			
+
 #ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)<<m_sSrcAux;
@@ -381,7 +371,6 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //string data
             (*this)<<m_sVal;
 
-
             //how many bytes in total have we written (this includes an int at the start)?
             m_nLength = m_pSerializeBuffer-m_pSerializeBufferStart;
 
@@ -390,9 +379,6 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             //write the number of bytes
             (*this)<<m_nLength;
-
-
-
 
         }
         catch(CMOOSException e)
@@ -415,6 +401,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             (*this)>>m_nLength;
 
+
             //what is message ID;
             (*this)>>m_nID;
 
@@ -430,6 +417,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 #ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)>>m_sSrcAux;
+
 #endif			
             //and from which community?
             (*this)>>m_sOriginatingCommunity;

@@ -144,6 +144,73 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
 {
     #define CHUNK_READ 8192
     unsigned char Buffer[CHUNK_READ];
+    //unsigned char *pBuffer = Buffer;
+
+    //now receive a message back..
+    int nRqd=0;
+    while((nRqd=PktRx.GetBytesRequired())!=0)
+    {
+        //std::cerr<<"I'm asking for "<<nRqd<<"\n";
+        int nRxd = 0;
+
+        try
+        {
+            if(nRqd<CHUNK_READ)
+            {
+                //read in in chunks of 1k
+                if(nSecondsTimeout<0)
+                {
+                    nRxd  = pSocket->iRecieveMessage(PktRx.NextWrite(),nRqd);
+                }
+                else
+                {
+                    nRxd  = pSocket->iReadMessageWithTimeOut(PktRx.NextWrite(),nRqd,(double)nSecondsTimeout);
+                }
+            }
+            else
+            {
+                //read in in chunks of 1k
+                if(nSecondsTimeout<0)
+                {
+                    nRxd  = pSocket->iRecieveMessage(PktRx.NextWrite(),CHUNK_READ);
+                }
+                else
+                {
+                    nRxd  = pSocket->iReadMessageWithTimeOut(PktRx.NextWrite(),CHUNK_READ,(double)nSecondsTimeout);
+                }
+            }
+        }
+        catch(XPCException e)
+        {
+            MOOSTrace("Exception %s\n",e.sGetException());
+            throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");
+        }
+
+        switch(nRxd)
+        {
+        case -1:
+            throw CMOOSException("Gross error....");
+            break;
+        case 0:
+            if(nSecondsTimeout>0)
+                throw CMOOSException(MOOSFormat("remote side closed or lazy client ( waited more than %ds )",nSecondsTimeout));
+            else
+                throw CMOOSException("remote side closed....");
+            break;
+        default:
+            if(!PktRx.OnBytesWritten(PktRx.NextWrite(),nRxd))
+                throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx - Packet rejects filling");
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool CMOOSCommObject::ReadPktV2(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
+{
+    #define CHUNK_READ 8192
+    unsigned char Buffer[CHUNK_READ];
     unsigned char *pBuffer = Buffer;
 
     //now receive a message back..
@@ -217,13 +284,13 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
             //this is some very low level cruft that is only hear to provide
         	//some gruesome testing - normal programmers should ignore this
         	//block of code
-        	nSent+=pSocket->iSendMessage(PktTx.m_pStream,sizeof(int));
+        	nSent+=pSocket->iSendMessage(PktTx.Stream(),sizeof(int));
         	SimulateCommsError();
-        	nSent+=pSocket->iSendMessage(&(PktTx.m_pStream[sizeof(int)]),PktTx.GetStreamLength()-sizeof(int));
+        	nSent+=pSocket->iSendMessage(PktTx.Stream()+sizeof(int),PktTx.GetStreamLength()-sizeof(int));
         }
         else
         {
-        	nSent = pSocket->iSendMessage(PktTx.m_pStream,PktTx.GetStreamLength());
+        	nSent = pSocket->iSendMessage(PktTx.Stream(),PktTx.GetStreamLength());
         }
     }
     catch(XPCException e)
