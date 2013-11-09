@@ -46,7 +46,7 @@ using namespace std;
 CMOOSCommPkt::CMOOSCommPkt() {
 
     m_Storage.resize(MOOS_PKT_DEFAULT_SPACE);
-    m_nStreamSpace = m_pStorage.size();
+    m_nStreamSpace = m_Storage.size();
 
     m_pStream = m_Storage.data();
     m_pNextData = m_pStream;
@@ -59,17 +59,13 @@ CMOOSCommPkt::~CMOOSCommPkt()
 {
 }
 
-int CMOOSCommPkt::GetBytesRequired() {
-    if (m_nByteCount < (int) sizeof(int)) {
-        return sizeof(int) - m_nByteCount;
-    } else {
-        return m_nMsgLen - m_nByteCount;
-    }
-}
+
 
 bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
     //maybe there is nothing to do....
-    if (nNewStreamSize <= m_Storage.size) {
+
+    std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
+    if (nNewStreamSize <= m_Storage.size()) {
         return true;
     }
     m_Storage.resize(nNewStreamSize);
@@ -81,10 +77,37 @@ bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
 }
 
 
+bool CMOOSCommPkt::OnBytesWritten(unsigned char * PositionWrittento,int nData)
+{
+    std::cerr<<__PRETTY_FUNCTION__<<" "<<nData<<"\n";
+
+    m_nByteCount += nData;
+    m_pNextData += nData;
+
+    if (m_nByteCount <= (int) sizeof(int)){
+        if (m_nByteCount == sizeof(int)) {
+            memcpy((void*) (&m_nMsgLen), (void*) m_pStream, sizeof(int));
+
+            //look to swap byte order if this machine is Big End in
+            if (!IsLittleEndian()) {
+                m_nMsgLen = SwapByteOrder<int> (m_nMsgLen);
+            }
+
+            if(!InflateTo(m_nMsgLen))
+                return false;
+        }
+    }
+
+
+    return true;
+
+}
+
+
 bool CMOOSCommPkt::Fill(unsigned char *InData, int nData) {
 
     if (m_nByteCount + nData >= m_nStreamSpace) {
-        InflateTo(2 * (m_nStreamSpace + nData));
+        InflateTo(m_nStreamSpace + nData);
     }
     memcpy(m_pNextData, InData, nData);
     m_pNextData += nData;
@@ -104,6 +127,14 @@ bool CMOOSCommPkt::Fill(unsigned char *InData, int nData) {
     return true;
 }
 
+int CMOOSCommPkt::GetBytesRequired() {
+    if (m_nByteCount < (int) sizeof(int)) {
+        return sizeof(int) - m_nByteCount;
+    } else {
+        return m_nMsgLen - m_nByteCount;
+    }
+}
+
 int CMOOSCommPkt::GetStreamLength() {
     return m_nByteCount;
 }
@@ -113,6 +144,9 @@ unsigned char * CMOOSCommPkt::Stream(){
     return m_pStream;
 }
 
+unsigned char * CMOOSCommPkt::NextWrite(){
+    return m_pNextData;
+}
 
 
 /** This function stuffs messages in/from a packet */

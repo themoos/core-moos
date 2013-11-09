@@ -150,6 +150,73 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
     int nRqd=0;
     while((nRqd=PktRx.GetBytesRequired())!=0)
     {
+        std::cerr<<"I'm asking for "<<nRqd<<"\n";
+        int nRxd = 0;
+
+        try
+        {
+            if(nRqd<CHUNK_READ)
+            {
+                //read in in chunks of 1k
+                if(nSecondsTimeout<0)
+                {
+                    nRxd  = pSocket->iRecieveMessage(PktRx.NextWrite(),nRqd);
+                }
+                else
+                {
+                    nRxd  = pSocket->iReadMessageWithTimeOut(PktRx.NextWrite(),nRqd,(double)nSecondsTimeout);
+                }
+            }
+            else
+            {
+                //read in in chunks of 1k
+                if(nSecondsTimeout<0)
+                {
+                    nRxd  = pSocket->iRecieveMessage(PktRx.NextWrite(),CHUNK_READ);
+                }
+                else
+                {
+                    nRxd  = pSocket->iReadMessageWithTimeOut(PktRx.NextWrite(),CHUNK_READ,(double)nSecondsTimeout);
+                }
+            }
+        }
+        catch(XPCException e)
+        {
+            MOOSTrace("Exception %s\n",e.sGetException());
+            throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");
+        }
+
+        switch(nRxd)
+        {
+        case -1:
+            throw CMOOSException("Gross error....");
+            break;
+        case 0:
+            if(nSecondsTimeout>0)
+                throw CMOOSException(MOOSFormat("remote side closed or lazy client ( waited more than %ds )",nSecondsTimeout));
+            else
+                throw CMOOSException("remote side closed....");
+            break;
+        default:
+            if(!PktRx.OnBytesWritten(PktRx.NextWrite(),nRxd))
+                throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx - Packet rejects filling");
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool CMOOSCommObject::ReadPktV2(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
+{
+    #define CHUNK_READ 8192
+    unsigned char Buffer[CHUNK_READ];
+    unsigned char *pBuffer = Buffer;
+
+    //now receive a message back..
+    int nRqd=0;
+    while((nRqd=PktRx.GetBytesRequired())!=0)
+    {
         int nRxd = 0;
 
         try

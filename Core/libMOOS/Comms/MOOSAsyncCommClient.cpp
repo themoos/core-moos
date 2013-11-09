@@ -248,7 +248,6 @@ bool MOOSAsyncCommClient::DoWriting() {
 
         //convert our out box to a single packet
         CMOOSCommPkt PktTx;
-        PktTx.UseThisExternalStorage(&OutgoingStorage_);
 
         try {
             PktTx.Serialize(StuffToSend, true);
@@ -321,9 +320,6 @@ bool MOOSAsyncCommClient::DoReading() {
 
     try {
         CMOOSCommPkt PktRx;
-
-        //makes serialisation pretty damn efficient
-        PktRx.UseThisExternalStorage(&IncomingStorage_);
 
         ReadPkt(m_pSocket, PktRx);
 

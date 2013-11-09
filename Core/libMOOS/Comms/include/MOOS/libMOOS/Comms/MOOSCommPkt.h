@@ -56,19 +56,16 @@ public:
      */
     bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
 
-    /*
-     * have serialisation use external storage
-     */
-    void    UseThisExternalStorage(std::vector<unsigned char > * pStorage);
-
     /**
      * return length of serialised stream
      */
     int     GetStreamLength();
 
     bool    Fill(unsigned char * InData,int nData);
+    bool    OnBytesWritten(unsigned char * PositionWrittento,int nData);
     int     GetBytesRequired();
     unsigned char * Stream();
+    unsigned char * NextWrite();
 
 
 

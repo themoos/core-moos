@@ -261,8 +261,6 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             MOOSMSG_LIST MsgLstRx,MsgLstTx;
 
             //convert to list of messages
-            SDFromClient._pPkt->UseThisExternalStorage(&m_SerialisationStorage);
-
             SDFromClient._pPkt->Serialize(MsgLstRx,false);
 
             Auditor.AddStatistic(sWho,SDFromClient._pPkt->GetStreamLength(),MsgLstRx.size(),dfTNow,true);
@@ -716,7 +714,6 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 						return false;
 					}
 					//send packet to client
-					SDDownChain._pPkt->UseThisExternalStorage(&_OutgoingStorage);
 					SendPkt(&_ClientSocket,*SDDownChain._pPkt);
 					break;
 				}
@@ -752,7 +749,6 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
         SDUpChain._Status = ClientThreadSharedData::PKT_READ;
 
         //read input
-        SDUpChain._pPkt->UseThisExternalStorage(& _IncomingStorage);
 
         if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
         {
@@ -783,7 +779,6 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 			}
 
 			//send packet to client
-			SDDownChain._pPkt->UseThisExternalStorage(& _OutgoingStorage);
 			SendPkt(&_ClientSocket,*SDDownChain._pPkt);
 
 			if(_SharedDataOutgoing.Size()!=0)
