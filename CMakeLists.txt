@@ -60,6 +60,13 @@ if (ENABLE_DOXYGEN)
     include(UseDoxygen)
 endif()
 
+# Enable CDash testing 
+option(ENABLE_CDASH_TARGETS "Turn on testing targets that upload results to CDash" OFF)
+if( ENABLE_CDASH_TARGETS )
+ enable_testing()
+ include( CTest )
+endif()
+
 
 ###########  SETTING UP PREPROCESSOR ################
 include(PlatformDefines)
