@@ -143,8 +143,6 @@ void CMOOSCommObject::SimulateCommsError()
 bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
 {
     #define CHUNK_READ 8192
-    unsigned char Buffer[CHUNK_READ];
-    //unsigned char *pBuffer = Buffer;
 
     //now receive a message back..
     int nRqd=0;
@@ -169,7 +167,6 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
             }
             else
             {
-                //read in in chunks of 1k
                 if(nSecondsTimeout<0)
                 {
                     nRxd  = pSocket->iRecieveMessage(PktRx.NextWrite(),CHUNK_READ);
@@ -180,7 +177,7 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
                 }
             }
         }
-        catch(XPCException e)
+        catch( XPCException & e)
         {
             MOOSTrace("Exception %s\n",e.sGetException());
             throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");

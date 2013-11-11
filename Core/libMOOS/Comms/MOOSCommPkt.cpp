@@ -35,6 +35,7 @@
 #include "MOOS/libMOOS/Comms/MOOSCommPkt.h"
 
 #include <iostream>
+#include <cstring>
 
 
 using namespace std;
