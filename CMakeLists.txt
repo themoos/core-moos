@@ -61,10 +61,14 @@ if (ENABLE_DOXYGEN)
 endif()
 
 # Enable CDash testing 
-option(ENABLE_CDASH_TARGETS "Turn on testing targets that upload results to CDash" OFF)
-if( ENABLE_CDASH_TARGETS )
- enable_testing()
- include( CTest )
+option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
+if( CDASH_SUPPORT )
+  include(SystemUtilityFunctions)
+  moos_make_informative_build_name(CTEST_BUILD_NAME)
+  # BUILDNAME is what is required for CTest
+  set(BUILDNAME ${CTEST_BUILD_NAME})
+  enable_testing()
+  include( CTest )
 endif()
 
 
