@@ -178,7 +178,9 @@ bool ThreadedCommServer::ServerLoop()
 
 
 	MOOS::ServerAudit Auditor;
-	Auditor.Run();
+
+
+	Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
     {
@@ -413,6 +415,8 @@ bool ThreadedCommServer::ProcessClient()
 
 bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 {
+
+
     //lock the base socket list
     m_SocketListLock.Lock();
 
@@ -444,6 +448,7 @@ bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 
 bool ThreadedCommServer::OnClientDisconnect()
 {
+
 	return BASE::OnClientDisconnect();
 }
 
@@ -452,15 +457,22 @@ bool ThreadedCommServer::OnClientDisconnect()
 bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 {
 
-    //use this name to get the thread which is doing our work
+
+
+	//use this name to get the thread which is doing our work
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
+
 
     if(q==m_ClientThreads.end())
         return MOOSFail("runtime error ThreadedCommServer::StopAndCleanUpClientThread - cannot figure out worker thread");
 
     //stop the thread and wait for it to return
     ClientThread* pWorker = q->second;
-    pWorker->Kill();
+    if(!pWorker->Kill())
+    {
+    	std::cerr<<"failed to kill a client - serious problem\n";
+    	throw std::runtime_error("failed to kill worker");
+    }
 
     //remove any reference to this worker thread
     m_ClientThreads.erase(q);
@@ -484,7 +496,7 @@ bool ThreadedCommServer::TimerLoop()
 
 ThreadedCommServer::ClientThread::~ClientThread()
 {
-
+	Kill();
 }
 
 
@@ -498,10 +510,13 @@ ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcp
 			_bBoostThread(bBoost)
 {
     _Worker.Initialise(RunEntry,this);
+    _Worker.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
 
     if(IsAsynchronous())
     {
     	_Writer.Initialise(WriteEntry,this);
+    	_Writer.Name("ThreadedCommServer::ClientThread::Writer::"+sName);
+
     }
 }
 
@@ -615,7 +630,6 @@ bool ThreadedCommServer::ClientThread::Run()
 bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 {
 
-
     //prepare to send it up the chain
     CMOOSCommPkt PktRx,PktTx;
     ClientThreadSharedData SD(_sClientName,ClientThreadSharedData::CONNECTION_CLOSED);
@@ -634,6 +648,7 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
 bool ThreadedCommServer::ClientThread::Kill()
 {
+
 
 	if(IsAsynchronous())
 	{
@@ -706,6 +721,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				//do normal writing
 				case ClientThreadSharedData::PKT_WRITE:
 				{
+
 					if(SDDownChain._pPkt.isNull())
 					{
 						std::cerr<<"logical error"<< MOOSHERE;
@@ -791,7 +807,6 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
     catch (const CMOOSException & e)
     {
 		MOOS::DeliberatelyNotUsed(e);
-        //MOOSTrace("ThreadedCommServer::ClientThread::HandleClient() Exception: %s\n", e.m_sReason);
         bResult = false;
     }
 

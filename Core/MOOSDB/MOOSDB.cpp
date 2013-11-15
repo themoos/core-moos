@@ -157,6 +157,7 @@ void PrintHelpAndExit()
 	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
 	std::cout<<"--warning_latency=<positive_float>    specify latency above which warning is issued in ms\n";
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
+	std::cout<<"--audit_port=<unsigned int>        specify port on which to transmit statistics\n";
 
 
 
@@ -267,6 +268,12 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     //are we being asked to be old skool and use a single thread?
     bool bSingleThreaded = P.GetFlag("-s","--single_threaded");
 
+
+    //is the community name being specified on the cli?
+	unsigned int nAuditPort=9020;
+	P.GetVariable("--audit_port",nAuditPort);
+
+
     
     LogStartTime();
     
@@ -297,14 +304,20 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetCommandLineParameters(argc,argv);
 
-    m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
+    m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp,nAuditPort);
 
 
         
     return true;
 }
 
+bool CMOOSDB::IsRunning()
+{
+	if(m_pCommServer.get()==NULL)
+		return false;
 
+	return m_pCommServer->IsRunning();
+}
 
 
 void CMOOSDB::UpdateDBClientsVar()

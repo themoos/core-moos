@@ -61,6 +61,8 @@ public:
     int     GetBytesRequired();
 	double	GetCompression();
 
+	unsigned int GetNumMessagesSerialisedToStream();
+
     CMOOSCommPkt();
     virtual ~CMOOSCommPkt();
 
@@ -78,6 +80,9 @@ protected:
     points to DefaultStream but to heap space allocated with new */
     bool    m_bAllocated;
 	double m_dfCompression;
+
+	//how many messages are contained in this  packet when serialsised to a stream?
+	unsigned int m_nToStreamCount;
 
 };
 

@@ -104,6 +104,10 @@ bool MOOSAsyncCommClient::StartThreads()
     if(!ReadingThread_.Initialise(AsyncCommsReaderDispatch,this))
             return false;
 
+
+    WritingThread_.Name(GetMOOSName()+" writing thread");
+    ReadingThread_.Name(GetMOOSName()+" reading thread");
+
     if(!WritingThread_.Start())
         return false;
 
@@ -297,8 +301,10 @@ bool MOOSAsyncCommClient::DoWriting()
 		CMOOSCommPkt PktTx;
 		try
 		{
+
 			PktTx.Serialize(StuffToSend,true);
 			m_nBytesSent+=PktTx.GetStreamLength();
+
 		}
 		catch (const CMOOSException & e)
 		{
@@ -357,11 +363,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			if(!DoReading())
 			{
 				OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-",0)   );
-
 				//std::cout<<"reading failed!\n";
-
-				while(IsConnected())//wait for connection to terminate...
-					MOOSPause(200);
 			}
 		}
 		else
@@ -370,7 +372,7 @@ bool MOOSAsyncCommClient::ReadingLoop()
 			MOOSPause(100);
 		}
 	}
-	//std::cout<<"READING LOOP quiting...\n";
+	//std::cerr<<"READING LOOP quiting...\n";
 	return true;
 }
 
@@ -477,7 +479,7 @@ bool MOOSAsyncCommClient::DoReading()
 	catch(const CMOOSException & e)
 	{
 		MOOS::DeliberatelyNotUsed(e);
-		//MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
+		MOOSTrace("Exception in DoReading() : %s\n",e.m_sReason);
 		return false;
 	}
 
