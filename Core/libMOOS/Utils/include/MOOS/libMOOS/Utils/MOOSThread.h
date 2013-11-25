@@ -130,17 +130,12 @@ public:
 #ifdef _WIN32
 		bCreatUnixDetached;
 #endif
-        m_lock.Lock();
-        {
-            if (m_bRunning) {
-                m_lock.UnLock();
-                return false;
-            }
-            
-            m_bRunning       = true;
-            m_bQuitRequested = false;
-        }
-        m_lock.UnLock();
+		if(IsThreadRunning())
+		    return false;
+
+		m_bQuitRequested = false;
+
+		SetRunningFlag(true);
  
 #ifdef _WIN32
         m_hThread = ::CreateThread(NULL,
@@ -163,6 +158,7 @@ public:
             return false;
         }
 #endif
+
 
         if(!Name().empty() && m_bVerbose)
         	std::cerr<<"Thread "<<Name()<<" started\n";
