@@ -127,6 +127,9 @@ public:
     */
     virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false, unsigned int nAuditPort = 9020);
     
+    /*stop the server*/
+    virtual bool Stop();
+
     virtual void SetCommandLineParameters(int argc, char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
