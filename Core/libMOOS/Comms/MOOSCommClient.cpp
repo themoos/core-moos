@@ -157,7 +157,8 @@ bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::stri
 
 	if(m_pfnConnectCallBack==NULL)
 	{
-		MOOSTrace("Warning no connect call back has been specified\n");
+	    if(!m_bQuiet)
+	        MOOSTrace("Warning no connect call back has been specified\n");
 	}
 
 	m_nFundamentalFreq=nFundamentalFrequency;
@@ -349,7 +350,7 @@ bool CMOOSCommClient::ClientLoop()
 		m_pSocket = NULL;
 	}
 
-    if(m_bQuiet)
+    if(!m_bQuiet)
         MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
@@ -837,10 +838,6 @@ bool CMOOSCommClient::HandShake()
             	std::cerr<<MOOS::ConsoleColours::Red()<<"[fail]\n";
             	std::cerr<<"    \""<<WelcomeMsg.m_sVal<<"\"\n";
             	std::cerr<<MOOS::ConsoleColours::reset();
-            }
-            else
-            {
-                MOOSTrace("Breaking a vow of silence - handshaking failed (poisoned)\n");
             }
 			return false;
 		}
@@ -1447,18 +1444,18 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-			m_sMyName.c_str(),
-			dfRqTime,
-			dfTxTime,
-			dfRxTime,
-			dfNewSkew);
-
-	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
-
-
-
-	std::cerr<<GetLocalIPAddress()<<"\n";
+//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+//			m_sMyName.c_str(),
+//			dfRqTime,
+//			dfTxTime,
+//			dfRxTime,
+//			dfNewSkew);
+//
+//	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+//
+//
+//
+//	std::cerr<<GetLocalIPAddress()<<"\n";
 
 /*
 	if (SkewLog.get())
