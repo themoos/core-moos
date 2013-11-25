@@ -108,6 +108,43 @@ CMOOSMsg::CMOOSMsg(char cMsgType,const std::string & sKey,const std::string &sVa
 }
 
 
+CMOOSMsg::CMOOSMsg(char cMsgType,const std::string &sKey,  unsigned int nDataSize,const void* Data,double dfTime)
+{
+    m_cMsgType = cMsgType;
+    m_dfVal = -1;
+    m_dfVal2 = -1;
+    m_cDataType = MOOS_BINARY_STRING;
+    m_sKey = sKey;
+    m_sVal.assign((char *)Data,nDataSize);
+    m_dfTime = -1;
+    m_nID = -1;
+
+    if(dfTime==-1)
+    {
+      m_dfTime = MOOSTime();
+    }
+    else
+    {
+      m_dfTime=dfTime;
+    }
+
+}
+
+bool CMOOSMsg::operator == (const CMOOSMsg & M) const
+{
+    return m_cMsgType == M.m_cMsgType &&
+           m_cDataType==M.m_cDataType &&
+           m_sKey == M.m_sKey &&
+           m_sOriginatingCommunity == M.m_sOriginatingCommunity &&
+           m_sSrcAux == M.m_sSrcAux &&
+           m_sSrc == M.m_sSrcAux &&
+           fabs(m_dfVal - M.m_dfVal) < 2* std::numeric_limits<double>::epsilon() &&
+           fabs(m_dfVal2 - M.m_dfVal2) < 2* std::numeric_limits<double>::epsilon() &&
+           fabs(m_dfTime - M.m_dfTime) < 2* std::numeric_limits<double>::epsilon() &&
+           m_nID == M.m_nID;
+}
+
+
 void CMOOSMsg::MarkAsBinary()
 {
 	m_cDataType=MOOS_BINARY_STRING;
