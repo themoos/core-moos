@@ -46,11 +46,12 @@ class SafeList
 {
 public:
 
-    void Push(const T & Element)
+    bool Push(const T & Element)
     {
         Poco::FastMutex::ScopedLock Lock(_mutex);
         _List.push_back(Element);
         _PushEvent.set();
+        return true;
 
     }
 
