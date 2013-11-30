@@ -57,6 +57,7 @@ public:
     bool Stop();
     bool Start();
     std::string GetName();
+    bool IsRunning();
 protected:
 	MOOS::SafeList<CMOOSMsg> queue_;
 

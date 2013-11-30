@@ -100,10 +100,20 @@ bool ActiveMailQueue::DoWork()
 			case MOOS_NOTIFY:
 				(*pfn_)(M,caller_param_);
 				break;
+			default:
+			    //only handle notifies
+			    break;
+
 		}
 
 	}
 	return true;
+}
+
+
+bool ActiveMailQueue::IsRunning()
+{
+    return thread_.IsThreadRunning();
 }
 
 void ActiveMailQueue::SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParam), void * pCallerParam)
