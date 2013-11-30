@@ -1150,17 +1150,15 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 
 bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize, const std::string & sSrcAux,double dfTime)
 {
-	std::string BinaryPayload((char*)pData,nSize);
 	
-	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
-	Msg.MarkAsBinary();
-	
+    CMOOSMsg Msg(MOOS_NOTIFY,sVar,nSize,pData,dfTime);
+
 	Msg.SetSourceAux(sSrcAux);
-	
+    Msg.MarkAsBinary();
+
 	m_Published.insert(sVar);
 	
 	return Post(Msg);
-	
 }
 
 
