@@ -374,7 +374,6 @@ bool MOOSAsyncCommClient::DoReading()
 
                     if(m_bDoLocalTimeCorrection && GetNumPktsReceived()>1)
                     {
-                        std::cerr<<"yes sir";
                         UpdateMOOSSkew(q->GetTime(),
                                 q->GetDouble(),
                                 dfLocalRxTime);
