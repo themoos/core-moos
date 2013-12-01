@@ -7,8 +7,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 #what files are needed?
-SET(SRCS MOOSDB.cpp MOOSDBMain.cpp MOOSDBVar.cpp MOOSRegisterInfo.cpp
-    MOOSDB.h MOOSDBVar.h MOOSRegisterInfo.h MOOSDBHTTPServer.cpp MOOSDBHTTPServer.h HTTPConnection.cpp HTTPConnection.h MsgFilter.cpp
+SET(SRCS  MOOSDBMain.cpp
     ${RESOURCES})
 
 include(PlatformDefines)

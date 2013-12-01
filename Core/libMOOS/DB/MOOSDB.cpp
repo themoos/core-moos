@@ -40,7 +40,7 @@
 
 
 
-#include "MOOSDB.h"
+#include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "assert.h"
 #include <iostream>
 #include <sstream>

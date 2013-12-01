@@ -69,7 +69,18 @@ set(THIRDPARTY_SOURCES
 )
 
 
-set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
+SET(DB_SOURCES
+    DB/MOOSDB.cpp
+    DB/MOOSDBVar.cpp
+    DB/MOOSRegisterInfo.cpp
+    DB/MsgFilter.cpp
+    DB/HTTPConnection.cpp
+    DB/MOOSDBHTTPServer.cpp
+)
+
+
+
+set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES}) 
 
 include(PlatformDefines)
 
@@ -161,6 +172,7 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/DB/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include

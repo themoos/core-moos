@@ -28,7 +28,7 @@
 #endif
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
-#include "MOOSDBVar.h"
+#include "MOOS/libMOOS/DB/MOOSDBVar.h"
 #include <iostream>
 #include <cmath>
 
