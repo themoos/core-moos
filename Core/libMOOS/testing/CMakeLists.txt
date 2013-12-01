@@ -10,4 +10,6 @@ target_link_libraries(periodic_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 add_executable(queue_test QueueTest.cpp )
 target_link_libraries(queue_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
+add_executable(discovery_test DiscoveryTest.cpp )
+target_link_libraries(discovery_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
