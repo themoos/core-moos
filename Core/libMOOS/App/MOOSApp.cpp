@@ -414,9 +414,12 @@ bool CMOOSApp::Configure()
 
 	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
 	{
-		std::cerr<<MOOS::ConsoleColours::yellow();
-		std::cerr<<"note mission file "<<m_sMissionFile<<" was not found\n";
-		std::cerr<<MOOS::ConsoleColours::reset();
+	    if(!m_bQuiet)
+	    {
+            std::cerr<<MOOS::ConsoleColours::yellow();
+            std::cerr<<"note mission file "<<m_sMissionFile<<" was not found\n";
+            std::cerr<<MOOS::ConsoleColours::reset();
+	    }
 	}
 
 
