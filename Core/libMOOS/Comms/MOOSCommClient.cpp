@@ -56,6 +56,7 @@
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
+#include "MOOS/libMOOS/Utils/IPV4Address.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -1447,18 +1448,18 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-			m_sMyName.c_str(),
-			dfRqTime,
-			dfTxTime,
-			dfRxTime,
-			dfNewSkew);
-
-	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
-
-
-
-	std::cerr<<GetLocalIPAddress()<<"\n";
+//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+//			m_sMyName.c_str(),
+//			dfRqTime,
+//			dfTxTime,
+//			dfRxTime,
+//			dfNewSkew);
+//
+//	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+//
+//
+//
+//	std::cerr<<GetLocalIPAddress()<<"\n";
 
 /*
 	if (SkewLog.get())
