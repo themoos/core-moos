@@ -56,6 +56,7 @@
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
+#include "MOOS/libMOOS/Utils/IPV4Address.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
