@@ -86,7 +86,7 @@ include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?
-OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
+OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
 IF (USE_ASYNC_COMMS)
     cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
     ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
@@ -96,27 +96,6 @@ ELSE (USE_ASYNC_COMMS)
     REMOVE_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
 ENDIF (USE_ASYNC_COMMS)
 
-
-
-############# COMPRESSED COMMS? ################
-SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
-
-IF(COMPRESSED_MOOS_PROTOCOL)
-    FIND_PACKAGE(ZLIB QUIET)
-    IF (ZLIB_FOUND)
-        ADD_DEFINITIONS(-DZLIB_FOUND)
-            ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
-    
-        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
-        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
-
-        SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
-        INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})    
-    
-    ELSE(ZLIB_FOUND)
-        SET(ZLIB_LIBRARIES "")
-    ENDIF (ZLIB_FOUND)
-ENDIF(COMPRESSED_MOOS_PROTOCOL)
 
 
 
