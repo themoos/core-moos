@@ -194,7 +194,10 @@ bool ThreadedCommServer::ServerLoop()
 
        
         if(m_SharedDataListFromClient.IsEmpty())
-            m_SharedDataListFromClient.WaitForPush();
+        {
+            if(!m_SharedDataListFromClient.WaitForPush(1000))
+                continue;
+        }
 
         m_SharedDataListFromClient.Pull(SDFromClient);
 
