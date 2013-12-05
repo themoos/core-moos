@@ -128,8 +128,8 @@ CMOOSDB::CMOOSDB()
 
 CMOOSDB::~CMOOSDB()
 {
-
-    
+    if(m_pCommServer.get()!=NULL)
+        m_pCommServer->Stop();
 }
 
 
@@ -173,6 +173,7 @@ void PrintHelpAndExit()
 
 bool CMOOSDB::Run(int argc, char * argv[] )
 {
+
 	MOOS::CommandLineParser P(argc,argv);
 
 
