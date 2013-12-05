@@ -39,6 +39,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <limits>
 #include <cstring>
 
 using namespace std;
