@@ -146,8 +146,12 @@ bool CMOOSCommServer::Stop()
 {
     if(m_TimerThread.IsThreadRunning())
         m_TimerThread.Stop();
+
+
     if(m_ListenThread.IsThreadRunning())
         m_ListenThread.Stop();
+
+
     if(m_ServerThread.IsThreadRunning())
         m_ServerThread.Stop();
 
@@ -601,6 +605,8 @@ bool CMOOSCommServer::ServerLoop()
         FD_ZERO(&fdset);
 
     }
+
+    std::cerr<<"Server loop quits\n";
     return 0;
 }
 
