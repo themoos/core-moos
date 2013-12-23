@@ -235,13 +235,13 @@ public:
     unsigned int GetNumberOfUnsentMessages();
 
     /** get total number of bytes sent*/
-    unsigned long long int GetNumBytesSent();
+    uint64_t GetNumBytesSent();
 
     /** get total number of bytes received*/
-    unsigned long long int GetNumBytesReceived();
+    uint64_t GetNumBytesReceived();
 
     /** get total number of messages recieved*/
-    unsigned long long int GetNumMsgsReceived();
+    uint64_t GetNumMsgsReceived();
 
 
 
@@ -315,7 +315,7 @@ protected:
     virtual bool OnCloseConnection();
     
     /** get total number of Message Packets recieved*/
-    unsigned long long int GetNumPktsReceived();
+    uint64_t GetNumPktsReceived();
 
     /** true if we are connected to the server */
     bool m_bConnected;
@@ -459,23 +459,23 @@ protected:
     /*
      * a counter for total bytes received
      */
-    unsigned long long int m_nBytesReceived;
+    uint64_t m_nBytesReceived;
 
     /*
      * a counter for total bytes received.
      */
-    unsigned long long int m_nBytesSent;
+    uint64_t m_nBytesSent;
 
 
     /*
      * a counter for total bytes received.
      */
-    unsigned long long int m_nPktsReceived;
+    uint64_t m_nPktsReceived;
 
      /*
      * a counter for total bytes received.
      */
-    unsigned long long int m_nMsgsReceived;
+    uint64_t m_nMsgsReceived;
 
 
     /**

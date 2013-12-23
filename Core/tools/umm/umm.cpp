@@ -404,8 +404,8 @@ public:
     bool Iterate()
     {
 		static double dfT = MOOS::Time();
-		static long long unsigned int nByteInCounter=0;
-		static long long unsigned int nByteOutCounter=0;
+		static uint64_t nByteInCounter=0;
+		static uint64_t nByteOutCounter=0;
 		if(MOOS::Time()-dfT>1.0)
 		{
 			long long unsigned int bi, bo;

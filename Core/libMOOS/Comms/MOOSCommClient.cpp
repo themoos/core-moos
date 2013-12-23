@@ -243,21 +243,21 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 
 
 
-unsigned long long int CMOOSCommClient::GetNumBytesSent()
+uint64_t CMOOSCommClient::GetNumBytesSent()
 {
 	return m_nBytesSent;
 }
-unsigned long long int CMOOSCommClient::GetNumBytesReceived()
+uint64_t CMOOSCommClient::GetNumBytesReceived()
 {
 	return m_nBytesReceived;
 }
 
-unsigned long long int CMOOSCommClient::GetNumPktsReceived()
+uint64_t CMOOSCommClient::GetNumPktsReceived()
 {
     return m_nPktsReceived;
 }
 
-unsigned long long int CMOOSCommClient::GetNumMsgsReceived()
+uint64_t CMOOSCommClient::GetNumMsgsReceived()
 {
     return m_nMsgsReceived;
 }

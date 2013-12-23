@@ -776,7 +776,7 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
 
 
 
-bool MOOSValFromString(long long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
+bool MOOSValFromString(int64_t  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     std::string sVal;
 

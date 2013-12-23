@@ -46,14 +46,14 @@ namespace MOOS {
 
 struct ClientAudit
 {
-	long long unsigned int total_received_;
-	long long unsigned int total_sent_;
-	long long unsigned int recently_received_;
-	long long unsigned int recently_sent_;
-	long long unsigned int max_size_received_;
-	long long unsigned int max_size_sent_;
-	long long unsigned int min_size_received_;
-	long long unsigned int min_size_sent_;
+    uint64_t total_received_;
+    uint64_t total_sent_;
+    uint64_t recently_received_;
+    uint64_t recently_sent_;
+    uint64_t max_size_received_;
+    uint64_t max_size_sent_;
+    uint64_t min_size_received_;
+    uint64_t min_size_sent_;
 	int recent_packets_received_;
 	int recent_packets_sent_;
 	int recent_messages_sent_;
@@ -124,12 +124,12 @@ public:
 
 			std::stringstream ss;
 
-			long long unsigned int total_in = 0;
-			long long unsigned int total_out = 0;
-			long long unsigned int total_packets_in = 0;
-			long long unsigned int total_packets_out = 0;
-			long long unsigned int total_messages_in = 0;
-			long long unsigned int total_messages_out = 0;
+			uint64_t total_in = 0;
+			uint64_t total_out = 0;
+			uint64_t total_packets_in = 0;
+			uint64_t total_packets_out = 0;
+			uint64_t total_messages_in = 0;
+			uint64_t total_messages_out = 0;
 
 			lock_.Lock();
 			{
@@ -228,8 +228,8 @@ public:
 		{
 			rA.recently_received_+=nBytes;
 			rA.total_received_+=nBytes;
-			rA.max_size_received_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_received_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_received_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_received_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_received_+=1;
 			rA.recent_messages_received_+=nMessages;
 
@@ -239,8 +239,8 @@ public:
 		{
 			rA.recently_sent_+=nBytes;
 			rA.total_sent_+=nBytes;
-			rA.max_size_sent_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_sent_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_sent_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_sent_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_sent_+=1;
 			rA.recent_messages_sent_+=nMessages;
 
