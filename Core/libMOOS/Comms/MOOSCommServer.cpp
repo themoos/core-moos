@@ -162,10 +162,23 @@ bool CMOOSCommServer::Stop()
         m_pListenSocket = NULL;
     }
 
+    SOCKETLIST::iterator q;
+    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();q++)
+    {
+        XPCTcpSocket* pSocket = *q;
+        pSocket->vCloseSocket();
+        delete pSocket;
+    }
+
+    m_ClientSocketList.clear();
+    m_Socket2ClientMap.clear();
+    m_AsynchronousClientSet.clear();
+    m_ClientTimingVector.clear();
+
     return true;
 
 }
-void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
+void CMOOSCommServer::SetCommandLineParameters(int argc,  char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }
@@ -606,7 +619,6 @@ bool CMOOSCommServer::ServerLoop()
 
     }
 
-    std::cerr<<"Server loop quits\n";
     return 0;
 }
 
