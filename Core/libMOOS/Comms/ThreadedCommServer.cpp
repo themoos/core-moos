@@ -74,6 +74,18 @@ ThreadedCommServer::ThreadedCommServer()
 ThreadedCommServer::~ThreadedCommServer()
 {
     // TODO Auto-generated destructor stub
+
+}
+bool ThreadedCommServer::Stop()
+{
+    std::map<std::string,ClientThread*>::iterator q;
+    for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
+    {
+        delete q->second;
+    }
+    m_ClientThreads.clear();
+
+    return BASE::Stop();
 }
 
 
@@ -749,7 +761,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 	   bResult = false;
 	}
 
-	std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
+	//std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
 
     return bResult;
 }
