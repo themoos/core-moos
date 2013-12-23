@@ -55,6 +55,6 @@ private:
 
 };
 
-};
+}
 
 #endif /* MOOSSCOPEDLOCK_H_ */

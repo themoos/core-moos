@@ -343,7 +343,7 @@ protected:
 	{
 		REGULAR_ITERATE_AND_MAIL=0,
 		COMMS_DRIVEN_ITERATE_AND_MAIL,
-		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL,
+		REGULAR_ITERATE_AND_COMMS_DRIVEN_MAIL
 	}m_IterationMode;
 
 	//set up the iteration mode of the app
