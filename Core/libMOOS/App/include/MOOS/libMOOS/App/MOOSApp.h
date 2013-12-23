@@ -93,8 +93,8 @@ public:
     */
     bool Run( const std::string & sName,const std::string & sMissionFile,const std::string & sSubscribeName);
     bool Run( const std::string & sName,const std::string & sMissionFile="Mission.moos");
-    bool Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[]);
-    bool Run( const std::string &,int argc, char * argv[]);
+    bool Run(const std::string &  sName,const std::string & sMissionFile, int argc,  char * argv[]);
+    bool Run( const std::string &,int argc,  char * argv[]);
 
 	/** requests the MOOSApp to quit (i.e return from Run)*/
 	bool RequestQuit();
@@ -103,7 +103,7 @@ public:
 	 * pass in a copy of any command line parameters so options can be
 	 * queried later
 	 */
-	void SetCommandLineParameters(int argc, char * argv[]);
+	void SetCommandLineParameters(int argc,  char * argv[]);
 
 
 protected:

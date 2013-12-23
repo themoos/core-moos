@@ -246,13 +246,13 @@ bool CMOOSApp::Run(const std::string & sName,const std::string & sMissionFile,co
 }
 
 //this is an overloaded 3 parameter version which allows explicit setting of the registration name
-bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
+bool CMOOSApp::Run(const std::string &  sName,int argc,  char * argv[])
 {
 	SetCommandLineParameters(argc,argv);
 	return Run(sName);
 }
 
-bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[])
+bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc,  char * argv[])
 {
 	SetCommandLineParameters(argc,argv);
 	return Run(sName,sMissionFile);
@@ -814,7 +814,7 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
     m_sAppError =  m_bAppError ? sErr : "";
 }
 
-void CMOOSApp::SetCommandLineParameters(int argc, char * argv[])
+void CMOOSApp::SetCommandLineParameters(int argc,  char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }

@@ -88,7 +88,7 @@ public:
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
-    bool Run(int argc = 0, char * argv[] =0);
+    bool Run(int argc = 0,  char * argv[] =0);
 
     bool IsRunning();
 

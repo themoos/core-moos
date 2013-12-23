@@ -171,7 +171,7 @@ void PrintHelpAndExit()
 	exit(0);
 }
 
-bool CMOOSDB::Run(int argc, char * argv[] )
+bool CMOOSDB::Run(int argc,  char * argv[] )
 {
 
 	MOOS::CommandLineParser P(argc,argv);

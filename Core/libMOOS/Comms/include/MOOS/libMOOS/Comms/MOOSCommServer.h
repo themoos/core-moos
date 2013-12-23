@@ -130,7 +130,7 @@ public:
     /*stop the server*/
     virtual bool Stop();
 
-    virtual void SetCommandLineParameters(int argc, char * argv[]);
+    virtual void SetCommandLineParameters(int argc,  char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};

@@ -102,6 +102,8 @@ bool MOOSAsyncCommClient::StartThreads() {
 
 bool MOOSAsyncCommClient::Close(bool) {
 
+    //std::cerr<<"MOOSAsyncCommClient::Close...\n";
+
     BASE::Close();
 
     if (!ReadingThread_.Stop())
@@ -374,7 +376,6 @@ bool MOOSAsyncCommClient::DoReading()
 
                     if(m_bDoLocalTimeCorrection && GetNumPktsReceived()>1)
                     {
-                        std::cerr<<"yes sir";
                         UpdateMOOSSkew(q->GetTime(),
                                 q->GetDouble(),
                                 dfLocalRxTime);
