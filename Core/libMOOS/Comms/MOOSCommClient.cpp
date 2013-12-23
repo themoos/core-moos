@@ -281,6 +281,22 @@ bool CMOOSCommClient::IsRunning()
 	return m_ClientThread.IsThreadRunning();
 }
 
+bool CMOOSCommClient::WaitUntilConnected(const unsigned int nMilliseconds)
+{
+    unsigned int k=0;
+    while(!IsConnected())
+    {
+        if(k>nMilliseconds)
+            return false;
+        else
+        {
+            MOOSPause(100);
+            k+=100;
+        }
+    }
+    return true;
+}
+
 bool CMOOSCommClient::ClientLoop()
 {
     double dfTDebug = MOOSLocalTime();

@@ -44,8 +44,8 @@
 
 
 
-#define OUTBOX_PENDING_LIMIT 1000
-#define INBOX_PENDING_LIMIT 1000
+#define OUTBOX_PENDING_LIMIT 2048
+#define INBOX_PENDING_LIMIT 2048
 #define CLIENT_DEFAULT_FUNDAMENTAL_FREQ 5
 #define CLIENT_MAX_FUNDAMENTAL_FREQ 200
 
@@ -124,6 +124,9 @@ public:
 
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
+
+    /** wait for a connection return false if not connected after nMilliseconds*/
+    bool WaitUntilConnected(const unsigned int nMilliseconds);
 
     /**
      * returns the name with which the client registers with the MOOSDB
