@@ -62,7 +62,7 @@ CMOOSCommPkt::~CMOOSCommPkt()
 
 
 
-bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
+bool CMOOSCommPkt::InflateTo(unsigned int nNewStreamSize) {
     //maybe there is nothing to do....
 
     //std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
