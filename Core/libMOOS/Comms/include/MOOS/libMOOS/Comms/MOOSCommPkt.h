@@ -69,7 +69,7 @@ public:
 
 
 protected:
-    bool InflateTo(int nNewStreamSize);
+    bool InflateTo(unsigned int nNewStreamSize);
     int m_nByteCount;
     int m_nMsgLen;
 
