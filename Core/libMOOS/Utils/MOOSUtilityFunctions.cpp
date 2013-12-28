@@ -466,28 +466,28 @@ bool MOOSValFromString(int  & nVal,const string & sStr,const string & sTk,bool b
 }
 
 
-bool MOOSValFromString(long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
-{
-    string sVal;
-
-    if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
-    {
-
-        /*unsigned int*/ size_t  nPos = sVal.find_first_not_of(' ');
-
-        if(nPos!=string::npos)
-        {
-            char c = sVal[nPos];
-            if(isdigit(c)  || c=='-' || c=='+')
-            {
-                nVal = atol(sVal.c_str());
-                return true;
-            }
-        }
-
-    }
-    return false;
-}
+//bool MOOSValFromString(long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
+//{
+//    string sVal;
+//
+//    if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
+//    {
+//
+//        /*unsigned int*/ size_t  nPos = sVal.find_first_not_of(' ');
+//
+//        if(nPos!=string::npos)
+//        {
+//            char c = sVal[nPos];
+//            if(isdigit(c)  || c=='-' || c=='+')
+//            {
+//                nVal = atol(sVal.c_str());
+//                return true;
+//            }
+//        }
+//
+//    }
+//    return false;
+//}
 
 
 bool MOOSValFromString(bool  & bVal,const string & sStr,const string & sTk,bool bInsensitive)

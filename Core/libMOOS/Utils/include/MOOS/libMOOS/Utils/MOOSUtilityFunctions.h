@@ -70,7 +70,7 @@ bool MOOSGetValueFromToken(STRING_LIST & sParams,const std::string & sToken,std:
 bool MOOSValFromString(std::string & sVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(double & dfVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(float  &  fVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
-bool MOOSValFromString(long   &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
+//bool MOOSValFromString(long   &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(int    &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(bool   &  bVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(unsigned int &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
