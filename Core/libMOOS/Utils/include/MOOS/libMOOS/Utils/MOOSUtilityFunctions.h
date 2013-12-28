@@ -31,7 +31,7 @@
 #define PI 3.141592653589
 #endif
 
-
+#include <stdint.h>
 #include <string>
 #include <list>
 #include <vector>
