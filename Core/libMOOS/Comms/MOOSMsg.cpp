@@ -620,6 +620,14 @@ bool CMOOSMsg::GetBinaryData(std::vector<unsigned char > &v)
 	return true;
 }
 
+std::vector<unsigned char >  CMOOSMsg::GetBinaryDataAsVector()
+{
+    std::vector<unsigned char > t;
+    GetBinaryData(t);
+    return t;
+}
+
+
 unsigned char * CMOOSMsg::GetBinaryData()
 {
 	if(!IsBinary())

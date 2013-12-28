@@ -111,6 +111,10 @@ public:
     /** simply access binary data, return NULL if message is not binary*/
     unsigned char * GetBinaryData();
 
+    /** return (copy) binary data from message*/
+    std::vector<unsigned char >  GetBinaryDataAsVector();
+
+
 
     /** get size of binary message - 0 if not binary type */
     unsigned int GetBinaryDataSize();
