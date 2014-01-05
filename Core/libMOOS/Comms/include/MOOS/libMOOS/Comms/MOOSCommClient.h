@@ -39,6 +39,7 @@
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Utils/Macros.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
 
@@ -277,23 +278,7 @@ public:
      * if you want rapid response use V10 */
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
-    /**
-	 * make a message route to a Active Queue (which will call a custom callback)
-	 * @param sQueueName name of Active Queue
-	 * @param sMsgName name of message to route to this queue
-	 * @return true on success
-	 */
-     bool AddMessageToActiveQueue(const std::string & sQueueName,
-    		const std::string & sMsgName);
 
-     /**
- 	 * stop a message routing to a Active Queue
- 	 * @param sQueueName name of Active Queue
- 	 * @param sMsgName name of message to route to this queue
- 	 * @return true on success
- 	 */
-     bool RemoveMessageToActiveQueue(const std::string & sQueueName,
-    		const std::string & sMsgName);
 
     /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
@@ -307,6 +292,59 @@ public:
     				void * pYourParam );
 
     /**
+     * same as above only with a wildcard...
+     */
+    bool AddWildcardActiveQueue(const std::string & sQueueName,
+    				const std::string & sPattern,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
+
+
+
+    /**
+	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+	 * @param sQueueName
+	 * @param Instance of class on which to invoke member function
+	 * @param member function of class bool func(CMOOSMsg &M)
+	 * @return true on success
+	 */
+    template <class T>
+    bool AddActiveQueue(const std::string & sQueueName,
+    		T* Instance,
+    		bool (T::*memfunc)(CMOOSMsg &)  );
+
+    /**
+     * same as above only with a wildcard...
+     */
+    template <class T>
+    bool AddWildcardActiveQueue(const std::string & sQueueName,
+    				const std::string & sPattern,
+    	    		T* Instance,
+    	    		bool (T::*memfunc)(CMOOSMsg &)  );
+
+
+
+    /**
+	 * stop a message routing to a Active Queue
+	 * @param sQueueName name of Active Queue
+	 * @param sMsgName name of message to route to this queue
+	 * @return true on success
+	 */
+    bool RemoveMessageRouteToActiveQueue(const std::string & sQueueName,
+   		const std::string & sMsgName);
+
+
+    /**
+	 * make a message route to a Active Queue (which will call a custom callback)
+	 * @param sQueueName name of Active Queue
+	 * @param sMsgName name of message to route to this queue
+	 * @return true on success
+	 */
+     bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+    		const std::string & sMsgName);
+
+
+    /**
      * Register a custom callback and create the active queue as needed.
 	 * @param sQueueName the queue name
 	 * @param sMsgName name of message to route to this queue
@@ -315,11 +353,30 @@ public:
 	 * @return true on success
      *
      */
-    bool AddMessageToActiveQueue(const std::string & sQueueName,
+    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
     				const std::string & sMsgName,
     				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
     				void * pYourParam );
 
+    DEPRECATED(bool AddMessageCallBack(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam ));
+
+
+    /**
+	 * Register a custom callback and create the active queue as needed.
+	 * @param sQueueName the queue name
+	 * @param sMsgName name of message to route to this queue
+	  *@param Instance of class on which to invoke member function
+	 * @param member function of class bool func(CMOOSMsg &M)
+	 * @return true on success
+	 */
+    template <class T>
+    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				T* Instance,
+    				bool (T::*memfunc)(CMOOSMsg &) );
 
 
     /**
@@ -336,6 +393,10 @@ public:
      * @return
      */
     bool HasActiveQueue(const std::string & sQueueName);
+
+    /** Print all active queues*/
+    void PrintMessageToActiveQueueRouting();
+
 
 
 
@@ -464,6 +525,8 @@ protected:
     /** the set of messages names/keys that have been sent */
     std::set<std::string> m_Published;
 
+
+
     /** controls how verbose connectionn is*/
     bool m_bQuiet;
     
@@ -481,7 +544,21 @@ protected:
      */
     std::map<std::string,std::list<std::string>  > Msg2ActiveQueueName_;
 
+    /**
+     * mapping a queue name to a pointer to a queue
+     */
     std::map<std::string,MOOS::ActiveMailQueue*> ActiveQueueMap_;
+
+    /**
+     * a list of <queuename,pattern> pairs
+     */
+    std::map< std::string, std::string > WildcardQueuePatterns_;
+
+    /** the set of messages names/keys that have been received and
+     * because of that need not be shown again to the wildcard queues. Note
+     * that this may be a larger set than m_Registered because of wildcard
+     * subscriptions  */
+    std::set<std::string> WildcardCheckSet_;
 
     /*
      * a mutex protecting  ActiveQueues_
@@ -528,5 +605,8 @@ protected:
 
 
 };
+
+#include "MOOS/libMOOS/Comms/MOOSCommClient.hxx"
+
 
 #endif // !defined(MOOSCommClientH)

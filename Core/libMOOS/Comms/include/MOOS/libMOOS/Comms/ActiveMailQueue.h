@@ -51,15 +51,27 @@ namespace MOOS {
 class ActiveMailQueue
 {
 public:
-	ActiveMailQueue(const std::string &sName);
-	virtual ~ActiveMailQueue();
+
+	//install a callback onto the queue C style
+	void SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParamCaller), void * pCallerParam);
+
+	//install a callback onto the queue but supply a instance of a class and a member function
+	//which takes single message as a parameter
+	template <class T>
+    void SetCallback(T* Instance,bool (T::*memfunc)(CMOOSMsg &));
+
+    ActiveMailQueue(const std::string &sName);
+    	virtual ~ActiveMailQueue();
+
+	//us this to push work onto the queue
 	bool Push(const CMOOSMsg & M);
-    void SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParamCaller), void * pCallerParam);
+
     bool DoWork();
     bool Stop();
     bool Start();
     std::string GetName();
-    bool IsRunning();
+
+
 protected:
 	MOOS::SafeList<CMOOSMsg> queue_;
 
@@ -69,7 +81,7 @@ protected:
 
     //or using the fancy class member functionality
     //given by MessageFunction.h
-    MOOS::MsgFunctor* pClassMemberFunctionCallback;
+    MOOS::MsgFunctor* pClassMemberFunctionCallback_;
 
     CMOOSThread thread_;
 
@@ -77,6 +89,16 @@ protected:
     std::string Name_;
 
 };
+
+
+template <class T>
+   void ActiveMailQueue::SetCallback(T* Instance,bool (T::*memfunc)(CMOOSMsg &))
+   {
+   	pfn_=NULL;
+   	caller_param_ = NULL;
+
+   	pClassMemberFunctionCallback_ = MOOS::BindMsgFunctor<T>(Instance,memfunc);
+   }
 
 }
 

@@ -39,6 +39,7 @@ SET(UTILS_SOURCES
    Utils/ThreadPrint.cpp
    Utils/CommandLineParser.cpp
    Utils/ProcInfo.cpp
+   Utils/MemInfo.cpp
    Utils/ThreadPriority.cpp
    Utils/PeriodicEvent.cpp
    Utils/ConsoleColours.cpp

@@ -49,6 +49,13 @@ bool func_alt(CMOOSMsg & M, void *pParam)
 	return true;
 }
 
+bool func_wildcard(CMOOSMsg & M, void *pParam)
+{
+	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
+	return true;
+}
+
+
 bool func_wild(CMOOSMsg & M, void *pParam)
 {
 	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
@@ -70,9 +77,31 @@ void PrintHelpAndExit()
 	std::cerr<<" a) la appearing in callback \"func\"\n";
 	std::cerr<<" b) di appearing in callback \"func\" and \"func_alt\"\n";
 	std::cerr<<" c) di appearing in callback \"func_wild\" because it is caught by the wildcard queue\n";
+	std::cerr<<" c) la appearing in callback \"class-method-callback\" because it is caught by a class member\n";
 	exit(0);
 
 }
+
+class InterestedParty
+{
+public:
+	bool HandleMessageA(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageA for %s",M.GetKey().c_str()));
+		return true;
+	}
+	bool HandleMessageB(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageB for %s",M.GetKey().c_str()));
+		return true;
+	}
+	bool HandleMessageC(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageC for %s",M.GetKey().c_str()));
+		return true;
+	}
+
+};
 
 
 int main(int argc, char * argv[])
@@ -85,25 +114,37 @@ int main(int argc, char * argv[])
 		PrintHelpAndExit();
 	}
 
+	InterestedParty aClass;
 
-//	C.AddMessageToActiveQueue("CallbackA","la",func,NULL);
-//	C.AddMessageToActiveQueue("CallbackB","di",func,NULL);
-//	C.AddMessageToActiveQueue("CallbackC","di",func_alt,NULL);
+	C.AddMessageRouteToActiveQueue("CallbackA","la",func,NULL);
+	C.AddMessageRouteToActiveQueue("CallbackB","di",func,NULL);
+	C.AddMessageRouteToActiveQueue("CallbackC","di",func_alt,NULL);
+	//C.AddMessageRouteToActiveQueue("Wildcard","*", func_wild,NULL);
+	C.AddMessageRouteToActiveQueue("ClassMember","la", &aClass,&InterestedParty::HandleMessageA);
+	C.AddMessageRouteToActiveQueue("ClassMember","di", &aClass,&InterestedParty::HandleMessageB);
+	C.AddWildcardActiveQueue("WCA","*", func_wildcard,NULL);
 
-	C.AddMessageToActiveQueue("Wildcard","*", func_wild,NULL);
+	C.PrintMessageToActiveQueueRouting();
 
+
+
+
+
+	//C.lala();
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 
-	while(1)
+
+	unsigned int j = 0;
+	while(++j)
 	{
-		MOOSPause(10000);
+		if(j%100==0)
+		{
+			C.AddWildcardActiveQueue("WCB","d*", &aClass,&InterestedParty::HandleMessageC);
+			C.PrintMessageToActiveQueueRouting();
+		}
+		MOOSPause(100);
 		continue;
-		C.RemoveActiveQueue("CallbackB");
-		C.AddMessageToActiveQueue("CallbackB","di",func_alt,NULL);
-		MOOSPause(10000);
-		C.RemoveActiveQueue("CallbackB");
-		C.AddMessageToActiveQueue("CallbackB","di",func,NULL);
 	}
 
 

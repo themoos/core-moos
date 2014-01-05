@@ -1,3 +1,4 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
 //   This file is part of the MOOS project
@@ -14,55 +15,30 @@
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
-//   http://www.gnu.org/licenses/lgpl.txt
-//
-//   This program is distributed in the hope that it will be useful,
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
+**/
 /*
- * ProcInfo.h
+ * MemInfo.h
  *
- *  Created on: Dec 15, 2012
+ *  Created on: Sep 5, 2013
  *      Author: pnewman
  */
 
-#ifndef PROCINFO_H_
-#define PROCINFO_H_
-
-#include <memory>
-/*
- * simple class which estimates CPU usage for the calling process.
- */
-namespace MOOS {
-
-class ProcInfo {
-public:
-	ProcInfo();
-	virtual ~ProcInfo();
-
-	/**
-	 * estimate the percentage CPU load of this process
-	 * @param cpu_load
-	 * @return true on success
-	 */
-	bool GetPercentageCPULoad(double &cpu_load);
-
-	/**
-	 * estimate current memory usage of process
-	 * @param current  the current size in bytes
-	 * @param maximum the maximum recorded footprint
-	 */
-	bool GetMemoryUsage(size_t & current,size_t & maximum);
+#ifndef MEMINFO_H_
+#define MEMINFO_H_
 
 
+namespace MOOS
+{
 
-private:
-	class Impl;
-	std::auto_ptr<Impl> Impl_;
+	size_t GetPeakMemoryUsage( );
+	size_t GetCurrentMemoryUsage( );
+
 };
 
-}
 
-#endif /* PROCINFO_H_ */
+#endif /* MEMINFO_H_ */

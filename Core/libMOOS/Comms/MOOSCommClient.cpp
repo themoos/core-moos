@@ -375,6 +375,38 @@ bool CMOOSCommClient::ClientLoop()
 	return true;
 }
 
+
+void CMOOSCommClient::PrintMessageToActiveQueueRouting()
+{
+	std::map<std::string,std::list<std::string > >::iterator q;
+
+	std::cerr<<MOOS::ConsoleColours::Green()<<"--- Message Routing for client \""<<GetMOOSName()<<"\" ---\n";
+	std::cerr<<MOOS::ConsoleColours::reset();
+
+
+	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
+	{
+		//get a list of all queues which handle this message
+		std::list<std::string> & rQL = q->second;
+		std::list<std::string>::iterator p;
+		std::cerr<<std::setw(10)<< q->first<<" -> queues{ ";
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			if(WildcardQueuePatterns_.find(*p)!=WildcardQueuePatterns_.end())
+			{
+				std::cerr<<MOOS::ConsoleColours::Magenta()<<"*";
+			}
+			std::cerr<< "\""<<*p<<"\"";
+			std::cerr<<MOOS::ConsoleColours::reset()<<" ";
+		}
+		std::cerr<<"}\n";
+	}
+
+	std::cerr<<MOOS::ConsoleColours::reset();
+
+
+}
+
 bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
 {
 	ActiveQueuesLock_.Lock();
@@ -402,12 +434,15 @@ bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
     	ActiveQueueMap_.erase(w);
     }
 
+    //and remove from wildcard queue (if it is there)
+    WildcardQueuePatterns_.erase(sQueueName);
+
 	ActiveQueuesLock_.UnLock();
 	return false;
 }
 
 
-bool CMOOSCommClient::AddMessageToActiveQueue(const std::string & sQueueName,
+bool CMOOSCommClient::AddMessageRouteToActiveQueue(const std::string & sQueueName,
 				const std::string & sMsgName,
 				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
 				void * pYourParam )
@@ -415,11 +450,21 @@ bool CMOOSCommClient::AddMessageToActiveQueue(const std::string & sQueueName,
 	if(!HasActiveQueue(sQueueName))
 		AddActiveQueue(sQueueName,pfn,pYourParam);
 
-	return AddMessageToActiveQueue(sQueueName,sMsgName);
+	return AddMessageRouteToActiveQueue(sQueueName,sMsgName);
 
 }
 
+//deprecated version
+bool CMOOSCommClient::AddMessageCallBack(const std::string & sQueueName,
+				const std::string & sMsgName,
+				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+				void * pYourParam )
+{
+	return AddMessageRouteToActiveQueue(sQueueName,sMsgName,pfn,pYourParam);
+}
 
+//add an active queue - don't forget that there is a templated version in hxx
+//which uses a class member as a clallback
 bool CMOOSCommClient::AddActiveQueue(const std::string & sQueueName,
 				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
 				void * pYourParam )
@@ -430,22 +475,52 @@ bool CMOOSCommClient::AddActiveQueue(const std::string & sQueueName,
 	if(w==ActiveQueueMap_.end())
 	{
 		//we need to create a new queue
-		std::cerr<<"making new active queue "<<sQueueName<<"\n";
+		//std::cerr<<"making new active queue "<<sQueueName<<"\n";
 		MOOS::ActiveMailQueue* pQ = new MOOS::ActiveMailQueue(sQueueName);
 		ActiveQueueMap_[sQueueName] = pQ;
+
 		pQ->SetCallback(pfn,pYourParam);
 		pQ->Start();
 		return true;
 	}
 	else
 	{
-		std::cerr<<"warning active queue"<<sQueueName<<" already exists\n";
+		std::cerr<<"warning active queue "<<sQueueName<<" already exists\n";
 		return false;
 	}
 
 }
 
-bool CMOOSCommClient::AddMessageToActiveQueue(const std::string & sQueueName,
+bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
+				const std::string & sPattern,
+				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+				void * pYourParam )
+{
+	if(!AddActiveQueue(sQueueName,pfn,pYourParam))
+		return false;
+
+	WildcardQueuePatterns_[sQueueName]=sPattern;
+
+	//now we had better see if the wildcard queue is interested
+	//in any mesages we have already seen
+	std::set< std::string>::iterator q;
+
+	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();q++)
+	{
+		if(MOOSWildCmp(sPattern,*q))
+		{
+			Msg2ActiveQueueName_[*q].push_back(sQueueName);
+		}
+	}
+
+
+	return true;
+
+}
+
+
+
+bool CMOOSCommClient::AddMessageRouteToActiveQueue(const std::string & sQueueName,
 		const std::string & sMsgName)
 {
 	if(HasActiveQueue(sQueueName))
@@ -613,15 +688,14 @@ bool CMOOSCommClient::DoClientWork()
 bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 {
 
+
 	//here we dispatch to special callbacks managed by threads
 
 	MOOS::ScopedLock L(ActiveQueuesLock_);
 
 
-	//before we start we can see if we have a wildcard installed...
-	std::map<std::string, std::list<std::string> >::iterator qwildcard,q;
-	qwildcard = Msg2ActiveQueueName_.find("*");
-	bool bWildcardInstalled  = qwildcard!=Msg2ActiveQueueName_.end();
+	//before we start we can see if we have a default queue installed...
+	std::map<std::string, std::list<std::string> >::iterator q;
 
 	MOOSMSG_LIST::iterator t = m_InBox.begin();
 
@@ -632,19 +706,43 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 		//does this message have a active queue mapping?
 		q= Msg2ActiveQueueName_.find(t->GetKey());
 
-		if(q==Msg2ActiveQueueName_.end())
+		if(q==Msg2ActiveQueueName_.end() || WildcardCheckSet_.find(t->GetKey())==WildcardCheckSet_.end() )
 		{
-			//no, well maybe we have a wildcard mapping in place...
-			if(bWildcardInstalled)
+			//maybe the wildcard queues are interested?
+			//or maybe this is a new message whihc has not been seen by wildcard queues
+
+			//each element is a <nickname,pattern> string pair;
+			std::map<std::string, std::string  >::iterator w;
+
+			bool bFound = false;
+			for(w = WildcardQueuePatterns_.begin();w!=WildcardQueuePatterns_.end();w++)
 			{
-				q = qwildcard;
+				std::string sPattern = w->second;
+				//build a list of all wc queues that match this message
+				//add these queues to the list of queues pointed to by this message
+				if(MOOSWildCmp(sPattern,t->GetKey()))
+				{
+					Msg2ActiveQueueName_[t->GetKey()].push_back(w->first);
+					bFound = true;
+				}
 			}
-			else
+
+			//remember all messages that have been received...
+			//we do it here because at this point wild card queue have been given
+			//the option to register their interest....
+			//but what to do if a wc queue in installed at run time...?
+			WildcardCheckSet_.insert(t->GetKey());
+
+			//if we found a least one mapping simply go again without
+			//incrementing t...smart
+			if(!bFound)
 			{
 				//nothing else to do, increment and carry
 				t++;
-				continue;
 			}
+
+			//skip back to t!=m_InBox.end();
+			continue;
 		}
 
 		//now we know which queue(s) are relevant for us.
@@ -1413,6 +1511,8 @@ bool CMOOSCommClient::Close(bool  )
 
 	ActiveQueueMap_.clear();
 	Msg2ActiveQueueName_.clear();
+	WildcardCheckSet_.clear();
+
 
 	return true;
 }
@@ -1432,6 +1532,7 @@ bool CMOOSCommClient::ClearResources()
 	m_InLock.Lock();
 		m_InBox.clear();
 	m_InLock.UnLock();
+
 
 	m_Registered.clear();
 

@@ -34,10 +34,12 @@
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
+#include "MOOS/libMOOS/Utils/Macros.h"
 
 
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSVariable.h"
+
 
 #include <set>
 #include <map>
@@ -291,19 +293,85 @@ protected:
     @param sVar name of variable of interest*/
     bool UnRegister(const std::string & sVar);
 
+
+
     /**
      * Register a custom call back for a particular message. This call back
      * will be called from its own thread.
+     * @param sQueueName nick name of queue
+     * @param pfn  pointer to your function should be type
+     * bool func(CMOOSMsg &M, void *pParam)
+     * @param pYourParam a void * pointer to the thing we want passed as pParam above
+     * @return true on success
+     */
+	bool AddActiveQueue(const std::string & sQueueName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam );
+
+
+    /**
+     * Register a custom call back for a particular message. This call back
+     * will be called from its own thread.
+     * @param sQueueName nick name of queue
      * @param sMsgName name of message to watch for
      * @param pfn  pointer to your function should be type
      * bool func(CMOOSMsg &M, void *pParam)
      * @param pYourParam a void * pointer to the thing we want passed as pParam above
      * @return true on success
      */
-    bool AddActiveMessageQueueCallback(const std::string & sQueueName,
-    		const std::string & sMsgName,
-    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    		void * pYourParam );
+	bool AddActiveQueue(const std::string & sQueueName,
+		const std::string & sMsgName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam );
+
+    /**
+   	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+   	 * @param sQueueName
+   	 * @param Instance of class on which to invoke member function
+   	 * @param member function of class bool func(CMOOSMsg &M)
+   	 * @return true on success
+   	 */
+	template <class T>
+	bool AddActiveQueue(const std::string & sQueueName,
+		T* Instance,bool (T::*memfunc)(CMOOSMsg &)  );
+
+
+
+    /**
+       * Register a custom callback and create the active queue as needed.
+  	 * @param sQueueName the queue name
+  	 * @param sMsgName name of message to route to this queue
+  	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+  	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
+  	 * @return true on success
+       *
+       */
+      bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+      				const std::string & sMsgName,
+      				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+      				void * pYourParam );
+
+      bool AddActiveMessageQueueCallback(const std::string & sQueueName,
+          		const std::string & sMsgName,
+          		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+          		void * pYourParam );
+
+
+
+      /**
+		* Register a custom callback and create the active queue as needed.
+		* @param sQueueName the queue name
+		* @param sMsgName name of message to route to this queue
+		* @param Instance of class on which to invoke member function
+		* @param member function of class bool func(CMOOSMsg &M)
+		* @return true on success
+		*/
+      template <class T>
+      bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+      				const std::string & sMsgName,
+      				T* Instance,bool (T::*memfunc)(CMOOSMsg &) );
+
+
 
     /**
      * Add a callback to ::OnMessage() for a particular message. This will cause OnMessage() to be called from its own thread
@@ -312,7 +380,11 @@ protected:
      * @param sMsgName
      * @return true on success
      */
-    bool AddMessageCallback(const std::string & sMsgName);
+    bool AddMessageRouteToOnMessage(const std::string & sMsgName);
+
+
+   //deprecated versions
+    DEPRECATED(bool AddMessageCallback(const std::string & sMsgName));
 
 
 
@@ -627,8 +699,10 @@ private:
 	/** ::Run continues forever or until this variable is false*/
 	bool m_bQuitRequested;
 protected:
-    MOOS::ProcInfo m_CPULoadMonitor;
+    MOOS::ProcInfo m_ProcessMonitor;
     
 };
+
+#include "MOOS/libMOOS/App/MOOSApp.hxx"
 
 #endif

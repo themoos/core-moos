@@ -774,7 +774,10 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
-bool CMOOSApp::AddActiveMessageQueueCallback(const std::string & sQueueName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
+		const std::string & sMsgName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam )
 {
 	//first do we have that queue made already?
 	if(!m_Comms.HasActiveQueue(sQueueName))
@@ -783,12 +786,27 @@ bool CMOOSApp::AddActiveMessageQueueCallback(const std::string & sQueueName,cons
 		m_Comms.AddActiveQueue(sQueueName,pfn,pYourParam);
 	}
 	//finally make sure this message routes to this message.
-	return m_Comms.AddMessageToActiveQueue(sQueueName,sMsgName);
+	return m_Comms.AddMessageRouteToActiveQueue(sQueueName,sMsgName);
 }
 
+bool CMOOSApp::AddActiveMessageQueueCallback(const std::string & sQueueName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam )
+{
+	return AddMessageRouteToActiveQueue(sQueueName,sMsgName,pfn,pYourParam);
+}
+
+
+
+bool CMOOSApp::AddMessageRouteToOnMessage(const std::string & sMsgName)
+{
+	return AddMessageRouteToActiveQueue(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
+}
+//deprecated version
 bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
 {
-	return AddActiveMessageQueueCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
+	return AddMessageRouteToOnMessage(sMsgName);
 }
 
 
@@ -1323,7 +1341,7 @@ void CMOOSApp::EnableCommandMessageFiltering(bool bEnable)
 double CMOOSApp::GetCPULoad()
 {
 	double dfLoad=0;
-	m_CPULoadMonitor.GetPercentageCPULoad(dfLoad);
+	m_ProcessMonitor.GetPercentageCPULoad(dfLoad);
 	return dfLoad;
 }
 
@@ -1340,10 +1358,18 @@ std::string CMOOSApp::MakeStatusString()
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
 
     double dfCPULoad;
-    if(m_CPULoadMonitor.GetPercentageCPULoad(dfCPULoad))
+    if(m_ProcessMonitor.GetPercentageCPULoad(dfCPULoad))
     {
     	ssStatus<<"cpuload="<<std::setprecision(4)<<dfCPULoad<<",";
     }
+
+    size_t memory_now, memory_max;
+    if(m_ProcessMonitor.GetMemoryUsage(memory_now,memory_max))
+    {
+    	ssStatus<<"memory_kb="<<std::setprecision(4)<<memory_now/(1024.0)<<",";
+    	ssStatus<<"memory_max_kb="<<std::setprecision(4)<<memory_max/(1024.0)<<",";
+    }
+
 
     ssStatus<<"MOOSName="<<GetAppName()<<",";
 
