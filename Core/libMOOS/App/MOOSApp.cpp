@@ -774,14 +774,21 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
-bool CMOOSApp::AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+bool CMOOSApp::AddActiveMessageQueueCallback(const std::string & sQueueName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
 {
-	return m_Comms.AddMessageCallback(sCallbackName,sMsgName,pfn,pYourParam);
+	//first do we have that queue made already?
+	if(!m_Comms.HasActiveQueue(sQueueName))
+	{
+		//no we had better make one...
+		m_Comms.AddActiveQueue(sQueueName,pfn,pYourParam);
+	}
+	//finally make sure this message routes to this message.
+	return m_Comms.AddMessageToActiveQueue(sQueueName,sMsgName);
 }
 
 bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
 {
-	return m_Comms.AddMessageCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
+	return AddActiveMessageQueueCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
 }
 
 

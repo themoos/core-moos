@@ -300,7 +300,7 @@ protected:
      * @param pYourParam a void * pointer to the thing we want passed as pParam above
      * @return true on success
      */
-    bool AddCustomMessageCallback(const std::string & sCallbackName,
+    bool AddActiveMessageQueueCallback(const std::string & sQueueName,
     		const std::string & sMsgName,
     		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
     		void * pYourParam );

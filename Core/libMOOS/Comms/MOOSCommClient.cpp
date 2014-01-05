@@ -375,82 +375,102 @@ bool CMOOSCommClient::ClientLoop()
 	return true;
 }
 
-bool CMOOSCommClient::RemoveMessageCallback(const std::string & sCallbackName)
+bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
 {
 	ActiveQueuesLock_.Lock();
-	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
-	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+
+	//maps message name to a list of queues...
+	std::map<std::string,std::list<std::string > >::iterator q;
+	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
 	{
-		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
-		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		//get a list of all queues which handle this message
+		std::list<std::string> & rQL = q->second;
+		std::list<std::string>::iterator p;
 		for(p = rQL.begin();p!=rQL.end();p++)
 		{
-			if((*p)->GetName()==sCallbackName)
+			if(*p==sQueueName)
 			{
-				delete *p;
 				rQL.erase(p);
-				ActiveQueuesLock_.UnLock();
-				return true;
 			}
 		}
 	}
+
+    std::map<std::string,MOOS::ActiveMailQueue*>::iterator w =  ActiveQueueMap_.find(sQueueName);
+    if(w!=ActiveQueueMap_.end())
+    {
+    	delete w->second;
+    	ActiveQueueMap_.erase(w);
+    }
+
 	ActiveQueuesLock_.UnLock();
 	return false;
 }
 
-bool CMOOSCommClient::AddMessageCallback(const std::string & sCallbackName, const std::string & sMsgName,
-		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-		void * pYourParam )
+
+bool CMOOSCommClient::AddMessageToActiveQueue(const std::string & sQueueName,
+				const std::string & sMsgName,
+				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+				void * pYourParam )
 {
-	ActiveQueuesLock_.Lock();
-	if(ActiveQueues_.find(sMsgName)!=ActiveQueues_.end())
-	{
-		std::list<MOOS::ActiveMailQueue*>::iterator q;
-		for(q=ActiveQueues_[sMsgName].begin();q!=ActiveQueues_[sMsgName].end();q++)
-		{
-			MOOS::ActiveMailQueue* pqueue= *q;
-			if(pqueue->GetName()==sCallbackName)
-			{
-				pqueue->Stop();
-				delete pqueue;
-				ActiveQueues_[sMsgName].erase(q);
-			}
-		}
-	}
-	MOOS::ActiveMailQueue* pQ= new MOOS::ActiveMailQueue(sCallbackName);
-	pQ->SetCallback(pfn,pYourParam);
-	pQ->Start();
-	ActiveQueues_[sMsgName].push_back(pQ);
+	if(!HasActiveQueue(sQueueName))
+		AddActiveQueue(sQueueName,pfn,pYourParam);
 
-	ActiveQueuesLock_.UnLock();
-
-	return true;
+	return AddMessageToActiveQueue(sQueueName,sMsgName);
 
 }
 
 
-bool CMOOSCommClient::HasMessageCallback(const std::string & sCallbackName)
+bool CMOOSCommClient::AddActiveQueue(const std::string & sQueueName,
+				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+				void * pYourParam )
 {
-	ActiveQueuesLock_.Lock();
-	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
-	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	MOOS::ScopedLock L(ActiveQueuesLock_);
+
+	std::map<std::string,MOOS::ActiveMailQueue*>::iterator w =  ActiveQueueMap_.find(sQueueName);
+	if(w==ActiveQueueMap_.end())
 	{
-		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
-		std::list<MOOS::ActiveMailQueue*>::iterator p;
-		for(p = rQL.begin();p!=rQL.end();p++)
-		{
-			if((*p)->GetName()==sCallbackName)
-			{
-				ActiveQueuesLock_.UnLock();
-				return true;
-			}
-		}
+		//we need to create a new queue
+		std::cerr<<"making new active queue "<<sQueueName<<"\n";
+		MOOS::ActiveMailQueue* pQ = new MOOS::ActiveMailQueue(sQueueName);
+		ActiveQueueMap_[sQueueName] = pQ;
+		pQ->SetCallback(pfn,pYourParam);
+		pQ->Start();
+		return true;
+	}
+	else
+	{
+		std::cerr<<"warning active queue"<<sQueueName<<" already exists\n";
+		return false;
 	}
 
-	ActiveQueuesLock_.UnLock();
+}
 
-	return false;
+bool CMOOSCommClient::AddMessageToActiveQueue(const std::string & sQueueName,
+		const std::string & sMsgName)
+{
+	if(HasActiveQueue(sQueueName))
+	{
+		//OK this queue exists
+		MOOS::ScopedLock L(ActiveQueuesLock_);
 
+		//now we can add the name of this Queue to list pointed
+		//to by this message name
+		Msg2ActiveQueueName_[sMsgName].push_back(sQueueName);
+
+		return true;
+	}
+	else
+	{
+		std::cerr<<"cannot add callback as queue "<<sQueueName<< " does not exist\n";
+		return false;
+	}
+}
+
+
+bool CMOOSCommClient::HasActiveQueue(const std::string & sQueueName)
+{
+	MOOS::ScopedLock L(ActiveQueuesLock_);
+	return ActiveQueueMap_.find(sQueueName)!=ActiveQueueMap_.end();
 }
 
 bool CMOOSCommClient::DoClientWork()
@@ -592,37 +612,71 @@ bool CMOOSCommClient::DoClientWork()
 
 bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 {
-	//here we dispatch to special call backs managed by threads
+
+	//here we dispatch to special callbacks managed by threads
+
+	MOOS::ScopedLock L(ActiveQueuesLock_);
+
+
+	//before we start we can see if we have a wildcard installed...
+	std::map<std::string, std::list<std::string> >::iterator qwildcard,q;
+	qwildcard = Msg2ActiveQueueName_.find("*");
+	bool bWildcardInstalled  = qwildcard!=Msg2ActiveQueueName_.end();
+
 	MOOSMSG_LIST::iterator t = m_InBox.begin();
-	ActiveQueuesLock_.Lock();
+
+	//iterate over all pending messages.
 	while(t!=m_InBox.end())
 	{
-		std::map<std::string, std::list<MOOS::ActiveMailQueue*> >::iterator q = ActiveQueues_.find(t->GetKey());
-		if(q!=ActiveQueues_.end())
+
+		//does this message have a active queue mapping?
+		q= Msg2ActiveQueueName_.find(t->GetKey());
+
+		if(q==Msg2ActiveQueueName_.end())
 		{
-			std::list<MOOS::ActiveMailQueue*>::iterator r;
-			for(r = q->second.begin();r!=q->second.end();r++)
+			//no, well maybe we have a wildcard mapping in place...
+			if(bWildcardInstalled)
 			{
-				(*r)->Push(*t);
+				q = qwildcard;
 			}
-			t = m_InBox.erase(t);
-		}
-		else if((q=ActiveQueues_.find("*"))!=ActiveQueues_.end())
-		{
-			//we have one or more wildcard queue installed
-			std::list<MOOS::ActiveMailQueue*>::iterator r;
-			for(r = q->second.begin();r!=q->second.end();r++)
+			else
 			{
-				(*r)->Push(*t);
+				//nothing else to do, increment and carry
+				t++;
+				continue;
 			}
-			t = m_InBox.erase(t);
 		}
-		else
+
+		//now we know which queue(s) are relevant for us.
+		//there namaes are in a string list.
+		std::list<std::string>::iterator r;
+
+		for(r = q->second.begin();r!=q->second.end();r++)
 		{
-			t++;
+			//for each named queue find a pointer to
+			//the actual active queue
+			std::map<std::string,MOOS::ActiveMailQueue*>::iterator v;
+			v = ActiveQueueMap_.find(*r);
+			if(v!=ActiveQueueMap_.end())
+			{
+				//and now we have checked it exists push this message to that
+				//queue
+				MOOS::ActiveMailQueue* pQ = v->second;
+				pQ->Push(*t);
+			}
+			else
+			{
+				//this is bad news - we have be told to use a queue
+				//which does not exist.
+				throw std::runtime_error("active queue "+*r+" not found");
+			}
 		}
+
+		//we have now handled this message remove it from the Inbox.
+		t = m_InBox.erase(t);
+
 	}
-	ActiveQueuesLock_.UnLock();
+
 	return true;
 }
 
@@ -1346,22 +1400,19 @@ bool CMOOSCommClient::Close(bool  )
     
 	ClearResources();
 
-	ActiveQueuesLock_.Lock();
-	std::map<std::string,std::list<MOOS::ActiveMailQueue*>  >::iterator q;
+	MOOS::ScopedLock L(ActiveQueuesLock_);
 
-	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	std::map<std::string,MOOS::ActiveMailQueue*  >::iterator q;
+
+	for(q = ActiveQueueMap_.begin();q!=ActiveQueueMap_.end();q++)
 	{
-		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
-		std::list<MOOS::ActiveMailQueue*>::iterator p;
-		for(p = rQL.begin();p!=rQL.end();p++)
-		{
-			MOOS::ActiveMailQueue* pQueue = *p;
-			delete pQueue;
-		}
+		MOOS::ActiveMailQueue* pQueue = q->second;
+		pQueue->Stop();
+		delete pQueue;
 	}
-	ActiveQueues_.clear();
-	ActiveQueuesLock_.UnLock();
 
+	ActiveQueueMap_.clear();
+	Msg2ActiveQueueName_.clear();
 
 	return true;
 }

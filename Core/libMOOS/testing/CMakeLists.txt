@@ -10,6 +10,7 @@ target_link_libraries(periodic_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 add_executable(queue_test QueueTest.cpp )
 target_link_libraries(queue_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 
-add_executable(discovery_test DiscoveryTest.cpp )
-target_link_libraries(discovery_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+#set(CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++")
+add_executable(binding_test BindingTest.cpp )
+target_link_libraries(binding_test ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
 

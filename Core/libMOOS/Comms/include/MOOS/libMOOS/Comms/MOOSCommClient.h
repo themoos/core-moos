@@ -278,31 +278,64 @@ public:
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
     /**
+	 * make a message route to a Active Queue (which will call a custom callback)
+	 * @param sQueueName name of Active Queue
+	 * @param sMsgName name of message to route to this queue
+	 * @return true on success
+	 */
+     bool AddMessageToActiveQueue(const std::string & sQueueName,
+    		const std::string & sMsgName);
+
+     /**
+ 	 * stop a message routing to a Active Queue
+ 	 * @param sQueueName name of Active Queue
+ 	 * @param sMsgName name of message to route to this queue
+ 	 * @return true on success
+ 	 */
+     bool RemoveMessageToActiveQueue(const std::string & sQueueName,
+    		const std::string & sMsgName);
+
+    /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
-	 * @param sCallbackName name for callback
-	 * @param sMsgName name of message to watch for
+	 * @param sQueueName
 	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddMessageCallback(const std::string & sCallbackName,
-    		const std::string & sMsgName,
-    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    		void * pYourParam );
+    bool AddActiveQueue(const std::string & sQueueName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
 
     /**
-     * remove the named callback
+     * Register a custom callback and create the active queue as needed.
+	 * @param sQueueName the queue name
+	 * @param sMsgName name of message to route to this queue
+	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
+	 * @return true on success
+     *
+     */
+    bool AddMessageToActiveQueue(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
+
+
+
+    /**
+     * remove the named active queue
      * @param sCallbackName
      * @return
      */
-    bool RemoveMessageCallback(const std::string & sCallbackName);
+    bool RemoveActiveQueue(const std::string & sQueueName);
+
 
     /**
-     * Does this named callback exist?
+     * Does this named active queue exist?
      * @param sCallbackName
      * @return
      */
-    bool HasMessageCallback(const std::string & sCallbackName);
+    bool HasActiveQueue(const std::string & sQueueName);
 
 
 
@@ -444,9 +477,11 @@ protected:
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
     /**
-     * list of active mail queues. Each Queue invokes a callback. Keyed by message name
+     * list of names of active mail queues for each message name
      */
-    std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
+    std::map<std::string,std::list<std::string>  > Msg2ActiveQueueName_;
+
+    std::map<std::string,MOOS::ActiveMailQueue*> ActiveQueueMap_;
 
     /*
      * a mutex protecting  ActiveQueues_

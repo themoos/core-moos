@@ -73,8 +73,8 @@ int main(int argc, char * argv[])
 	A.Run("localhost",9000,"A");
 	B.Run("localhost",9000,"B");
 
-	A.AddMessageCallback("CBA","X",func,NULL);
-	B.AddMessageCallback("CBB","X",func,NULL);
+	A.AddMessageToActiveQueue("CBA","X",func,NULL);
+	B.AddMessageToActiveQueue("CBB","X",func,NULL);
 
 
 	while(1)
@@ -95,8 +95,8 @@ int main(int argc, char * argv[])
 			MOOSPause(10);
 
 		std::cerr<<"3)installing callbacks\n";
-		A.AddMessageCallback("CBA","X",func,NULL);
-		B.AddMessageCallback("CBB","X",func,NULL);
+		A.AddMessageToActiveQueue("CBA","X",func,NULL);
+		B.AddMessageToActiveQueue("CBB","X",func,NULL);
 
 
 		//wait here because "X" is still in the DB so we will be told

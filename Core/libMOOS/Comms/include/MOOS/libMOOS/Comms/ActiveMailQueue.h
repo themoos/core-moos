@@ -33,6 +33,7 @@
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/SafeList.h"
+#include "MOOS/libMOOS/Comms/MessageFunction.h"
 
 
 namespace MOOS {
@@ -47,7 +48,8 @@ namespace MOOS {
 	\endinternal
 */
 
-class ActiveMailQueue {
+class ActiveMailQueue
+{
 public:
 	ActiveMailQueue(const std::string &sName);
 	virtual ~ActiveMailQueue();
@@ -64,6 +66,10 @@ protected:
     /** the user supplied Callback*/
     bool (*pfn_)(CMOOSMsg &M, void* pParam);
     void * caller_param_;
+
+    //or using the fancy class member functionality
+    //given by MessageFunction.h
+    MOOS::MsgFunctor* pClassMemberFunctionCallback;
 
     CMOOSThread thread_;
 

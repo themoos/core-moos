@@ -86,12 +86,11 @@ int main(int argc, char * argv[])
 	}
 
 
-	C.AddMessageCallback("CallbackA","la",func,NULL);
-	C.AddMessageCallback("CallbackB","di",func,NULL);
+//	C.AddMessageToActiveQueue("CallbackA","la",func,NULL);
+//	C.AddMessageToActiveQueue("CallbackB","di",func,NULL);
+//	C.AddMessageToActiveQueue("CallbackC","di",func_alt,NULL);
 
-	C.AddMessageCallback("CallbackC","di",func_alt,NULL);
-
-	C.AddMessageCallback("Wildcard","*", func_wild,NULL);
+	C.AddMessageToActiveQueue("Wildcard","*", func_wild,NULL);
 
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
@@ -99,11 +98,12 @@ int main(int argc, char * argv[])
 	while(1)
 	{
 		MOOSPause(10000);
-		C.RemoveMessageCallback("CallbackB");
-		C.AddMessageCallback("CallbackB","di",func_alt,NULL);
+		continue;
+		C.RemoveActiveQueue("CallbackB");
+		C.AddMessageToActiveQueue("CallbackB","di",func_alt,NULL);
 		MOOSPause(10000);
-		C.RemoveMessageCallback("CallbackB");
-		C.AddMessageCallback("CallbackB","di",func,NULL);
+		C.RemoveActiveQueue("CallbackB");
+		C.AddMessageToActiveQueue("CallbackB","di",func,NULL);
 	}
 
 
