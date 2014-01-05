@@ -77,7 +77,6 @@ public:
 
 int main(int argc, char * argv[])
 {
-	MOOS::MessageFunction<Whatever>::Function func;
 
 
 	Whatever Y;

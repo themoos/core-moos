@@ -25,6 +25,8 @@
 #ifndef MESSAGEFUNCTION_H_
 #define MESSAGEFUNCTION_H_
 
+#include <vector>
+
 class CMOOSMsg;
 namespace MOOS
 {
@@ -57,13 +59,15 @@ namespace MOOS
 
 	template<typename T>
 	struct MessageFunction{
-		typedef bool (T::*Function)(CMOOSMsg & M);
+		typedef bool (T::*MsgFunction)(CMOOSMsg & M);
+		typedef bool (T::*MsgVecFunction)(std::vector<CMOOSMsg> & MVec);
 	};
 
 	class MsgFunctor
 	{
 	public:
 		virtual bool operator()(CMOOSMsg &) = 0;
+		virtual bool operator()(std::vector<CMOOSMsg> &) = 0;
 	};
 
 	template <typename T>
@@ -73,21 +77,35 @@ namespace MOOS
 
 	private:
 		T *inst;
-		typename MessageFunction<T>::Function pt2Member;
+		typename MessageFunction<T>::MsgFunction pt2MsgFuncMember;
+		typename MessageFunction<T>::MsgVecFunction pt2MsgVecFuncMember;
 		//bool (T::*pt2Member)(CMOOSMsg & M);
 	public:
 
 
 		CallableClassMemberFncPtr(T* who, bool (T::*memfunc)(CMOOSMsg &))
-			 : inst(who), pt2Member(memfunc)
+			 : inst(who), pt2MsgFuncMember(memfunc),pt2MsgVecFuncMember(0)
 		 {
 		 }
-		CallableClassMemberFncPtr():inst(0),pt2Member(0){};
-		 bool HasValidFunctionPtr(){return pt2Member && inst;};
+
+		CallableClassMemberFncPtr(T* who, bool (T::*memfunc)(std::vector<CMOOSMsg>  &))
+			 : inst(who), pt2MsgVecFuncMember(memfunc),pt2MsgFuncMember(0)
+		 {
+		 }
+
+
+		CallableClassMemberFncPtr():inst(0),pt2MsgFuncMember(0),pt2MsgVecFuncMember(0){};
+		 bool HasValidFunctionPtr(){return (pt2MsgFuncMember||pt2MsgVecFuncMember) && inst;};
 		 bool operator()(CMOOSMsg & M)
 		 {
-			 return (inst->*pt2Member)(M);
+			 return (inst->*pt2MsgFuncMember)(M);
 		 }
+
+		 bool operator()(std::vector<CMOOSMsg> &Mvec)
+		 {
+			 return (inst->*pt2MsgVecFuncMember)(Mvec);
+		 }
+
 	};
 
 	template <typename T>
@@ -95,6 +113,14 @@ namespace MOOS
 	{
 		return new CallableClassMemberFncPtr<T>(who,memfunc);
 	}
+
+
+	template <typename T>
+	MsgFunctor * BindMsgFunctor(T* who, bool (T::*memfunc)(std::vector<CMOOSMsg> &))
+	{
+		return new CallableClassMemberFncPtr<T>(who,memfunc);
+	}
+
 
 };//moos
 

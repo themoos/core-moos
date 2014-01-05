@@ -30,6 +30,7 @@
  *      Author: pnewman
  */
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+#include "MOOS/libMOOS/Comms/MessageQueueAccumulator.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
@@ -100,6 +101,18 @@ public:
 		gPrinter.Print(MOOSFormat("in class::HandleMessageC for %s",M.GetKey().c_str()));
 		return true;
 	}
+	bool HandleMessageSet(std::vector<CMOOSMsg> & Mvec)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageSet"));
+		for(unsigned int k = 0;k<Mvec.size();k++)
+		{
+			gPrinter.Print(MOOSFormat("     %s %10.3f",Mvec[k].GetKey().c_str(), Mvec[k].GetTime() ));
+		}
+
+
+
+		return true;
+	}
 
 };
 
@@ -116,17 +129,27 @@ int main(int argc, char * argv[])
 
 	InterestedParty aClass;
 
-	C.AddMessageRouteToActiveQueue("CallbackA","la",func,NULL);
-	C.AddMessageRouteToActiveQueue("CallbackB","di",func,NULL);
-	C.AddMessageRouteToActiveQueue("CallbackC","di",func_alt,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackA","la",func,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackB","di",func,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackC","di",func_alt,NULL);
 	//C.AddMessageRouteToActiveQueue("Wildcard","*", func_wild,NULL);
-	C.AddMessageRouteToActiveQueue("ClassMember","la", &aClass,&InterestedParty::HandleMessageA);
-	C.AddMessageRouteToActiveQueue("ClassMember","di", &aClass,&InterestedParty::HandleMessageB);
-	C.AddWildcardActiveQueue("WCA","*", func_wildcard,NULL);
+	//C.AddMessageRouteToActiveQueue("ClassMember","la", &aClass,&InterestedParty::HandleMessageA);
+	//C.AddMessageRouteToActiveQueue("ClassMember","di", &aClass,&InterestedParty::HandleMessageB);
+	//C.AddWildcardActiveQueue("WCA","*", func_wildcard,NULL);
 
-	C.PrintMessageToActiveQueueRouting();
+	//C.PrintMessageToActiveQueueRouting();
 
 
+	MOOS::MessageQueueAccumulator Acc;
+
+	std::vector<std::string> Names;
+	Names.push_back("di");
+	Names.push_back("la");
+
+	Acc.Configure(Names);
+	C.AddMessageRouteToActiveQueue("Accumulator","di", &Acc,&MOOS::MessageQueueAccumulator::AddMessage);
+	C.AddMessageRouteToActiveQueue("Accumulator","la", &Acc,&MOOS::MessageQueueAccumulator::AddMessage);
+	Acc.SetCallback(&aClass,&InterestedParty::HandleMessageSet);
 
 
 

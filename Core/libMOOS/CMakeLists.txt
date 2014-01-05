@@ -17,6 +17,8 @@ SET(COMMS_SOURCES
     Comms/XPCUdpSocket.cpp
     Comms/ServerAudit.cpp
     Comms/ActiveMailQueue.cpp
+    Comms/MessageQueueAccumulator.cpp
+    
 )
 
 SET(APP_SOURCES
