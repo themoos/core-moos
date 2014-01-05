@@ -89,7 +89,7 @@ namespace MOOS
 		 }
 
 		CallableClassMemberFncPtr(T* who, bool (T::*memfunc)(std::vector<CMOOSMsg>  &))
-			 : inst(who), pt2MsgVecFuncMember(memfunc),pt2MsgFuncMember(0)
+        : inst(who), pt2MsgFuncMember(0),pt2MsgVecFuncMember(memfunc)
 		 {
 		 }
 
