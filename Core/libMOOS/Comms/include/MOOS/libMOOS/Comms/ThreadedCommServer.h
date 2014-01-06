@@ -56,6 +56,7 @@ struct ClientThreadSharedData
 	  PKT_READ,
 	  CONNECTION_CLOSED,
 	  PKT_WRITE,
+	  STOP_THREAD,
 	} _Status;
 
 

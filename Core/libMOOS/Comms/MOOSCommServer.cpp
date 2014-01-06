@@ -166,6 +166,7 @@ bool CMOOSCommServer::Stop()
     for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();q++)
     {
         XPCTcpSocket* pSocket = *q;
+
         pSocket->vCloseSocket();
         delete pSocket;
     }

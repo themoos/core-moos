@@ -74,17 +74,39 @@ ThreadedCommServer::ThreadedCommServer()
 ThreadedCommServer::~ThreadedCommServer()
 {
     // TODO Auto-generated destructor stub
+    Stop();
 
 }
 bool ThreadedCommServer::Stop()
 {
+
+    //kill this first because we have to prevent client from reconnecting
+    //because we are going to pull the plug on them
+   if(m_ListenThread.IsThreadRunning())
+       m_ListenThread.Stop();
+
+   if(m_pListenSocket!=NULL)
+   {
+       m_pListenSocket->vCloseSocket();
+       delete m_pListenSocket;
+       m_pListenSocket = NULL;
+   }
+
+
+   //then pull the plug on the loop which will spot clients disconnecting
+   if(m_ServerThread.IsThreadRunning())
+       m_ServerThread.Stop();
+
+   //now shut down each of the client threads in turn
     std::map<std::string,ClientThread*>::iterator q;
     for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
     {
+        q->second->Kill();
         delete q->second;
     }
     m_ClientThreads.clear();
 
+    //maybe the base class has other business
     return BASE::Stop();
 }
 
@@ -664,10 +686,13 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 bool ThreadedCommServer::ClientThread::Kill()
 {
 
+    ClientThreadSharedData QuitInstruction("",ClientThreadSharedData::STOP_THREAD);
 
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
+	    _SharedDataOutgoing.Push(QuitInstruction);
+
 		if(!_Writer.Stop())
 			return false;
 	}
@@ -731,6 +756,11 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				case ClientThreadSharedData::CONNECTION_CLOSED:
 				{
 					return true;
+				}
+
+				case ClientThreadSharedData::STOP_THREAD:
+				{
+				    return true;
 				}
 
 				//do normal writing
