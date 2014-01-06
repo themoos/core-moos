@@ -52,6 +52,12 @@ class ActiveMailQueue
 {
 public:
 
+    //constructor with a name
+    ActiveMailQueue(const std::string &sName);
+
+    //destructor
+    virtual ~ActiveMailQueue();
+
 	//install a callback onto the queue C style
 	void SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParamCaller), void * pCallerParam);
 
@@ -60,17 +66,23 @@ public:
 	template <class T>
     void SetCallback(T* Instance,bool (T::*memfunc)(CMOOSMsg &));
 
-    ActiveMailQueue(const std::string &sName);
-    	virtual ~ActiveMailQueue();
+	// is the queue running?
+	bool IsRunning();
 
-	//us this to push work onto the queue
+	//use this to push work onto the queue
 	bool Push(const CMOOSMsg & M);
 
-    bool DoWork();
+	//stop the Queue
     bool Stop();
+
+    //start the queue
     bool Start();
+
+    //get the name of the queue
     std::string GetName();
 
+    //don't call this
+    bool DoWork();
 
 protected:
 	MOOS::SafeList<CMOOSMsg> queue_;
@@ -85,7 +97,7 @@ protected:
 
     CMOOSThread thread_;
 
-    //this is a mick name for the Queue
+    //this is a nick-name for the Queue
     std::string Name_;
 
 };
