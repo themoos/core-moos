@@ -201,11 +201,14 @@ public:
 			switch (retval)
 			{
 				case EINVAL:
-					MOOSTrace("pthread_join returned error: EINVAL\n", retval);					
+					MOOSTrace("pthread_join returned error: EINVAL\n", retval);
+					break;
 				case ESRCH:
 					MOOSTrace("pthread_join returned error: ESRCH\n", retval);
+					break;
 				case EDEADLK:
 					MOOSTrace("pthread_join returned error: EDEADLK\n", retval);
+					break;
 			}
 			
             MOOSTrace("pthread_join returned error: %d\n", retval);
