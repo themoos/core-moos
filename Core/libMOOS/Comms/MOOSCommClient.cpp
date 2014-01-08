@@ -718,7 +718,7 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 			//each element is a <nickname,pattern> string pair;
 			std::map<std::string, std::string  >::iterator w;
 
-			bool bFound = false;
+			bool bFoundWCMatch = false;
 			for(w = WildcardQueuePatterns_.begin();w!=WildcardQueuePatterns_.end();w++)
 			{
 				std::string sPattern = w->second;
@@ -727,7 +727,7 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 				if(MOOSWildCmp(sPattern,t->GetKey()))
 				{
 					Msg2ActiveQueueName_[t->GetKey()].push_back(w->first);
-					bFound = true;
+					bFoundWCMatch = true;
 				}
 			}
 
@@ -737,25 +737,27 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 			//but what to do if a wc queue in installed at run time...?
 			WildcardCheckSet_.insert(t->GetKey());
 
+			//std::cerr<<"added key"<<t->GetKey()<<" to wildcard chacek set\n";
+
 			//if we found a least one mapping simply go again without
 			//incrementing t...smart
-			if(!bFound)
+			if(bFoundWCMatch)
 			{
-				//nothing else to do, increment and carry
-				t++;
+			    continue;
 			}
-
-			//skip back to t!=m_InBox.end();
-			continue;
 		}
 
 		//now we know which queue(s) are relevant for us.
 		//there namaes are in a string list.
 		std::list<std::string>::iterator r;
 
+		bool bPickedUpByActiveQueue = false;
 		for(r = q->second.begin();r!=q->second.end();r++)
 		{
-			//for each named queue find a pointer to
+
+		    //std::cerr<<"found queue that is relevent "<<*r<<"\n";
+
+		    //for each named queue find a pointer to
 			//the actual active queue
 			std::map<std::string,MOOS::ActiveMailQueue*>::iterator v;
 			v = ActiveQueueMap_.find(*r);
@@ -763,20 +765,32 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 			{
 				//and now we have checked it exists push this message to that
 				//queue
-				MOOS::ActiveMailQueue* pQ = v->second;
+                MOOS::ActiveMailQueue* pQ = v->second;
+                //std::cerr<<"pushing to queue: "<<(void*)pQ<<"\n";
+                bPickedUpByActiveQueue = true;
 				pQ->Push(*t);
 			}
 			else
 			{
 				//this is bad news - we have be told to use a queue
 				//which does not exist.
+			    //std::cerr<<"WTF\n";
 				throw std::runtime_error("active queue "+*r+" not found");
 			}
 		}
 
-		//we have now handled this message remove it from the Inbox.
-		t = m_InBox.erase(t);
 
+		if(bPickedUpByActiveQueue)
+		{
+	        //we have now handled this message remove it from the Inbox.
+		    MOOSMSG_LIST::iterator to_erase = t;
+		    ++t;
+		    m_InBox.erase(to_erase);
+		}
+		else
+		{
+		    ++t;
+		}
 	}
 
 	return true;

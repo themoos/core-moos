@@ -143,6 +143,8 @@ void ActiveMailQueue::SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParam), void 
 
 	pfn_=pfn;
 	caller_param_ = pCallerParam;
+
+	//std::cerr<<"set pfn to "<<std::hex<<(void *)pfn_<<"\n";
 }
 
 
