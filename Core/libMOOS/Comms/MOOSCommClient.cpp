@@ -745,6 +745,16 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 			{
 			    continue;
 			}
+			else
+			{
+			    if(q==Msg2ActiveQueueName_.end())
+			    {
+			        //wildcard queues are not interested
+			        //no standard queue is interested
+			        //nothing to do....
+			        return true;
+			    }
+			}
 		}
 
 		//now we know which queue(s) are relevant for us.
