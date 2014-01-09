@@ -85,6 +85,7 @@ public:
 
     bool OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx);
 
+    bool SetQuiet(bool bQuiet);
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
@@ -135,6 +136,7 @@ private:
     CMOOSFileReader m_MissionReader;
     int m_nPort;
     double m_dfStartTime;
+    bool m_bQuiet;
 
 
     /**a map of client name to a list of Msgs that will be sent

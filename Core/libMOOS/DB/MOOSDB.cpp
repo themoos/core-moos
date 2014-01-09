@@ -84,6 +84,8 @@ CMOOSDB::CMOOSDB()
     //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     
+    m_bQuiet = false;
+
     //make our own variable called DB_TIME
     {
         CMOOSDBVar NewVar("DB_TIME");
@@ -289,6 +291,8 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new MOOS::ThreadedCommServer);
     }
 
+    m_pCommServer->SetQuiet(m_bQuiet);
+
     m_pCommServer->SetOnRxCallBack(OnRxPktCallBack,this);
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
@@ -318,6 +322,16 @@ bool CMOOSDB::IsRunning()
 		return false;
 
 	return m_pCommServer->IsRunning();
+}
+
+
+bool CMOOSDB::SetQuiet(bool bQuiet)
+{
+    m_bQuiet = bQuiet;
+    if(m_pCommServer.get()!=NULL)
+        m_pCommServer->SetQuiet(m_bQuiet);
+
+    return true;
 }
 
 
