@@ -35,6 +35,8 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/MOOSAssert.h"
 
+#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+
 #include <algorithm>
 #include <iterator>
 #include <cctype>
@@ -1158,11 +1160,16 @@ bool MOOSFail(const char * FmtStr,...)
 
 //this is library scope mapping of threadid to a flag
 //specifying whether or no a thread should allow MOOSTracing.
+//note we need global lock protection for all functions that
+//access gThread2TraceMap
 THREAD2TRACE_MAP gThread2TraceMap;
+CMOOSLock gTraceLock;
 
 void InhibitMOOSTraceInThisThread(bool bInhibit)
 {
-    
+    //lock it!
+    MOOS::ScopedLock Lock(gTraceLock);
+
 #ifdef _WIN32
     DWORD Me = GetCurrentThreadId(); 
 #else
@@ -1180,7 +1187,7 @@ void MOOSTrace(string  sStr)
 
 void MOOSTrace(const char *FmtStr,...)
 {
-    
+
     //initially we wqnt to check to see if printing
     //from this thread has been inhibited by a call to
     //
@@ -1190,16 +1197,22 @@ void MOOSTrace(const char *FmtStr,...)
     pthread_t Me =  pthread_self();
 #endif
 
-    if(!gThread2TraceMap.empty())
-    
     {
-        THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
-    
-        //have we been told to be quiet?
-        if(p!=gThread2TraceMap.end())
-            if(p->second==true)
-                return;
+        //lock it! - just here - in case we use need MOOS trace furher down
+        MOOS::ScopedLock Lock(gTraceLock);
+
+        if(!gThread2TraceMap.empty())
+
+        {
+            THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
+
+            //have we been told to be quiet?
+            if(p!=gThread2TraceMap.end())
+                if(p->second==true)
+                    return;
+        }
     }
+    
     
     const unsigned int MAX_TRACE_STR = 2048;
 
