@@ -1254,6 +1254,13 @@ bool CMOOSCommClient::Register(const std::string & sVarPattern,const std::string
 {
 	std::string sMsg;
 
+	if(sVarPattern.empty())
+	    return MOOSFail("empty variable pattern in CMOOSCommClient::Register");
+
+    if(sAppPattern.empty())
+        return MOOSFail("empty source pattern in CMOOSCommClient::Register");
+
+
 	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
 	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
 	MOOSAddValToString(sMsg,"Interval",dfInterval);
