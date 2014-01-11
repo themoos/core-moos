@@ -94,6 +94,7 @@ class ServerAudit::Impl
 public:
 	Impl()
 	{
+	    quiet_ = false;
 		thread_.Initialise(AuditDispatch,this);
 	}
 
@@ -106,10 +107,19 @@ public:
 		destination_host_ = destination_host;
 		destination_port_ = port;
 
-		std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
-		std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		if(!quiet_)
+		{
+		    std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
+		    std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		}
 
 		return thread_.Start();
+	}
+
+	bool SetQuiet(bool bQuiet)
+	{
+	    quiet_=bQuiet;
+	    return true;
 	}
 
 	bool Work()
@@ -257,6 +267,7 @@ public:
 
 	std::string destination_host_;
 	unsigned int destination_port_;
+	bool quiet_;
 
 	std::map<std::string,ClientAudit> Audits_;
 
@@ -291,6 +302,10 @@ bool ServerAudit::Remove(const std::string & sClient)
 	return Impl_->Remove(sClient);
 }
 
+bool ServerAudit::SetQuiet(bool bQuiet)
+{
+    return Impl_->SetQuiet(bQuiet);
+}
 
 bool ServerAudit::AddStatistic(const std::string sClient, unsigned int nBytes,unsigned int nMessages, double dfTime, bool bIncoming)
 {

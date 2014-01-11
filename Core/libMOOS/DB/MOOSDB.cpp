@@ -510,9 +510,12 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 				{
 					//add the filter owner (client *g) as a subscriber
 					rVar.AddSubscriber(g->first, h->period());
-					std::cout<<"+ subs of \""<<g->first<<"\" to \""
-							<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
-							<<"\""<<std::endl;
+					if(!m_bQuiet)
+					{
+                        std::cout<<"+ subs of \""<<g->first<<"\" to \""
+                                <<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+                                <<"\""<<std::endl;
+					}
 				}
 			}
 		}
@@ -773,11 +776,14 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 				M.m_dfVal = period;
 				M.m_sSrc = Msg.GetSource();
 
-				std::cout<<MOOS::ConsoleColours::yellow()
-						<<"+ subs of \""
-						<<Msg.GetSource()<<"\" to variables matching \""
-						<<var_pattern<<":"<<app_pattern<<"\""
-						<<MOOS::ConsoleColours::reset()<<std::endl;
+				if(!m_bQuiet)
+				{
+                    std::cout<<MOOS::ConsoleColours::yellow()
+                            <<"+ subs of \""
+                            <<Msg.GetSource()<<"\" to variables matching \""
+                            <<var_pattern<<":"<<app_pattern<<"\""
+                            <<MOOS::ConsoleColours::reset()<<std::endl;
+				}
 
 				OnRegister(M);//smart...
 			}
@@ -856,7 +862,10 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
-    std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    if(!m_bQuiet)
+    {
+        std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    }
     
     DBVAR_MAP::iterator p;
     
@@ -872,8 +881,10 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     }
     
     m_HeldMailMap.erase(sClient);
-    std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
+    if(!m_bQuiet)
+        std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
+
     return true;
 }
 

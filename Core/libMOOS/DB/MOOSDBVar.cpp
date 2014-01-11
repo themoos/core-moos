@@ -93,7 +93,7 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 
     	m_Subscribers[sClient] = Info;
 
-    	MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
+    	//MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
 
     }
 
@@ -120,7 +120,7 @@ void CMOOSDBVar::RemoveSubscriber(string &sWho)
     {
     //MOOSTrace("MOOSDB: Removing \"%s\"'s subscription to \"%s\"\n",sWho.c_str(),m_sName.c_str());
     	m_Subscribers.erase(p);
-    	MOOSTrace("- subs of \"%s\" to \"%s\" \n",sWho.c_str(),m_sName.c_str());
+    	//MOOSTrace("- subs of \"%s\" to \"%s\" \n",sWho.c_str(),m_sName.c_str());
 
     }
 }

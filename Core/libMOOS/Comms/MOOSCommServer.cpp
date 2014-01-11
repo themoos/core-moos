@@ -986,6 +986,9 @@ bool CMOOSCommServer::SupportsAsynchronousClients()
 
 void CMOOSCommServer::DoBanner()
 {
+    if(m_bQuiet)
+        return;
+
     std::cout<<"------------------- MOOSDB V10 -------------------\n";
 
     std::cout<<"  Hosting  community                "<<
