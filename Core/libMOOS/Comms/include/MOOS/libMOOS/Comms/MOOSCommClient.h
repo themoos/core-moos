@@ -542,7 +542,7 @@ protected:
     /**
      * list of names of active mail queues for each message name
      */
-    std::map<std::string,std::list<std::string>  > Msg2ActiveQueueName_;
+    std::map<std::string,std::set<std::string>  > Msg2ActiveQueueName_;
 
     /**
      * mapping a queue name to a pointer to a queue

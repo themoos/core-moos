@@ -68,7 +68,7 @@ bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
 	{
 		if(MOOSWildCmp(sPattern,*q))
 		{
-			Msg2ActiveQueueName_[*q].push_back(sQueueName);
+			Msg2ActiveQueueName_[*q].insert(sQueueName);
 		}
 	}
 
