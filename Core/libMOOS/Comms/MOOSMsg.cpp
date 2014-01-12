@@ -615,7 +615,10 @@ bool CMOOSMsg::GetBinaryData(std::vector<unsigned char > &v)
 	if(!IsBinary())
 		return false;
 
-	v.reserve(GetBinaryDataSize());
+	if(v.size()!=GetBinaryDataSize())
+	{
+	    v.resize(GetBinaryDataSize());
+	}
 	std::copy(m_sVal.begin(),m_sVal.end(),v.begin());
 	return true;
 }
