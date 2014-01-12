@@ -413,7 +413,7 @@ void CMOOSCommClient::PrintMessageToActiveQueueRouting()
 
 bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
 {
-	ActiveQueuesLock_.Lock();
+	MOOS::ScopedLock L(ActiveQueuesLock_);
 
 	//maps message name to a list of queues...
 	std::map<std::string,std::set<std::string > >::iterator q;
@@ -437,12 +437,14 @@ bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
     	delete w->second;
     	ActiveQueueMap_.erase(w);
     }
-
+    else
+    {
+        return false;
+    }
     //and remove from wildcard queue (if it is there)
     WildcardQueuePatterns_.erase(sQueueName);
 
-	ActiveQueuesLock_.UnLock();
-	return false;
+	return true;
 }
 
 
