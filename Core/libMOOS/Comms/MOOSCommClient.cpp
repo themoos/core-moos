@@ -107,6 +107,7 @@ CMOOSCommClient::CMOOSCommClient()
     
 
     m_nMsgsReceived = 0;
+    m_nMsgsSent = 0;
     m_nPktsReceived = 0;
 
     m_bPostNewestToFront = false;
@@ -262,6 +263,12 @@ uint64_t CMOOSCommClient::GetNumMsgsReceived()
 {
     return m_nMsgsReceived;
 }
+
+uint64_t CMOOSCommClient::GetNumMsgsSent()
+{
+    return m_nMsgsSent;
+}
+
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
@@ -590,6 +597,7 @@ bool CMOOSCommClient::DoClientWork()
 			try 
 			{
 				PktTx.Serialize(m_OutBox,true);
+				m_nMsgsSent+=PktTx.GetNumMessagesSerialised();
 				m_nBytesSent+=PktTx.GetStreamLength();
 			}
 			catch (CMOOSException e) 

@@ -244,9 +244,11 @@ public:
     /** get total number of bytes received*/
     uint64_t GetNumBytesReceived();
 
-    /** get total number of messages recieved*/
+    /** get total number of messages received*/
     uint64_t GetNumMsgsReceived();
 
+    /** get total number of messages sent*/
+    uint64_t GetNumMsgsSent();
 
 
     /** used to control how verbose the connection process is */
@@ -588,9 +590,15 @@ protected:
     uint64_t m_nPktsReceived;
 
      /*
-     * a counter for total bytes received.
+     * a counter for total message received.
      */
     uint64_t m_nMsgsReceived;
+
+
+    /*
+    * a counter for total message received.
+    */
+    uint64_t m_nMsgsSent;
 
 
     /**

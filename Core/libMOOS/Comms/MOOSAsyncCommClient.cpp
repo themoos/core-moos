@@ -160,18 +160,22 @@ bool MOOSAsyncCommClient::WritingLoop() {
         MOOS::BoostThisThread();
     }
 
-    while (!WritingThread_.IsQuitRequested()) {
+    while (!WritingThread_.IsQuitRequested())
+    {
 
         //this is the connect loop...
         m_pSocket = new XPCTcpSocket(m_lPort);
 
-        try {
+        try
+        {
             if (m_bDisableNagle)
                 m_pSocket->vSetNoDelay(1);
 
             m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB * 1024);
             m_pSocket->vSetSendBuf(m_nSendBufferSizeKB * 1024);
-        } catch (XPCException & e) {
+        }
+        catch (XPCException & e)
+        {
             std::cerr << "there was trouble configuring socket buffers: "
                     << e.sGetException() << "\n";
         }
@@ -179,23 +183,31 @@ bool MOOSAsyncCommClient::WritingLoop() {
         m_nBytesSent = 0;
         m_nBytesReceived = 0;
 
-        if (ConnectToServer()) {
+        if (ConnectToServer())
+        {
+            //reset this counter here because a message is sent during handshaking
+            m_nMsgsSent = 0;
+
             int nMSToWait = 333;
 
             m_dfLastSendTime = MOOSLocalTime();
 
-            while (!WritingThread_.IsQuitRequested() && IsConnected()) {
-                if (OutGoingQueue_.Size() == 0) {
+            while (!WritingThread_.IsQuitRequested() && IsConnected())
+            {
+                if (OutGoingQueue_.Size() == 0)
+                {
                     //this may timeout in which case we DoWriting() which may send
                     //a timing message (heart beat) in Do Writing...
                     OutGoingQueue_.WaitForPush(nMSToWait);
                 }
 
-                if (!DoWriting()) {
+                if (!DoWriting())
+                {
                     OnCloseConnection();
                 }
             }
-        } else {
+        } else
+        {
             //this is bad....if ConnectToServer() returns false
             //it wasn't simply that we could not get hold of the server
             //it was that we misbehaved badly. We should quit..
@@ -205,7 +217,8 @@ bool MOOSAsyncCommClient::WritingLoop() {
 
     }
     //clean up on exit....
-    if (m_pSocket != NULL) {
+    if (m_pSocket != NULL)
+    {
         if (m_pSocket)
             delete m_pSocket;
         m_pSocket = NULL;
@@ -232,32 +245,39 @@ bool MOOSAsyncCommClient::DoWriting() {
         OutGoingQueue_.AppendToOtherInConstantTime(StuffToSend);
 
         for (MOOSMSG_LIST::iterator q = StuffToSend.begin(); q
-                != StuffToSend.end(); q++) {
-            if (q->IsType(MOOS_TERMINATE_CONNECTION)) {
+                != StuffToSend.end(); q++)
+        {
+            if (q->IsType(MOOS_TERMINATE_CONNECTION))
+            {
                 //std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
                 return false;
             }
+            m_nMsgsSent++;
         }
 
         //and once in a while we shall send a timing
         //message (this is the new style of timing
-        if ((MOOSLocalTime() - m_dfLastTimingMessage) > TIMING_MESSAGE_PERIOD) {
+        if ((MOOSLocalTime() - m_dfLastTimingMessage) > TIMING_MESSAGE_PERIOD)
+        {
             CMOOSMsg Msg(MOOS_TIMING, "_async_timing", 0.0, MOOSLocalTime());
             StuffToSend.push_front(Msg);
             m_dfLastTimingMessage = Msg.GetTime();
         }
 
-        if (StuffToSend.empty()) {
+        if (StuffToSend.empty())
+        {
             return true;
         }
 
         //convert our out box to a single packet
         CMOOSCommPkt PktTx;
 
-        try {
+        try
+        {
             PktTx.Serialize(StuffToSend, true);
             m_nBytesSent += PktTx.GetStreamLength();
-        } catch (const CMOOSException & e) {
+        }
+        catch (const CMOOSException & e) {
             //clear the outbox
             MOOS::DeliberatelyNotUsed(e);
             throw CMOOSException(
@@ -371,6 +391,8 @@ bool MOOSAsyncCommClient::DoReading()
             {
                 case MOOS_TIMING:
                 {
+                    //timing messages don't count in statisics
+                    m_nMsgsReceived--;
                     //we have a fancy new DB upstream...
                     //one that supports Asynchronous Clients
 
