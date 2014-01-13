@@ -467,6 +467,27 @@ bool CMOOSCommClient::AddMessageRouteToActiveQueue(const std::string & sQueueNam
 
 }
 
+
+bool CMOOSCommClient::RemoveMessageRouteToActiveQueue(std::string const& sQueueName,
+                                                      std::string const& sMsgName)
+{
+    if(!HasActiveQueue(sQueueName))
+        return false;
+
+    MOOS::ScopedLock L(ActiveQueuesLock_);
+
+    std::map<std::string,std::set<std::string>  >::iterator w = Msg2ActiveQueueName_.find(sMsgName);
+
+    if(w==Msg2ActiveQueueName_.end())
+        return false;
+
+    Msg2ActiveQueueName_.erase(w);
+
+    return true;
+
+}
+
+
 //deprecated version
 bool CMOOSCommClient::AddMessageCallBack(const std::string & sQueueName,
 				const std::string & sMsgName,
