@@ -109,6 +109,8 @@ bool MOOSAsyncCommClient::Close(bool) {
     if (!ReadingThread_.Stop())
         return false;
 
+    OutGoingQueue_.Push(CMOOSMsg(MOOS_TERMINATE_CONNECTION,"-quit-", 0));
+
     if (!WritingThread_.Stop())
         return false;
 
@@ -249,7 +251,7 @@ bool MOOSAsyncCommClient::DoWriting() {
         {
             if (q->IsType(MOOS_TERMINATE_CONNECTION))
             {
-                //std::cout<<"writing thread receives terminate connection request from sibling reader thread\n";
+                std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
                 return false;
             }
             m_nMsgsSent++;
@@ -337,7 +339,7 @@ bool MOOSAsyncCommClient::ReadingLoop() {
             MOOSPause(100);
         }
     }
-    //std::cout<<"READING LOOP quiting...\n";
+    //std::cerr<<"READING LOOP quiting...\n";
     return true;
 }
 
