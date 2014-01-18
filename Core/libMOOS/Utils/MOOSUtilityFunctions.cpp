@@ -874,11 +874,14 @@ bool MOOSStrCmp(string s1,string s2)
 }
 
 
-string MOOSGetDate()
+string MOOSGetDate(double t)
 {
 #ifndef _WIN32
     struct timeb timebuffer;
     ftime( &timebuffer );
+
+    if(t<0)
+        timebuffer.time = 0;
 
     char *timeline = ctime( & ( timebuffer.time ) );
     char sResult[100];
@@ -890,6 +893,10 @@ string MOOSGetDate()
 #else
     struct _timeb timebuffer;
     _ftime( &timebuffer );
+
+    if(t<0)
+            timebuffer.time = 0;
+
 
     char *timeline = ctime( & ( timebuffer.time ) );
     char sResult[100];
@@ -966,11 +973,15 @@ bool MOOSWildCmp(const std::string & sPattern, const std::string & sString )
 }
 
 
-string MOOSGetTimeStampString()
+string MOOSGetTimeStampString(double t)
 {
+
     struct tm *Now;
-    time_t aclock;
-    time( &aclock );
+    time_t aclock=0;
+    if(t<0)
+    {
+        time( &aclock );
+    }
  	
     Now = localtime( &aclock );
     //change suggested by toby schneider April 2009 
@@ -1246,7 +1257,10 @@ void MOOSTrace(const char *FmtStr,...)
     // be processed by the _vsnprintf above, then placed in 'buf'.
     // Problem is that fprintf finds the '%' in buf and expects us to provide more arguments!
         //fprintf(stderr,buf);
-    fputs(buf, stdout);
+    //fputs(buf, stdout);
+
+        //changed by pmn to use c++ streams
+        std::cout<<buf;
 
     }
 }

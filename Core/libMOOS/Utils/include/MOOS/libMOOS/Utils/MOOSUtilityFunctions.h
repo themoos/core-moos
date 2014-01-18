@@ -182,10 +182,10 @@ void InhibitMOOSTraceInThisThread(bool bInhibit = true);
 bool MOOSFail(const char * FmtStr,...);
 
 /** return nicely formatted time stamp string */
-std::string MOOSGetTimeStampString();
+std::string MOOSGetTimeStampString(double Time=-1.0);
 
 /** get the current date formatted nicely */
-std::string MOOSGetDate();
+std::string MOOSGetDate(double Time=-1.0);
 
 /** useful macro for debugging prints line and file */
 #define  MOOSHERE  MOOSFormat("File %s Line %d", __FILE__,__LINE__).c_str()
