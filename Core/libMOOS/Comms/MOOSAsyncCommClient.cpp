@@ -251,7 +251,7 @@ bool MOOSAsyncCommClient::DoWriting() {
         {
             if (q->IsType(MOOS_TERMINATE_CONNECTION))
             {
-                std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
+                //std::cerr<<"writing thread receives terminate connection request from sibling reader thread\n";
                 return false;
             }
             m_nMsgsSent++;
