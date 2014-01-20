@@ -56,8 +56,14 @@ bool BoostThisThread()
 		}
 		//std::cout<<"max priority"<< param.sched_priority<<"\n";
 
+		//we might already be at max priority
+		if(param.sched_priority==max_priority)
+		{
+		    //nothing to be done...
+		    throw std::runtime_error("MOOS::BoostThisThread() max priority reached");
+		}
+
 		param.sched_priority+=1;
-		policy = SCHED_OTHER;
 
 		if(pthread_setschedparam(pthread_self(), policy, &param)!=0)
 		{
@@ -71,7 +77,6 @@ bool BoostThisThread()
 		std::cerr<<e.what()<<" "<<strerror(errno)<<"\n";
 		return false;
 	}
-
 	return true;
 
 #endif
@@ -111,8 +116,6 @@ bool GetThisThreadsPriority(int & Priority, int & MaxAllowed)
 
 	Priority = param.sched_priority;
 	MaxAllowed = max_priority ;
-
-	std::cerr<<"P:"<<Priority<<" MA:"<<MaxAllowed<<"\n";
 
 	return true;
 #endif
