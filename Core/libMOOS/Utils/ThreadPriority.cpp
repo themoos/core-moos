@@ -41,7 +41,7 @@ bool BoostThisThread()
 #else
 	try
 	{
-		int policy;
+		int policy = SCHED_OTHER;
 		struct sched_param param;
 		if(pthread_getschedparam(pthread_self(), &policy, &param)!=0)
 		{
@@ -56,7 +56,8 @@ bool BoostThisThread()
 		}
 		//std::cout<<"max priority"<< param.sched_priority<<"\n";
 
-		param.sched_priority+=(max_priority-param.sched_priority)/2;
+		param.sched_priority+=1;
+		policy = SCHED_OTHER;
 
 		if(pthread_setschedparam(pthread_self(), policy, &param)!=0)
 		{
