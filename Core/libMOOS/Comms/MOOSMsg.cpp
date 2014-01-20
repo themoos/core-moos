@@ -550,10 +550,10 @@ bool CMOOSMsg::IsSkewed(double dfTimeNow, double * pdfSkew)
 {
     //if we are in playback mode (a global app wide flag)
     //then skew may not mean anything.. (we can stop and start at will)
-    if(IsMOOSPlayBack())
-    {
-        dfTimeNow  = m_dfTime;
-    }
+//    if(IsMOOSPlayBack())
+//    {
+//        dfTimeNow  = m_dfTime;
+//    }
 
     double dfSkew = fabs(dfTimeNow - m_dfTime);
 

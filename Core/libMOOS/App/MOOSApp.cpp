@@ -454,11 +454,11 @@ bool CMOOSApp::Configure()
 	}
 
 	//are we in playback mode
-	string sPlayBack;
-	if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
-	{
-		SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
-	}
+//	string sPlayBack;
+//	if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
+//	{
+//		SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
+//	}
 
 	//OK now figure out our tick speeds  above what is set by default
 	//in derived class constructors this can be set in the process config block

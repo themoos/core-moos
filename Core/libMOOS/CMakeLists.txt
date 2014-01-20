@@ -35,7 +35,7 @@ SET(UTILS_SOURCES
    Utils/ProcessConfigReader.cpp
    Utils/MOOSLinuxSerialPort.cpp
    Utils/MOOSSerialPort.cpp
-   Utils/MOOSPlaybackStatus.cpp
+#  Utils/MOOSPlaybackStatus.cpp
    Utils/IPV4Address.cpp
    Utils/KeyboardCapture.cpp
    Utils/ThreadPrint.cpp
