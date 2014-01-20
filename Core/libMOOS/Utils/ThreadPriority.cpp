@@ -111,6 +111,8 @@ bool GetThisThreadsPriority(int & Priority, int & MaxAllowed)
 	Priority = param.sched_priority;
 	MaxAllowed = max_priority ;
 
+	std::cerr<<"P:"<<Priority<<" MA:"<<MaxAllowed<<"\n";
+
 	return true;
 #endif
 
