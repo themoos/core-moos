@@ -85,7 +85,7 @@ bool GetThisThreadsPriority(int & Priority, int & MaxAllowed)
 	std::cerr<<"MOOS::GetThisThreadsPriority is not supported in WIN32 (yet)\n";
 	return false;
 #else
-	int policy;
+	int policy = SCHED_OTHER;
 	struct sched_param param;
 	int max_priority;
 
