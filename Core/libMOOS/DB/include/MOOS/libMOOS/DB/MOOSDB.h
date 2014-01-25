@@ -130,6 +130,8 @@ protected:
     bool OnNotify(CMOOSMsg & Msg);
     bool ProcessMsg(CMOOSMsg & MsgRx,MOOSMSG_LIST & MsgLstTx);
     double GetStartTime(){return m_dfStartTime;}
+    void OnPrintVersionAndExit();
+
 private:
     std::string m_sDBName;
     std::string m_sCommunityName;

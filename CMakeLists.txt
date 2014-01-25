@@ -53,6 +53,9 @@ include(EnableAllWarnings)
 # Bring in helper functions for dealing with CACHE INTERNAL variables
 include(CacheInternalHelpers)
 
+#figure out our git version
+include(GitInfo)
+
 # We want to create dynamic libraries
 set(BUILD_SHARED_LIBS true)
 

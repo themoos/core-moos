@@ -37,6 +37,9 @@
 #include "MOOS/libMOOS/MOOSLib.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/MOOSVersion.h"
+#include "MOOS/libMOOS/GitVersion.h"
+
 
 
 
@@ -147,6 +150,7 @@ void PrintHelpAndExit()
 	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
 	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
 	std::cout<<"--moos_community=<string>          specify community name\n";
+    std::cout<<"--moos_print_version               print build and version details\n";
 
 
 
@@ -172,6 +176,17 @@ void PrintHelpAndExit()
 	std::cout<<"  ./MOOSDB --moos_port=9001 --response=x_app:20,y_app:100,*_instrument:0\n";
 	exit(0);
 }
+
+void CMOOSDB::OnPrintVersionAndExit()
+{
+    std::cout<<"--------------------------------------------------\n";
+    std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+    std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+    std::cout<<MOOS_GIT_VERSION<<"\n";
+    std::cout<<"--------------------------------------------------\n";
+    exit(0);
+}
+
 
 bool CMOOSDB::Run(int argc,  char * argv[] )
 {
@@ -246,6 +261,10 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 	double dfWarningLatencyMS = 50;
 	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
     P.GetVariable("--warning_latency",dfWarningLatencyMS);
+
+
+    if(P.GetFlag("--moos_print_version"))
+        OnPrintVersionAndExit();
 
 
 

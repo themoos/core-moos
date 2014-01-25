@@ -38,6 +38,8 @@
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/MOOSVersion.h"
+#include "MOOS/libMOOS/GitVersion.h"
+
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -223,8 +225,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 void CMOOSApp::OnPrintVersionAndExit()
 {
 	std::cout<<"--------------------------------------------------\n";
-	std::cout<<"libMOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+	std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
 	std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+	std::cout<<MOOS_GIT_VERSION<<"\n";
 	std::cout<<"--------------------------------------------------\n";
 	exit(0);
 }
