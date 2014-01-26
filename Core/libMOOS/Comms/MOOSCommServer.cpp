@@ -48,6 +48,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
 
 using namespace std;
 
@@ -940,7 +941,10 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         //we are a V10 DB we can support AysncComms
         MsgW.m_sVal = "asynchronous";
-        MsgW.m_sSrcAux = GetLocalIPAddress();
+        std::string sAux;
+        MOOSAddValToString(sAux,"hostname",GetLocalIPAddress());
+
+        MsgW.m_sSrcAux = sAux;
         MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 
