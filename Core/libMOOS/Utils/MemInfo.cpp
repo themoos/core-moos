@@ -38,6 +38,9 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 #include <mach/mach.h>
+#include <mach/task_info.h>
+
+
 
 #elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
 #include <stdio.h>
