@@ -1114,16 +1114,21 @@ bool CMOOSCommClient::HandShake()
 
             	if(!WelcomeMsg.m_sSrcAux.empty())
             	{
+            	    std::string sDBHost;
+                    MOOSValFromString(sDBHost,WelcomeMsg.m_sSrcAux,"hostname",true);
+
                     std::cout<<std::left<<std::setw(40);
                     std::cout<<"  DB is running on ";
-                    std::cout<<MOOS::ConsoleColours::Green()<<WelcomeMsg.m_sSrcAux<<"\n";
+                    std::cout<<MOOS::ConsoleColours::Green()<<sDBHost<<"\n";
                     std::cout<<MOOS::ConsoleColours::reset();
 
                     std::cout<<std::left<<std::setw(40);
+
                     std::cout<<"  Timing skew estimation is ";
-                    if(GetLocalIPAddress()!=WelcomeMsg.m_sSrcAux)
+                    if( GetLocalIPAddress()!=sDBHost)
                     {
                         std::cout<<MOOS::ConsoleColours::Green()<<"[on]\n";
+                        std::cout<<MOOS::ConsoleColours::reset();
                         DoLocalTimeCorrection(true);
                     }
                     else
@@ -1132,6 +1137,8 @@ bool CMOOSCommClient::HandShake()
                         std::cout<<"[off] (not needed)\n";
                         DoLocalTimeCorrection(false);
                     }
+
+
             	}
                 std::cout<<MOOS::ConsoleColours::reset();
 
@@ -1688,14 +1695,14 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-//			m_sMyName.c_str(),
-//			dfRqTime,
-//			dfTxTime,
-//			dfRxTime,
-//			dfNewSkew);
-//
-//	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+			m_sMyName.c_str(),
+			dfRqTime,
+			dfTxTime,
+			dfRxTime,
+			dfNewSkew);
+
+	MOOSTrace("local = %.4f\nMOOS = %.4f\n ", MOOSLocalTime(false), MOOS::Time());
 //
 //
 //
