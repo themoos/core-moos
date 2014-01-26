@@ -428,7 +428,8 @@ bool CMOOSApp::Configure()
 
 	//what is the global time warp
 	double dfTimeWarp = 1.0;
-	if(m_CommandLineParser.GetOption("--moos_time_warp",dfTimeWarp) ||
+
+	if(m_CommandLineParser.GetVariable("--moos_time_warp",dfTimeWarp) ||
 			m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
 	{
 		SetMOOSTimeWarp(dfTimeWarp);
