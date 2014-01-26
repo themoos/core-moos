@@ -283,7 +283,7 @@ double GetMOOSTimeWarp()
 
 bool SetMOOSTimeWarp(double dfWarp)
 {
-    if(dfWarp>0 && dfWarp<MAX_TIME_WARP)
+    if(dfWarp>0 && dfWarp<=MAX_TIME_WARP)
     {
         gdfMOOSTimeWarp = dfWarp;
         return true;
