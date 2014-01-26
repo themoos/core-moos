@@ -41,6 +41,8 @@
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
 #include <queue>
 #include <ctime>
+#include <cmath>
+
 
 #ifndef _WIN32
 #include <termios.h>
@@ -333,6 +335,7 @@ public:
         	std::cout<<MOOS::ConsoleColours::Yellow();
         	std::cout<<std::left<<std::setw(20)<<"name";
         	std::cout<<std::left<<std::setw(20)<<"source";
+            std::cout<<std::left<<std::setw(20)<<"time";
         	std::cout<<std::left<<std::setw(30)<<"contents";
         	std::cout<<std::endl;
         	std::cout<<MOOS::ConsoleColours::reset();
@@ -350,19 +353,30 @@ public:
         	{
         		std::cout<<std::left<<std::setw(20)<<q->GetKey();
         		std::cout<<std::left<<std::setw(20)<<q->GetSource();
+                std::cout<<std::left<<std::setw(20)<<std::setprecision(15)<<q->GetTime();
         		std::string sout = q->GetAsString();
-        		if(sout.size()>GetScreenWidth()-43)
-        			sout = sout.substr(0,GetScreenWidth()-43)+"...";
+        		if(sout.size()>GetScreenWidth()-63)
+        			sout = sout.substr(0,GetScreenWidth()-63)+"...";
         		std::cout<<std::left<<std::setw(30)<<sout;
         		std::cout<<std::endl;
 
         	}
         	if(_bShowLatency)
         	{
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(3)<<dfLatencyMS<<" ms\n";
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
-                std::cout<<MOOS::ConsoleColours::yellow()<<"         mean: "<<std::setprecision(3)<<_dfMeanLatency<<" ms\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"\nMOOS::Time Latency: "<<std::setprecision(3)<<dfLatencyMS<<" ms\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"                Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"                Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"              mean: "<<std::setprecision(3)<<_dfMeanLatency<<" ms\n\n";
+
+                if(std::fabs(GetMOOSTimeWarp()-1.0)>1e-3)
+                {
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"Abs::Time  Latency: "<<std::setprecision(3)<<dfLatencyMS/GetMOOSTimeWarp()<<" ms\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"                Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()/GetMOOSTimeWarp()<<"\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"                Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()/GetMOOSTimeWarp()<<"\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"              mean: "<<std::setprecision(3)<<_dfMeanLatency/GetMOOSTimeWarp()<<" ms\n\n";
+        	    }
+
+
                 std::cout<<MOOS::ConsoleColours::reset();
         	}
 
@@ -403,10 +417,10 @@ public:
     }
     bool Iterate()
     {
-		static double dfT = MOOS::Time();
+		static double dfT = MOOSLocalTime(false);
 		static uint64_t nByteInCounter=0;
 		static uint64_t nByteOutCounter=0;
-		if(MOOS::Time()-dfT>1.0)
+		if(MOOSLocalTime(false)-dfT>1.0)
 		{
 			long long unsigned int bi, bo;
 			bi  = m_Comms.GetNumBytesReceived();
@@ -416,14 +430,15 @@ public:
 			{
 				std::cout<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
 				std::cout<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
-				std::cout<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+				std::cout<<MOOS::ConsoleColours::Green()<<"Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
 				std::cout<<MOOS::ConsoleColours::reset();
 			}
 
 			if(_bShowTimingAdjustment)
 			{
-			    std::cout<<MOOS::ConsoleColours::yellow()<<"Skew relative to MOOSDB : "<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
-                std::cout<<MOOS::ConsoleColours::reset();
+			    std::cout<<MOOS::ConsoleColours::magenta()<<"timing correction : "<<std::left<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
+
+			    std::cout<<MOOS::ConsoleColours::reset();
 			}
 
 			if(_bPing )
@@ -439,7 +454,7 @@ public:
 
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
-			dfT = MOOS::Time();
+			dfT = MOOSLocalTime(false);
 
 		}
 
@@ -654,7 +669,20 @@ private:
 
         bool isActive(double TimeNow) const
         {
-            return _dfTimeScheduled < TimeNow;
+            bool bActive =_dfTimeScheduled < TimeNow;
+
+//            if(bActive)
+//            {
+//                std::cerr<<"IsActive: "
+//                        << " _dfTimeScheduled " <<std::setprecision(17)<<_dfTimeScheduled
+//                        <<" TimeNow "<<std::setprecision(17)<<TimeNow
+//                        <<" local "<<std::setprecision(17)<<MOOSLocalTime(false)
+//                        <<" moos "<<std::setprecision(17)<<MOOSTime()
+//                        <<" active "<<bActive<<"\n";
+//            }
+
+
+            return bActive;
         }
 
         double _dfPeriod;
