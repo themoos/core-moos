@@ -259,11 +259,11 @@ bool MOOSAsyncCommClient::DoWriting() {
 
         //and once in a while we shall send a timing
         //message (this is the new style of timing
-        if ((MOOSLocalTime() - m_dfLastTimingMessage) > TIMING_MESSAGE_PERIOD)
+        if ((MOOSLocalTime(false) - m_dfLastTimingMessage) > TIMING_MESSAGE_PERIOD)
         {
             CMOOSMsg Msg(MOOS_TIMING, "_async_timing", 0.0, MOOSLocalTime());
             StuffToSend.push_front(Msg);
-            m_dfLastTimingMessage = Msg.GetTime();
+            m_dfLastTimingMessage = MOOSLocalTime(false);
         }
 
         if (StuffToSend.empty())
@@ -400,6 +400,7 @@ bool MOOSAsyncCommClient::DoReading()
 
                     if(m_bDoLocalTimeCorrection && GetNumPktsReceived()>1)
                     {
+
                         UpdateMOOSSkew(q->GetTime(),
                                 q->GetDouble(),
                                 dfLocalRxTime);
