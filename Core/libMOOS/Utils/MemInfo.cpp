@@ -105,12 +105,21 @@ size_t  GetCurrentMemoryUsage( )
 
 #elif defined(__APPLE__) && defined(__MACH__)
     /* OSX ------------------------------------------------------ */
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1080
     struct mach_task_basic_info info;
     mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
     if ( task_info( mach_task_self( ), MACH_TASK_BASIC_INFO,
         (task_info_t)&info, &infoCount ) != KERN_SUCCESS )
         return (size_t)0L;      /* Can't access? */
     return (size_t)info.resident_size;
+#else
+    struct task_basic_info info;
+        mach_msg_type_number_t infoCount = TASK_BASIC_INFO_COUNT;
+        if ( task_info( mach_task_self( ), TASK_BASIC_INFO,
+            (task_info_t)&info, &infoCount ) != KERN_SUCCESS )
+            return (size_t)0L;      /* Can't access? */
+        return (size_t)info.resident_size;
+#endif
 
 #elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
     /* Linux ---------------------------------------------------- */
