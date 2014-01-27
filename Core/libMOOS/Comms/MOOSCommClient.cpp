@@ -1695,14 +1695,14 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-			m_sMyName.c_str(),
-			dfRqTime,
-			dfTxTime,
-			dfRxTime,
-			dfNewSkew);
-
-	MOOSTrace("local = %.4f\nMOOS = %.4f\n ", MOOSLocalTime(false), MOOS::Time());
+//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+//			m_sMyName.c_str(),
+//			dfRqTime,
+//			dfTxTime,
+//			dfRxTime,
+//			dfNewSkew);
+//
+//	MOOSTrace("local = %.4f\nMOOS = %.4f\n ", MOOSLocalTime(false), MOOS::Time());
 //
 //
 //
