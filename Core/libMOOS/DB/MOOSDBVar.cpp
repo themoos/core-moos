@@ -83,7 +83,7 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 
     if(q!=m_Subscribers.end())
     {
-    	MOOSTrace("[!] ignoring repeat subscription to \"%s\" for %s \n",m_sName.c_str(),m_sName.c_str());
+    	//MOOSTrace("[!] ignoring repeat subscription to \"%s\" for %s \n",m_sName.c_str(),m_sName.c_str());
     	return true;
     }
     else
