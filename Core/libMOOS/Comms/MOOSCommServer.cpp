@@ -126,6 +126,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_nMaxSocketFD = 0;
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
+    m_pfnConnectCallBack = NULL;
 	m_pfnFetchAllMailCallBack = NULL;
     m_sCommunityName = "#1";
     m_bQuiet  = false;
@@ -704,6 +705,18 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 
     if(HandShake(pNewClient))
     {
+        if(m_pfnConnectCallBack!=NULL)
+        {
+            std::string sWho  = GetClientName(pNewClient);
+            if(!(*m_pfnConnectCallBack)(sWho,m_pConnectCallBackParam))
+            {
+                if(!m_bQuiet)
+                {
+                    std::cerr<<"user defined connect callback returns false\n";
+                }
+            }
+        }
+
         if(!m_bQuiet)
         {
             std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
@@ -829,7 +842,7 @@ void CMOOSCommServer::SetOnRxCallBack(bool ( *pfn)(const std::string & ,MOOSMSG_
 }
 
 //void CMOOSCommServer::SetOnDisconnectCallBack(bool (__cdecl *pfn)(string & MsgListRx, void * pParam), void * pParam)
-void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, void * pParam), void * pParam)
+void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & , void * pParam), void * pParam)
 {
     //address of function to invoke (static)
     m_pfnDisconnectCallBack=pfn;
@@ -838,6 +851,18 @@ void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, vo
     //resolution when callback is invoked
     m_pDisconnectCallBackParam = pParam;
 }
+
+void CMOOSCommServer::SetOnConnectCallBack(bool (*pfn)(string & , void * pParam), void * pParam)
+{
+    //address of function to invoke (static)
+    m_pfnConnectCallBack=pfn;
+
+    //store the address of the object invoking the callback -> needed for scope
+    //resolution when callback is invoked
+    m_pConnectCallBackParam = pParam;
+}
+
+
 
 void CMOOSCommServer::SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam)
 {

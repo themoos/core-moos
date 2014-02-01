@@ -39,6 +39,7 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/MOOSVersion.h"
 #include "MOOS/libMOOS/GitVersion.h"
+#include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
 
 
@@ -77,6 +78,14 @@ bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
     
     return pMe->OnDisconnect(sClient);
 }
+
+bool CMOOSDB::OnConnectCallBack(string & sClient, void * pParam)
+{
+    CMOOSDB* pMe = (CMOOSDB*)(pParam);
+
+    return pMe->OnConnect(sClient);
+}
+
 
 CMOOSDB::CMOOSDB()
 {
@@ -256,6 +265,13 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
     P.GetVariable("--moos_timeout",dfClientTimeout);
 
+    //do we want to fire up the event logger
+    std::string sEventLogFileName;
+    if(P.GetVariable("--event_log",sEventLogFileName))
+    {
+        m_EventLogger.Run(sEventLogFileName);
+    }
+
 
     ///////////////////////////////////////////////////////////
 	double dfWarningLatencyMS = 50;
@@ -316,6 +332,8 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
 
+    m_pCommServer->SetOnConnectCallBack(OnConnectCallBack,this);
+
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
 
     m_pCommServer->SetClientTimeout(dfClientTimeout);
@@ -330,7 +348,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp,nAuditPort);
 
-
+    m_EventLogger.AddEvent("DBStart","MOOSDB",MOOSFormat("Port=%d",m_nPort));
         
     return true;
 }
@@ -878,6 +896,13 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
     return rVar;
 }
 
+
+bool CMOOSDB::OnConnect(string &sClient)
+{
+    m_EventLogger.AddEvent("connect",sClient,"client connects");
+    return true;
+}
+
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
@@ -903,6 +928,9 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     
     if(!m_bQuiet)
         std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
+
+    m_EventLogger.AddEvent("disconnect",sClient,"client disconnects");
+
 
     return true;
 }

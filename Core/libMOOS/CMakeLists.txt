@@ -79,6 +79,7 @@ SET(DB_SOURCES
     DB/MsgFilter.cpp
     DB/HTTPConnection.cpp
     DB/MOOSDBHTTPServer.cpp
+    DB/MOOSDBLogger.cpp
 )
 
 

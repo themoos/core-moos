@@ -86,6 +86,15 @@ public:
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
 
 
+    /** Set the connect  call back handler.  The supplied call back must be of the form
+    static bool MyCallBack(std::string  & sClient,, void * pParam).
+    @param sClient   Name of client just connected
+    @param pParam      user suplied parameter to be passed to callback function
+    */
+    void SetOnConnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
+
+
+
     /**
 	* Set up the callback which is can be to collect all
 	* pending mail in named client
@@ -210,6 +219,15 @@ protected:
     /** place holder for the address of the object passed back to the user during a Disconnect callback
     @see SetOnDisconnectCallBack */
     void * m_pDisconnectCallBackParam;
+
+
+    /** user supplied OnConnect callback
+    @see SetOnConnectCallBack */
+    bool (*m_pfnConnectCallBack)(std::string  & sClient,void * pParam);
+
+    /** place holder for the address of the object passed back to the user during a Connect callback
+    @see SetOnConnectCallBack */
+    void * m_pConnectCallBackParam;
 
 
 

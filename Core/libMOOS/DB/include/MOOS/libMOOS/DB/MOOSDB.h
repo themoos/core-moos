@@ -42,7 +42,7 @@
 #include "MOOS/libMOOS/DB/MOOSDBVar.h"
 #include "MOOS/libMOOS/DB/MOOSDBHTTPServer.h"
 #include "MOOS/libMOOS/DB/MsgFilter.h"
-
+#include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
 
 //#ifdef HAVE_TR1_UNORDERED_MAP
@@ -69,6 +69,9 @@ class CMOOSDB
 {
 public:
     bool OnDisconnect(std::string & sClient);
+    bool OnConnect(std::string & sClient);
+
+
 
     /** callback function passed to CMOOSCommServer member object. This STATIC function allows
     entry back into this object by invoking OnRxPkt()*/
@@ -76,6 +79,9 @@ public:
 
     /** called internally when a client disconnects */
     static bool OnDisconnectCallBack(std::string & sClient,void * pParam);
+
+    /** called internally when a client disconnects */
+    static bool OnConnectCallBack(std::string & sClient,void * pParam);
 
     static bool OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam);
 
@@ -155,6 +161,8 @@ private:
 
     //pointer to the comms server (could be a threaded one but base class is CMOOSCommServer
     std::auto_ptr<CMOOSCommServer> m_pCommServer;
+
+    MOOS::MOOSDBLogger m_EventLogger;
 
 
 private:
