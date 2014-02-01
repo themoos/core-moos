@@ -54,7 +54,11 @@ include(EnableAllWarnings)
 include(CacheInternalHelpers)
 
 #figure out our git version
-include(GitInfo)
+option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
+mark_as_advanced(UPDATE_GIT_VERSION_INFO)
+if(UPDATE_GIT_VERSION_INFO)
+	include(GitInfo)
+endif()
 
 # We want to create dynamic libraries
 set(BUILD_SHARED_LIBS true)
