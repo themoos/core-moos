@@ -173,6 +173,7 @@ void PrintHelpAndExit()
 	std::cout<<"--warning_latency=<positive_float>    specify latency above which warning is issued in ms\n";
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
 	std::cout<<"--audit_port=<unsigned int>        specify port on which to transmit statistics\n";
+    std::cout<<"--event_log=<file name>            specify file in which to record events\n";
 
 
 
@@ -765,6 +766,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
 			return false;
 
+		m_EventLogger.AddEvent("register",Msg.m_sSrc,rVar.m_sName);
 
 		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
 		{
@@ -797,6 +799,9 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		//store this filter we will need it later when new
 		//as yet undiscovered variables are written
 		m_ClientFilters[Msg.GetSource()].insert(F);
+
+
+        m_EventLogger.AddEvent("wildcard",Msg.m_sSrc,Msg.GetString());
 
 
 		//now iterate over all existing variables and see if they match
@@ -889,6 +894,8 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 #endif
     }
     
+    m_EventLogger.AddEvent("create",Msg.GetSource(),Msg.GetName());
+
     //ok we know what you are talking about
     CMOOSDBVar & rVar = p->second;
     

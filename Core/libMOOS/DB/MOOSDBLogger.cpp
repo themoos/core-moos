@@ -69,13 +69,14 @@ public:
         time_t aclock=0;
         time( &aclock );
         struct tm *Now = localtime( &aclock );
-        return MOOSFormat("%.2d:%.2d:%.2d %d %d %d ",
+        return MOOSFormat("%.2d:%.2d:%.2d %d/%d/%d ",
                Now->tm_hour,
                Now->tm_min,
                Now->tm_sec,
                Now->tm_mday,
                Now->tm_mon+1,
                Now->tm_year+1900);
+
 
     }
     bool AddEvent(const std::string & sEvent,
@@ -119,7 +120,6 @@ public:
                 DBLogEvent e;
                 if(!event_list_.IsEmpty() || event_list_.WaitForPush(500) )
                 {
-                    std::cerr<<"event read\n";
                     event_list_.Pull(e);
                     e.Write(output_stream);
                 }
