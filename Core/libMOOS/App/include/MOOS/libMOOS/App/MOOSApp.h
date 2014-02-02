@@ -336,6 +336,14 @@ protected:
 		T* Instance,bool (T::*memfunc)(CMOOSMsg &)  );
 
 
+	/**
+	 * Add a route to an active queue (which must already exist)
+	 * @param  sQueueName name of queue
+	 * @param  sMsgName name of message to route
+	 */
+	bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+                    const std::string & sMsgName);
+
 
     /**
        * Register a custom callback and create the active queue as needed.

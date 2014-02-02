@@ -779,6 +779,17 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 
 
 bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
+                    const std::string & sMsgName)
+{
+    if(!m_Comms.HasActiveQueue(sQueueName))
+    {
+        return false;
+    }
+    return m_Comms.AddMessageRouteToActiveQueue(sQueueName,sMsgName);
+
+}
+
+bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
 		const std::string & sMsgName,
 		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
 		void * pYourParam )
