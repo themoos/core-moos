@@ -131,6 +131,17 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_CLIENTS"] = NewVar;
     }
     
+    //make our own variable called DB_INFO
+    {
+        CMOOSDBVar NewVar("DB_INFO");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_INFO"] = NewVar;
+    }
+
     //ignore broken pipes as is standard for network apps
 #ifndef _WIN32
     signal(SIGPIPE,SIG_IGN);
@@ -907,6 +918,14 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 bool CMOOSDB::OnConnect(string &sClient)
 {
     m_EventLogger.AddEvent("connect",sClient,"client connects");
+
+    //notify ourselves....
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_INFO",MOOSFormat("connected=%s",sClient.c_str()));
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
+
     return true;
 }
 
@@ -938,6 +957,12 @@ bool CMOOSDB::OnDisconnect(string &sClient)
 
     m_EventLogger.AddEvent("disconnect",sClient,"client disconnects");
 
+
+    //notify ourselves....
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_INFO",MOOSFormat("disconnected=%s",sClient.c_str()));
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
 
     return true;
 }
