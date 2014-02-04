@@ -132,6 +132,14 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 
 bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &Params)
 {
+
+    // try Lua first
+    if (m_LuaCfg)
+    {
+        return m_LuaCfg->GetConfiguration(sAppName, Params);
+    }
+
+    // else, backwards compatibility
     
     int nBrackets = 0;
     Params.clear();
@@ -300,6 +308,15 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 
 bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::string sParam, std::string &sVal)
 {
+
+    // try Lua first
+    if (m_LuaCfg)
+    {
+        return m_LuaCfg->GetConfigurationParam(sAppName, sParam, sVal);
+    }
+
+    // else, backwards compatibility
+
     Reset();
     
     STRING_LIST sParams;
