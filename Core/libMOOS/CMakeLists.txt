@@ -18,6 +18,8 @@ SET(COMMS_SOURCES
     Comms/ServerAudit.cpp
     Comms/ActiveMailQueue.cpp
     Comms/MessageQueueAccumulator.cpp
+    Comms/SuicidalSleeper.cpp
+    
     
 )
 
