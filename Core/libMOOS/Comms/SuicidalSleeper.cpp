@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <string>
+#include <cstring>
 #include <arpa/inet.h>
 #include <stdexcept>
 
