@@ -5,7 +5,11 @@
  *      Author: pnewman
  */
 
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <string>
 #include <arpa/inet.h>
 #include <stdexcept>
@@ -36,8 +40,7 @@ public:
         if(!SetupAndJoinMulticast())
             return false;
 
-
-        std::cerr<<"suicidal watch on "<<multicast_group_IP_address_<<":"<<multicast_port_<<"\n";
+        //std::cerr<<"suicidal watch on "<<multicast_group_IP_address_<<":"<<multicast_port_<<"\n";
         fd_set fds;
         struct timeval timeout;
 
