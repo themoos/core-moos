@@ -201,6 +201,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
 	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
 	std::cout<<"  --moos_time_warp=<number>   : set time warp \n";
+    std::cout<<"  --moos_suicide_channel=<str>: suicide monitoring channel (IP address) \n";
+    std::cout<<"  --moos_suicide_port=<int>   : suicide monitoring port  \n";
+    std::cout<<"  --moos_suicide_phrase=<str> : suicide pass phrase  \n";
 
 	std::cout<<"\nflags:\n";
 	std::cout<<"  --moos_iterate_no_comms     : enable iterate without comms \n";
@@ -210,6 +213,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_quiet                : don't print banner information \n";
 	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
 	std::cout<<"  --moos_no_colour            : disable colour printing \n";
+    std::cout<<"  --moos_suicide              : enable suicide monitoring \n";
+    std::cout<<"  --moos_suicide_print        : print suicide conditions \n";
+
 
 
 	std::cout<<"\nhelp:\n";
