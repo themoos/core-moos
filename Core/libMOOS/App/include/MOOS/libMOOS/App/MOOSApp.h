@@ -32,6 +32,7 @@
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+#include "MOOS/libMOOS/Comms/SuicidalSleeper.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
 #include "MOOS/libMOOS/Utils/Macros.h"
@@ -709,6 +710,8 @@ private:
 protected:
     MOOS::ProcInfo m_ProcessMonitor;
     
+    MOOS::SuicidalSleeper m_SuicidalSleeper;
+
 };
 
 #include "MOOS/libMOOS/App/MOOSApp.hxx"

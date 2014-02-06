@@ -320,6 +320,40 @@ bool CMOOSApp::Run( const std::string & sName,
 		SetQuiet(true);
 
 
+    std::string sSuicideAddress;
+    if(m_CommandLineParser.GetVariable("--moos_suicide_channel",sSuicideAddress))
+    {
+        m_SuicidalSleeper.SetChannel(sSuicideAddress);
+    }
+
+    int nSuicidePort;
+    if(m_CommandLineParser.GetVariable("--moos_suicide_port",nSuicidePort))
+    {
+        m_SuicidalSleeper.SetPort(nSuicidePort);
+    }
+
+    std::string sSuicidePhrase;
+    if(m_CommandLineParser.GetVariable("--moos_suicide_phrase",sSuicidePhrase))
+    {
+        m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
+    }
+
+    if(m_CommandLineParser.GetFlag("--moos_print_suicide"))
+    {
+        std::cerr<<"suicide terms and conditions are:\n";
+        std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
+        std::cerr<<" port     "<<m_SuicidalSleeper.GetPort()<<"\n";
+        std::cerr<<" phrase   \""<<m_SuicidalSleeper.GetPassPhrase()<<"\"\n";
+
+    }
+
+	if(m_CommandLineParser.GetFlag("--moos_suicide"))
+	{
+	    m_SuicidalSleeper.Run();
+	}
+
+
+
 	//look at mission file etc
 	if(!Configure())
 	{

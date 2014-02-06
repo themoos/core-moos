@@ -35,15 +35,28 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 
 
+MOOS::SuicidalSleeper Sleeper;
+
 void PrintHelpAndExit()
 {
 	std::cerr<<"quick test for suicide sleeper\n\n";
-	std::cerr<<"    stimulate with umm -p=la,di,da\n\n";
-	std::cerr<<"you should see :\n";
+	std::cerr<<"    kill with nc -u "<<Sleeper.GetChannel()<<" "<<Sleeper.GetPort()<<"\n";
+	std::cerr<<"then enter passphrase which is  :\n";
+	std::cerr<<"   "<<Sleeper.GetPassPhrase()<<"\n";
+
 	exit(0);
 
 }
 
+class ClassToHandleQuit
+{
+public:
+    bool on_exit(std::string &M)
+    {
+        M  = "I accept my fate....\n";
+        return true;
+    }
+};
 
 int main(int argc, char * argv[])
 {
@@ -54,7 +67,9 @@ int main(int argc, char * argv[])
 		PrintHelpAndExit();
 	}
 
-	MOOS::SuicidalSleeper Sleeper;
+	ClassToHandleQuit Q;
+	Sleeper.SetLastRightsCallback<ClassToHandleQuit>(&Q,&ClassToHandleQuit::on_exit);
+
 	Sleeper.Run();
 	while(1)
 	{
