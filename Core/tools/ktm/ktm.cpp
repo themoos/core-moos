@@ -18,15 +18,18 @@
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 
 
 bool SetupSocket(const std::string & sAddress, int Port);
 
+//such a simple program lets be old skool - file scope vars;
 int socket_fd;
 std::string sPhrase = "I need you to die now\n";
 std::string multicast_address = "224.1.1.3";
 int multicast_port = 4000;
+unsigned char hops = 0;
 struct sockaddr_in mc_addr;
 
 
@@ -36,6 +39,7 @@ void PrintHelpAndExit()
     std::cerr<<"--channel=<address>    address to issue kill on \n";
     std::cerr<<"--port=<int>           port to issue kill on \n";
     std::cerr<<"--phrase=<string>      pass phrase which Suicide listeners are keyed to\n";
+    std::cerr<<"--all                  pass to network, its a massacre\n";
     std::cerr<<"example    \n";
     std::cerr<<"    ./ktm  --phrase=\"die now\""<<"\n";
 
@@ -51,6 +55,18 @@ int main(int argc, char *argv[])
     P.GetVariable("--channel",multicast_address);
     P.GetVariable("--port",multicast_port);
     P.GetVariable("--phrase",sPhrase);
+
+    if(P.GetFlag("--all"))
+    {
+        std::cerr<<MOOS::ConsoleColours::Red()<<"THIS WILL KILL ALL APPS WITHIN 1 HOP...[N/y]\n";
+        std::cerr<<MOOS::ConsoleColours::reset();
+        char answer;
+        std::cin>>answer;
+        if(answer!='y')
+            return 0;
+
+        hops=1;
+    }
 
     if(P.GetFlag("--help","-h"))
         PrintHelpAndExit();
@@ -89,6 +105,14 @@ bool SetupSocket(const std::string & sAddress, int Port)
         mc_addr.sin_family = AF_INET;
         mc_addr.sin_addr.s_addr = inet_addr(sAddress.c_str());
         mc_addr.sin_port = htons(Port);
+
+
+        if(setsockopt(socket_fd, IPPROTO_IP, IP_MULTICAST_TTL, &hops, sizeof(hops))==-1)
+        {
+            return false;
+        }
+
+
     }
     catch(std::exception & e)
     {

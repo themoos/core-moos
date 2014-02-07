@@ -213,7 +213,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_quiet                : don't print banner information \n";
 	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
 	std::cout<<"  --moos_no_colour            : disable colour printing \n";
-    std::cout<<"  --moos_suicide              : enable suicide monitoring \n";
+    std::cout<<"  --moos_suicide_disable      : disable suicide monitoring \n";
     std::cout<<"  --moos_suicide_print        : print suicide conditions \n";
 
 
@@ -353,7 +353,7 @@ bool CMOOSApp::Run( const std::string & sName,
 
     }
 
-	if(m_CommandLineParser.GetFlag("--moos_suicide"))
+	if(!m_CommandLineParser.GetFlag("--moos_suicide_disable"))
 	{
 	    m_SuicidalSleeper.Run();
 	}
