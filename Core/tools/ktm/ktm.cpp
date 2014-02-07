@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         if(answer!='y')
             return 0;
 
-        hops=4;
+        hops=1;
     }
 
     if(P.GetFlag("--help","-h"))
