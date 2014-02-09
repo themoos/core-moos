@@ -50,6 +50,7 @@ private:
     std::string pass_phrase_;
     MOOS::FunctorStringRef* last_rights_callback_;
     CMOOSThread thread_;
+    unsigned int count_down_seconds_;
 
 
 

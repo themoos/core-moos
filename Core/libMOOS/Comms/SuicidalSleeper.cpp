@@ -37,6 +37,7 @@ SuicidalSleeper::SuicidalSleeper()
     multicast_port_  = 4000;
     pass_phrase_="I need you to die now";
     last_rights_callback_ = NULL;
+    count_down_seconds_ = 3;
 }
 
 bool SuicidalSleeper::SetPassPhrase(const std::string & sPassPhrase)
@@ -76,6 +77,25 @@ bool SuicidalSleeper::Run()
 {
     thread_.Initialise(_dispatch_, this);
     return thread_.Start();
+}
+
+bool DoCountDown(void * pParam)
+{
+    unsigned int * pk = (unsigned int *)pParam;
+    unsigned int k = *pk;
+    while(k)
+    {
+        std::cerr<<MOOS::ConsoleColours::Red();
+        std::cerr<<"    "<<k<<" SECONDS TO LIVE\r";
+        std::cerr<<MOOS::ConsoleColours::reset();
+        MOOSPause(1000);
+        k--;
+    }
+
+    //BANG!!!
+    exit(0);
+
+    return false;
 }
 
 bool SuicidalSleeper::Work()
@@ -129,6 +149,11 @@ bool SuicidalSleeper::Work()
 
                         if(msg==pass_phrase_+"\n")
                         {
+                            std::cerr<<MOOS::ConsoleColours::Red()<<"\n ** Received suicide instruction **\n";
+
+                            CMOOSThread count_down;
+                            count_down.Initialise(DoCountDown,&count_down_seconds_);
+                            count_down.Start();
                             if(last_rights_callback_)
                             {
                                 std::string user_message;
@@ -137,7 +162,7 @@ bool SuicidalSleeper::Work()
                                     std::cerr<<"last rights message is "<<user_message<<"\n";
                                 }
                             }
-                            std::cerr<<MOOS::ConsoleColours::Red()<<"\n ** Received suicide instruction **\n";
+                            count_down.Stop();
                             exit(0);
                         }
                         else
