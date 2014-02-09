@@ -171,6 +171,13 @@ void PrintHelpAndExit()
 	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
 	std::cout<<"--moos_community=<string>          specify community name\n";
     std::cout<<"--moos_print_version               print build and version details\n";
+    std::cout<<"--moos_suicide_channel=<str>       suicide monitoring channel (IP address) \n";
+    std::cout<<"--moos_suicide_port=<int>          suicide monitoring port  \n";
+    std::cout<<"--moos_suicide_phrase=<str>        suicide pass phrase  \n";
+    std::cout<<"--moos_suicide_disable             disable suicide monitoring \n";
+    std::cout<<"--moos_suicide_print               print suicide conditions \n";
+
+
 
 
 
@@ -345,7 +352,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
         m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
     }
 
-    if(P.GetFlag("--moos_print_suicide"))
+    if(P.GetFlag("--moos_suicide_print"))
     {
         std::cerr<<"suicide terms and conditions are:\n";
         std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";

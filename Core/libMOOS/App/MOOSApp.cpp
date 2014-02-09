@@ -344,7 +344,7 @@ bool CMOOSApp::Run( const std::string & sName,
         m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
     }
 
-    if(m_CommandLineParser.GetFlag("--moos_print_suicide"))
+    if(m_CommandLineParser.GetFlag("--moos_suicide_print"))
     {
         std::cerr<<"suicide terms and conditions are:\n";
         std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
