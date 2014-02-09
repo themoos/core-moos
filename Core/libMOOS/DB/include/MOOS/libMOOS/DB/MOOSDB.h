@@ -38,6 +38,7 @@
 #include "MOOS/libMOOS/Comms/CommsTypes.h"
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+#include "MOOS/libMOOS/Comms/SuicidalSleeper.h"
 
 #include "MOOS/libMOOS/DB/MOOSDBVar.h"
 #include "MOOS/libMOOS/DB/MOOSDBHTTPServer.h"
@@ -163,6 +164,8 @@ private:
     std::auto_ptr<CMOOSCommServer> m_pCommServer;
 
     MOOS::MOOSDBLogger m_EventLogger;
+
+    MOOS::SuicidalSleeper m_SuicidalSleeper;
 
 
 private:

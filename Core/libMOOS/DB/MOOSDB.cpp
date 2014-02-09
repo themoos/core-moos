@@ -324,6 +324,45 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 	P.GetVariable("--audit_port",nAuditPort);
 
 
+
+
+
+    std::string sSuicideAddress;
+    if(P.GetVariable("--moos_suicide_channel",sSuicideAddress))
+    {
+        m_SuicidalSleeper.SetChannel(sSuicideAddress);
+    }
+
+    int nSuicidePort;
+    if(P.GetVariable("--moos_suicide_port",nSuicidePort))
+    {
+        m_SuicidalSleeper.SetPort(nSuicidePort);
+    }
+
+    std::string sSuicidePhrase;
+    if(P.GetVariable("--moos_suicide_phrase",sSuicidePhrase))
+    {
+        m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
+    }
+
+    if(P.GetFlag("--moos_print_suicide"))
+    {
+        std::cerr<<"suicide terms and conditions are:\n";
+        std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
+        std::cerr<<" port     "<<m_SuicidalSleeper.GetPort()<<"\n";
+        std::cerr<<" phrase   \""<<m_SuicidalSleeper.GetPassPhrase()<<"\"\n";
+
+    }
+
+    if(!P.GetFlag("--moos_suicide_disable"))
+    {
+        m_SuicidalSleeper.Run();
+    }
+
+
+
+
+
     
     LogStartTime();
     
