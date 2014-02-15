@@ -123,7 +123,8 @@ bool MOOSAsyncCommClient::Flush() {
 
 bool MOOSAsyncCommClient::Post(CMOOSMsg & Msg, bool bKeepMsgSourceName) {
 
-    BASE::Post(Msg, bKeepMsgSourceName);
+    if(!BASE::Post(Msg, bKeepMsgSourceName))
+        return false;
 
     m_OutLock.Lock();
     {
