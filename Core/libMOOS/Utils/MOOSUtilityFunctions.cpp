@@ -1009,6 +1009,19 @@ void MOOSToUpper(string &str)
 	std::transform(str.begin(), str.end(),str.begin(), ::toupper); 
 }
 
+void MOOSToLower(string &str)
+{
+    std::transform(str.begin(), str.end(),str.begin(), ::tolower);
+}
+
+std::string MOOSToLower(const std::string & str)
+{
+    std::string STR = str;
+    std::transform(str.begin(), str.end(),STR.begin(), ::tolower);
+    return STR;
+}
+
+
 std::string MOOSToUpper(const std::string & str)
 {
 	std::string STR = str;

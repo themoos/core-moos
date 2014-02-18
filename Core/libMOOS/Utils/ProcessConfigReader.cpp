@@ -297,11 +297,15 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 }
 
 ///                               READ STRINGS
-
 bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::string sParam, std::string &sVal)
 {
     Reset();
-    
+
+    //remember all names we were asked for....
+    std::string sl = sParam;
+    MOOSToLower(sl);
+    m_Audit[sAppName].insert(sl);
+
     STRING_LIST sParams;
     
     if(GetConfigurationAndPreserveSpace( sAppName, sParams))
@@ -402,6 +406,21 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::vector
     }
     return false;
 }
+
+
+std::list<std::string> CProcessConfigReader::GetSearchedParameters(const std::string & sAppName)
+{
+    std::list<std::string> L;
+    std::map<std::string, std::set<std::string>  >::iterator q = m_Audit.find(sAppName);
+    if(q!=m_Audit.end())
+    {
+        std::copy(q->second.begin(),q->second.end(), std::back_inserter(L));
+    }
+    return L;
+}
+
+
+
 
 
 

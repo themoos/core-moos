@@ -27,6 +27,30 @@ bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
 
 }
 
+template <class T>
+bool CMOOSApp::GetParameterFromCommandLineOrConfigurationFile(std::string sOption, T & var,bool bPrependMinusMinusForCommandLine)
+{
+    T vF,vC;
+    bool bFoundInFile = m_MissionReader.GetConfigurationParam(sOption,vF);
+
+    if(bPrependMinusMinusForCommandLine)
+        sOption = "--"+sOption;
+
+    bool bFoundOnCommandLine = m_CommandLineParser.GetVariable(sOption,vC);
+    if(bFoundOnCommandLine)
+    {
+        var=vC;
+        return true;
+    }
+    if(bFoundInFile)
+    {
+        var=vF;
+        return true;
+    }
+    return false;
+}
+
+
 
 
 #endif /* MOOSAPP_HXX_ */

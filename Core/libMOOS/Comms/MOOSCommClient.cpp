@@ -1178,39 +1178,25 @@ std::string CMOOSCommClient::GetCommunityName()
 
 bool CMOOSCommClient::OnCloseConnection()
 {
-	if(!m_bQuiet)
-		MOOSTrace("closing connection...");
 	m_pSocket->vCloseSocket();
+
 	if(m_pSocket)
 		delete m_pSocket;
+
 	m_pSocket= NULL;
 	m_bConnected = false;
-	if(!m_bQuiet)
-		MOOSTrace("done\n");
 
 	ClearResources();
 
+	bool bUserResult = true;
 	if(m_pfnDisconnectCallBack!=NULL)
 	{
-		if(!m_bQuiet)
-			MOOSTrace("Invoking User OnDisconnect() callback...");
 		//invoke user defined callback
-		bool bUserResult = (*m_pfnDisconnectCallBack)(m_pDisconnectCallBackParam);
-		if(bUserResult)
-		{
-			if(!m_bQuiet)
-				MOOSTrace("ok\n");
-		}
-		else
-		{
-			if(!m_bQuiet)
-				MOOSTrace("returned fail\n");
-		}
-
+		bUserResult = (*m_pfnDisconnectCallBack)(m_pDisconnectCallBackParam);
 	}
 
 
-	return true;
+	return bUserResult;
 }
 
 void CMOOSCommClient::DoBanner()

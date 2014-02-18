@@ -160,6 +160,10 @@ protected:
 	/** called when command line is asking for version to be printed */
 	virtual void OnPrintVersionAndExit();
 
+    /** print all searched for parameters */
+    void PrintSearchedConfigurationFileParameters();
+
+
 
 public:
     /** Called when the class has succesfully connected to the server. Overload this function
@@ -671,6 +675,12 @@ protected:
      is provided to let really very specialised MOOSApps have very speedy
      response times. It is not recommended for general use*/
     bool UseMailCallBack();
+
+
+    template <class T>
+    bool GetParameterFromCommandLineOrConfigurationFile(std::string sOption, T & var,bool bPrependMinusMinusForCommandLine=true);
+
+    bool GetFlagFromCommandLineOrConfigurationFile(std::string sOption,bool bPrependMinusMinusForCommandLine=true);
 
 
 
