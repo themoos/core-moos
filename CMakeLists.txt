@@ -117,7 +117,7 @@ if(ENABLE_EXPORT)
         
         foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
             file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")        
-            file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")" )
+            file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")\n" )
         endforeach()
         
         
