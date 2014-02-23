@@ -307,7 +307,7 @@ bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed() {
     unsigned int sleep_ms =
             static_cast<unsigned int> (m_dfOutGoingDelay * 1000);
     if (sleep_ms > 0) {
-        std::cerr << "I'm sleeping for " << m_dfOutGoingDelay << " ms\n";
+        //std::cerr << "I'm sleeping for " << m_dfOutGoingDelay << " ms\n";
         MOOSPause(sleep_ms);
     }
 
