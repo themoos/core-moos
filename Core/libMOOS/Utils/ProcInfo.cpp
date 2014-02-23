@@ -36,6 +36,8 @@
 #endif
 
 #include <iostream>
+#include <iomanip>
+
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"
@@ -174,8 +176,9 @@ public:
 
 		while(!Thread_.IsQuitRequested())
 		{
-			MOOSPause(sample_period_ms);
-			double tB = MOOSLocalTime();
+
+			MOOSPause(sample_period_ms,false);
+			double tB = MOOSLocalTime(false);
 			double tAB = tB-tA;
 
 		    if(getrusage(0, &uB)!=0)
