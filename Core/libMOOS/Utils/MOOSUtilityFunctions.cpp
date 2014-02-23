@@ -294,15 +294,20 @@ bool SetMOOSTimeWarp(double dfWarp)
 
 void MOOSPause(int nMS,bool bApplyTimeWarping)
 {
+    double dfMilliSeconds = nMS;
     if(bApplyTimeWarping)
-	    nMS = int(double(nMS)/gdfMOOSTimeWarp);
+        dfMilliSeconds/=gdfMOOSTimeWarp;
+
+
+	//nMS = int(double(nMS)/gdfMOOSTimeWarp);
 #ifdef _WIN32
 	::Sleep(nMS);
 #else
 
     timespec TimeSpec;
-    TimeSpec.tv_sec     = nMS / 1000;
-    TimeSpec.tv_nsec    = (nMS%1000) *1000000;
+    TimeSpec.tv_sec     = (int)(dfMilliSeconds/1000);
+    //TimeSpec.tv_nsec    = (nMS%1000) *1000000;
+    TimeSpec.tv_nsec    = (int)(fmod(dfMilliSeconds,1000.0) *1000000);
 
     nanosleep(&TimeSpec,NULL);
 
