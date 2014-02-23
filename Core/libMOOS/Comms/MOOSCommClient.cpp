@@ -311,6 +311,8 @@ bool CMOOSCommClient::WaitUntilConnected(const unsigned int nMilliseconds)
 
 bool CMOOSCommClient::ClientLoop()
 {
+
+
     double dfTDebug = MOOSLocalTime();
 
     if(m_bBoostIOThreads)
@@ -342,6 +344,7 @@ bool CMOOSCommClient::ClientLoop()
 
 			while(!m_bQuit)
 			{
+
                 
                 if(m_bVerboseDebug)
                 {

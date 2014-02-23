@@ -369,8 +369,6 @@ bool CMOOSApp::Run( const std::string & sName,
         MOOSPause(500);
     }
 
-
-
     /** let derivatives do stuff before execution*/
     if(!OnStartUpPrepare())
     {
@@ -410,6 +408,8 @@ bool CMOOSApp::Run( const std::string & sName,
 
 		if(m_bQuitOnIterateFail && !bOK)
 			return MOOSFail("MOOSApp Exiting as requested");
+
+
     }
 
     /***************************   END OF MOOS APP LOOP ***************************************/
@@ -813,6 +813,8 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 
 	//so how long do we need to pause for
 	int nSleep = (nAppPeriod_ms - nElapsedTime_ms);
+
+
 	if(nSleep<1){
 		//std::cerr<<"no sleep for "<<nSleep<<"\n";
 		return;//nothing to do...

@@ -97,6 +97,7 @@ size_t GetPeakMemoryUsage( )
  */
 size_t  GetCurrentMemoryUsage( )
 {
+
 #if defined(_WIN32)
     /* Windows -------------------------------------------------- */
     PROCESS_MEMORY_COUNTERS info;

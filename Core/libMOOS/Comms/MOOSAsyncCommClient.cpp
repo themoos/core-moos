@@ -208,6 +208,8 @@ bool MOOSAsyncCommClient::WritingLoop() {
                 {
                     OnCloseConnection();
                 }
+
+
             }
         } else
         {
@@ -323,9 +325,12 @@ bool MOOSAsyncCommClient::ReadingLoop() {
         MOOS::BoostThisThread();
     }
 
-    while (!ReadingThread_.IsQuitRequested()) {
-        if (IsConnected()) {
-            if (!DoReading()) {
+    while (!ReadingThread_.IsQuitRequested())
+    {
+        if (IsConnected())
+        {
+            if (!DoReading())
+            {
                 OutGoingQueue_.Push(
                                     CMOOSMsg(MOOS_TERMINATE_CONNECTION,
                                              "-quit-", 0));
@@ -335,7 +340,10 @@ bool MOOSAsyncCommClient::ReadingLoop() {
                 while (IsConnected())//wait for connection to terminate...
                     MOOSPause(200);
             }
-        } else {
+
+        }
+        else
+        {
             //we arent connected so do nothing...
             MOOSPause(100);
         }
