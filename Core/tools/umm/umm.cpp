@@ -79,6 +79,8 @@ void PrintHelp()
     MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --skew                 : print timing adjustment relative to the MOOSDB\n");
     MOOSTrace("  --verbose              : verbose output\n");
+    MOOSTrace("  --ping                 : ping MOOSDB\n");
+
     MOOSTrace("  --log=<string>         : log received to file name given\n");
 
 
@@ -345,7 +347,6 @@ public:
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
-
             double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
             _dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
 
@@ -594,11 +595,12 @@ public:
 				}
 
 
-
 				Active.Reschedule();
 				_Jobs.push(Active);
 			}
 			MOOSPause(5);
+
+
     	}
 
     	return true;
