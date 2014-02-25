@@ -159,6 +159,9 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
                     // ignore if param = <empty string>
                     std::string sTmp(sLine);
                     std::string sTok = MOOSChomp(sTmp, "=");
+
+					MOOSTrimWhiteSpace(sTok); // Handle potential whitespaces.
+					MOOSTrimWhiteSpace(sTmp);
                     
                     if (sTok.size() > 0) 
                     {
@@ -166,16 +169,16 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
                         
                         if (!sTmp.empty()) 
                         {
-                            Params.push_front(sLine);
+                            Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                         }
                         else if(sLine.find("[")!=std::string::npos || sLine.find("]")!=std::string::npos) 
                         {
-                            Params.push_front(sLine);
+                            Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                         }
                     } 
                     else 
                     {
-                        Params.push_front(sLine);
+                        Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                     }
 #else            
                     Params.push_front(sLine);
