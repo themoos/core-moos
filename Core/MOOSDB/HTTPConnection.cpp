@@ -293,9 +293,12 @@ char CharFromHex (std::string a)
 
 std::string Decode(std::string Text)
 {
+	// Handle " " (spaces), which in URL encoding are "+" chars:
+	std::replace( Text.begin(), Text.end(), '+', ' ');
     
     std::string::size_type Pos;
     std::string Hex;
+	
     while (std::string::npos != (Pos = Text.find('%')))
     {
         Hex = Text.substr(Pos + 1, 2);
