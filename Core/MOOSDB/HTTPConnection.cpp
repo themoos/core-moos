@@ -464,7 +464,7 @@ bool CHTTPConnection::BuildSingleVariableWebPageContents( std::ostringstream & w
                 {
                     CHTMLTag Form(wp,"FORM","action='/"+m_sFocusVariable+"'");
 
-                    std::string sControl = MOOSFormat("<input name=NewValue value=%s>",Msg.GetAsString().c_str());
+                    std::string sControl = MOOSFormat("<input name=NewValue value=\"%s\">",Msg.GetAsString().c_str());
                     wp<<CHTMLTag::Print("TD","",sControl);
                 }
 
