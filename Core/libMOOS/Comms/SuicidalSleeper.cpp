@@ -18,6 +18,10 @@
 
 #include "MOOS/libMOOS/Comms/SuicidalSleeper.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/Utils/IPV4Address.h"
+#include "MOOS/libMOOS/Utils/ProcInfo.h"
+#include "MOOS/libMOOS/Comms/MulticastNode.h"
+
 
 namespace MOOS
 {
@@ -54,6 +58,12 @@ bool SuicidalSleeper::SetChannel(const std::string & sAddress)
 bool SuicidalSleeper::SetPort(int nPort)
 {
     multicast_port_=nPort;
+    return true;
+}
+
+bool SuicidalSleeper::SetName(const std::string & name)
+{
+    name_= name;
     return true;
 }
 
@@ -100,139 +110,60 @@ bool DoCountDown(void * pParam)
 
 bool SuicidalSleeper::Work()
 {
-    if(!SetupAndJoinMulticast())
-        return false;
-
-    //std::cerr<<"suicidal watch on "<<multicast_group_IP_address_<<":"<<multicast_port_<<"\n";
-    fd_set fds;
-    struct timeval timeout;
-
+    MOOS::MulticastNode MCN;
+    MCN.Configure(multicast_group_IP_address_,multicast_port_);
+    MCN.Run(true,true);
     while(!thread_.IsQuitRequested())
     {
-
-        /* Set time limit. */
-        timeout.tv_sec = 1;
-        timeout.tv_usec = 0;
-
-        /* Create a descriptor set containing our two sockets.  */
-        FD_ZERO(&fds);
-        FD_SET(socket_fd_, &fds);
-        int nSelectReturn = select(socket_fd_+1,
-                &fds,
-                NULL,
-                NULL,
-                &timeout);
-
-        switch(nSelectReturn)
+        std::string msg;
+        if(MCN.Read(msg,500))
         {
-        case -1:
-            //oh dear
-            break;
-        case 0:
-            //std::cerr<<"no input\n";
-            //timeout
-            break;
-        default:
+            std::string sHeader = MOOSFormat("%-20s pid %-7d on %s",
+                                             name_.c_str(),
+                                             MOOS::ProcInfo::GetPid(),
+                                             MOOS::IPV4Address::GetNumericAddress("localhost").c_str());
+
+            if(msg=="?"+pass_phrase_+"\n")
             {
-                // most likley our socket has return with something to read...
-                if (FD_ISSET (socket_fd_, &fds)!=0)
+                std::string response = MOOSFormat("%s  would die\n",sHeader.c_str());
+                MCN.Write(response);
+            }
+            else if(msg==pass_phrase_+"\n")
+            {
+                std::cerr<<MOOS::ConsoleColours::Red()<<"\n ** Received suicide instruction **\n";
+
+                std::string response = MOOSFormat("%s is commiting suicide\n",sHeader.c_str());
+                MCN.Write(response);
+
+                CMOOSThread count_down;
+                count_down.Initialise(DoCountDown,&count_down_seconds_);
+                count_down.Start();
+                if(last_rights_callback_)
                 {
-                    //do the read from the socket...
-                    char raw[128];
-                    //do the read from the socket...
-                    int n = read(socket_fd_, raw, sizeof(raw));
-
-                    if(n>0)
+                    std::string user_message;
+                    if((*last_rights_callback_)(user_message))
                     {
-                        //we have a message;
-                        std::string msg = std::string(raw);
-
-                        if(msg==pass_phrase_+"\n")
-                        {
-                            std::cerr<<MOOS::ConsoleColours::Red()<<"\n ** Received suicide instruction **\n";
-
-                            CMOOSThread count_down;
-                            count_down.Initialise(DoCountDown,&count_down_seconds_);
-                            count_down.Start();
-                            if(last_rights_callback_)
-                            {
-                                std::string user_message;
-                                if((*last_rights_callback_)(user_message))
-                                {
-                                    std::cerr<<"last rights message is "<<user_message<<"\n";
-                                }
-                            }
-                            count_down.Stop();
-                            exit(0);
-                        }
-                        else
-                        {
-                            std::cerr<<msg<<" is not the code...";
-                        }
+                        std::cerr<<"last rights message is "<<user_message<<"\n";
+                        MCN.Write(MOOSFormat("%s last words are \"%s\"\n",
+                                             sHeader.c_str(),
+                                             user_message.c_str()));
                     }
                 }
+
+
+
+
+                count_down.Stop();
+                exit(0);
             }
-        }//switch on select
+        }
+    }
 
-    }//while thread active
 
 
 
     return true;
 }
-
-
-
-bool SuicidalSleeper::SetupAndJoinMulticast()
-{
-    try
-    {
-        //set up a simply DGRAM socket
-        socket_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
-        if(socket_fd_<0)
-        {
-            throw std::runtime_error("SetupAndJoinMulticast()::socket()");
-        }
-
-        //we want to be able to resuse it (multiple folk are interested)
-        int reuse = 1;
-
-        if (setsockopt(socket_fd_, SOL_SOCKET,SO_REUSEADDR/* SO_REUSEPORT*/, &reuse, sizeof(reuse)) == -1)
-        {
-            throw std::runtime_error("SetupAndJoinMulticast()::setsockopt::reuse");
-        }
-
-        /* construct a multicast address structure */
-        struct sockaddr_in mc_addr;
-        memset(&mc_addr, 0, sizeof(mc_addr));
-        mc_addr.sin_family = AF_INET;
-        mc_addr.sin_addr.s_addr = inet_addr(multicast_group_IP_address_.c_str());
-        mc_addr.sin_port = htons(multicast_port_);
-
-        if (bind(socket_fd_, (struct sockaddr*) &mc_addr, sizeof(mc_addr)) == -1)
-        {
-            throw std::runtime_error("SetupAndJoinMulticast()::setsockopt::bind");
-        }
-
-        //join the multicast group
-        struct ip_mreq mreq;
-        mreq.imr_multiaddr.s_addr = inet_addr(multicast_group_IP_address_.c_str());
-        mreq.imr_interface.s_addr = INADDR_ANY;
-        if(setsockopt(socket_fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))==-1)
-        {
-            throw std::runtime_error("SetupAndJoinMulticast()::setsockopt::ADD_MEMBERSHIP");
-        }
-    }
-    catch(std::exception & e)
-    {
-
-    }
-
-
-    return true;
-}
-
-
 
 
 };//namespace MOOS

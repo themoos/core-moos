@@ -22,7 +22,7 @@ public:
     virtual ~SuicidalSleeper();
 
     bool SetPassPhrase(const std::string & sPassPhrase);
-
+    bool SetName(const std::string & app_name);
     bool SetChannel(const std::string & sAddress);
     bool SetPort(int nPort);
 
@@ -43,11 +43,14 @@ public:
     bool Work();
 protected:
     bool SetupAndJoinMulticast();
+    bool SendToMulticast(const std::string & sString);
 private:
     int socket_fd_;
     int multicast_port_;
     std::string multicast_group_IP_address_;
     std::string pass_phrase_;
+    std::string name_;
+
     MOOS::FunctorStringRef* last_rights_callback_;
     CMOOSThread thread_;
     unsigned int count_down_seconds_;

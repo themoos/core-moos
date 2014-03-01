@@ -363,6 +363,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
     if(!P.GetFlag("--moos_suicide_disable"))
     {
+        m_SuicidalSleeper.SetName(m_sDBName);
         m_SuicidalSleeper.Run();
     }
 

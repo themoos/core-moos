@@ -19,6 +19,7 @@ SET(COMMS_SOURCES
     Comms/ActiveMailQueue.cpp
     Comms/MessageQueueAccumulator.cpp
     Comms/SuicidalSleeper.cpp
+    Comms/MulticastNode.cpp
     
     
 )
@@ -47,8 +48,7 @@ SET(UTILS_SOURCES
    Utils/ThreadPriority.cpp
    Utils/PeriodicEvent.cpp
    Utils/ConsoleColours.cpp
-   
-   
+   Utils/CommsTools.cpp   
    )
 
 IF(WIN32)

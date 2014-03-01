@@ -495,7 +495,9 @@ bool CMOOSApp::Configure()
     //are we being told to disable suicide?
     if(!GetFlagFromCommandLineOrConfigurationFile("moos_suicide_disable"))
     {
+
         //no - then allow it....
+        m_SuicidalSleeper.SetName(GetAppName());
         m_SuicidalSleeper.Run();
     }
 

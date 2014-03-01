@@ -20,9 +20,11 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
+#include "MOOS/libMOOS/Comms/MulticastNode.h"
 
 
 bool SetupSocket(const std::string & sAddress, int Port);
+bool WaitForSocket(int fd, int TimeoutSeconds);
 
 //such a simple program lets be old skool - file scope vars;
 int socket_fd;
@@ -39,7 +41,10 @@ void PrintHelpAndExit()
     std::cerr<<"--channel=<address>    address to issue kill on \n";
     std::cerr<<"--port=<int>           port to issue kill on \n";
     std::cerr<<"--phrase=<string>      pass phrase which Suicide listeners are keyed to\n";
-    std::cerr<<"--all                  pass to network, its a massacre\n";
+    std::cerr<<"--all                  pass to network, it is a massacre\n";
+    std::cerr<<"--query                find out who would jump\n";
+
+
     std::cerr<<"example    \n";
     std::cerr<<"    ./ktm  --phrase=\"die now\""<<"\n";
 
@@ -49,12 +54,16 @@ void PrintHelpAndExit()
 
 int main(int argc, char *argv[])
 {
+
     MOOS::CommandLineParser P(argc,argv);
 
+    if(P.GetFlag("--help","-h"))
+        PrintHelpAndExit();
 
     P.GetVariable("--channel",multicast_address);
     P.GetVariable("--port",multicast_port);
     P.GetVariable("--phrase",sPhrase);
+
 
     if(P.GetFlag("--all"))
     {
@@ -68,58 +77,37 @@ int main(int argc, char *argv[])
         hops=1;
     }
 
-    if(P.GetFlag("--help","-h"))
-        PrintHelpAndExit();
+    MOOS::MulticastNode FDUPA;
+    FDUPA.Configure(multicast_address,multicast_port,hops);
+    FDUPA.Run(true,true);
 
-    if(!SetupSocket(multicast_address,multicast_port))
-        return -1;
 
-    int nSent = sendto(socket_fd,
-              sPhrase.c_str(),
-              sPhrase.size(),
-              0,
-              (struct sockaddr *)&mc_addr,
-              sizeof(mc_addr));
+    bool bQuery = P.GetFlag("--query");
+    if(bQuery)
+    {
+        std::cerr<<"searching for suicidal sleepers on "<<multicast_address<<":"<< multicast_port<<"\n";
+        sPhrase="?"+sPhrase;
+    }
+    else
+    {
+        std::cerr<<"sending suicide instruction to "<<multicast_address<<":"<< multicast_port<<"\n";
+    }
 
-    if(nSent>0)
-        std::cerr<<"sent kill instruction to "<<multicast_address<<":"<< multicast_port<<"\n";
+    FDUPA.Write(sPhrase);
+
+    std::string sReply;
+    while(FDUPA.Read(sReply,1000))
+    {
+        if(sReply==sPhrase)
+            continue;
+
+        std::cout<<(bQuery?MOOS::ConsoleColours::Yellow(): MOOS::ConsoleColours::Red())<<sReply;
+
+    }
+    std::cout<<MOOS::ConsoleColours::reset();
+
+    return 0;
 
 
 }
 
-
-bool SetupSocket(const std::string & sAddress, int Port)
-{
-    try
-    {
-        //set up a simply DGRAM socket
-        socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
-        if(socket_fd<0)
-        {
-            throw std::runtime_error("SetupSocket()::socket()");
-        }
-
-        /* construct a multicast address structure */
-        //struct sockaddr_in mc_addr;
-        memset(&mc_addr, 0, sizeof(mc_addr));
-        mc_addr.sin_family = AF_INET;
-        mc_addr.sin_addr.s_addr = inet_addr(sAddress.c_str());
-        mc_addr.sin_port = htons(Port);
-
-
-        if(setsockopt(socket_fd, IPPROTO_IP, IP_MULTICAST_TTL, &hops, sizeof(hops))==-1)
-        {
-            return false;
-        }
-
-
-    }
-    catch(std::exception & e)
-    {
-        std::cerr<<"issue with socket creation :"<<e.what()<<"\n";
-        return false;
-    }
-
-
-    return true;
-}

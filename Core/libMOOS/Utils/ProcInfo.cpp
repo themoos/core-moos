@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <unistd.h>
 
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
@@ -90,6 +91,7 @@ public:
 	{
 		Thread_.Stop();
 	}
+
 	bool GetPercentageCPULoad(double & cpu_load)
 	{
 	    Poco::FastMutex::ScopedLock Lock(_mutex);
@@ -225,6 +227,17 @@ bool ProcInfo::GetPercentageCPULoad(double &cpu_load)
 bool ProcInfo::GetMemoryUsage(size_t & current,size_t & maximum)
 {
 	return Impl_->GetMemoryUsage(current,maximum);
+}
+
+int ProcInfo::GetPid()
+{
+
+#ifdef _WIN32
+        return (int)GetCurrentProcessId();
+#else
+        return (int)getpid();
+#endif
+
 }
 
 

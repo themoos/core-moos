@@ -56,6 +56,8 @@ public:
 	 */
 	bool GetMemoryUsage(size_t & current,size_t & maximum);
 
+	static int GetPid();
+
 
 
 private:
