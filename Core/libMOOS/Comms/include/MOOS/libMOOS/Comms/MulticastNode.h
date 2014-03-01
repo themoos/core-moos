@@ -41,7 +41,7 @@ protected:
     MOOS::IPV4Address ipv4_address_;
     MOOS::SafeList<std::vector<unsigned char > > outbox_;
     MOOS::SafeList<std::vector<unsigned char > > inbox_;
-    int unread_limit_;
+    unsigned int unread_limit_;
     int hops_;
 
 };
