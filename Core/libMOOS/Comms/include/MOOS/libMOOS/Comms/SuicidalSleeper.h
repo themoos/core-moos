@@ -26,10 +26,12 @@ public:
     bool SetChannel(const std::string & sAddress);
     bool SetPort(int nPort);
 
+    static std::string  GetDefaultPassPhrase();
+    static std::string  GetDefaultMulticastAddress();
+    static int          GetDefaultMulticastPort();
+
     std::string GetPassPhrase();
-
     std::string GetChannel();
-
     int GetPort();
 
     template <class T>

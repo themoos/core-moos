@@ -36,6 +36,8 @@
 	#include <ifaddrs.h>
 	#include <arpa/inet.h>
 	#include <netdb.h> 
+
+
 #elif _WIN32
     #include <winsock2.h>
 #endif
@@ -142,6 +144,52 @@ std::string IPV4Address::GetNumericAddress(const std::string & address)
 
 	return std::string(inet_ntoa( *(struct in_addr *) hp->h_addr_list[0]));
 
+
+}
+
+std::string IPV4Address::GetIPAddress()
+{
+
+    struct ifaddrs *ifaddr, *ifa;
+    char host[NI_MAXHOST];
+
+    if (getifaddrs(&ifaddr) == -1)
+    {
+      return "127.0.0.1";
+    }
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        int family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_INET)
+        {
+
+            if(getnameinfo(
+                    ifa->ifa_addr,
+                    sizeof(struct sockaddr_in),
+                    host,
+                    NI_MAXHOST,
+                    NULL,
+                    0,
+                    NI_NUMERICHOST)==0)
+            {
+                std::string sHost(host);
+                if(sHost.find("127.0.0.1")==std::string::npos)
+                {
+                    return  sHost;
+                }
+            }
+
+        }
+    }
+
+    freeifaddrs(ifaddr);
+
+    return "127.0.0.1";
 
 }
 

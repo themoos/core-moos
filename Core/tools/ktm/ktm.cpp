@@ -21,18 +21,19 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 #include "MOOS/libMOOS/Comms/MulticastNode.h"
+#include "MOOS/libMOOS/Comms/SuicidalSleeper.h"
+
 
 
 bool SetupSocket(const std::string & sAddress, int Port);
 bool WaitForSocket(int fd, int TimeoutSeconds);
 
 //such a simple program lets be old skool - file scope vars;
-int socket_fd;
-std::string sPhrase = "I need you to die now\n";
-std::string multicast_address = "224.1.1.3";
-int multicast_port = 4000;
+std::string phrase = MOOS::SuicidalSleeper::GetDefaultPassPhrase();
+std::string multicast_address = MOOS::SuicidalSleeper::GetDefaultMulticastAddress();
+int multicast_port = MOOS::SuicidalSleeper::GetDefaultMulticastPort();
+std::string name_pattern = "*";
 unsigned char hops = 0;
-struct sockaddr_in mc_addr;
 
 
 void PrintHelpAndExit()
@@ -43,6 +44,8 @@ void PrintHelpAndExit()
     std::cerr<<"--phrase=<string>      pass phrase which Suicide listeners are keyed to\n";
     std::cerr<<"--all                  pass to network, it is a massacre\n";
     std::cerr<<"--query                find out who would jump\n";
+    std::cerr<<"--name=<string>        only apply if matches pattern\n";
+
 
 
     std::cerr<<"example    \n";
@@ -62,8 +65,10 @@ int main(int argc, char *argv[])
 
     P.GetVariable("--channel",multicast_address);
     P.GetVariable("--port",multicast_port);
-    P.GetVariable("--phrase",sPhrase);
+    P.GetVariable("--phrase",phrase);
+    P.GetVariable("--name",name_pattern);
 
+    bool bQuery = P.GetFlag("--query");
 
     if(P.GetFlag("--all"))
     {
@@ -82,23 +87,26 @@ int main(int argc, char *argv[])
     FDUPA.Run(true,true);
 
 
-    bool bQuery = P.GetFlag("--query");
+
+    std::string action =  bQuery ? "?" : "K";
+
     if(bQuery)
     {
         std::cerr<<"searching for suicidal sleepers on "<<multicast_address<<":"<< multicast_port<<"\n";
-        sPhrase="?"+sPhrase;
     }
     else
     {
         std::cerr<<"sending suicide instruction to "<<multicast_address<<":"<< multicast_port<<"\n";
     }
 
-    FDUPA.Write(sPhrase);
+    std::string command = action+":"+phrase+":"+name_pattern;
+
+    FDUPA.Write(command.c_str());
 
     std::string sReply;
     while(FDUPA.Read(sReply,1000))
     {
-        if(sReply==sPhrase)
+        if(sReply==command)
             continue;
 
         std::cout<<(bQuery?MOOS::ConsoleColours::Yellow(): MOOS::ConsoleColours::Red())<<sReply;

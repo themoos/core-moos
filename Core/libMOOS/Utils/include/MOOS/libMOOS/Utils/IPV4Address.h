@@ -47,6 +47,8 @@ public:
 	bool operator==(const IPV4Address & a) const;
 
 	static std::string GetNumericAddress(const std::string & address);
+	static std::string GetIPAddress();
+
 	bool ConvertHostToNumeric();
 
 	/** support for simple lexical sort*/

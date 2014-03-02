@@ -32,14 +32,30 @@ bool SuicidalSleeper::_dispatch_(void * pParam)
     return pMe->Work();
 }
 
+
+std::string SuicidalSleeper::GetDefaultPassPhrase()
+{
+    return "elks have been know to waltz";
+}
+
+std::string SuicidalSleeper::GetDefaultMulticastAddress()
+{
+    return "224.1.1.3";
+}
+int SuicidalSleeper::GetDefaultMulticastPort()
+{
+    return 4000;
+}
+
+
 SuicidalSleeper::~SuicidalSleeper()
 {}
 
 SuicidalSleeper::SuicidalSleeper()
 {
-    multicast_group_IP_address_ = "224.1.1.3";
-    multicast_port_  = 4000;
-    pass_phrase_="I need you to die now";
+    multicast_group_IP_address_ = GetDefaultMulticastAddress();
+    multicast_port_  = GetDefaultMulticastPort();
+    pass_phrase_=GetDefaultPassPhrase();
     last_rights_callback_ = NULL;
     count_down_seconds_ = 3;
 }
@@ -54,6 +70,7 @@ bool SuicidalSleeper::SetChannel(const std::string & sAddress)
     multicast_group_IP_address_ = sAddress;
     return true;
 }
+
 
 bool SuicidalSleeper::SetPort(int nPort)
 {
@@ -118,21 +135,29 @@ bool SuicidalSleeper::Work()
         std::string msg;
         if(MCN.Read(msg,500))
         {
+
+            std::string Action=MOOSChomp(msg,":");
+            std::string Phrase=MOOSChomp(msg,":");
+            std::string AppPattern = MOOSChomp(msg,"\n");
+
+            if(Phrase!=pass_phrase_ || !MOOSWildCmp(AppPattern,name_))
+                continue;
+
             std::string sHeader = MOOSFormat("%-20s pid %-7d on %s",
                                              name_.c_str(),
                                              MOOS::ProcInfo::GetPid(),
-                                             MOOS::IPV4Address::GetNumericAddress("localhost").c_str());
+                                             MOOS::IPV4Address::GetIPAddress().c_str());
 
-            if(msg=="?"+pass_phrase_+"\n")
+            if(Action=="?")
             {
-                std::string response = MOOSFormat("%s  would die\n",sHeader.c_str());
+                std::string response = MOOSFormat("%s would die\n",sHeader.c_str());
                 MCN.Write(response);
             }
-            else if(msg==pass_phrase_+"\n")
+            else if(Action=="K")
             {
                 std::cerr<<MOOS::ConsoleColours::Red()<<"\n ** Received suicide instruction **\n";
 
-                std::string response = MOOSFormat("%s is commiting suicide\n",sHeader.c_str());
+                std::string response = MOOSFormat("%s is committing suicide\n",sHeader.c_str());
                 MCN.Write(response);
 
                 CMOOSThread count_down;
@@ -149,9 +174,6 @@ bool SuicidalSleeper::Work()
                                              user_message.c_str()));
                     }
                 }
-
-
-
 
                 count_down.Stop();
                 exit(0);
