@@ -47,6 +47,7 @@
 #include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "assert.h"
 #include <iostream>
+#include <cmath>
 #include <sstream>
 #include <vector>
 #include <iterator>
@@ -92,6 +93,7 @@ CMOOSDB::CMOOSDB()
     //here we set up default community names and DB Names
     m_sDBName = "MOOSDB#1";
     m_sCommunityName = "#1";
+    m_dfSummaryTime = MOOS::Time();
     
     //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
@@ -131,16 +133,28 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_CLIENTS"] = NewVar;
     }
     
-    //make our own variable called DB_INFO
+    //make our own variable called DB_EVENT
     {
-        CMOOSDBVar NewVar("DB_INFO");
+        CMOOSDBVar NewVar("DB_EVENT");
         NewVar.m_cDataType = MOOS_STRING;
         NewVar.m_dfVal= MOOSTime();
         NewVar.m_sWhoChangedMe = m_sDBName;
         NewVar.m_sOriginatingCommunity = m_sCommunityName;
         NewVar.m_dfWrittenTime = MOOSTime();
-        m_VarMap["DB_INFO"] = NewVar;
+        m_VarMap["DB_EVENT"] = NewVar;
     }
+
+    //make our own variable called DB_EVENT
+    {
+        CMOOSDBVar NewVar("DB_VARSUMMARY");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_VARSUMMARY"] = NewVar;
+    }
+
 
     //ignore broken pipes as is standard for network apps
 #ifndef _WIN32
@@ -489,6 +503,9 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
 
     //and send clients an occasional membersip list
     UpdateDBClientsVar();
+
+    //update a db summary var once in a while
+    UpdateSummaryVar();
 
     if(!MsgListRx.empty())
     {
@@ -967,7 +984,7 @@ bool CMOOSDB::OnConnect(string &sClient)
     m_EventLogger.AddEvent("connect",sClient,"client connects");
 
     //notify ourselves....
-    CMOOSMsg DBC(MOOS_NOTIFY,"DB_INFO",MOOSFormat("connected=%s",sClient.c_str()));
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("connected=%s",sClient.c_str()));
     DBC.m_sOriginatingCommunity = m_sCommunityName;
     DBC.m_sSrc = m_sDBName;
     OnNotify(DBC);
@@ -1006,7 +1023,7 @@ bool CMOOSDB::OnDisconnect(string &sClient)
 
 
     //notify ourselves....
-    CMOOSMsg DBC(MOOS_NOTIFY,"DB_INFO",MOOSFormat("disconnected=%s",sClient.c_str()));
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("disconnected=%s",sClient.c_str()));
     DBC.m_sOriginatingCommunity = m_sCommunityName;
     DBC.m_sSrc = m_sDBName;
     OnNotify(DBC);
@@ -1038,6 +1055,77 @@ bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     
     return false;
+}
+
+void CMOOSDB::UpdateSummaryVar()
+{
+    double dfNow = MOOS::Time();
+    if(dfNow-m_dfSummaryTime<2.0)
+        return;
+
+    m_dfSummaryTime = dfNow;
+
+    std::stringstream ss;
+    DBVAR_MAP::iterator p;
+
+    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    {
+        ss<<std::left<<std::setw(20);
+        ss<<p->first<<" ";
+
+        ss<<std::left<<std::setw(20);
+        ss<<MOOS::TimeToDate(p->second.m_dfWrittenTime,false,true)<<" ";
+
+        ss<<std::left<<std::setw(20);
+        ss<<p->second.m_sWhoChangedMe<<" ";
+
+        ss<<std::left<<std::setw(2);
+        ss<<p->second.m_cDataType<<" ";
+
+        ss<<std::left<<std::setw(20);
+        switch(p->second.m_cDataType)
+        {
+            ss<<std::left<<std::setw(25);
+            case MOOS_DOUBLE:
+                ss<<p->second.m_dfVal<<" ";break;
+            case MOOS_STRING:
+            {
+                unsigned int s = p->second.m_sVal.size();
+                if(s>25)
+                    ss<<(p->second.m_sVal.substr(0,22)+"...");
+                else
+                    ss<<p->second.m_sVal;
+
+                break;
+            }
+                ss<<p->second.m_sVal<<" ";break;
+            case MOOS_BINARY_STRING:
+            {
+                unsigned int s = p->second.m_sVal.size();
+                std::string bss;
+                if(s<1024)
+                    bss = MOOSFormat("*binary* %-4d B  ",s);
+                else if(s<1024*1024)
+                    bss = MOOSFormat("*binary* %.3f KB ",s/(1024.0));
+                else
+                    bss = MOOSFormat("*binary* %.3f MB ",s/(1024.0*1024.0));
+
+                ss<<bss;
+                break;
+            }
+
+        }
+
+
+        ss<<"\n";
+
+    }
+
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_VARSUMMARY",ss.str());
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
 }
 
 bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)

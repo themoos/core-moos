@@ -7,3 +7,4 @@ endforeach()
 
 add_subdirectory(umm)
 add_subdirectory(ktm)
+add_subdirectory(mtm)

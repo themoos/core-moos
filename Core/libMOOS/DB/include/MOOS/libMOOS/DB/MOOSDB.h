@@ -130,6 +130,7 @@ protected:
 
     void UpdateDBTimeVars();
     void UpdateDBClientsVar();
+    void UpdateSummaryVar();
     bool DoServerRequest(CMOOSMsg & Msg, MOOSMSG_LIST & MsgTxList);
     CMOOSDBVar & GetOrMakeVar(CMOOSMsg & Msg);
     bool OnRegister(CMOOSMsg & Msg);
@@ -146,6 +147,7 @@ private:
     int m_nPort;
     double m_dfStartTime;
     bool m_bQuiet;
+    double m_dfSummaryTime;
 
 
     /**a map of client name to a list of Msgs that will be sent

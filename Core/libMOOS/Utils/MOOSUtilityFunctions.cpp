@@ -108,6 +108,36 @@ namespace MOOS
 		return MOOSTime();
 	}
 
+	std::string TimeToDate(double dfTime,bool bDate,bool bTime)
+	{
+	    struct timeval TimeVal;
+	    double integral,fractional;
+	    fractional = modf(dfTime, &integral);
+	    TimeVal.tv_sec = int(integral);
+	    TimeVal.tv_usec = int(fractional*1000000.0);
+
+	    time_t nowtime;
+	    struct tm *nowtm;
+	    char sdate[64], stime[64],stimeall[64];
+
+	    nowtime = TimeVal.tv_sec;
+	    nowtm = localtime(&nowtime);
+
+	    strftime(sdate, sizeof sdate, "%Y-%m-%d ", nowtm);
+        strftime(stime, sizeof stime, "%H:%M:%S", nowtm);
+	    snprintf(stimeall, sizeof stimeall, "%s.%03d", stime, TimeVal.tv_usec/1000);
+
+	    std::string sResult;
+	    if(bDate)
+	        sResult+=std::string(sdate);
+	    if(bTime)
+            sResult+=std::string(stimeall);
+
+	    return sResult;
+
+	}
+
+
 	void Pause(int milliseconds,bool bApplyTimeWarp)
 	{
 		MOOSPause(milliseconds,bApplyTimeWarp);
@@ -185,6 +215,7 @@ bool SetWin32HighPrecisionTiming(bool bEnable)
 #endif
 
 }
+
 
 
 double MOOSLocalTime(bool bApplyTimeWarping)

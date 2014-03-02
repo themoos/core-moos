@@ -307,6 +307,7 @@ bool CMOOSApp::Run( const std::string & sName,
 	if(m_CommandLineParser.GetFlag("--help"))
 	{
 		PrintDefaultCommandLineSwitches();
+		std::cout<<"\ncustom help:\n";
 		OnPrintHelpAndExit();
 		exit(0);
 	}
