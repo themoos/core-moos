@@ -125,7 +125,7 @@ namespace MOOS
 
 	    strftime(sdate, sizeof sdate, "%Y-%m-%d ", nowtm);
         strftime(stime, sizeof stime, "%H:%M:%S", nowtm);
-	    snprintf(stimeall, sizeof stimeall, "%s.%03d", stime, TimeVal.tv_usec/1000);
+	    snprintf(stimeall, sizeof stimeall, "%s.%03d", stime, (int)(TimeVal.tv_usec/1000));
 
 	    std::string sResult;
 	    if(bDate)
