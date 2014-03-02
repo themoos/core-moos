@@ -85,6 +85,20 @@ protected:
 
 int main(int argc , char* argv[])
 {
+    //here we do some command line parsing...
+    MOOS::CommandLineParser P(argc,argv);
+
+    //we may want many instances run from command line so lets guess
+    //a random name. This is just to stop users having to specify
+    //--moos_name at the command line lots and lots...
+    std::stringstream ss;
+    srand ( static_cast<unsigned int>( time(NULL)) );
+    ss<<"mtm-"<< rand() %1024;
+    std::string default_name = ss.str();
+    std::string app_name = P.GetFreeParameter(1, default_name);
+
+
+
     MonitorTheMOOS mtm;
-    mtm.Run("mtm",argc,argv);
+    mtm.Run(app_name,argc,argv);
 }
