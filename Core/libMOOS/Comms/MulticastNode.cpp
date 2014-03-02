@@ -246,7 +246,7 @@ bool MulticastNode::WriteLoop()
                            0,
                            (struct sockaddr *)&mc_addr,
                            sizeof(mc_addr));
-                if(nSent!=v.size())
+                if(nSent!=(int)v.size())
                 {
                     std::cerr<<"FullDuplexUDPChannel::WriteLoop() failed to send complete telegram\n";
                 }
