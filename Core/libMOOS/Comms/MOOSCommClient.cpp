@@ -431,13 +431,10 @@ bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
 	{
 		//get a list of all queues which handle this message
 		std::set<std::string> & rQL = q->second;
-		std::set<std::string>::iterator p;
-		for(p = rQL.begin();p!=rQL.end();p++)
+		std::set<std::string>::iterator p = rQL.find(sQueueName);
+		if(p!=rQL.end())
 		{
-			if(*p==sQueueName)
-			{
-				rQL.erase(p);
-			}
+            rQL.erase(p);
 		}
 	}
 
