@@ -33,26 +33,31 @@
 #include <map>
 #include <memory>
 
+#include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+
+#include "MOOS/libMOOS/Comms/CommsTypes.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
+#include "MOOS/libMOOS/Comms/SuicidalSleeper.h"
 
-#include "MOOSDBVar.h"
-#include "MOOSDBHTTPServer.h"
-#include "MsgFilter.h"
+#include "MOOS/libMOOS/DB/MOOSDBVar.h"
+#include "MOOS/libMOOS/DB/MOOSDBHTTPServer.h"
+#include "MOOS/libMOOS/DB/MsgFilter.h"
+#include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
 
+//#ifdef HAVE_TR1_UNORDERED_MAP
+//	#include <tr1/unordered_map>
+//	#define HASH_MAP_TYPE tr1::unordered_map
+//#else
+//	#ifdef HAVE_STD_UNORDERED_MAP
+//		#include <unordered_map>
+//		#define HASH_MAP_TYPE std::unordered_map
+//	#else
+//	#endif
+//#endif
 
-#ifdef HAVE_TR1_UNORDERED_MAP
-	#include <tr1/unordered_map>
-	#define HASH_MAP_TYPE tr1::unordered_map
-#else
-	#ifdef HAVE_STD_UNORDERED_MAP
-		#include <unordered_map>
-		#define HASH_MAP_TYPE std::unordered_map
-	#else
-		#define HASHS_MAP_TYPE std::map
-	#endif
-#endif
-
+#define HASH_MAP_TYPE std::map
 typedef HASH_MAP_TYPE<std::string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
 typedef HASH_MAP_TYPE<std::string,CMOOSDBVar> DBVAR_MAP;
 
@@ -65,6 +70,9 @@ class CMOOSDB
 {
 public:
     bool OnDisconnect(std::string & sClient);
+    bool OnConnect(std::string & sClient);
+
+
 
     /** callback function passed to CMOOSCommServer member object. This STATIC function allows
     entry back into this object by invoking OnRxPkt()*/
@@ -72,6 +80,9 @@ public:
 
     /** called internally when a client disconnects */
     static bool OnDisconnectCallBack(std::string & sClient,void * pParam);
+
+    /** called internally when a client disconnects */
+    static bool OnConnectCallBack(std::string & sClient,void * pParam);
 
     static bool OnFetchAllMailCallBack(const std::string & sWho,MOOSMSG_LIST & MsgListTx, void * pParam);
 
@@ -81,10 +92,11 @@ public:
 
     bool OnFetchAllMail(const std::string & sWho,MOOSMSG_LIST & MsgListTx);
 
+    bool SetQuiet(bool bQuiet);
 
     /** called by the owning application to start the DB running. It launches threads
     and returns */
-    bool Run(int argc = 0, char * argv[] =0);
+    bool Run(int argc = 0,  char * argv[] =0);
 
     bool IsRunning();
 
@@ -118,6 +130,7 @@ protected:
 
     void UpdateDBTimeVars();
     void UpdateDBClientsVar();
+    void UpdateSummaryVar();
     bool DoServerRequest(CMOOSMsg & Msg, MOOSMSG_LIST & MsgTxList);
     CMOOSDBVar & GetOrMakeVar(CMOOSMsg & Msg);
     bool OnRegister(CMOOSMsg & Msg);
@@ -125,12 +138,16 @@ protected:
     bool OnNotify(CMOOSMsg & Msg);
     bool ProcessMsg(CMOOSMsg & MsgRx,MOOSMSG_LIST & MsgLstTx);
     double GetStartTime(){return m_dfStartTime;}
+    void OnPrintVersionAndExit();
+
 private:
     std::string m_sDBName;
     std::string m_sCommunityName;
     CMOOSFileReader m_MissionReader;
     int m_nPort;
     double m_dfStartTime;
+    bool m_bQuiet;
+    double m_dfSummaryTime;
 
 
     /**a map of client name to a list of Msgs that will be sent
@@ -147,6 +164,10 @@ private:
 
     //pointer to the comms server (could be a threaded one but base class is CMOOSCommServer
     std::auto_ptr<CMOOSCommServer> m_pCommServer;
+
+    MOOS::MOOSDBLogger m_EventLogger;
+
+    MOOS::SuicidalSleeper m_SuicidalSleeper;
 
 
 private:

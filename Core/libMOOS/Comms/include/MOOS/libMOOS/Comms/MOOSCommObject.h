@@ -82,7 +82,6 @@ public:
     static std::string GetLocalIPAddress();
 
 
-
 protected:
 
 

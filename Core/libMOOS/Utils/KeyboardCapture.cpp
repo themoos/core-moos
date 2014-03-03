@@ -29,6 +29,7 @@
 #include "MOOS/libMOOS/Utils/SafeList.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include <iostream>
+#include <iomanip>
 
 #ifndef _WIN32
 #include "unistd.h"
@@ -76,6 +77,7 @@ bool KeyboardCapture::Capture()
 
 	while(!impl_->worker_.IsQuitRequested())
 	{
+
 		char c;
 		if(!std::cin.eof())
 		{

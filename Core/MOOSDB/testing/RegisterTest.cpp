@@ -47,8 +47,8 @@ int main(int argc, char * argv[])
 	MOOS::CommandLineParser P(argc,argv);
 
 
-	C.AddMessageCallback("CallbackA","X",func,NULL);
-	C.AddMessageCallback("CallbackB","Y",func,NULL);
+	C.AddMessageRouteToActiveQueue("CallbackA","X",func,NULL);
+	C.AddMessageRouteToActiveQueue("CallbackB","Y",func,NULL);
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"reg_test");
 

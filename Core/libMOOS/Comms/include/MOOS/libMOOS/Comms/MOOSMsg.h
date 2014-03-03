@@ -82,6 +82,12 @@ public:
 
     /** specialised construction*/
     CMOOSMsg(char cMsgType,const std::string &sKey,const std::string & sVal,double dfTime=-1);
+
+    /** specialised construction for binary data*/
+    CMOOSMsg(char cMsgType,const std::string &sKey,  unsigned int nDataSize,const void* Data,double dfTime=-1);
+
+    /** equality operator */
+    bool operator ==(const CMOOSMsg & M) const;
 	
 	/** Mark string payload as binary*/
 	void MarkAsBinary();
@@ -104,6 +110,10 @@ public:
 
     /** simply access binary data, return NULL if message is not binary*/
     unsigned char * GetBinaryData();
+
+    /** return (copy) binary data from message*/
+    std::vector<unsigned char >  GetBinaryDataAsVector();
+
 
 
     /** get size of binary message - 0 if not binary type */
@@ -142,6 +152,8 @@ public:
     /**return the name of the process (as registered with the DB) which
     posted this notification*/
     std::string GetSource()const {return m_sSrc;};
+    void SetSource(const std::string & sSrc) { m_sSrc=sSrc;};
+
     std::string GetSourceAux()const {return m_sSrcAux;};
 	void SetSourceAux(const std::string & sSrcAux){m_sSrcAux = sSrcAux;}
 

@@ -26,7 +26,7 @@
 
 
 
-#include "MsgFilter.h"
+#include "MOOS/libMOOS/DB/MsgFilter.h"
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include <iostream>

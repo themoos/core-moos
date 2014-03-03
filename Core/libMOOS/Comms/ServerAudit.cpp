@@ -46,14 +46,14 @@ namespace MOOS {
 
 struct ClientAudit
 {
-	long long unsigned int total_received_;
-	long long unsigned int total_sent_;
-	long long unsigned int recently_received_;
-	long long unsigned int recently_sent_;
-	long long unsigned int max_size_received_;
-	long long unsigned int max_size_sent_;
-	long long unsigned int min_size_received_;
-	long long unsigned int min_size_sent_;
+    uint64_t total_received_;
+    uint64_t total_sent_;
+    uint64_t recently_received_;
+    uint64_t recently_sent_;
+    uint64_t max_size_received_;
+    uint64_t max_size_sent_;
+    uint64_t min_size_received_;
+    uint64_t min_size_sent_;
 	int recent_packets_received_;
 	int recent_packets_sent_;
 	int recent_messages_sent_;
@@ -94,6 +94,7 @@ class ServerAudit::Impl
 public:
 	Impl()
 	{
+	    quiet_ = false;
 		thread_.Initialise(AuditDispatch,this);
 	}
 
@@ -106,10 +107,19 @@ public:
 		destination_host_ = destination_host;
 		destination_port_ = port;
 
-		std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
-		std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		if(!quiet_)
+		{
+		    std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
+		    std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		}
 
 		return thread_.Start();
+	}
+
+	bool SetQuiet(bool bQuiet)
+	{
+	    quiet_=bQuiet;
+	    return true;
 	}
 
 	bool Work()
@@ -124,12 +134,12 @@ public:
 
 			std::stringstream ss;
 
-			long long unsigned int total_in = 0;
-			long long unsigned int total_out = 0;
-			long long unsigned int total_packets_in = 0;
-			long long unsigned int total_packets_out = 0;
-			long long unsigned int total_messages_in = 0;
-			long long unsigned int total_messages_out = 0;
+			uint64_t total_in = 0;
+			uint64_t total_out = 0;
+			uint64_t total_packets_in = 0;
+			uint64_t total_packets_out = 0;
+			uint64_t total_messages_in = 0;
+			uint64_t total_messages_out = 0;
 
 			lock_.Lock();
 			{
@@ -228,8 +238,8 @@ public:
 		{
 			rA.recently_received_+=nBytes;
 			rA.total_received_+=nBytes;
-			rA.max_size_received_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_received_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_received_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_received_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_received_+=1;
 			rA.recent_messages_received_+=nMessages;
 
@@ -239,8 +249,8 @@ public:
 		{
 			rA.recently_sent_+=nBytes;
 			rA.total_sent_+=nBytes;
-			rA.max_size_sent_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_sent_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_sent_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_sent_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_sent_+=1;
 			rA.recent_messages_sent_+=nMessages;
 
@@ -257,6 +267,7 @@ public:
 
 	std::string destination_host_;
 	unsigned int destination_port_;
+	bool quiet_;
 
 	std::map<std::string,ClientAudit> Audits_;
 
@@ -291,6 +302,10 @@ bool ServerAudit::Remove(const std::string & sClient)
 	return Impl_->Remove(sClient);
 }
 
+bool ServerAudit::SetQuiet(bool bQuiet)
+{
+    return Impl_->SetQuiet(bQuiet);
+}
 
 bool ServerAudit::AddStatistic(const std::string sClient, unsigned int nBytes,unsigned int nMessages, double dfTime, bool bIncoming)
 {

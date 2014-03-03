@@ -62,14 +62,19 @@ public:
     int     GetStreamLength();
 
     bool    Fill(unsigned char * InData,int nData);
+
     bool    OnBytesWritten(unsigned char * PositionWrittento,int nData);
+
     int     GetBytesRequired();
+
+    unsigned int    GetNumMessagesSerialised();
+
     unsigned char * Stream();
+
     unsigned char * NextWrite();
 
-
 protected:
-    bool InflateTo(int nNewStreamSize);
+    bool InflateTo(unsigned int nNewStreamSize);
     int m_nByteCount;
     int m_nMsgLen;
 
@@ -83,6 +88,9 @@ protected:
 
 	//how many messages are contained in this  packet when serialsised to a stream?
 	unsigned int m_nToStreamCount;
+
+	//how many messages are serialsied
+	unsigned int m_nMsgsSerialised;
 
 };
 

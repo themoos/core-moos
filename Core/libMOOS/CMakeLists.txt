@@ -17,6 +17,11 @@ SET(COMMS_SOURCES
     Comms/XPCUdpSocket.cpp
     Comms/ServerAudit.cpp
     Comms/ActiveMailQueue.cpp
+    Comms/MessageQueueAccumulator.cpp
+    Comms/SuicidalSleeper.cpp
+    Comms/MulticastNode.cpp
+    
+    
 )
 
 SET(APP_SOURCES
@@ -33,17 +38,17 @@ SET(UTILS_SOURCES
    Utils/ProcessConfigReader.cpp
    Utils/MOOSLinuxSerialPort.cpp
    Utils/MOOSSerialPort.cpp
-   Utils/MOOSPlaybackStatus.cpp
+#  Utils/MOOSPlaybackStatus.cpp
    Utils/IPV4Address.cpp
    Utils/KeyboardCapture.cpp
    Utils/ThreadPrint.cpp
    Utils/CommandLineParser.cpp
    Utils/ProcInfo.cpp
+   Utils/MemInfo.cpp
    Utils/ThreadPriority.cpp
    Utils/PeriodicEvent.cpp
    Utils/ConsoleColours.cpp
-   
-   
+   Utils/CommsTools.cpp   
    )
 
 IF(WIN32)
@@ -69,13 +74,25 @@ set(THIRDPARTY_SOURCES
 )
 
 
-set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ) 
+SET(DB_SOURCES
+    DB/MOOSDB.cpp
+    DB/MOOSDBVar.cpp
+    DB/MOOSRegisterInfo.cpp
+    DB/MsgFilter.cpp
+    DB/HTTPConnection.cpp
+    DB/MOOSDBHTTPServer.cpp
+    DB/MOOSDBLogger.cpp
+)
+
+
+
+set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES}) 
 
 include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?
-OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" OFF)
+OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
 IF (USE_ASYNC_COMMS)
     cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
     ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
@@ -85,27 +102,6 @@ ELSE (USE_ASYNC_COMMS)
     REMOVE_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
 ENDIF (USE_ASYNC_COMMS)
 
-
-
-############# COMPRESSED COMMS? ################
-SET(COMPRESSED_MOOS_PROTOCOL FALSE CACHE BOOL "Compressed comms protocol (experimental)")
-
-IF(COMPRESSED_MOOS_PROTOCOL)
-    FIND_PACKAGE(ZLIB QUIET)
-    IF (ZLIB_FOUND)
-        ADD_DEFINITIONS(-DZLIB_FOUND)
-            ADD_DEFINITIONS(-DCOMPRESSED_MOOS_PROTOCOL)
-    
-        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB includes at: ${ZLIB_INCLUDE_DIR}")
-        MESSAGE(STATUS "Cmake FindZLIB: using ZLIB libraries: ${ZLIB_LIBRARIES}")
-
-        SET(PLATFORM_LIBS   ${PLATFORM_LIBS} ${ZLIB_LIBRARIES} )
-        INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})    
-    
-    ELSE(ZLIB_FOUND)
-        SET(ZLIB_LIBRARIES "")
-    ENDIF (ZLIB_FOUND)
-ENDIF(COMPRESSED_MOOS_PROTOCOL)
 
 
 
@@ -161,6 +157,7 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/DB/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include

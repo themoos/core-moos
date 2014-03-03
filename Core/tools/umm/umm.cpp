@@ -38,8 +38,11 @@
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
+#include "MOOS/libMOOS/Utils/IPV4Address.h"
 #include <queue>
 #include <ctime>
+#include <cmath>
+
 
 #ifndef _WIN32
 #include <termios.h>
@@ -76,6 +79,8 @@ void PrintHelp()
     MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --skew                 : print timing adjustment relative to the MOOSDB\n");
     MOOSTrace("  --verbose              : verbose output\n");
+    MOOSTrace("  --ping                 : ping MOOSDB\n");
+
     MOOSTrace("  --log=<string>         : log received to file name given\n");
 
 
@@ -108,6 +113,7 @@ public:
     UMMClient()
     {
         _dfMeanLatency = 0;
+        _bPingRxd = false;
     };
 
     bool OnProcessCommandLine()
@@ -190,6 +196,17 @@ public:
         m_CommandLineParser.GetVariable("--num_tx",_TxCount);
 
 
+        _bPing = m_CommandLineParser.GetFlag("--ping");
+        if(_bPing)
+        {
+            EnableIterateWithoutComms(true);
+            m_Comms.SetQuiet(true);
+            SetQuiet(true);
+            vPublish.push_back("__ping:1024@1");
+            _vSubscribe.push_back("__ping");
+        }
+
+
         _NetworkStallProb=0.0;
         m_CommandLineParser.GetVariable("--network_failure_prob",_NetworkStallProb);
 
@@ -261,12 +278,14 @@ public:
             if(nArraySize==0)
             {
             	_Jobs.push(Job(dfPeriod,sName));
-                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+            	if(!m_bQuiet)
+            	    std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
             else
             {
             	_Jobs.push(Job(dfPeriod,sName,nArraySize));
-                std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
+                if(!m_bQuiet)
+                    std::cout<<MOOS::ConsoleColours::Green()<<"+Publishing "<<sName<<" ["<<nArraySize<<"] at "<<1.0/dfPeriod<<" Hz\n"<< MOOS::ConsoleColours::reset();
             }
 
         }
@@ -283,6 +302,14 @@ public:
     {
     	PrintHelp();
     	exit(0);
+    }
+
+    bool Configure()
+    {
+        if(m_CommandLineParser.GetFlag("--ping"))
+            SetQuiet(true);
+
+        return CMOOSApp::Configure();
     }
 
     bool OnStartUp()
@@ -310,6 +337,7 @@ public:
         	std::cout<<MOOS::ConsoleColours::Yellow();
         	std::cout<<std::left<<std::setw(20)<<"name";
         	std::cout<<std::left<<std::setw(20)<<"source";
+            std::cout<<std::left<<std::setw(20)<<"time";
         	std::cout<<std::left<<std::setw(30)<<"contents";
         	std::cout<<std::endl;
         	std::cout<<MOOS::ConsoleColours::reset();
@@ -319,25 +347,37 @@ public:
 
         for(q = NewMail.begin();q!=NewMail.end();q++)
         {
+            double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
+            _dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
+
         	if(_bVerbose)
         	{
         		std::cout<<std::left<<std::setw(20)<<q->GetKey();
         		std::cout<<std::left<<std::setw(20)<<q->GetSource();
+                std::cout<<std::left<<std::setw(20)<<std::setprecision(15)<<q->GetTime();
         		std::string sout = q->GetAsString();
-        		if(sout.size()>GetScreenWidth()-43)
-        			sout = sout.substr(0,GetScreenWidth()-43)+"...";
+        		if(sout.size()>GetScreenWidth()-63)
+        			sout = sout.substr(0,GetScreenWidth()-63)+"...";
         		std::cout<<std::left<<std::setw(30)<<sout;
         		std::cout<<std::endl;
 
         	}
         	if(_bShowLatency)
         	{
-        		double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
-        		_dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"        Latency "<<std::setprecision(3)<<dfLatencyMS<<" ms\n";
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
-        		std::cout<<MOOS::ConsoleColours::cyan()<<"           Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
-                std::cout<<MOOS::ConsoleColours::yellow()<<"         mean: "<<std::setprecision(3)<<_dfMeanLatency<<" ms\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"\nMOOS::Time Latency: "<<std::setprecision(3)<<dfLatencyMS<<" ms\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"                Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()<<"\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"                Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()<<"\n";
+                std::cout<<MOOS::ConsoleColours::cyan()<<"              mean: "<<std::setprecision(3)<<_dfMeanLatency<<" ms\n\n";
+
+                if(std::fabs(GetMOOSTimeWarp()-1.0)>1e-3)
+                {
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"Abs::Time  Latency: "<<std::setprecision(3)<<dfLatencyMS/GetMOOSTimeWarp()<<" ms\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"                Tx: "<<std::setw(20)<<std::setprecision(14)<<q->GetTime()/GetMOOSTimeWarp()<<"\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"                Rx: "<<std::setw(20)<<std::setprecision(14)<<MOOS::Time()/GetMOOSTimeWarp()<<"\n";
+                    std::cout<<MOOS::ConsoleColours::cyan()<<"              mean: "<<std::setprecision(3)<<_dfMeanLatency/GetMOOSTimeWarp()<<" ms\n\n";
+        	    }
+
+
                 std::cout<<MOOS::ConsoleColours::reset();
         	}
 
@@ -359,16 +399,29 @@ public:
         		_LogFile<<std::left<<std::setw(20)<<std::setprecision(14)<<MOOS::Time();
         		_LogFile<<q->GetAsString()<<std::endl;
         	}
+
+        	if(_bPing && q->GetKey().find("__ping")==0)
+        	{
+                if(!q->IsSkewed(MOOS::Time()))
+                {
+                    std::cerr<<MOOS::ConsoleColours::Yellow();
+                    std::cerr<<q->GetBinaryDataSize()<<" bytes to ";
+                    std::cerr<<_sDBIPAddress<<":"<<m_lServerPort<<" ";
+                    std::cerr<<"time="<<std::setprecision(3)<<dfLatencyMS<<" ms \n";
+                    std::cerr<<MOOS::ConsoleColours::reset();
+                    _bPingRxd = true;
+                }
+        	}
         }
 
         return true;
     }
     bool Iterate()
     {
-		static double dfT = MOOS::Time();
-		static long long unsigned int nByteInCounter=0;
-		static long long unsigned int nByteOutCounter=0;
-		if(MOOS::Time()-dfT>1.0)
+		static double dfT = MOOSLocalTime(false);
+		static uint64_t nByteInCounter=0;
+		static uint64_t nByteOutCounter=0;
+		if(MOOSLocalTime(false)-dfT>1.0)
 		{
 			long long unsigned int bi, bo;
 			bi  = m_Comms.GetNumBytesReceived();
@@ -378,18 +431,31 @@ public:
 			{
 				std::cout<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
 				std::cout<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
-				std::cout<<MOOS::ConsoleColours::Green()<<  "Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
+				std::cout<<MOOS::ConsoleColours::Green()<<"Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
 				std::cout<<MOOS::ConsoleColours::reset();
 			}
 
 			if(_bShowTimingAdjustment)
 			{
-			    std::cout<<MOOS::ConsoleColours::yellow()<<"Skew relative to MOOSDB : "<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
-                std::cout<<MOOS::ConsoleColours::reset();
+			    std::cout<<MOOS::ConsoleColours::magenta()<<"timing correction : "<<std::left<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
+
+			    std::cout<<MOOS::ConsoleColours::reset();
 			}
+
+			if(_bPing )
+			{
+			    if(!_bPingRxd)
+			    {
+                    std::cerr<<MOOS::ConsoleColours::red();
+                    std::cerr<<"no route to "<<m_sServerHost<<":"<<m_lServerPort<<" \n";
+                    std::cerr<<MOOS::ConsoleColours::reset();
+			    }
+			    _bPingRxd = false;
+			}
+
 			nByteInCounter = bi;
 			nByteOutCounter = bo;
-			dfT = MOOS::Time();
+			dfT = MOOSLocalTime(false);
 
 		}
 
@@ -413,6 +479,7 @@ public:
     }
     bool OnConnectToServer()
     {
+        _sDBIPAddress = MOOS::IPV4Address::GetNumericAddress(m_sServerHost);
         DoSubscriptions();
         return true;
     }
@@ -436,7 +503,8 @@ public:
 			}
 			m_Comms.Register(sVar,dfPeriod);
 
-            std::cout<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
+            if(!m_bQuiet)
+                std::cout<<"+Subscribing to "<<sVar<<"@"<<dfPeriod<<"\n";
         }
         std::cout<<MOOS::ConsoleColours::reset();
 
@@ -527,11 +595,12 @@ public:
 				}
 
 
-
 				Active.Reschedule();
 				_Jobs.push(Active);
 			}
 			MOOSPause(5);
+
+
     	}
 
     	return true;
@@ -549,11 +618,14 @@ private:
     double _NetworkStallTime ;
     double _ApplicationExitProb;
     std::string _sLogFileName;
+    std::string _sDBIPAddress;
     bool _bVerbose;
     bool _bShowLatency;
     double _dfMeanLatency;
     bool _bShowBandwidth;
     bool _bShowTimingAdjustment;
+    bool _bPing;
+    bool _bPingRxd;
     std::ofstream _LogFile;
     int _TxCount;
 
@@ -599,7 +671,20 @@ private:
 
         bool isActive(double TimeNow) const
         {
-            return _dfTimeScheduled < TimeNow;
+            bool bActive =_dfTimeScheduled < TimeNow;
+
+//            if(bActive)
+//            {
+//                std::cerr<<"IsActive: "
+//                        << " _dfTimeScheduled " <<std::setprecision(17)<<_dfTimeScheduled
+//                        <<" TimeNow "<<std::setprecision(17)<<TimeNow
+//                        <<" local "<<std::setprecision(17)<<MOOSLocalTime(false)
+//                        <<" moos "<<std::setprecision(17)<<MOOSTime()
+//                        <<" active "<<bActive<<"\n";
+//            }
+
+
+            return bActive;
         }
 
         double _dfPeriod;

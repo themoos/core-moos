@@ -49,6 +49,16 @@ public:
 	 */
 	bool GetPercentageCPULoad(double &cpu_load);
 
+	/**
+	 * estimate current memory usage of process
+	 * @param current  the current size in bytes
+	 * @param maximum the maximum recorded footprint
+	 */
+	bool GetMemoryUsage(size_t & current,size_t & maximum);
+
+	static int GetPid();
+
+
 
 private:
 	class Impl;

@@ -52,14 +52,15 @@ CommandLineParser::~CommandLineParser() {
 }
 
 
-CommandLineParser::CommandLineParser(int argc, char * argv[])
+CommandLineParser::CommandLineParser(int argc,  char * argv[])
 {
 	Open(argc,argv);
 }
 
 
-bool CommandLineParser::Open(int argc, char * argv[])
+bool CommandLineParser::Open(int argc,  char * argv[])
 {
+
 	pcl_ = std::auto_ptr<GetPot>(new GetPot(argc,argv) );
 	return true;
 }
