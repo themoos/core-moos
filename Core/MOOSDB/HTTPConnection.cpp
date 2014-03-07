@@ -37,7 +37,7 @@
     #include <signal.h>
 #endif
 
-#include "MOOS/libMOOS/DB/HTTPConnection.h"
+#include "HTTPConnection.h"
 #include <sstream>
 
 class CHTMLTag

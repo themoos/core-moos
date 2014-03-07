@@ -26,8 +26,8 @@
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 
-#include "MOOS/libMOOS/DB/MOOSDBHTTPServer.h"
-#include "MOOS/libMOOS/DB/HTTPConnection.h"
+#include "MOOSDBHTTPServer.h"
+#include "HTTPConnection.h"
 
 #ifndef _WIN32
     #include "signal.h"

@@ -26,7 +26,7 @@
 
 #include "MOOS/libMOOS/MOOSLib.h"
 
-#include "MOOS/libMOOS/DB/MOOSDB.h"
+#include "MOOSDB.h"
 #include <iostream>
 #include <string>
 

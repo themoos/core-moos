@@ -53,7 +53,6 @@ CMOOSCommPkt::CMOOSCommPkt() {
     m_pNextData = m_pStream;
     m_nByteCount = 0;
     m_nMsgLen = 0;
-    m_nMsgsSerialised = 0;
 
 }
 
@@ -63,7 +62,7 @@ CMOOSCommPkt::~CMOOSCommPkt()
 
 
 
-bool CMOOSCommPkt::InflateTo(unsigned int nNewStreamSize) {
+bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
     //maybe there is nothing to do....
 
     //std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
@@ -150,12 +149,6 @@ unsigned char * CMOOSCommPkt::NextWrite(){
 }
 
 
-unsigned int CMOOSCommPkt::GetNumMessagesSerialised()
-{
-    return m_nMsgsSerialised;
-}
-
-
 /** This function stuffs messages in/from a packet */
 bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
                              bool bToStream,
@@ -168,7 +161,6 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
 
         m_nMsgLen = 0;
         m_nByteCount = 0;
-        m_nMsgsSerialised = 0;
 
         //lets figure out how much space we need?
         unsigned int nBufferSize = nHeaderSize; //some head room
@@ -182,10 +174,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
         m_pNextData = m_pStream + nHeaderSize;
         m_nByteCount += nHeaderSize;
 
-        for (p = List.begin(); p != List.end(); p++)
-        {
-
-            m_nMsgsSerialised++;
+        for (p = List.begin(); p != List.end(); p++) {
 
             int nCopied = p->Serialize(m_pNextData, nBufferSize - m_nByteCount);
 

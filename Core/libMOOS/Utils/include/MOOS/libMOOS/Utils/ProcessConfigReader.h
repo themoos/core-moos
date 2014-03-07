@@ -32,8 +32,6 @@
 #include "MOOS/libMOOS/Utils/MOOSFileReader.h"
 
 #include <string>
-#include <map>
-#include <set>
 #include <list>
 #include <vector>
 
@@ -100,15 +98,9 @@ public:
 
     bool GetConfigurationAndPreserveSpace(std::string sAppName,STRING_LIST & Params);
 
-    std::list<std::string> GetSearchedParameters(const std::string & sAppName);
-
-
-
     /** the name of process an instance this class will handle unless told otherwise */ 
     std::string m_sAppName;
 
-    //a collection of parameters searched for on a per application basis....
-    std::map<std::string, std::set<std::string>  > m_Audit;
 
 };
 

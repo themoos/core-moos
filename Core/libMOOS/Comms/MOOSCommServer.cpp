@@ -48,7 +48,6 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <cmath>
 
 using namespace std;
 
@@ -126,7 +125,6 @@ CMOOSCommServer::CMOOSCommServer()
     m_nMaxSocketFD = 0;
     m_pfnRxCallBack = NULL;
     m_pfnDisconnectCallBack = NULL;
-    m_pfnConnectCallBack = NULL;
 	m_pfnFetchAllMailCallBack = NULL;
     m_sCommunityName = "#1";
     m_bQuiet  = false;
@@ -141,47 +139,10 @@ CMOOSCommServer::CMOOSCommServer()
 
 CMOOSCommServer::~CMOOSCommServer()
 {
-    Stop();
-}
-
-bool CMOOSCommServer::Stop()
-{
-    if(m_TimerThread.IsThreadRunning())
-        m_TimerThread.Stop();
-
-
-    if(m_ListenThread.IsThreadRunning())
-        m_ListenThread.Stop();
-
-
-    if(m_ServerThread.IsThreadRunning())
-        m_ServerThread.Stop();
-
-    if(m_pListenSocket!=NULL)
-    {
-        m_pListenSocket->vCloseSocket();
-        delete m_pListenSocket;
-        m_pListenSocket = NULL;
-    }
-
-    SOCKETLIST::iterator q;
-    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();q++)
-    {
-        XPCTcpSocket* pSocket = *q;
-
-        pSocket->vCloseSocket();
-        delete pSocket;
-    }
-
-    m_ClientSocketList.clear();
-    m_Socket2ClientMap.clear();
-    m_AsynchronousClientSet.clear();
-    m_ClientTimingVector.clear();
-
-    return true;
 
 }
-void CMOOSCommServer::SetCommandLineParameters(int argc,  char * argv[])
+
+void CMOOSCommServer::SetCommandLineParameters(int argc, char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }
@@ -282,7 +243,7 @@ bool CMOOSCommServer::TimerLoop()
 
     SOCKETLIST::iterator p,q;
 
-    while(!m_TimerThread.IsQuitRequested())
+    while(!m_bQuit)
     {
         MOOSPause(nPeriod);
 
@@ -391,10 +352,6 @@ bool CMOOSCommServer::ListenLoop()
 		//PMN removes this after noticing it allows multiple
 		//servers to run simultaneously on Win32
 #ifndef _WIN32
-
-        //linger L;L.l_linger=0;L.l_onoff=0;
-        //m_pListenSocket->vSetLinger( L);
-
         m_pListenSocket->vSetReuseAddr(1);
 #endif
         m_pListenSocket->vBindSocket();
@@ -417,7 +374,7 @@ bool CMOOSCommServer::ListenLoop()
         return false;
     }
 
-    while(!m_ListenThread.IsQuitRequested())
+    for(;;)
     {
 
         try
@@ -425,40 +382,7 @@ bool CMOOSCommServer::ListenLoop()
             char sClientName[255];
 
             m_pListenSocket->vListen(50);
-
-
-
-            //sit here waiting for action and occasionally
-            //checking we are not being told to quit
-            for(;;)
-            {
-                //break;
-                struct timeval timeout;
-                fd_set fdset;
-                timeout.tv_sec    = 1;
-                timeout.tv_usec = 0;
-                FD_ZERO(&fdset);
-                FD_SET(m_pListenSocket->iGetSocketFd(), &fdset);
-
-                if(select(m_pListenSocket->iGetSocketFd() + 1,
-                    &fdset,
-                    NULL,
-                    NULL,
-                    &timeout)!=0)
-                {
-                    //break from this while loop-  there is action on the socket
-                    break;
-                }
-                else
-                {
-                    if(m_ListenThread.IsQuitRequested())
-                        return true;
-                }
-            }
-
-
-
-            XPCTcpSocket * pNewSocket = NULL;
+			XPCTcpSocket * pNewSocket = NULL;
 
 			if(!m_bDisableNameLookUp)
 			{
@@ -500,8 +424,7 @@ bool CMOOSCommServer::ListenLoop()
 
     }
 
-
-    return true;
+    //delete m_pListenSocket;
 }
 
 
@@ -524,7 +447,7 @@ bool CMOOSCommServer::ServerLoop()
     	MOOS::BoostThisThread();
 
 
-    while(!m_ServerThread.IsQuitRequested())
+    while(!m_bQuit)
     {
 
         if(m_ClientSocketList.empty())
@@ -621,7 +544,6 @@ bool CMOOSCommServer::ServerLoop()
         FD_ZERO(&fdset);
 
     }
-
     return 0;
 }
 
@@ -698,77 +620,52 @@ bool CMOOSCommServer::ProcessClient()
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
 	MOOS::DeliberatelyNotUsed(sName);
+    std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
 
-	if(!m_bQuiet)
-	    std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
-
+    MOOSTrace("New client connected:\n");
 
     if(HandShake(pNewClient))
     {
-        if(m_pfnConnectCallBack!=NULL)
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
+
+        string sName = GetClientName(pNewClient);
+
+        if(!sName.empty())
         {
-            std::string sWho  = GetClientName(pNewClient);
-            if(!(*m_pfnConnectCallBack)(sWho,m_pConnectCallBackParam))
-            {
-                if(!m_bQuiet)
-                {
-                    std::cerr<<"user defined connect callback returns false\n";
-                }
-            }
+            std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
+        {
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"Synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
         }
 
-        if(!m_bQuiet)
+        if(m_bBoostIOThreads)
         {
-            std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
-
-            string sName = GetClientName(pNewClient);
-
-            if(!sName.empty())
-            {
-                std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
-            }
-            if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
-            {
-                std::cout<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
-            }
-            else
-            {
-                std::cout<<"  Type          :  "<<MOOS::ConsoleColours::green()<<"Synchronous"<<MOOS::ConsoleColours::reset()<<"\n";
-            }
-
-            if(m_bBoostIOThreads)
-            {
-                std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::Yellow()<<"raised"<<MOOS::ConsoleColours::reset()<<"\n";
-            }
-            else
-            {
-                std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::green()<<"normal"<<MOOS::ConsoleColours::reset()<<"\n";
-            }
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::Yellow()<<"raised"<<MOOS::ConsoleColours::reset()<<"\n";
+        }
+        else
+        {
+        	std::cout<<"  Priority      :  "<<MOOS::ConsoleColours::green()<<"normal"<<MOOS::ConsoleColours::reset()<<"\n";
         }
     }
     else
     {
-        if(!m_bQuiet)
-        {
-            std::cerr<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
-            std::cerr<<MOOS::ConsoleColours::Red()<<"Handshaking failed - client is spurned\n"<<MOOS::ConsoleColours::reset();
-        }
+        std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::Red()<<"FAIL\n"<<MOOS::ConsoleColours::reset()<<"\n";
 
+        std::cerr<<MOOS::ConsoleColours::Red()<<"Handshaking failed - client is spurned\n"<<MOOS::ConsoleColours::reset();
         pNewClient->vCloseSocket();
         delete pNewClient;
-
-        if(!m_bQuiet)
-            MOOSTrace("--------------------------------\n");
-
+        MOOSTrace("--------------------------------\n");
         return false;
     }
-
-    if(!m_bQuiet)
-        std::cout<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
+    std::cout<<"  Total Clients :  "<<MOOS::ConsoleColours::green()<<m_Socket2ClientMap.size()<<MOOS::ConsoleColours::reset()<<"\n";
 
 
-    if(!m_bQuiet)
-        MOOSTrace("--------------------------------\n");
+    MOOSTrace("--------------------------------\n");
 
 
 
@@ -780,8 +677,8 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool CMOOSCommServer::OnClientDisconnect()
 {
 
-    if(!m_bQuiet)
-        std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
+
+    std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
 
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
@@ -823,8 +720,7 @@ bool CMOOSCommServer::OnClientDisconnect()
 
 	}
 
-    if(!m_bQuiet)
-        MOOSTrace("--------------------------------\n");
+    MOOSTrace("--------------------------------\n");
 
 
     return true;
@@ -842,7 +738,7 @@ void CMOOSCommServer::SetOnRxCallBack(bool ( *pfn)(const std::string & ,MOOSMSG_
 }
 
 //void CMOOSCommServer::SetOnDisconnectCallBack(bool (__cdecl *pfn)(string & MsgListRx, void * pParam), void * pParam)
-void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & , void * pParam), void * pParam)
+void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & MsgListRx, void * pParam), void * pParam)
 {
     //address of function to invoke (static)
     m_pfnDisconnectCallBack=pfn;
@@ -851,18 +747,6 @@ void CMOOSCommServer::SetOnDisconnectCallBack(bool (*pfn)(string & , void * pPar
     //resolution when callback is invoked
     m_pDisconnectCallBackParam = pParam;
 }
-
-void CMOOSCommServer::SetOnConnectCallBack(bool (*pfn)(string & , void * pParam), void * pParam)
-{
-    //address of function to invoke (static)
-    m_pfnConnectCallBack=pfn;
-
-    //store the address of the object invoking the callback -> needed for scope
-    //resolution when callback is invoked
-    m_pConnectCallBackParam = pParam;
-}
-
-
 
 void CMOOSCommServer::SetOnFetchAllMailCallBack(bool (*pfn)(const std::string  & sClient,MOOSMSG_LIST & MsgListTx,void * pParam),void * pParam)
 {
@@ -966,10 +850,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         //we are a V10 DB we can support AysncComms
         MsgW.m_sVal = "asynchronous";
-        std::string sAux;
-        MOOSAddValToString(sAux,"hostname",GetLocalIPAddress());
-
-        MsgW.m_sSrcAux = sAux;
+        MsgW.m_sSrcAux = GetLocalIPAddress();
         MsgW.m_sOriginatingCommunity = m_sCommunityName;
         SendMsg(pNewClient,MsgW);
 
@@ -1015,9 +896,6 @@ bool CMOOSCommServer::SupportsAsynchronousClients()
 
 void CMOOSCommServer::DoBanner()
 {
-    if(m_bQuiet)
-        return;
-
     std::cout<<"------------------- MOOSDB V10 -------------------\n";
 
     std::cout<<"  Hosting  community                "<<
