@@ -1077,7 +1077,14 @@ void CMOOSDB::UpdateSummaryVar()
         ss<<MOOS::TimeToDate(p->second.m_dfWrittenTime,false,true)<<" ";
 
         ss<<std::left<<std::setw(20);
-        ss<<p->second.m_sWhoChangedMe<<" ";
+        if(p->second.m_sWhoChangedMe.empty())
+        {
+            ss<<"(write pending)"<<" ";
+        }
+        else
+        {
+            ss<<p->second.m_sWhoChangedMe<<" ";
+        }
 
         ss<<std::left<<std::setw(2);
         ss<<p->second.m_cDataType<<" ";
