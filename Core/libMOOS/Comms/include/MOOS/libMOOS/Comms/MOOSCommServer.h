@@ -312,6 +312,7 @@ protected:
     unsigned int m_nAuditPort;
 
 
+
 };
 
 #endif // !defined(AFX_MOOSCOMMSERVER_H__2FDF870F_F998_4D3C_AD18_FCC2C5C12DDA__INCLUDED_)

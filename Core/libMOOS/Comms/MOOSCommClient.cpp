@@ -175,7 +175,6 @@ bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::stri
 		//MOOSTrace("Comms Running @ %d Hz\n",m_nFundamentalFreq);
 	}
 
-
 	StartThreads();
 
 	return true;
@@ -370,6 +369,7 @@ bool CMOOSCommClient::ClientLoop()
 		}
 		//wait one second before try to connect again
 		MOOSPause(1000);
+
 
 	}
 

@@ -697,7 +697,15 @@ bool CMOOSCommServer::ProcessClient()
 
 bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 {
+
 	MOOS::DeliberatelyNotUsed(sName);
+
+	//now this is simply a nicety. It *helps* but cannot solve a corner case
+	//in which a client disconnects (is destroyed) and a femto second later
+	//starts up again. The DB can discover the closure at the same time
+	//as handling the reconnection....not much we can do as there is no way
+	//not make this synchronous
+	MOOSPause(100);
 
 	if(!m_bQuiet)
 	    std::cout<<"\n------------"<<MOOS::ConsoleColours::Green()<<"CONNECT"<<MOOS::ConsoleColours::reset()<<"-------------\n";
@@ -779,6 +787,7 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 
 bool CMOOSCommServer::OnClientDisconnect()
 {
+
 
     if(!m_bQuiet)
         std::cout<<"\n----------"<<MOOS::ConsoleColours::Yellow()<<"DISCONNECT"<<MOOS::ConsoleColours::reset()<<"------------\n";
