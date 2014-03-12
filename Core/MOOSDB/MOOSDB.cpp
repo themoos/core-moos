@@ -37,17 +37,12 @@
 #include "MOOS/libMOOS/MOOSLib.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
-#include "MOOS/libMOOS/MOOSVersion.h"
-#include "MOOS/libMOOS/GitVersion.h"
-#include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
 
 
-
-#include "MOOS/libMOOS/DB/MOOSDB.h"
+#include "MOOSDB.h"
 #include "assert.h"
 #include <iostream>
-#include <cmath>
 #include <sstream>
 #include <vector>
 #include <iterator>
@@ -80,26 +75,15 @@ bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
     return pMe->OnDisconnect(sClient);
 }
 
-bool CMOOSDB::OnConnectCallBack(string & sClient, void * pParam)
-{
-    CMOOSDB* pMe = (CMOOSDB*)(pParam);
-
-    return pMe->OnConnect(sClient);
-}
-
-
 CMOOSDB::CMOOSDB()
 {
     //here we set up default community names and DB Names
     m_sDBName = "MOOSDB#1";
     m_sCommunityName = "#1";
-    m_dfSummaryTime = MOOS::Time();
     
     //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     
-    m_bQuiet = false;
-
     //make our own variable called DB_TIME
     {
         CMOOSDBVar NewVar("DB_TIME");
@@ -133,29 +117,6 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_CLIENTS"] = NewVar;
     }
     
-    //make our own variable called DB_EVENT
-    {
-        CMOOSDBVar NewVar("DB_EVENT");
-        NewVar.m_cDataType = MOOS_STRING;
-        NewVar.m_dfVal= MOOSTime();
-        NewVar.m_sWhoChangedMe = m_sDBName;
-        NewVar.m_sOriginatingCommunity = m_sCommunityName;
-        NewVar.m_dfWrittenTime = MOOSTime();
-        m_VarMap["DB_EVENT"] = NewVar;
-    }
-
-    //make our own variable called DB_EVENT
-    {
-        CMOOSDBVar NewVar("DB_VARSUMMARY");
-        NewVar.m_cDataType = MOOS_STRING;
-        NewVar.m_dfVal= MOOSTime();
-        NewVar.m_sWhoChangedMe = m_sDBName;
-        NewVar.m_sOriginatingCommunity = m_sCommunityName;
-        NewVar.m_dfWrittenTime = MOOSTime();
-        m_VarMap["DB_VARSUMMARY"] = NewVar;
-    }
-
-
     //ignore broken pipes as is standard for network apps
 #ifndef _WIN32
     signal(SIGPIPE,SIG_IGN);
@@ -167,8 +128,8 @@ CMOOSDB::CMOOSDB()
 
 CMOOSDB::~CMOOSDB()
 {
-    if(m_pCommServer.get()!=NULL)
-        m_pCommServer->Stop();
+
+    
 }
 
 
@@ -184,14 +145,6 @@ void PrintHelpAndExit()
 	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
 	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
 	std::cout<<"--moos_community=<string>          specify community name\n";
-    std::cout<<"--moos_print_version               print build and version details\n";
-    std::cout<<"--moos_suicide_channel=<str>       suicide monitoring channel (IP address) \n";
-    std::cout<<"--moos_suicide_port=<int>          suicide monitoring port  \n";
-    std::cout<<"--moos_suicide_phrase=<str>        suicide pass phrase  \n";
-    std::cout<<"--moos_suicide_disable             disable suicide monitoring \n";
-    std::cout<<"--moos_suicide_print               print suicide conditions \n";
-
-
 
 
 
@@ -205,7 +158,6 @@ void PrintHelpAndExit()
 	std::cout<<"--warning_latency=<positive_float>    specify latency above which warning is issued in ms\n";
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
 	std::cout<<"--audit_port=<unsigned int>        specify port on which to transmit statistics\n";
-    std::cout<<"--event_log=<file name>            specify file in which to record events\n";
 
 
 
@@ -219,20 +171,8 @@ void PrintHelpAndExit()
 	exit(0);
 }
 
-void CMOOSDB::OnPrintVersionAndExit()
+bool CMOOSDB::Run(int argc, char * argv[] )
 {
-    std::cout<<"--------------------------------------------------\n";
-    std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
-    std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
-    std::cout<<MOOS_GIT_VERSION<<"\n";
-    std::cout<<"--------------------------------------------------\n";
-    exit(0);
-}
-
-
-bool CMOOSDB::Run(int argc,  char * argv[] )
-{
-
 	MOOS::CommandLineParser P(argc,argv);
 
 
@@ -298,22 +238,11 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
     P.GetVariable("--moos_timeout",dfClientTimeout);
 
-    //do we want to fire up the event logger
-    std::string sEventLogFileName;
-    if(P.GetVariable("--event_log",sEventLogFileName))
-    {
-        m_EventLogger.Run(sEventLogFileName);
-    }
-
 
     ///////////////////////////////////////////////////////////
 	double dfWarningLatencyMS = 50;
 	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
     P.GetVariable("--warning_latency",dfWarningLatencyMS);
-
-
-    if(P.GetFlag("--moos_print_version"))
-        OnPrintVersionAndExit();
 
 
 
@@ -345,46 +274,6 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 	P.GetVariable("--audit_port",nAuditPort);
 
 
-
-
-
-    std::string sSuicideAddress;
-    if(P.GetVariable("--moos_suicide_channel",sSuicideAddress))
-    {
-        m_SuicidalSleeper.SetChannel(sSuicideAddress);
-    }
-
-    int nSuicidePort;
-    if(P.GetVariable("--moos_suicide_port",nSuicidePort))
-    {
-        m_SuicidalSleeper.SetPort(nSuicidePort);
-    }
-
-    std::string sSuicidePhrase;
-    if(P.GetVariable("--moos_suicide_phrase",sSuicidePhrase))
-    {
-        m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
-    }
-
-    if(P.GetFlag("--moos_suicide_print"))
-    {
-        std::cerr<<"suicide terms and conditions are:\n";
-        std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
-        std::cerr<<" port     "<<m_SuicidalSleeper.GetPort()<<"\n";
-        std::cerr<<" phrase   \""<<m_SuicidalSleeper.GetPassPhrase()<<"\"\n";
-
-    }
-
-    if(!P.GetFlag("--moos_suicide_disable"))
-    {
-        m_SuicidalSleeper.SetName(m_sDBName);
-        m_SuicidalSleeper.Run();
-    }
-
-
-
-
-
     
     LogStartTime();
     
@@ -399,13 +288,9 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new MOOS::ThreadedCommServer);
     }
 
-    m_pCommServer->SetQuiet(m_bQuiet);
-
     m_pCommServer->SetOnRxCallBack(OnRxPktCallBack,this);
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
-
-    m_pCommServer->SetOnConnectCallBack(OnConnectCallBack,this);
 
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
 
@@ -421,7 +306,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
     m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp,nAuditPort);
 
-    m_EventLogger.AddEvent("DBStart","MOOSDB",MOOSFormat("Port=%d",m_nPort));
+
         
     return true;
 }
@@ -432,16 +317,6 @@ bool CMOOSDB::IsRunning()
 		return false;
 
 	return m_pCommServer->IsRunning();
-}
-
-
-bool CMOOSDB::SetQuiet(bool bQuiet)
-{
-    m_bQuiet = bQuiet;
-    if(m_pCommServer.get()!=NULL)
-        m_pCommServer->SetQuiet(m_bQuiet);
-
-    return true;
 }
 
 
@@ -503,9 +378,6 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
 
     //and send clients an occasional membersip list
     UpdateDBClientsVar();
-
-    //update a db summary var once in a while
-    UpdateSummaryVar();
 
     if(!MsgListRx.empty())
     {
@@ -623,12 +495,9 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
 				{
 					//add the filter owner (client *g) as a subscriber
 					rVar.AddSubscriber(g->first, h->period());
-					if(!m_bQuiet)
-					{
-                        std::cout<<"+ subs of \""<<g->first<<"\" to \""
-                                <<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
-                                <<"\""<<std::endl;
-					}
+					std::cout<<"+ subs of \""<<g->first<<"\" to \""
+							<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+							<<"\""<<std::endl;
 				}
 			}
 		}
@@ -841,7 +710,6 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
 			return false;
 
-		m_EventLogger.AddEvent("register",Msg.m_sSrc,rVar.m_sName);
 
 		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
 		{
@@ -876,9 +744,6 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		m_ClientFilters[Msg.GetSource()].insert(F);
 
 
-        m_EventLogger.AddEvent("wildcard",Msg.m_sSrc,Msg.GetString());
-
-
 		//now iterate over all existing variables and see if they match
 		//if the do simply register for them...
 		DBVAR_MAP::iterator q;
@@ -893,14 +758,11 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 				M.m_dfVal = period;
 				M.m_sSrc = Msg.GetSource();
 
-				if(!m_bQuiet)
-				{
-                    std::cout<<MOOS::ConsoleColours::yellow()
-                            <<"+ subs of \""
-                            <<Msg.GetSource()<<"\" to variables matching \""
-                            <<var_pattern<<":"<<app_pattern<<"\""
-                            <<MOOS::ConsoleColours::reset()<<std::endl;
-				}
+				std::cout<<MOOS::ConsoleColours::yellow()
+						<<"+ subs of \""
+						<<Msg.GetSource()<<"\" to variables matching \""
+						<<var_pattern<<":"<<app_pattern<<"\""
+						<<MOOS::ConsoleColours::reset()<<std::endl;
 
 				OnRegister(M);//smart...
 			}
@@ -969,8 +831,6 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
 #endif
     }
     
-    m_EventLogger.AddEvent("create",Msg.GetSource(),Msg.GetName());
-
     //ok we know what you are talking about
     CMOOSDBVar & rVar = p->second;
     
@@ -978,28 +838,10 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
     return rVar;
 }
 
-
-bool CMOOSDB::OnConnect(string &sClient)
-{
-    m_EventLogger.AddEvent("connect",sClient,"client connects");
-
-    //notify ourselves....
-    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("connected=%s",sClient.c_str()));
-    DBC.m_sOriginatingCommunity = m_sCommunityName;
-    DBC.m_sSrc = m_sDBName;
-    OnNotify(DBC);
-
-
-    return true;
-}
-
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
-    if(!m_bQuiet)
-    {
-        std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
-    }
+    std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
     
     DBVAR_MAP::iterator p;
     
@@ -1015,19 +857,8 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     }
     
     m_HeldMailMap.erase(sClient);
+    std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
-    if(!m_bQuiet)
-        std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
-
-    m_EventLogger.AddEvent("disconnect",sClient,"client disconnects");
-
-
-    //notify ourselves....
-    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("disconnected=%s",sClient.c_str()));
-    DBC.m_sOriginatingCommunity = m_sCommunityName;
-    DBC.m_sSrc = m_sDBName;
-    OnNotify(DBC);
-
     return true;
 }
 
@@ -1055,77 +886,6 @@ bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     
     return false;
-}
-
-void CMOOSDB::UpdateSummaryVar()
-{
-    double dfNow = MOOS::Time();
-    if(dfNow-m_dfSummaryTime<2.0)
-        return;
-
-    m_dfSummaryTime = dfNow;
-
-    std::stringstream ss;
-    DBVAR_MAP::iterator p;
-
-    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
-    {
-        ss<<std::left<<std::setw(20);
-        ss<<p->first<<" ";
-
-        ss<<std::left<<std::setw(20);
-        ss<<MOOS::TimeToDate(p->second.m_dfWrittenTime,false,true)<<" ";
-
-        ss<<std::left<<std::setw(20);
-        ss<<p->second.m_sWhoChangedMe<<" ";
-
-        ss<<std::left<<std::setw(2);
-        ss<<p->second.m_cDataType<<" ";
-
-        ss<<std::left<<std::setw(20);
-        switch(p->second.m_cDataType)
-        {
-            ss<<std::left<<std::setw(25);
-            case MOOS_DOUBLE:
-                ss<<p->second.m_dfVal<<" ";break;
-            case MOOS_STRING:
-            {
-                unsigned int s = p->second.m_sVal.size();
-                if(s>25)
-                    ss<<(p->second.m_sVal.substr(0,22)+"...");
-                else
-                    ss<<p->second.m_sVal;
-
-                break;
-            }
-                ss<<p->second.m_sVal<<" ";break;
-            case MOOS_BINARY_STRING:
-            {
-                unsigned int s = p->second.m_sVal.size();
-                std::string bss;
-                if(s<1024)
-                    bss = MOOSFormat("*binary* %-4d B  ",s);
-                else if(s<1024*1024)
-                    bss = MOOSFormat("*binary* %.3f KB ",s/(1024.0));
-                else
-                    bss = MOOSFormat("*binary* %.3f MB ",s/(1024.0*1024.0));
-
-                ss<<bss;
-                break;
-            }
-
-        }
-
-
-        ss<<"\n";
-
-    }
-
-    CMOOSMsg DBC(MOOS_NOTIFY,"DB_VARSUMMARY",ss.str());
-    DBC.m_sOriginatingCommunity = m_sCommunityName;
-    DBC.m_sSrc = m_sDBName;
-    OnNotify(DBC);
-
 }
 
 bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)

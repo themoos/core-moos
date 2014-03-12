@@ -56,7 +56,6 @@ struct ClientThreadSharedData
 	  PKT_READ,
 	  CONNECTION_CLOSED,
 	  PKT_WRITE,
-	  STOP_THREAD,
 	} _Status;
 
 
@@ -221,12 +220,11 @@ protected:
     virtual bool AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName);
 
     virtual bool ProcessClient(ClientThreadSharedData &SD, MOOS::ServerAudit & Auditor);
-
     virtual bool ProcessClient();
 
     bool StopAndCleanUpClientThread(std::string sName);
 
-    virtual bool Stop();
+
 
     protected:
 
@@ -234,6 +232,11 @@ protected:
 		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
 
 		std::map<std::string,ClientThread*> m_ClientThreads;
+
+		std::vector<unsigned char  > m_SerialisationStorage;
+
+
+
 
 
 };

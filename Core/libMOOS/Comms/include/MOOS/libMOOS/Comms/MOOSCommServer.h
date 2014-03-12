@@ -86,15 +86,6 @@ public:
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
 
 
-    /** Set the connect  call back handler.  The supplied call back must be of the form
-    static bool MyCallBack(std::string  & sClient,, void * pParam).
-    @param sClient   Name of client just connected
-    @param pParam      user suplied parameter to be passed to callback function
-    */
-    void SetOnConnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
-
-
-
     /**
 	* Set up the callback which is can be to collect all
 	* pending mail in named client
@@ -136,10 +127,7 @@ public:
     */
     virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false, unsigned int nAuditPort = 9020);
     
-    /*stop the server*/
-    virtual bool Stop();
-
-    virtual void SetCommandLineParameters(int argc,  char * argv[]);
+    virtual void SetCommandLineParameters(int argc, char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
@@ -219,15 +207,6 @@ protected:
     /** place holder for the address of the object passed back to the user during a Disconnect callback
     @see SetOnDisconnectCallBack */
     void * m_pDisconnectCallBackParam;
-
-
-    /** user supplied OnConnect callback
-    @see SetOnConnectCallBack */
-    bool (*m_pfnConnectCallBack)(std::string  & sClient,void * pParam);
-
-    /** place holder for the address of the object passed back to the user during a Connect callback
-    @see SetOnConnectCallBack */
-    void * m_pConnectCallBackParam;
 
 
 

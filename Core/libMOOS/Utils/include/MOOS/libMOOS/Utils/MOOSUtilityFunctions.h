@@ -31,7 +31,7 @@
 #define PI 3.141592653589
 #endif
 
-#include <stdint.h>
+
 #include <string>
 #include <list>
 #include <vector>
@@ -43,15 +43,13 @@
 namespace MOOS
 {
 	double Time();
-    std::string TimeToDate(double dfTime,bool bDate=true,bool bTime=true);
 	void Pause(int milliseconds, bool bApplyTimeWarp = true );
 	std::string Chomp(std::string &sStr, const std::string &sTk,bool bInsensitive=false);
 	std::vector<std::string > StringListToVector(std::string L, const std::string & tok="," );
 	double StringToDouble(const std::string & sNum);
-	template< class T > void DeliberatelyNotUsed(const T &) {}
+	template< class T > void DeliberatelyNotUsed(const T &) {};
 
-
-}
+};
 
 
 
@@ -72,13 +70,13 @@ bool MOOSGetValueFromToken(STRING_LIST & sParams,const std::string & sToken,std:
 bool MOOSValFromString(std::string & sVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(double & dfVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(float  &  fVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
-//bool MOOSValFromString(long   &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
+bool MOOSValFromString(long   &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(int    &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(bool   &  bVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(unsigned int &  nVal,const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 bool MOOSValFromString(std::vector<double> &dfValVec,int &nRows,int &nCols, const std::string & sStr, const std::string & sToken,bool bInsensitive=false);
 bool MOOSValFromString(std::vector<unsigned int> &nValVec, int &nRows, int &nCols, const std::string & sStr, const std::string & sToken,bool bInsensitive=false);
-bool MOOSValFromString(int64_t & nVal, const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
+bool MOOSValFromString(long long & nVal, const std::string & sStr,const std::string & sTk,bool bInsensitive=false);
 
 //the following simply parse a MOOSFormated vector [nxm]{a,b,c...}
 bool MOOSVectorFromString(const std::string & sStr,std::vector<double> & dfVecVal,int & nRows,int & nCols);
@@ -110,12 +108,8 @@ void MOOSRemoveChars(std::string & sStr,const std::string & sTok);
 
 /** convert string to upper case*/
 void MOOSToUpper(std::string &str);
+
 std::string MOOSToUpper(const std::string & sStr);
-
-/** to lower */
-void MOOSToLower(std::string &str);
-std::string MOOSToLower(const std::string & str);
-
 
 /** remove white space form start and end of a string */
 void MOOSTrimWhiteSpace(std::string & str);
@@ -188,10 +182,10 @@ void InhibitMOOSTraceInThisThread(bool bInhibit = true);
 bool MOOSFail(const char * FmtStr,...);
 
 /** return nicely formatted time stamp string */
-std::string MOOSGetTimeStampString(double Time=-1.0);
+std::string MOOSGetTimeStampString();
 
 /** get the current date formatted nicely */
-std::string MOOSGetDate(double Time=-1.0);
+std::string MOOSGetDate();
 
 /** useful macro for debugging prints line and file */
 #define  MOOSHERE  MOOSFormat("File %s Line %d", __FILE__,__LINE__).c_str()

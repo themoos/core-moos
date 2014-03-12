@@ -29,6 +29,6 @@
 #ifndef MOOSVERSION_H_
 #define MOOSVERSION_H_
 
-#define MOOS_VERSION_NUMBER "10.0.2"
+#define MOOS_VERSION_NUMBER "10.0"
 
 #endif /* MOOSVERSION_H_ */

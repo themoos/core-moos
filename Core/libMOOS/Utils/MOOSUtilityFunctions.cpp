@@ -35,8 +35,6 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/MOOSAssert.h"
 
-#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
-
 #include <algorithm>
 #include <iterator>
 #include <cctype>
@@ -107,36 +105,6 @@ namespace MOOS
 	{
 		return MOOSTime();
 	}
-
-	std::string TimeToDate(double dfTime,bool bDate,bool bTime)
-	{
-	    struct timeval TimeVal;
-	    double integral,fractional;
-	    fractional = modf(dfTime, &integral);
-	    TimeVal.tv_sec = int(integral);
-	    TimeVal.tv_usec = int(fractional*1000000.0);
-
-	    time_t nowtime;
-	    struct tm *nowtm;
-	    char sdate[64], stime[64],stimeall[64];
-
-	    nowtime = TimeVal.tv_sec;
-	    nowtm = localtime(&nowtime);
-
-	    strftime(sdate, sizeof sdate, "%Y-%m-%d ", nowtm);
-        strftime(stime, sizeof stime, "%H:%M:%S", nowtm);
-	    snprintf(stimeall, sizeof stimeall, "%s.%03d", stime, (int)(TimeVal.tv_usec/1000));
-
-	    std::string sResult;
-	    if(bDate)
-	        sResult+=std::string(sdate);
-	    if(bTime)
-            sResult+=std::string(stimeall);
-
-	    return sResult;
-
-	}
-
 
 	void Pause(int milliseconds,bool bApplyTimeWarp)
 	{
@@ -215,7 +183,6 @@ bool SetWin32HighPrecisionTiming(bool bEnable)
 #endif
 
 }
-
 
 
 double MOOSLocalTime(bool bApplyTimeWarping)
@@ -314,7 +281,7 @@ double GetMOOSTimeWarp()
 
 bool SetMOOSTimeWarp(double dfWarp)
 {
-    if(dfWarp>0 && dfWarp<=MAX_TIME_WARP)
+    if(dfWarp>0 && dfWarp<MAX_TIME_WARP)
     {
         gdfMOOSTimeWarp = dfWarp;
         return true;
@@ -325,20 +292,15 @@ bool SetMOOSTimeWarp(double dfWarp)
 
 void MOOSPause(int nMS,bool bApplyTimeWarping)
 {
-    double dfMilliSeconds = nMS;
     if(bApplyTimeWarping)
-        dfMilliSeconds/=gdfMOOSTimeWarp;
-
-
-	//nMS = int(double(nMS)/gdfMOOSTimeWarp);
+	    nMS = int(double(nMS)/gdfMOOSTimeWarp);
 #ifdef _WIN32
 	::Sleep(nMS);
 #else
 
     timespec TimeSpec;
-    TimeSpec.tv_sec     = (int)(dfMilliSeconds/1000);
-    //TimeSpec.tv_nsec    = (nMS%1000) *1000000;
-    TimeSpec.tv_nsec    = (int)(fmod(dfMilliSeconds,1000.0) *1000000);
+    TimeSpec.tv_sec     = nMS / 1000;
+    TimeSpec.tv_nsec    = (nMS%1000) *1000000;
 
     nanosleep(&TimeSpec,NULL);
 
@@ -504,28 +466,28 @@ bool MOOSValFromString(int  & nVal,const string & sStr,const string & sTk,bool b
 }
 
 
-//bool MOOSValFromString(long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
-//{
-//    string sVal;
-//
-//    if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
-//    {
-//
-//        /*unsigned int*/ size_t  nPos = sVal.find_first_not_of(' ');
-//
-//        if(nPos!=string::npos)
-//        {
-//            char c = sVal[nPos];
-//            if(isdigit(c)  || c=='-' || c=='+')
-//            {
-//                nVal = atol(sVal.c_str());
-//                return true;
-//            }
-//        }
-//
-//    }
-//    return false;
-//}
+bool MOOSValFromString(long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
+{
+    string sVal;
+
+    if(MOOSValFromString(sVal,sStr,sTk,bInsensitive))
+    {
+
+        /*unsigned int*/ size_t  nPos = sVal.find_first_not_of(' ');
+
+        if(nPos!=string::npos)
+        {
+            char c = sVal[nPos];
+            if(isdigit(c)  || c=='-' || c=='+')
+            {
+                nVal = atol(sVal.c_str());
+                return true;
+            }
+        }
+
+    }
+    return false;
+}
 
 
 bool MOOSValFromString(bool  & bVal,const string & sStr,const string & sTk,bool bInsensitive)
@@ -814,7 +776,7 @@ bool MOOSValFromString(std::vector<unsigned int> &nValVec,
 
 
 
-bool MOOSValFromString(int64_t  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
+bool MOOSValFromString(long long  & nVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
     std::string sVal;
 
@@ -910,14 +872,11 @@ bool MOOSStrCmp(string s1,string s2)
 }
 
 
-string MOOSGetDate(double t)
+string MOOSGetDate()
 {
 #ifndef _WIN32
     struct timeb timebuffer;
     ftime( &timebuffer );
-
-    if(t<0)
-        timebuffer.time = 0;
 
     char *timeline = ctime( & ( timebuffer.time ) );
     char sResult[100];
@@ -929,10 +888,6 @@ string MOOSGetDate(double t)
 #else
     struct _timeb timebuffer;
     _ftime( &timebuffer );
-
-    if(t<0)
-            timebuffer.time = 0;
-
 
     char *timeline = ctime( & ( timebuffer.time ) );
     char sResult[100];
@@ -1009,15 +964,11 @@ bool MOOSWildCmp(const std::string & sPattern, const std::string & sString )
 }
 
 
-string MOOSGetTimeStampString(double t)
+string MOOSGetTimeStampString()
 {
-
     struct tm *Now;
-    time_t aclock=0;
-    if(t<0)
-    {
-        time( &aclock );
-    }
+    time_t aclock;
+    time( &aclock );
  	
     Now = localtime( &aclock );
     //change suggested by toby schneider April 2009 
@@ -1044,19 +995,6 @@ void MOOSToUpper(string &str)
 {
 	std::transform(str.begin(), str.end(),str.begin(), ::toupper); 
 }
-
-void MOOSToLower(string &str)
-{
-    std::transform(str.begin(), str.end(),str.begin(), ::tolower);
-}
-
-std::string MOOSToLower(const std::string & str)
-{
-    std::string STR = str;
-    std::transform(str.begin(), str.end(),STR.begin(), ::tolower);
-    return STR;
-}
-
 
 std::string MOOSToUpper(const std::string & str)
 {
@@ -1220,16 +1158,11 @@ bool MOOSFail(const char * FmtStr,...)
 
 //this is library scope mapping of threadid to a flag
 //specifying whether or no a thread should allow MOOSTracing.
-//note we need global lock protection for all functions that
-//access gThread2TraceMap
 THREAD2TRACE_MAP gThread2TraceMap;
-CMOOSLock gTraceLock;
 
 void InhibitMOOSTraceInThisThread(bool bInhibit)
 {
-    //lock it!
-    MOOS::ScopedLock Lock(gTraceLock);
-
+    
 #ifdef _WIN32
     DWORD Me = GetCurrentThreadId(); 
 #else
@@ -1247,7 +1180,7 @@ void MOOSTrace(string  sStr)
 
 void MOOSTrace(const char *FmtStr,...)
 {
-
+    
     //initially we wqnt to check to see if printing
     //from this thread has been inhibited by a call to
     //
@@ -1257,22 +1190,16 @@ void MOOSTrace(const char *FmtStr,...)
     pthread_t Me =  pthread_self();
 #endif
 
-    {
-        //lock it! - just here - in case we use need MOOS trace furher down
-        MOOS::ScopedLock Lock(gTraceLock);
-
-        if(!gThread2TraceMap.empty())
-
-        {
-            THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
-
-            //have we been told to be quiet?
-            if(p!=gThread2TraceMap.end())
-                if(p->second==true)
-                    return;
-        }
-    }
+    if(!gThread2TraceMap.empty())
     
+    {
+        THREAD2TRACE_MAP::iterator p = gThread2TraceMap.find(Me);
+    
+        //have we been told to be quiet?
+        if(p!=gThread2TraceMap.end())
+            if(p->second==true)
+                return;
+    }
     
     const unsigned int MAX_TRACE_STR = 2048;
 
@@ -1306,10 +1233,7 @@ void MOOSTrace(const char *FmtStr,...)
     // be processed by the _vsnprintf above, then placed in 'buf'.
     // Problem is that fprintf finds the '%' in buf and expects us to provide more arguments!
         //fprintf(stderr,buf);
-    //fputs(buf, stdout);
-
-        //changed by pmn to use c++ streams
-        std::cout<<buf;
+    fputs(buf, stdout);
 
     }
 }

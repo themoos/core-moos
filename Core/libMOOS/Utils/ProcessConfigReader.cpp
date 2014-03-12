@@ -159,6 +159,9 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
                     // ignore if param = <empty string>
                     std::string sTmp(sLine);
                     std::string sTok = MOOSChomp(sTmp, "=");
+
+					MOOSTrimWhiteSpace(sTok); // Handle potential whitespaces.
+					MOOSTrimWhiteSpace(sTmp);
                     
                     if (sTok.size() > 0) 
                     {
@@ -166,16 +169,16 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
                         
                         if (!sTmp.empty()) 
                         {
-                            Params.push_front(sLine);
+                            Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                         }
                         else if(sLine.find("[")!=std::string::npos || sLine.find("]")!=std::string::npos) 
                         {
-                            Params.push_front(sLine);
+                            Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                         }
                     } 
                     else 
                     {
-                        Params.push_front(sLine);
+                        Params.push_front(sTok+std::string("=")+sTmp); // Was: sLine
                     }
 #else            
                     Params.push_front(sLine);
@@ -297,15 +300,11 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 }
 
 ///                               READ STRINGS
+
 bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::string sParam, std::string &sVal)
 {
     Reset();
-
-    //remember all names we were asked for....
-    std::string sl = sParam;
-    MOOSToLower(sl);
-    m_Audit[sAppName].insert(sl);
-
+    
     STRING_LIST sParams;
     
     if(GetConfigurationAndPreserveSpace( sAppName, sParams))
@@ -406,21 +405,6 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::vector
     }
     return false;
 }
-
-
-std::list<std::string> CProcessConfigReader::GetSearchedParameters(const std::string & sAppName)
-{
-    std::list<std::string> L;
-    std::map<std::string, std::set<std::string>  >::iterator q = m_Audit.find(sAppName);
-    if(q!=m_Audit.end())
-    {
-        std::copy(q->second.begin(),q->second.end(), std::back_inserter(L));
-    }
-    return L;
-}
-
-
-
 
 
 

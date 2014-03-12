@@ -39,14 +39,13 @@
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
-#include "MOOS/libMOOS/Utils/Macros.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
 
 
 
-#define OUTBOX_PENDING_LIMIT 2048
-#define INBOX_PENDING_LIMIT 2048
+#define OUTBOX_PENDING_LIMIT 1000
+#define INBOX_PENDING_LIMIT 1000
 #define CLIENT_DEFAULT_FUNDAMENTAL_FREQ 5
 #define CLIENT_MAX_FUNDAMENTAL_FREQ 200
 
@@ -125,9 +124,6 @@ public:
 
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
-
-    /** wait for a connection return false if not connected after nMilliseconds*/
-    bool WaitUntilConnected(const unsigned int nMilliseconds);
 
     /**
      * returns the name with which the client registers with the MOOSDB
@@ -239,16 +235,14 @@ public:
     unsigned int GetNumberOfUnsentMessages();
 
     /** get total number of bytes sent*/
-    uint64_t GetNumBytesSent();
+    unsigned long long int GetNumBytesSent();
 
     /** get total number of bytes received*/
-    uint64_t GetNumBytesReceived();
+    unsigned long long int GetNumBytesReceived();
 
-    /** get total number of messages received*/
-    uint64_t GetNumMsgsReceived();
+    /** get total number of messages recieved*/
+    unsigned long long int GetNumMsgsReceived();
 
-    /** get total number of messages sent*/
-    uint64_t GetNumMsgsSent();
 
 
     /** used to control how verbose the connection process is */
@@ -280,125 +274,32 @@ public:
      * if you want rapid response use V10 */
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
-
-
     /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
-	 * @param sQueueName
+	 * @param sCallbackName name for callback
+	 * @param sMsgName name of message to watch for
 	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddActiveQueue(const std::string & sQueueName,
-    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    				void * pYourParam );
+    bool AddMessageCallback(const std::string & sCallbackName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam );
 
     /**
-     * same as above only with a wildcard...
-     */
-    bool AddWildcardActiveQueue(const std::string & sQueueName,
-    				const std::string & sPattern,
-    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    				void * pYourParam );
-
-
-
-    /**
-	 * Register a custom call back for a particular message. This call back will be called from its own thread.
-	 * @param sQueueName
-	 * @param Instance of class on which to invoke member function
-	 * @param member function of class bool func(CMOOSMsg &M)
-	 * @return true on success
-	 */
-    template <class T>
-    bool AddActiveQueue(const std::string & sQueueName,
-    		T* Instance,
-    		bool (T::*memfunc)(CMOOSMsg &)  );
-
-    /**
-     * same as above only with a wildcard...
-     */
-    template <class T>
-    bool AddWildcardActiveQueue(const std::string & sQueueName,
-    				const std::string & sPattern,
-    	    		T* Instance,
-    	    		bool (T::*memfunc)(CMOOSMsg &)  );
-
-
-
-    /**
-	 * stop a message routing to a Active Queue
-	 * @param sQueueName name of Active Queue
-	 * @param sMsgName name of message to route to this queue
-	 * @return true on success
-	 */
-    bool RemoveMessageRouteToActiveQueue(const std::string & sQueueName,
-   		const std::string & sMsgName);
-
-
-    /**
-	 * make a message route to a Active Queue (which will call a custom callback)
-	 * @param sQueueName name of Active Queue
-	 * @param sMsgName name of message to route to this queue
-	 * @return true on success
-	 */
-     bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
-    		const std::string & sMsgName);
-
-
-    /**
-     * Register a custom callback and create the active queue as needed.
-	 * @param sQueueName the queue name
-	 * @param sMsgName name of message to route to this queue
-	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
-	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
-	 * @return true on success
-     *
-     */
-    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
-    				const std::string & sMsgName,
-    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    				void * pYourParam );
-
-    DEPRECATED(bool AddMessageCallBack(const std::string & sQueueName,
-    				const std::string & sMsgName,
-    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    				void * pYourParam ));
-
-
-    /**
-	 * Register a custom callback and create the active queue as needed.
-	 * @param sQueueName the queue name
-	 * @param sMsgName name of message to route to this queue
-	  *@param Instance of class on which to invoke member function
-	 * @param member function of class bool func(CMOOSMsg &M)
-	 * @return true on success
-	 */
-    template <class T>
-    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
-    				const std::string & sMsgName,
-    				T* Instance,
-    				bool (T::*memfunc)(CMOOSMsg &) );
-
-
-    /**
-     * remove the named active queue
+     * remove the named callback
      * @param sCallbackName
      * @return
      */
-    bool RemoveActiveQueue(const std::string & sQueueName);
-
+    bool RemoveMessageCallback(const std::string & sCallbackName);
 
     /**
-     * Does this named active queue exist?
+     * Does this named callback exist?
      * @param sCallbackName
      * @return
      */
-    bool HasActiveQueue(const std::string & sQueueName);
-
-    /** Print all active queues*/
-    void PrintMessageToActiveQueueRouting();
-
+    bool HasMessageCallback(const std::string & sCallbackName);
 
 
 
@@ -414,7 +315,7 @@ protected:
     virtual bool OnCloseConnection();
     
     /** get total number of Message Packets recieved*/
-    uint64_t GetNumPktsReceived();
+    unsigned long long int GetNumPktsReceived();
 
     /** true if we are connected to the server */
     bool m_bConnected;
@@ -527,8 +428,6 @@ protected:
     /** the set of messages names/keys that have been sent */
     std::set<std::string> m_Published;
 
-
-
     /** controls how verbose connectionn is*/
     bool m_bQuiet;
     
@@ -542,25 +441,9 @@ protected:
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
     /**
-     * list of names of active mail queues for each message name
+     * list of active mail queues. Each Queue invokes a callback. Keyed by message name
      */
-    std::map<std::string,std::set<std::string>  > Msg2ActiveQueueName_;
-
-    /**
-     * mapping a queue name to a pointer to a queue
-     */
-    std::map<std::string,MOOS::ActiveMailQueue*> ActiveQueueMap_;
-
-    /**
-     * a list of <queuename,pattern> pairs
-     */
-    std::map< std::string, std::string > WildcardQueuePatterns_;
-
-    /** the set of messages names/keys that have been received and
-     * because of that need not be shown again to the wildcard queues. Note
-     * that this may be a larger set than m_Registered because of wildcard
-     * subscriptions  */
-    std::set<std::string> WildcardCheckSet_;
+    std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
 
     /*
      * a mutex protecting  ActiveQueues_
@@ -576,29 +459,23 @@ protected:
     /*
      * a counter for total bytes received
      */
-    uint64_t m_nBytesReceived;
+    unsigned long long int m_nBytesReceived;
 
     /*
      * a counter for total bytes received.
      */
-    uint64_t m_nBytesSent;
+    unsigned long long int m_nBytesSent;
 
 
     /*
      * a counter for total bytes received.
      */
-    uint64_t m_nPktsReceived;
+    unsigned long long int m_nPktsReceived;
 
      /*
-     * a counter for total message received.
+     * a counter for total bytes received.
      */
-    uint64_t m_nMsgsReceived;
-
-
-    /*
-    * a counter for total message received.
-    */
-    uint64_t m_nMsgsSent;
+    unsigned long long int m_nMsgsReceived;
 
 
     /**
@@ -613,8 +490,5 @@ protected:
 
 
 };
-
-#include "MOOS/libMOOS/Comms/MOOSCommClient.hxx"
-
 
 #endif // !defined(MOOSCommClientH)

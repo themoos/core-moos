@@ -130,12 +130,17 @@ public:
 #ifdef _WIN32
 		bCreatUnixDetached;
 #endif
-		if(IsThreadRunning())
-		    return false;
-
-		m_bQuitRequested = false;
-
-		SetRunningFlag(true);
+        m_lock.Lock();
+        {
+            if (m_bRunning) {
+                m_lock.UnLock();
+                return false;
+            }
+            
+            m_bRunning       = true;
+            m_bQuitRequested = false;
+        }
+        m_lock.UnLock();
  
 #ifdef _WIN32
         m_hThread = ::CreateThread(NULL,
@@ -158,7 +163,6 @@ public:
             return false;
         }
 #endif
-
 
         if(!Name().empty() && m_bVerbose)
         	std::cerr<<"Thread "<<Name()<<" started\n";
@@ -201,14 +205,11 @@ public:
 			switch (retval)
 			{
 				case EINVAL:
-					MOOSTrace("pthread_join returned error: EINVAL\n", retval);
-					break;
+					MOOSTrace("pthread_join returned error: EINVAL\n", retval);					
 				case ESRCH:
 					MOOSTrace("pthread_join returned error: ESRCH\n", retval);
-					break;
 				case EDEADLK:
 					MOOSTrace("pthread_join returned error: EDEADLK\n", retval);
-					break;
 			}
 			
             MOOSTrace("pthread_join returned error: %d\n", retval);

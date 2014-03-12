@@ -23,8 +23,6 @@ message(STATUS "+++  This MOOS version ${PACKAGE_VERSION} +++")
 
 project(${PROJECTNAME})
 
-
-
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
@@ -53,13 +51,6 @@ include(EnableAllWarnings)
 # Bring in helper functions for dealing with CACHE INTERNAL variables
 include(CacheInternalHelpers)
 
-#figure out our git version
-option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
-mark_as_advanced(UPDATE_GIT_VERSION_INFO)
-if(UPDATE_GIT_VERSION_INFO)
-	include(GitInfo)
-endif()
-
 # We want to create dynamic libraries
 set(BUILD_SHARED_LIBS true)
 
@@ -70,30 +61,12 @@ if (ENABLE_DOXYGEN)
 endif()
 
 # Enable CDash testing 
-option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
-if( CDASH_SUPPORT )
-  include(SystemUtilityFunctions)
-  moos_make_informative_build_name(CTEST_BUILD_NAME)
-  # BUILDNAME is what is required for CTest
-  set(BUILDNAME ${CTEST_BUILD_NAME})
-  enable_testing()
-  include( CTest )
+option(ENABLE_CDASH_TARGETS "Turn on testing targets that upload results to CDash" OFF)
+if( ENABLE_CDASH_TARGETS )
+ enable_testing()
+ include( CTest )
 endif()
 
-# Option for code coverage
-option(CODE_COVERAGE "Build code coverage results (forces Debug build)" OFF)
-if(CODE_COVERAGE)
-  set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
-
-  # Ensure that CDash targets are always enabled if coverage is enabled.
-  if (NOT CDASH_SUPPORT)
-    get_property(HELP_STRING CACHE CDASH_SUPPORT PROPERTY HELPSTRING)
-    set(CDASH_SUPPORT ON CACHE BOOL "${HELP_STRING}" FORCE)
-    message(STATUS "Enabling CDash targets as coverage has been enabled.")
-  endif()
-endif()
 
 ###########  SETTING UP PREPROCESSOR ################
 include(PlatformDefines)
@@ -144,7 +117,7 @@ if(ENABLE_EXPORT)
         
         foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
             file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")        
-            file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")" )
+            #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")\n" )
         endforeach()
         
         

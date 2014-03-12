@@ -43,11 +43,11 @@ namespace MOOS {
 class CommandLineParser {
 public:
 	CommandLineParser();
-	CommandLineParser(int argc,  char * argv[]);
+	CommandLineParser(int argc, char * argv[]);
 
 	virtual ~CommandLineParser();
 
-	bool Open(int argc,  char * argv[]);
+	bool Open(int argc, char * argv[]);
 
 	/** return true if command line parameters have been set*/
 	bool IsAvailable();

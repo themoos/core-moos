@@ -37,7 +37,7 @@
     #include <signal.h>
 #endif
 
-#include "MOOS/libMOOS/DB/HTTPConnection.h"
+#include "HTTPConnection.h"
 #include <sstream>
 
 class CHTMLTag
@@ -293,9 +293,12 @@ char CharFromHex (std::string a)
 
 std::string Decode(std::string Text)
 {
+	// Handle " " (spaces), which in URL encoding are "+" chars:
+	std::replace( Text.begin(), Text.end(), '+', ' ');
     
     std::string::size_type Pos;
     std::string Hex;
+	
     while (std::string::npos != (Pos = Text.find('%')))
     {
         Hex = Text.substr(Pos + 1, 2);
@@ -461,7 +464,7 @@ bool CHTTPConnection::BuildSingleVariableWebPageContents( std::ostringstream & w
                 {
                     CHTMLTag Form(wp,"FORM","action='/"+m_sFocusVariable+"'");
 
-                    std::string sControl = MOOSFormat("<input name=NewValue value=%s>",Msg.GetAsString().c_str());
+                    std::string sControl = MOOSFormat("<input name=NewValue value=\"%s\">",Msg.GetAsString().c_str());
                     wp<<CHTMLTag::Print("TD","",sControl);
                 }
 

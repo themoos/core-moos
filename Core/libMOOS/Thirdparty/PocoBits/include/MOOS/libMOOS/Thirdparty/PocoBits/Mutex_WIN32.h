@@ -76,6 +76,7 @@ inline void MutexImpl::lockImpl()
 	try
 	{
 		EnterCriticalSection(&_cs);
+		return;
 	}
 	catch (...)
 	{

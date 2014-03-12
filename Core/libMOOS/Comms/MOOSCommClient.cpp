@@ -56,7 +56,6 @@
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
-#include "MOOS/libMOOS/Utils/IPV4Address.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -107,7 +106,6 @@ CMOOSCommClient::CMOOSCommClient()
     
 
     m_nMsgsReceived = 0;
-    m_nMsgsSent = 0;
     m_nPktsReceived = 0;
 
     m_bPostNewestToFront = false;
@@ -159,8 +157,7 @@ bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::stri
 
 	if(m_pfnConnectCallBack==NULL)
 	{
-	    if(!m_bQuiet)
-	        MOOSTrace("Warning no connect call back has been specified\n");
+		MOOSTrace("Warning no connect call back has been specified\n");
 	}
 
 	m_nFundamentalFreq=nFundamentalFrequency;
@@ -245,30 +242,24 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 
 
 
-uint64_t CMOOSCommClient::GetNumBytesSent()
+unsigned long long int CMOOSCommClient::GetNumBytesSent()
 {
 	return m_nBytesSent;
 }
-uint64_t CMOOSCommClient::GetNumBytesReceived()
+unsigned long long int CMOOSCommClient::GetNumBytesReceived()
 {
 	return m_nBytesReceived;
 }
 
-uint64_t CMOOSCommClient::GetNumPktsReceived()
+unsigned long long int CMOOSCommClient::GetNumPktsReceived()
 {
     return m_nPktsReceived;
 }
 
-uint64_t CMOOSCommClient::GetNumMsgsReceived()
+unsigned long long int CMOOSCommClient::GetNumMsgsReceived()
 {
     return m_nMsgsReceived;
 }
-
-uint64_t CMOOSCommClient::GetNumMsgsSent()
-{
-    return m_nMsgsSent;
-}
-
 
 //void CMOOSCommClient::SetOnConnectCallBack(bool (__cdecl *pfn)( void * pConnectParam), void * pConnectParam)
 void CMOOSCommClient::SetOnConnectCallBack(bool (*pfn)( void * pConnectParam), void * pConnectParam)
@@ -289,30 +280,8 @@ bool CMOOSCommClient::IsRunning()
 	return m_ClientThread.IsThreadRunning();
 }
 
-
-bool CMOOSCommClient::WaitUntilConnected(const unsigned int nMilliseconds)
-{
-    unsigned int k=0;
-    while(!IsConnected())
-    {
-        if(k>nMilliseconds)
-        {
-            return false;
-        }
-        else
-        {
-            MOOSPause(100);
-            k+=100;
-        }
-    }
-
-    return true;
-}
-
 bool CMOOSCommClient::ClientLoop()
 {
-
-
     double dfTDebug = MOOSLocalTime();
 
     if(m_bBoostIOThreads)
@@ -344,7 +313,6 @@ bool CMOOSCommClient::ClientLoop()
 
 			while(!m_bQuit)
 			{
-
                 
                 if(m_bVerboseDebug)
                 {
@@ -381,7 +349,7 @@ bool CMOOSCommClient::ClientLoop()
 		m_pSocket = NULL;
 	}
 
-    if(!m_bQuiet)
+    if(m_bQuiet)
         MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
 	m_bConnected = false;
@@ -389,202 +357,82 @@ bool CMOOSCommClient::ClientLoop()
 	return true;
 }
 
-
-void CMOOSCommClient::PrintMessageToActiveQueueRouting()
+bool CMOOSCommClient::RemoveMessageCallback(const std::string & sCallbackName)
 {
-	std::map<std::string,std::set<std::string > >::iterator q;
-
-	std::cerr<<MOOS::ConsoleColours::Green()<<"--- Message Routing for client \""<<GetMOOSName()<<"\" ---\n";
-	std::cerr<<MOOS::ConsoleColours::reset();
-
-
-	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
 	{
-		//get a list of all queues which handle this message
-		std::set<std::string> & rQL = q->second;
-		std::set<std::string>::iterator p;
-		std::cerr<<std::setw(10)<< q->first<<" -> queues{ ";
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
 		for(p = rQL.begin();p!=rQL.end();p++)
 		{
-			if(WildcardQueuePatterns_.find(*p)!=WildcardQueuePatterns_.end())
+			if((*p)->GetName()==sCallbackName)
 			{
-				std::cerr<<MOOS::ConsoleColours::Magenta()<<"*";
-			}
-			std::cerr<< "\""<<*p<<"\"";
-			std::cerr<<MOOS::ConsoleColours::reset()<<" ";
-		}
-		std::cerr<<"}\n";
-	}
-
-	std::cerr<<MOOS::ConsoleColours::reset();
-
-
-}
-
-bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
-{
-	MOOS::ScopedLock L(ActiveQueuesLock_);
-
-	//maps message name to a list of queues...
-	std::map<std::string,std::set<std::string > >::iterator q;
-	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
-	{
-		//get a list of all queues which handle this message
-		std::set<std::string> & rQL = q->second;
-		std::set<std::string>::iterator p;
-		for(p = rQL.begin();p!=rQL.end();p++)
-		{
-			if(*p==sQueueName)
-			{
+				delete *p;
 				rQL.erase(p);
+				ActiveQueuesLock_.UnLock();
+				return true;
+			}
+		}
+	}
+	ActiveQueuesLock_.UnLock();
+	return false;
+}
+
+bool CMOOSCommClient::AddMessageCallback(const std::string & sCallbackName, const std::string & sMsgName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam )
+{
+	ActiveQueuesLock_.Lock();
+	if(ActiveQueues_.find(sMsgName)!=ActiveQueues_.end())
+	{
+		std::list<MOOS::ActiveMailQueue*>::iterator q;
+		for(q=ActiveQueues_[sMsgName].begin();q!=ActiveQueues_[sMsgName].end();q++)
+		{
+			MOOS::ActiveMailQueue* pqueue= *q;
+			if(pqueue->GetName()==sCallbackName)
+			{
+				pqueue->Stop();
+				delete pqueue;
+				ActiveQueues_[sMsgName].erase(q);
+			}
+		}
+	}
+	MOOS::ActiveMailQueue* pQ= new MOOS::ActiveMailQueue(sCallbackName);
+	pQ->SetCallback(pfn,pYourParam);
+	pQ->Start();
+	ActiveQueues_[sMsgName].push_back(pQ);
+
+	ActiveQueuesLock_.UnLock();
+
+	return true;
+
+}
+
+
+bool CMOOSCommClient::HasMessageCallback(const std::string & sCallbackName)
+{
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*> >::iterator q;
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
+	{
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			if((*p)->GetName()==sCallbackName)
+			{
+				ActiveQueuesLock_.UnLock();
+				return true;
 			}
 		}
 	}
 
-    std::map<std::string,MOOS::ActiveMailQueue*>::iterator w =  ActiveQueueMap_.find(sQueueName);
-    if(w!=ActiveQueueMap_.end())
-    {
-    	delete w->second;
-    	ActiveQueueMap_.erase(w);
-    }
-    else
-    {
-        return false;
-    }
-    //and remove from wildcard queue (if it is there)
-    WildcardQueuePatterns_.erase(sQueueName);
+	ActiveQueuesLock_.UnLock();
 
-	return true;
-}
+	return false;
 
-
-bool CMOOSCommClient::AddMessageRouteToActiveQueue(const std::string & sQueueName,
-				const std::string & sMsgName,
-				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-				void * pYourParam )
-{
-	if(!HasActiveQueue(sQueueName))
-		AddActiveQueue(sQueueName,pfn,pYourParam);
-
-	return AddMessageRouteToActiveQueue(sQueueName,sMsgName);
-
-}
-
-
-bool CMOOSCommClient::RemoveMessageRouteToActiveQueue(std::string const& sQueueName,
-                                                      std::string const& sMsgName)
-{
-    if(!HasActiveQueue(sQueueName))
-        return false;
-
-    MOOS::ScopedLock L(ActiveQueuesLock_);
-
-    std::map<std::string,std::set<std::string>  >::iterator w = Msg2ActiveQueueName_.find(sMsgName);
-
-    if(w==Msg2ActiveQueueName_.end())
-        return false;
-
-    Msg2ActiveQueueName_.erase(w);
-
-    return true;
-
-}
-
-
-//deprecated version
-bool CMOOSCommClient::AddMessageCallBack(const std::string & sQueueName,
-				const std::string & sMsgName,
-				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-				void * pYourParam )
-{
-	return AddMessageRouteToActiveQueue(sQueueName,sMsgName,pfn,pYourParam);
-}
-
-//add an active queue - don't forget that there is a templated version in hxx
-//which uses a class member as a clallback
-bool CMOOSCommClient::AddActiveQueue(const std::string & sQueueName,
-				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-				void * pYourParam )
-{
-	MOOS::ScopedLock L(ActiveQueuesLock_);
-
-	std::map<std::string,MOOS::ActiveMailQueue*>::iterator w =  ActiveQueueMap_.find(sQueueName);
-	if(w==ActiveQueueMap_.end())
-	{
-		//we need to create a new queue
-		//std::cerr<<"making new active queue "<<sQueueName<<"\n";
-		MOOS::ActiveMailQueue* pQ = new MOOS::ActiveMailQueue(sQueueName);
-		ActiveQueueMap_[sQueueName] = pQ;
-
-		pQ->SetCallback(pfn,pYourParam);
-		pQ->Start();
-		return true;
-	}
-	else
-	{
-		std::cerr<<"warning active queue "<<sQueueName<<" already exists\n";
-		return false;
-	}
-
-}
-
-bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
-				const std::string & sPattern,
-				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-				void * pYourParam )
-{
-	if(!AddActiveQueue(sQueueName,pfn,pYourParam))
-		return false;
-
-	MOOS::ScopedLock L(ActiveQueuesLock_);
-
-	WildcardQueuePatterns_[sQueueName]=sPattern;
-
-	//now we had better see if this new wildcard queue is interested
-	//in any messages we have already seen
-	std::set< std::string>::iterator q;
-
-	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();q++)
-	{
-		if(MOOSWildCmp(sPattern,*q))
-		{
-			Msg2ActiveQueueName_[*q].insert(sQueueName);
-		}
-	}
-
-
-	return true;
-
-}
-
-
-
-bool CMOOSCommClient::AddMessageRouteToActiveQueue(const std::string & sQueueName,
-		const std::string & sMsgName)
-{
-	if(HasActiveQueue(sQueueName))
-	{
-		//OK this queue exists
-		MOOS::ScopedLock L(ActiveQueuesLock_);
-
-		//now we can add the name of this Queue to list pointed
-		//to by this message name
-		Msg2ActiveQueueName_[sMsgName].insert(sQueueName);
-
-		return true;
-	}
-	else
-	{
-		std::cerr<<"cannot add callback as queue "<<sQueueName<< " does not exist\n";
-		return false;
-	}
-}
-
-
-bool CMOOSCommClient::HasActiveQueue(const std::string & sQueueName)
-{
-	MOOS::ScopedLock L(ActiveQueuesLock_);
-	return ActiveQueueMap_.find(sQueueName)!=ActiveQueueMap_.end();
 }
 
 bool CMOOSCommClient::DoClientWork()
@@ -621,7 +469,6 @@ bool CMOOSCommClient::DoClientWork()
 			try 
 			{
 				PktTx.Serialize(m_OutBox,true);
-				m_nMsgsSent+=PktTx.GetNumMessagesSerialised();
 				m_nBytesSent+=PktTx.GetStreamLength();
 			}
 			catch (CMOOSException e) 
@@ -727,127 +574,37 @@ bool CMOOSCommClient::DoClientWork()
 
 bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 {
-
-
-	//here we dispatch to special callbacks managed by threads
-
-	MOOS::ScopedLock L(ActiveQueuesLock_);
-
-
-	//before we start we can see if we have a default queue installed...
-	std::map<std::string, std::set<std::string> >::iterator q;
-
+	//here we dispatch to special call backs managed by threads
 	MOOSMSG_LIST::iterator t = m_InBox.begin();
-
-	//iterate over all pending messages.
+	ActiveQueuesLock_.Lock();
 	while(t!=m_InBox.end())
 	{
-
-//	    std::cerr<<"Inbox size:"<<m_InBox.size()<<"\n";
-//	    t->Trace();
-
-		//does this message have a active queue mapping?
-		q= Msg2ActiveQueueName_.find(t->GetKey());
-
-		//have we ever checked this message against the wildcard queues?
-		std::set<std::string>::iterator u  =  WildcardCheckSet_.find(t->GetKey());
-
-		if(q==Msg2ActiveQueueName_.end() || u==WildcardCheckSet_.end() )
+		std::map<std::string, std::list<MOOS::ActiveMailQueue*> >::iterator q = ActiveQueues_.find(t->GetKey());
+		if(q!=ActiveQueues_.end())
 		{
-			//maybe the wildcard queues are interested?
-			//or maybe this is a new message whihc has not been seen by wildcard queues
-
-			//each element is a <nickname,pattern> string pair;
-			std::map<std::string, std::string  >::iterator w;
-
-			bool bFoundWCMatch = false;
-			for(w = WildcardQueuePatterns_.begin();w!=WildcardQueuePatterns_.end();w++)
+			std::list<MOOS::ActiveMailQueue*>::iterator r;
+			for(r = q->second.begin();r!=q->second.end();r++)
 			{
-				std::string sPattern = w->second;
-				//build a list of all wc queues that match this message
-				//add these queues to the list of queues pointed to by this message
-				if(MOOSWildCmp(sPattern,t->GetKey()))
-				{
-//				    std::cerr<<"found wildcard match adding queue  "<<w->first
-//				            <<" to routing for "<<t->GetKey()<<"\n";
-
-					Msg2ActiveQueueName_[t->GetKey()].insert(w->first);
-					bFoundWCMatch = true;
-				}
+				(*r)->Push(*t);
 			}
-
-			//remember all messages that have been received...
-			//we do it here because at this point wild card queue have been given
-			//the option to register their interest....
-			//but what to do if a wc queue in installed at run time...?
-			WildcardCheckSet_.insert(t->GetKey());
-
-			//std::cerr<<"added key"<<t->GetKey()<<" to wildcard chacek set\n";
-
-			//if we found a least one mapping simply go again without
-			//incrementing t...smart
-			if(bFoundWCMatch)
-			{
-			    continue;
-			}
-			else
-			{
-			    if(q==Msg2ActiveQueueName_.end())
-			    {
-			        //wildcard queues are not interested
-			        //no standard queue is interested
-			        //nothing to do....
-			        return true;
-			    }
-			}
+			t = m_InBox.erase(t);
 		}
-
-		//now we know which queue(s) are relevant for us.
-		//there namaes are in a string list.
-		std::set<std::string>::iterator r;
-
-		bool bPickedUpByActiveQueue = false;
-		for(r = q->second.begin();r!=q->second.end();r++)
+		else if((q=ActiveQueues_.find("*"))!=ActiveQueues_.end())
 		{
-
-//		    std::cerr<<"found queue that is relevent "<<*r<<"\n";
-
-		    //for each named queue find a pointer to
-			//the actual active queue
-			std::map<std::string,MOOS::ActiveMailQueue*>::iterator v;
-			v = ActiveQueueMap_.find(*r);
-			if(v!=ActiveQueueMap_.end())
+			//we have one or more wildcard queue installed
+			std::list<MOOS::ActiveMailQueue*>::iterator r;
+			for(r = q->second.begin();r!=q->second.end();r++)
 			{
-				//and now we have checked it exists push this message to that
-				//queue
-                MOOS::ActiveMailQueue* pQ = v->second;
-//                std::cerr<<"pushing to queue: "<<(void*)pQ<<"\n";
-                bPickedUpByActiveQueue = true;
-				pQ->Push(*t);
+				(*r)->Push(*t);
 			}
-			else
-			{
-				//this is bad news - we have be told to use a queue
-				//which does not exist.
-			    //std::cerr<<"WTF\n";
-				throw std::runtime_error("active queue "+*r+" not found");
-			}
-		}
-
-
-		if(bPickedUpByActiveQueue)
-		{
-	        //we have now handled this message remove it from the Inbox.
-		    MOOSMSG_LIST::iterator to_erase = t;
-		    ++t;
-		    m_InBox.erase(to_erase);
+			t = m_InBox.erase(t);
 		}
 		else
 		{
-		    ++t;
+			t++;
 		}
 	}
-
+	ActiveQueuesLock_.UnLock();
 	return true;
 }
 
@@ -1081,6 +838,10 @@ bool CMOOSCommClient::HandShake()
             	std::cerr<<"    \""<<WelcomeMsg.m_sVal<<"\"\n";
             	std::cerr<<MOOS::ConsoleColours::reset();
             }
+            else
+            {
+                MOOSTrace("Breaking a vow of silence - handshaking failed (poisoned)\n");
+            }
 			return false;
 		}
 		else
@@ -1117,21 +878,16 @@ bool CMOOSCommClient::HandShake()
 
             	if(!WelcomeMsg.m_sSrcAux.empty())
             	{
-            	    std::string sDBHost;
-                    MOOSValFromString(sDBHost,WelcomeMsg.m_sSrcAux,"hostname",true);
-
                     std::cout<<std::left<<std::setw(40);
                     std::cout<<"  DB is running on ";
-                    std::cout<<MOOS::ConsoleColours::Green()<<sDBHost<<"\n";
+                    std::cout<<MOOS::ConsoleColours::Green()<<WelcomeMsg.m_sSrcAux<<"\n";
                     std::cout<<MOOS::ConsoleColours::reset();
 
                     std::cout<<std::left<<std::setw(40);
-
                     std::cout<<"  Timing skew estimation is ";
-                    if( GetLocalIPAddress()!=sDBHost)
+                    if(GetLocalIPAddress()!=WelcomeMsg.m_sSrcAux)
                     {
                         std::cout<<MOOS::ConsoleColours::Green()<<"[on]\n";
-                        std::cout<<MOOS::ConsoleColours::reset();
                         DoLocalTimeCorrection(true);
                     }
                     else
@@ -1140,8 +896,6 @@ bool CMOOSCommClient::HandShake()
                         std::cout<<"[off] (not needed)\n";
                         DoLocalTimeCorrection(false);
                     }
-
-
             	}
                 std::cout<<MOOS::ConsoleColours::reset();
 
@@ -1181,25 +935,39 @@ std::string CMOOSCommClient::GetCommunityName()
 
 bool CMOOSCommClient::OnCloseConnection()
 {
+	if(!m_bQuiet)
+		MOOSTrace("closing connection...");
 	m_pSocket->vCloseSocket();
-
 	if(m_pSocket)
 		delete m_pSocket;
-
 	m_pSocket= NULL;
 	m_bConnected = false;
+	if(!m_bQuiet)
+		MOOSTrace("done\n");
 
 	ClearResources();
 
-	bool bUserResult = true;
 	if(m_pfnDisconnectCallBack!=NULL)
 	{
+		if(!m_bQuiet)
+			MOOSTrace("Invoking User OnDisconnect() callback...");
 		//invoke user defined callback
-		bUserResult = (*m_pfnDisconnectCallBack)(m_pDisconnectCallBackParam);
+		bool bUserResult = (*m_pfnDisconnectCallBack)(m_pDisconnectCallBackParam);
+		if(bUserResult)
+		{
+			if(!m_bQuiet)
+				MOOSTrace("ok\n");
+		}
+		else
+		{
+			if(!m_bQuiet)
+				MOOSTrace("returned fail\n");
+		}
+
 	}
 
 
-	return bUserResult;
+	return true;
 }
 
 void CMOOSCommClient::DoBanner()
@@ -1291,13 +1059,6 @@ bool CMOOSCommClient::Register(const string &sVar, double dfInterval)
 bool CMOOSCommClient::Register(const std::string & sVarPattern,const std::string & sAppPattern, double dfInterval)
 {
 	std::string sMsg;
-
-	if(sVarPattern.empty())
-	    return MOOSFail("empty variable pattern in CMOOSCommClient::Register");
-
-    if(sAppPattern.empty())
-        return MOOSFail("empty source pattern in CMOOSCommClient::Register");
-
 
 	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
 	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
@@ -1392,15 +1153,17 @@ bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize
 
 bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize, const std::string & sSrcAux,double dfTime)
 {
+	std::string BinaryPayload((char*)pData,nSize);
 	
-    CMOOSMsg Msg(MOOS_NOTIFY,sVar,nSize,pData,dfTime);
-
+	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
+	Msg.MarkAsBinary();
+	
 	Msg.SetSourceAux(sSrcAux);
-    Msg.MarkAsBinary();
-
+	
 	m_Published.insert(sVar);
 	
 	return Post(Msg);
+	
 }
 
 
@@ -1571,20 +1334,21 @@ bool CMOOSCommClient::Close(bool  )
     
 	ClearResources();
 
-	MOOS::ScopedLock L(ActiveQueuesLock_);
+	ActiveQueuesLock_.Lock();
+	std::map<std::string,std::list<MOOS::ActiveMailQueue*>  >::iterator q;
 
-	std::map<std::string,MOOS::ActiveMailQueue*  >::iterator q;
-
-	for(q = ActiveQueueMap_.begin();q!=ActiveQueueMap_.end();q++)
+	for(q = ActiveQueues_.begin();q!=ActiveQueues_.end();q++)
 	{
-		MOOS::ActiveMailQueue* pQueue = q->second;
-		pQueue->Stop();
-		delete pQueue;
+		std::list<MOOS::ActiveMailQueue*> & rQL = q->second;
+		std::list<MOOS::ActiveMailQueue*>::iterator p;
+		for(p = rQL.begin();p!=rQL.end();p++)
+		{
+			MOOS::ActiveMailQueue* pQueue = *p;
+			delete pQueue;
+		}
 	}
-
-	ActiveQueueMap_.clear();
-	Msg2ActiveQueueName_.clear();
-	WildcardCheckSet_.clear();
+	ActiveQueues_.clear();
+	ActiveQueuesLock_.UnLock();
 
 
 	return true;
@@ -1605,7 +1369,6 @@ bool CMOOSCommClient::ClearResources()
 	m_InLock.Lock();
 		m_InBox.clear();
 	m_InLock.UnLock();
-
 
 	m_Registered.clear();
 
@@ -1684,18 +1447,18 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 #endif // MOOS_DETECT_CLOCK_DRIFT
 
-//	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
-//			m_sMyName.c_str(),
-//			dfRqTime,
-//			dfTxTime,
-//			dfRxTime,
-//			dfNewSkew);
-//
-//	MOOSTrace("local = %.4f\nMOOS = %.4f\n ", MOOSLocalTime(false), MOOS::Time());
-//
-//
-//
-//	std::cerr<<GetLocalIPAddress()<<"\n";
+	MOOSTrace("\n%s\nTx Time = %.4f \nDB time = %.4f\nreply = %.4f\nskew = %.5f\n",
+			m_sMyName.c_str(),
+			dfRqTime,
+			dfTxTime,
+			dfRxTime,
+			dfNewSkew);
+
+	MOOSTrace("local = %.4f\n MOOS = %.4f\n ", MOOSLocalTime(), MOOS::Time());
+
+
+
+	std::cerr<<GetLocalIPAddress()<<"\n";
 
 /*
 	if (SkewLog.get())
