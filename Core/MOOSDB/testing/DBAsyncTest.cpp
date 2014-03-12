@@ -115,7 +115,7 @@ void PrintHelpAndExit()
 
 	MOOSTrace("\n\nExample Usage:\n");
 	MOOSTrace(" test for 15 seconds with 20 clients and sending 100K every 50 ms\n");
-	MOOSTrace("  ./uDBAysncTest  -p 15 -c 20 -m 50 -s 100000\n");
+	MOOSTrace("  ./uDBAysncTest  -p=15 -c=20 -m=50 -s=100000\n");
 
 	exit(0);
 

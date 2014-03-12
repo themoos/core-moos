@@ -36,12 +36,22 @@
 #endif
 
 #include <iostream>
+#include <iomanip>
+#include <unistd.h>
+
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Utils/MemInfo.h"
+
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
+
+
+
+
+
 
 #ifndef _WIN32
 #include <sys/resource.h>
@@ -70,6 +80,10 @@ class ProcInfo::Impl
 public:
 	Impl()
 	{
+	    //now do memory usage
+	    resident_memory_ = GetCurrentMemoryUsage();
+	    max_memory_ = GetPeakMemoryUsage();
+
 		Thread_.Initialise(Dispatch, this);
 		Thread_.Start();
 	}
@@ -77,12 +91,22 @@ public:
 	{
 		Thread_.Stop();
 	}
+
 	bool GetPercentageCPULoad(double & cpu_load)
 	{
 	    Poco::FastMutex::ScopedLock Lock(_mutex);
 	    cpu_load = cpu_load_;
 	    return true;
 	}
+
+	bool GetMemoryUsage(size_t & current,size_t & maximum)
+	{
+	    Poco::FastMutex::ScopedLock Lock(_mutex);
+	    current = resident_memory_;
+	    maximum = max_memory_;
+	    return true;
+	}
+
 
 	static bool Dispatch(void * pParam)
 	{
@@ -92,6 +116,10 @@ public:
 
 	bool Run()
 	{
+	    //now do memory usage
+	    resident_memory_ = GetCurrentMemoryUsage();
+	    max_memory_ = GetPeakMemoryUsage();
+
 
 #ifdef _WIN32
 		FILETIME sysIdleA, sysKernelA, sysUserA,sysIdleB, sysKernelB, sysUserB;
@@ -130,6 +158,12 @@ public:
 			sysKernelA = sysKernelB;
 			procUserA = procUserB;
 			procKernelA = procKernelB;
+
+
+		    //now do memory usage
+		    resident_memory_ = GetCurrentMemoryUsage();
+		    max_memory_ = GetPeakMemoryUsage();
+
 		}
 
 #else
@@ -144,8 +178,9 @@ public:
 
 		while(!Thread_.IsQuitRequested())
 		{
-			MOOSPause(sample_period_ms);
-			double tB = MOOSLocalTime();
+
+			MOOSPause(sample_period_ms,false);
+			double tB = MOOSLocalTime(false);
 			double tAB = tB-tA;
 
 		    if(getrusage(0, &uB)!=0)
@@ -164,6 +199,10 @@ public:
 		    uA = uB;
 		    tA = tB;
 
+		    //now do memory usage
+		    resident_memory_ = GetCurrentMemoryUsage();
+		    max_memory_ = GetPeakMemoryUsage();
+
 		}
 #endif
 
@@ -173,6 +212,8 @@ protected:
 	CMOOSThread Thread_;
     Poco::FastMutex _mutex;
     double cpu_load_;
+    size_t resident_memory_;
+    size_t max_memory_;
 
 
 
@@ -182,6 +223,23 @@ bool ProcInfo::GetPercentageCPULoad(double &cpu_load)
 {
 	return Impl_->GetPercentageCPULoad(cpu_load);
 }
+
+bool ProcInfo::GetMemoryUsage(size_t & current,size_t & maximum)
+{
+	return Impl_->GetMemoryUsage(current,maximum);
+}
+
+int ProcInfo::GetPid()
+{
+
+#ifdef _WIN32
+        return (int)GetCurrentProcessId();
+#else
+        return (int)getpid();
+#endif
+
+}
+
 
 ProcInfo::ProcInfo(): Impl_(new ProcInfo::Impl ){
 	// TODO Auto-generated constructor stub

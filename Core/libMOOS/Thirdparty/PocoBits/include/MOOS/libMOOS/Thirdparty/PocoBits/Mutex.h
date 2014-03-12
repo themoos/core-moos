@@ -55,7 +55,7 @@
 
 namespace Poco {
 
-template< class T > void deliberately_unused(const T &) {};
+template< class T > void deliberately_unused(const T &) {}
 
 class Foundation_API Mutex: private MutexImpl
 	/// A Mutex (mutual exclusion) is a synchronization 

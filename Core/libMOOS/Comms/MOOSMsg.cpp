@@ -39,6 +39,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <limits>
 #include <cstring>
 
 using namespace std;
@@ -105,6 +106,43 @@ CMOOSMsg::CMOOSMsg(char cMsgType,const std::string & sKey,const std::string &sVa
     {
         m_dfTime=dfTime;
     }
+}
+
+
+CMOOSMsg::CMOOSMsg(char cMsgType,const std::string &sKey,  unsigned int nDataSize,const void* Data,double dfTime)
+{
+    m_cMsgType = cMsgType;
+    m_dfVal = -1;
+    m_dfVal2 = -1;
+    m_cDataType = MOOS_BINARY_STRING;
+    m_sKey = sKey;
+    m_sVal.assign((char *)Data,nDataSize);
+    m_dfTime = -1;
+    m_nID = -1;
+
+    if(dfTime==-1)
+    {
+      m_dfTime = MOOSTime();
+    }
+    else
+    {
+      m_dfTime=dfTime;
+    }
+
+}
+
+bool CMOOSMsg::operator == (const CMOOSMsg & M) const
+{
+    return m_cMsgType == M.m_cMsgType &&
+           m_cDataType==M.m_cDataType &&
+           m_sKey == M.m_sKey &&
+           m_sOriginatingCommunity == M.m_sOriginatingCommunity &&
+           m_sSrcAux == M.m_sSrcAux &&
+           m_sSrc == M.m_sSrcAux &&
+           fabs(m_dfVal - M.m_dfVal) < 2* std::numeric_limits<double>::epsilon() &&
+           fabs(m_dfVal2 - M.m_dfVal2) < 2* std::numeric_limits<double>::epsilon() &&
+           fabs(m_dfTime - M.m_dfTime) < 2* std::numeric_limits<double>::epsilon() &&
+           m_nID == M.m_nID;
 }
 
 
@@ -215,25 +253,15 @@ void  CMOOSMsg::operator << (string &   sVal)
 }
 
 void  CMOOSMsg::operator >> (string & sVal)
-{/*
-    int nSize = strlen((char*)m_pSerializeBuffer)+1;
-
-    if(CanSerialiseN(nSize))
-    {
-        sVal.insert(0,(char*)m_pSerializeBuffer,nSize-1);
-        m_pSerializeBuffer+=nSize;
-    }
-    else
-    {
-        throw CMOOSException("CMOOSMsg::operator >> Out Of Space");
-    }
-  */
+{
 	int nSize;
 	*this>>nSize;
 	
     if(CanSerialiseN(nSize))
     {
-        sVal.insert(0,(char*)m_pSerializeBuffer,nSize);
+        //sVal.insert(0,(char*)m_pSerializeBuffer,nSize);
+
+        sVal.assign((const char *)m_pSerializeBuffer,nSize);
         m_pSerializeBuffer+=nSize;
     }
     else
@@ -357,7 +385,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             //from whence does it come
             (*this)<<m_sSrc;
-			
+
 #ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)<<m_sSrcAux;
@@ -381,7 +409,6 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //string data
             (*this)<<m_sVal;
 
-
             //how many bytes in total have we written (this includes an int at the start)?
             m_nLength = m_pSerializeBuffer-m_pSerializeBufferStart;
 
@@ -390,9 +417,6 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             //write the number of bytes
             (*this)<<m_nLength;
-
-
-
 
         }
         catch(CMOOSException e)
@@ -415,6 +439,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 
             (*this)>>m_nLength;
 
+
             //what is message ID;
             (*this)>>m_nID;
 
@@ -430,6 +455,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
 #ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)>>m_sSrcAux;
+
 #endif			
             //and from which community?
             (*this)>>m_sOriginatingCommunity;
@@ -524,10 +550,10 @@ bool CMOOSMsg::IsSkewed(double dfTimeNow, double * pdfSkew)
 {
     //if we are in playback mode (a global app wide flag)
     //then skew may not mean anything.. (we can stop and start at will)
-    if(IsMOOSPlayBack())
-    {
-        dfTimeNow  = m_dfTime;
-    }
+//    if(IsMOOSPlayBack())
+//    {
+//        dfTimeNow  = m_dfTime;
+//    }
 
     double dfSkew = fabs(dfTimeNow - m_dfTime);
 
@@ -589,10 +615,21 @@ bool CMOOSMsg::GetBinaryData(std::vector<unsigned char > &v)
 	if(!IsBinary())
 		return false;
 
-	v.reserve(GetBinaryDataSize());
+	if(v.size()!=GetBinaryDataSize())
+	{
+	    v.resize(GetBinaryDataSize());
+	}
 	std::copy(m_sVal.begin(),m_sVal.end(),v.begin());
 	return true;
 }
+
+std::vector<unsigned char >  CMOOSMsg::GetBinaryDataAsVector()
+{
+    std::vector<unsigned char > t;
+    GetBinaryData(t);
+    return t;
+}
+
 
 unsigned char * CMOOSMsg::GetBinaryData()
 {

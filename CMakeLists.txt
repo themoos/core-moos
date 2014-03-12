@@ -22,6 +22,8 @@ message(STATUS "+++  This MOOS version ${PACKAGE_VERSION} +++")
 
 project(${PROJECTNAME})
 
+
+
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 endif()
@@ -34,8 +36,14 @@ if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 endif()
 
 
+
+
 set(CMakeScripts_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
+
+# Look at system to see what if any options are available because
+# of build environment
+include(SystemDefines)
 
 
 # Turn on all compiler warnings
@@ -43,6 +51,13 @@ include(EnableAllWarnings)
 
 # Bring in helper functions for dealing with CACHE INTERNAL variables
 include(CacheInternalHelpers)
+
+#figure out our git version
+option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
+mark_as_advanced(UPDATE_GIT_VERSION_INFO)
+if(UPDATE_GIT_VERSION_INFO)
+	include(GitInfo)
+endif()
 
 # We want to create dynamic libraries
 set(BUILD_SHARED_LIBS true)
@@ -53,6 +68,31 @@ if (ENABLE_DOXYGEN)
     include(UseDoxygen)
 endif()
 
+# Enable CDash testing 
+option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
+if( CDASH_SUPPORT )
+  include(SystemUtilityFunctions)
+  moos_make_informative_build_name(CTEST_BUILD_NAME)
+  # BUILDNAME is what is required for CTest
+  set(BUILDNAME ${CTEST_BUILD_NAME})
+  enable_testing()
+  include( CTest )
+endif()
+
+# Option for code coverage
+option(CODE_COVERAGE "Build code coverage results (forces Debug build)" OFF)
+if(CODE_COVERAGE)
+  set(CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
+
+  # Ensure that CDash targets are always enabled if coverage is enabled.
+  if (NOT CDASH_SUPPORT)
+    get_property(HELP_STRING CACHE CDASH_SUPPORT PROPERTY HELPSTRING)
+    set(CDASH_SUPPORT ON CACHE BOOL "${HELP_STRING}" FORCE)
+    message(STATUS "Enabling CDash targets as coverage has been enabled.")
+  endif()
+endif()
 
 ###########  SETTING UP PREPROCESSOR ################
 include(PlatformDefines)

@@ -74,6 +74,40 @@ ThreadedCommServer::ThreadedCommServer()
 ThreadedCommServer::~ThreadedCommServer()
 {
     // TODO Auto-generated destructor stub
+    Stop();
+
+}
+bool ThreadedCommServer::Stop()
+{
+
+    //kill this first because we have to prevent client from reconnecting
+    //because we are going to pull the plug on them
+   if(m_ListenThread.IsThreadRunning())
+       m_ListenThread.Stop();
+
+   if(m_pListenSocket!=NULL)
+   {
+       m_pListenSocket->vCloseSocket();
+       delete m_pListenSocket;
+       m_pListenSocket = NULL;
+   }
+
+
+   //then pull the plug on the loop which will spot clients disconnecting
+   if(m_ServerThread.IsThreadRunning())
+       m_ServerThread.Stop();
+
+   //now shut down each of the client threads in turn
+    std::map<std::string,ClientThread*>::iterator q;
+    for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
+    {
+        q->second->Kill();
+        delete q->second;
+    }
+    m_ClientThreads.clear();
+
+    //maybe the base class has other business
+    return BASE::Stop();
 }
 
 
@@ -179,7 +213,7 @@ bool ThreadedCommServer::ServerLoop()
 
 	MOOS::ServerAudit Auditor;
 
-
+	Auditor.SetQuiet(m_bQuiet);
 	Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
@@ -194,7 +228,10 @@ bool ThreadedCommServer::ServerLoop()
 
        
         if(m_SharedDataListFromClient.IsEmpty())
-            m_SharedDataListFromClient.WaitForPush();
+        {
+            if(!m_SharedDataListFromClient.WaitForPush(1000))
+                continue;
+        }
 
         m_SharedDataListFromClient.Pull(SDFromClient);
 
@@ -649,10 +686,13 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 bool ThreadedCommServer::ClientThread::Kill()
 {
 
+    ClientThreadSharedData QuitInstruction("",ClientThreadSharedData::STOP_THREAD);
 
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
+	    _SharedDataOutgoing.Push(QuitInstruction);
+
 		if(!_Writer.Stop())
 			return false;
 	}
@@ -718,6 +758,11 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 					return true;
 				}
 
+				case ClientThreadSharedData::STOP_THREAD:
+				{
+				    return true;
+				}
+
 				//do normal writing
 				case ClientThreadSharedData::PKT_WRITE:
 				{
@@ -746,7 +791,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 	   bResult = false;
 	}
 
-	std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
+	//std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
 
     return bResult;
 }
@@ -763,6 +808,7 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
         SDUpChain._Status = ClientThreadSharedData::PKT_READ;
 
         //read input
+
         if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
         {
         	throw std::runtime_error("failed packet read and no exception handled");
