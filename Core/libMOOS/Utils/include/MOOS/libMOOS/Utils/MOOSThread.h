@@ -257,15 +257,11 @@ public:
 private:
     
     void SetQuitFlag(bool bState) {
-        m_lock.Lock();
         m_bQuitRequested = bState;
-        m_lock.UnLock();
     }
     
     void SetRunningFlag(bool bState) {
-        m_lock.Lock();
         m_bRunning = bState;
-        m_lock.UnLock();
     }
     
     void Verbose(bool bV){
@@ -273,19 +269,11 @@ private:
     }
 
     bool GetQuitFlag() {
-        bool bState = false;
-        m_lock.Lock();
-        bState = m_bQuitRequested;
-        m_lock.UnLock();
-        return bState;
+        return  m_bQuitRequested;
     }
     
     bool GetRunningFlag() {
-        bool bState = false;
-        m_lock.Lock();
-        bState = m_bRunning;
-        m_lock.UnLock();
-        return bState;
+        return  m_bRunning;
     }
     
 
@@ -322,9 +310,10 @@ private:
 
     ////////////////
     // These are only accessed through Set/Get
-    // functions with mutexes
-    bool m_bRunning;
-    bool m_bQuitRequested;
+	// volatile to give thread safety of a basic type
+    volatile bool m_bRunning;
+    volatile bool m_bQuitRequested;
+
     bool m_bVerbose;
 
     ////////////////
