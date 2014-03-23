@@ -332,8 +332,15 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             {
             	bTimingPresent = true;
             	TimingMsg =MsgLstRx.front();
+
             	MsgLstRx.pop_front();
+
+
             	TimingMsg.SetDouble( MOOSLocalTime());
+
+                Auditor.AddTimingStatistic(TimingMsg.GetSource(),
+                                           TimingMsg.GetTime(),
+                                           TimingMsg.GetDouble());
 
             	//and here we control the speed of this clienttxt
             	TimingMsg.SetDoubleAux(pClient->GetConsolidationTime());
