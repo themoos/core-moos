@@ -251,6 +251,15 @@ public:
     uint64_t GetNumMsgsSent();
 
 
+    /** set / get scale factor which determines how to encourgage message bunching
+     * at high timewarps
+     * returns false if outside 0 - 1.0
+     * if timewarp was 100 and dfSF is 0.1 then 10ms delay is
+     * invoked in comms loop
+     */
+    bool SetCommsControlTimeWarpScaleFactor(double dfSF);
+    double GetCommsControlTimeWarpScaleFactor();
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
@@ -398,6 +407,8 @@ public:
 
     /** Print all active queues*/
     void PrintMessageToActiveQueueRouting();
+
+
 
 
 
@@ -609,6 +620,10 @@ protected:
 
     /** true if after handshaking DB announces its ability to support aysnc comms*/
     bool m_bDBIsAsynchronous;
+
+
+    //how much to delay outgoing mail thread as a proportion oof timewarp
+    double m_dfOutGoingDelayTimeWarpScaleFactor;
 
 
 
