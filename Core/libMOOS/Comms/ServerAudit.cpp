@@ -248,11 +248,55 @@ public:
 		return true;
 	}
 
+	bool GetTimingStatisticSummary(std::string & sSummary)
+	{
+	    std::map<std::string,ClientAudit>::iterator q;
+	    for(q =Audits_.begin();q!=Audits_.end();q++ )
+	    {
+	        std::string sT;
+	        if(!GetTimingStatisticSummary(q->first,sT))
+	            return false;
+
+            sSummary+=sT;
+
+	    }
+	    return true;
+	}
+
+
+    bool GetTimingStatisticSummary(const std::string & sClient,std::string & sSummary)
+    {
+        std::map<std::string,ClientAudit>::iterator q = Audits_.find(sClient);
+        if(q==Audits_.end())
+            return false;
+
+        std::stringstream ss;
+        ClientAudit & rA = q->second;
+        ss<<sClient<<"=";
+        ss<<rA.recent_latency_ms_<<":";
+        ss<<rA.max_latency_ms_<<":";
+        ss<<rA.min_latency_ms_<<":";
+        ss<<rA.moving_average_latency_ms_<<",";
+
+        sSummary=ss.str();
+
+        return true;
+
+    }
+
+
+
     bool AddTimingStatistic(const std::string & sClient,
                                double dfTransmitTime,
                                double dfReceiveTime)
     {
         MOOS::ScopedLock L(lock_);
+
+        if(sClient.empty())
+        {
+            std::cerr<<"AddTimingStatistic:: empty client name\n";
+            return false;
+        }
 
         ClientAudit & rA = Audits_[sClient];
         double dfLatencyMS = (dfReceiveTime-dfTransmitTime)*1000.0;
@@ -267,6 +311,7 @@ public:
             rA.moving_average_latency_ms_=rA.latency_sum_/5;
         }
 
+//        std::cerr<<"\n"<<sClient<<":\n";
 //        std::cerr<<rA.recent_latency_ms_<<" ";
 //        std::cerr<<rA.max_latency_ms_<<" ";
 //        std::cerr<<rA.min_latency_ms_<<" ";
@@ -365,6 +410,12 @@ bool ServerAudit::AddStatistic(const std::string sClient,
 {
 
 	return Impl_->AddStatistic(sClient,nBytes,nMessages,dfTime,bIncoming);
+}
+
+
+bool ServerAudit::GetTimingStatisticSummary(std::string & sSummary)
+{
+    return Impl_->GetTimingStatisticSummary(sSummary);
 }
 
 

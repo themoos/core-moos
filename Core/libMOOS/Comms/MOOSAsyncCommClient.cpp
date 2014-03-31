@@ -196,6 +196,8 @@ bool MOOSAsyncCommClient::WritingLoop() {
 
         if (ConnectToServer())
         {
+            ApplyRecurrentSubscriptions();
+
             //reset this counter here because a message is sent during handshaking
             m_nMsgsSent = 0;
 

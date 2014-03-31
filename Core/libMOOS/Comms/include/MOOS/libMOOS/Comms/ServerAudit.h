@@ -49,6 +49,16 @@ public:
                            double dfTransmitTime,
                            double dfReceiveTime);
 
+    /**fill in a string which tells us all about client timing statistics.
+     * @param sSummary has format clientname=a:b:c:d,.....
+     * @param a recent latency in ms
+     * @param b max latency in ms
+     * @param c min latency in ms
+     * @param d moving average latency
+     */
+
+	bool GetTimingStatisticSummary(std::string & sSummary);
+
 
 
 	class Impl;

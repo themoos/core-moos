@@ -40,7 +40,6 @@
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
-#include "MOOS/libMOOS/Comms/ServerAudit.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
 #include <iomanip>
 #include <iterator>
@@ -211,10 +210,9 @@ bool ThreadedCommServer::ServerLoop()
 {
 
 
-	MOOS::ServerAudit Auditor;
 
-	Auditor.SetQuiet(m_bQuiet);
-	Auditor.Run("localhost",m_nAuditPort);
+	m_Auditor.SetQuiet(m_bQuiet);
+	m_Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
     {
@@ -239,13 +237,13 @@ bool ThreadedCommServer::ServerLoop()
         {
         case ClientThreadSharedData::PKT_READ:
         {
-            ProcessClient(SDFromClient,Auditor);
+            ProcessClient(SDFromClient,m_Auditor);
             break;
         }
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
             OnClientDisconnect(SDFromClient);
-            Auditor.Remove(SDFromClient._sClientName);
+            m_Auditor.Remove(SDFromClient._sClientName);
             break;
 
         default:
@@ -338,7 +336,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             	TimingMsg.SetDouble( MOOSLocalTime());
 
-                Auditor.AddTimingStatistic(TimingMsg.GetSource(),
+                Auditor.AddTimingStatistic(sWho,
                                            TimingMsg.GetTime(),
                                            TimingMsg.GetDouble());
 

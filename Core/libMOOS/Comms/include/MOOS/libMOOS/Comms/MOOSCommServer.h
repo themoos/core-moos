@@ -48,6 +48,8 @@
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
+#include "MOOS/libMOOS/Comms/ServerAudit.h"
+
 
 class XPCTcpSocket;
 #include <list>
@@ -147,7 +149,14 @@ public:
     /** return true if server is running */
     bool IsRunning(){return m_bQuit==false;};
 
-
+    /**fill in a string which tells us all about client timing statistics.
+     * @param sSummary has format clientname=a:b:c:d,.....
+     * @param a recent latency in ms
+     * @param b max latency in ms
+     * @param c min latency in ms
+     * @param d moving average latency
+     */
+    bool GetTimingStatisticSummary(std::string & sSummary);
 
 
     /// default constructor
@@ -267,6 +276,7 @@ protected:
     invokes the user supplied callback function */
     virtual bool    ProcessClient();
 
+
     /**
      * remove a socket from list of sockets that have open connections
      * @param pSocket
@@ -310,6 +320,9 @@ protected:
 
     //what port will we broadcast stats on by default
     unsigned int m_nAuditPort;
+
+    MOOS::ServerAudit m_Auditor;
+
 
 
 

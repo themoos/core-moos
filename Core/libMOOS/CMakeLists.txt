@@ -4,6 +4,7 @@ SET(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
     Comms/MOOSAsyncCommClient.cpp
+	Comms/ClientCommsStatus.cpp
     Comms/MOOSCommObject.cpp
     Comms/MOOSCommPkt.cpp
     Comms/MOOSCommServer.cpp
