@@ -9,6 +9,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include <iostream>
 #include <iomanip>
+#include <limits>
 
 namespace MOOS {
 
