@@ -299,7 +299,7 @@ public:
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddActiveQueue(const std::string & sQueueName,
+    virtual bool AddActiveQueue(const std::string & sQueueName,
     				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
     				void * pYourParam );
 
