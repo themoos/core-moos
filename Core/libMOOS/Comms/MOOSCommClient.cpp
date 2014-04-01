@@ -1793,7 +1793,7 @@ bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::Cl
     return true;
 }
 
-void CMOOSCommClient::GetCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses)
+void CMOOSCommClient::GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses)
 {
     MOOS::ScopedLock L(m_ClientStatusLock);
     std::map<std::string , MOOS::ClientCommsStatus>::iterator q;

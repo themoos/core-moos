@@ -29,6 +29,13 @@ ClientCommsStatus::~ClientCommsStatus() {
 }
 
 
+/** equality operator */
+bool ClientCommsStatus::operator==(const ClientCommsStatus & M) const
+{
+    return name_==M.name_;
+}
+
+
 ClientCommsStatus::Quality ClientCommsStatus::Appraise()
 {
     if(recent_latency_<1)

@@ -21,7 +21,7 @@ public:
     {
         std::list<MOOS::ClientCommsStatus>  Statuses;
         std::list<MOOS::ClientCommsStatus>::iterator q;
-        m_Comms.GetCommsStatuses(Statuses);
+        m_Comms.GetClientCommsStatuses(Statuses);
 
         for(q=Statuses.begin();q!= Statuses.end();q++)
         {

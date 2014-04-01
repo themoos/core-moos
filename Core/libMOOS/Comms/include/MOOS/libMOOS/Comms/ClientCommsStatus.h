@@ -13,7 +13,7 @@
 
 namespace MOOS {
 
-struct ClientCommsStatus {
+class ClientCommsStatus {
 public:
     ClientCommsStatus();
     virtual ~ClientCommsStatus();
@@ -26,6 +26,8 @@ public:
     std::string name_;
     std::list<std::string> subscribes_;
     std::list<std::string> publishes_;
+
+    bool operator==(const ClientCommsStatus & M) const;
 
     void Write(std::ostream & out);
 

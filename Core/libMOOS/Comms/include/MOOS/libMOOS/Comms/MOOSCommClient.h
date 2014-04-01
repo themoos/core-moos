@@ -418,7 +418,7 @@ public:
     bool GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status);
 
     /** get all client statuses */
-    void GetCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses);
+    void GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses);
 
 
     /** internal function used to collect client status sumamries - do not use */
