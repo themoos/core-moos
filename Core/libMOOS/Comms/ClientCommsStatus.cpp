@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <iterator>
 
 namespace MOOS {
 
