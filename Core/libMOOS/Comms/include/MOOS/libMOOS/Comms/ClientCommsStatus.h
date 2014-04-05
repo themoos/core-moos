@@ -18,6 +18,13 @@ public:
     ClientCommsStatus();
     virtual ~ClientCommsStatus();
 
+    enum Quality
+    {
+        Excellent,
+        Good,
+        Fair,
+        Poor,
+    };
 
     double recent_latency_;
     double max_latency_;
@@ -31,13 +38,6 @@ public:
 
     void Write(std::ostream & out);
 
-    enum Quality
-    {
-        Excellent,
-        Good,
-        Fair,
-        Poor,
-    };
     Quality Appraise();
 
 
