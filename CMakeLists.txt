@@ -116,8 +116,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   if (OSX_VERSION VERSION_EQUAL OSX_MAVERICKS_VERSION OR
       OSX_VERSION VERSION_GREATER OSX_MAVERICKS_VERSION)
     option(USE_LIBSTDCPP
-      "Use (legacy) GNU libstdc++ on OSX >= ${OSX_MAVERICKS_VERSION}, instead "
-      "of default LLVM libc++ (required for iMatlab)" OFF)
+      "Use (legacy) GNU libstdc++ on OSX >= ${OSX_MAVERICKS_VERSION}, instead of default LLVM libc++ (required for iMatlab)" OFF)
     if (USE_LIBSTDCPP)
       message("Running OS X Mavericks (specific version: ${OSX_VERSION}) using "
         "legacy GNU libstdc++ instead of default LLVM libc++, disable "
