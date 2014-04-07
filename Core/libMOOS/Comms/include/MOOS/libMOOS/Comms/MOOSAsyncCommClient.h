@@ -98,7 +98,7 @@ namespace MOOS
 	    virtual bool OnCloseConnection();
 
 	    /**
-	     * start all the workr threads
+	     * start all the worker threads
 	     * @return true on success
 	     */
 		virtual bool StartThreads();
@@ -136,15 +136,12 @@ namespace MOOS
 	    CMOOSThread ReadingThread_; //handles reading
 
 	    double m_dfLastTimingMessage; //time last timing messae was sent
-	    double m_dfLastSendTime; 	//time last message was sent
-	    unsigned int m_nOverSpeedCount;
-	    double m_dfOutGoingDelay;
+	    double m_dfOutGoingDelay; //outgoing message delay as instructed by DB
+
+
 
 	    MOOS::SafeList<CMOOSMsg> OutGoingQueue_; //queue of outgoing mail
 
-
-	    std::vector<unsigned char> OutgoingStorage_;
-        std::vector<unsigned char> IncomingStorage_;
 
 
 	};

@@ -57,6 +57,7 @@ public:
 	bool GetVariable(const std::string var,  std::string  & result);
 	bool GetVariable(const std::string var,  int & result);
 	bool GetVariable(const std::string var,  unsigned int & result);
+	bool GetVariable(const std::string var,  bool & result);
 
 	//-x 7  -name fred    (so no equals)
 	bool GetOption(const std::string option,  double & result);

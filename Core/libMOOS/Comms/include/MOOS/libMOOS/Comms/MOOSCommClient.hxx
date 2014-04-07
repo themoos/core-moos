@@ -32,7 +32,6 @@ bool CMOOSCommClient::AddActiveQueue(const std::string & sQueueName,
 	if(w==ActiveQueueMap_.end())
 	{
 		//we need to create a new queue
-		std::cerr<<"making new active queue "<<sQueueName<<"\n";
 		MOOS::ActiveMailQueue* pQ = new MOOS::ActiveMailQueue(sQueueName);
 		ActiveQueueMap_[sQueueName] = pQ;
 		pQ->SetCallback(Instance,memfunc);

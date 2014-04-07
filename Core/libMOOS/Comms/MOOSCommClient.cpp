@@ -104,7 +104,7 @@ CMOOSCommClient::CMOOSCommClient()
 	m_nNextMsgID=0;
 	m_bFakeSource = false;
     m_bQuiet= false;
-    
+    m_bMonitorClientCommsStatus = false;
 
     m_nMsgsReceived = 0;
     m_nMsgsSent = 0;
@@ -122,6 +122,8 @@ CMOOSCommClient::CMOOSCommClient()
 
 	//assume an old DB
 	m_bDBIsAsynchronous = false;
+
+	SetCommsControlTimeWarpScaleFactor(0.0);
     
     SetVerboseDebug(false);
 
@@ -340,6 +342,8 @@ bool CMOOSCommClient::ClientLoop()
 
 		if(ConnectToServer())
 		{
+
+	        ApplyRecurrentSubscriptions();
 
 			while(!m_bQuit)
 			{
@@ -919,6 +923,7 @@ bool CMOOSCommClient::ConnectToServer()
         //we must be connected for user callback to work..
         m_bConnected = true;
 
+
         if(m_pfnConnectCallBack!=NULL)
 		{
 			//invoke user defined callback
@@ -930,6 +935,10 @@ bool CMOOSCommClient::ConnectToServer()
 			}
 
 		}
+
+        //look to turn on status monitoring
+        ControlClientCommsStatusMonitoring(m_bMonitorClientCommsStatus);
+
 	}
 	else
 	{
@@ -1720,4 +1729,197 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 	return true;
 }
+
+bool CMOOSCommClient::SetCommsControlTimeWarpScaleFactor(double dfSF)
+{
+    if(dfSF<0.0|| dfSF>1.0)
+        return false;
+
+    m_dfOutGoingDelayTimeWarpScaleFactor = dfSF;
+    return true;
+}
+
+
+double CMOOSCommClient::GetCommsControlTimeWarpScaleFactor()
+{
+    return m_dfOutGoingDelayTimeWarpScaleFactor;
+}
+
+
+bool CMOOSCommClient::ControlClientCommsStatusMonitoring(bool bEnable)
+{
+    if(bEnable)
+    {
+
+        if(!AddRecurrentSubscription("DB_QOS",0.0))
+            return false;
+
+        if(!AddRecurrentSubscription("DB_RWSUMMARY",0.0))
+            return false;
+
+        if(HasActiveQueue("_ClientSummaries"))
+            return true;
+
+        if(!AddActiveQueue("_ClientSummaries",this,&CMOOSCommClient::ProcessClientCommsStatusSummary))
+            return false;
+
+        if(!AddMessageRouteToActiveQueue("_ClientSummaries","DB_QOS"))
+            return false;
+
+        if(!AddMessageRouteToActiveQueue("_ClientSummaries","DB_RWSUMMARY"))
+            return false;
+
+        ApplyRecurrentSubscriptions();
+    }
+    else
+    {
+        if(HasActiveQueue("_ClientSummaries"))
+            return RemoveActiveQueue("_ClientSummaries");
+    }
+
+    return true;
+}
+
+bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status)
+{
+    MOOS::ScopedLock L(m_ClientStatusLock);
+    std::map<std::string , MOOS::ClientCommsStatus>::iterator q = m_ClientStatuses.find(sClient);
+
+    if (q==m_ClientStatuses.end())
+        return false;
+
+    Status = q->second;
+
+    return true;
+}
+
+void CMOOSCommClient::GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses)
+{
+    MOOS::ScopedLock L(m_ClientStatusLock);
+    std::map<std::string , MOOS::ClientCommsStatus>::iterator q;
+
+    for(q=m_ClientStatuses.begin();q!=m_ClientStatuses.end();q++)
+        Statuses.push_back(q->second);
+
+}
+
+
+void CMOOSCommClient::EnableCommsStatusMonitoring(bool bEnable)
+{
+    m_bMonitorClientCommsStatus = bEnable;
+    //ControlClientCommsStatusMonitoring(bEnable);
+}
+
+
+bool CMOOSCommClient::ProcessClientCommsStatusSummary(CMOOSMsg & M)
+{
+    MOOS::ScopedLock L(m_ClientStatusLock);
+    if(M.GetName()=="DB_QOS")
+    {
+        while(!M.m_sVal.empty())
+        {
+            std::string sT = MOOSChomp(M.m_sVal);
+            if(sT.empty())
+                break;
+            std::string sC  = MOOSChomp(sT,"=");
+
+            if(sC.empty())
+                return MOOSFail("CMOOSCommClient::ProcessClientSummary empty client name");
+
+            MOOS::ClientCommsStatus & rS = m_ClientStatuses[sC];
+
+            rS.name_=sC;
+            rS.recent_latency_ =MOOS::StringToDouble(MOOSChomp(sT,":"));
+            rS.max_latency_ =   MOOS::StringToDouble(MOOSChomp(sT,":"));
+            rS.min_latency_ =   MOOS::StringToDouble(MOOSChomp(sT,":"));
+            rS.avg_latency_ =   MOOS::StringToDouble(MOOSChomp(sT,":"));
+
+        }
+    }
+    else if(M.GetName()=="DB_RWSUMMARY")
+    {
+        while(!M.m_sVal.empty())
+        {
+            std::string sT = MOOSChomp(M.m_sVal);
+            if(sT.empty())
+                break;
+            std::string sC  = MOOSChomp(sT,"=");
+            std::string sSub  = MOOSChomp(sT,"&");
+            std::string sPub  = MOOSChomp(sT,"&");
+
+
+            if(sC.empty())
+                return MOOSFail("CMOOSCommClient::ProcessClientSummary empty client name");
+
+            MOOS::ClientCommsStatus & rS = m_ClientStatuses[sC];
+
+            rS.subscribes_.clear();
+            rS.publishes_.clear();
+
+//            std::cerr<<"sSubs="<<sSub<<"\n";
+//            std::cerr<<"sPub="<<sPub<<"\n";
+
+            while (!sSub.empty())
+            {
+                rS.subscribes_.push_back(MOOSChomp(sSub,":"));
+            }
+
+            while (!sPub.empty())
+            {
+                rS.publishes_.push_back(MOOSChomp(sPub,":"));
+            }
+
+
+            //rS.Write(std::cerr);
+
+        }
+    }
+    return true;
+}
+
+
+bool CMOOSCommClient::ApplyRecurrentSubscriptions()
+{
+
+    MOOS::ScopedLock L(RecurrentSubscriptionLock);
+    std::map< std::string, double >::iterator q;
+    for(q = m_RecurrentSubscriptions.begin();q!=m_RecurrentSubscriptions.end();q++)
+    {
+        if(!Register(q->first,q->second))
+            return false;
+    }
+
+    return true;
+}
+
+
+bool CMOOSCommClient::AddRecurrentSubscription(const std::string &sVar, double dfPeriod)
+{
+    if(sVar.empty())
+        return false;
+
+    MOOS::ScopedLock L(RecurrentSubscriptionLock);
+
+    m_RecurrentSubscriptions[sVar] = dfPeriod;
+
+    return true;
+
+}
+bool CMOOSCommClient::RemoveRecurrentSubscription(const std::string & sVar)
+{
+
+    if(sVar.empty())
+        return false;
+
+    MOOS::ScopedLock L(RecurrentSubscriptionLock);
+
+    if(m_RecurrentSubscriptions.find(sVar)==m_RecurrentSubscriptions.end())
+        return false;
+    else
+        m_RecurrentSubscriptions.erase(sVar);
+
+    return true;
+}
+
+
 

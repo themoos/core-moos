@@ -144,7 +144,7 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_EVENT"] = NewVar;
     }
 
-    //make our own variable called DB_EVENT
+    //make our own variable called DB_VARSUMMARY
     {
         CMOOSDBVar NewVar("DB_VARSUMMARY");
         NewVar.m_cDataType = MOOS_STRING;
@@ -154,6 +154,33 @@ CMOOSDB::CMOOSDB()
         NewVar.m_dfWrittenTime = MOOSTime();
         m_VarMap["DB_VARSUMMARY"] = NewVar;
     }
+
+
+    //make our own variable called DB_QOS
+    {
+        CMOOSDBVar NewVar("DB_QOS");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_QOS"] = NewVar;
+    }
+
+    //make our own variable called DB_RWSUMMARY
+    {
+        CMOOSDBVar NewVar("DB_RWSUMMARY");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_RWSUMMARY"] = NewVar;
+    }
+
+
+
+
 
 
     //ignore broken pipes as is standard for network apps
@@ -447,44 +474,103 @@ bool CMOOSDB::SetQuiet(bool bQuiet)
 
 void CMOOSDB::UpdateDBClientsVar()
 {
-#define CLIENT_LIST_PUBLISH_PERIOD 2
-    static double dfLastTime = MOOSTime();
-    double dfNow = MOOSTime();
-    if(dfNow-dfLastTime>CLIENT_LIST_PUBLISH_PERIOD)
-    {
-        STRING_LIST Clients;
-        m_pCommServer->GetClientNames(Clients);
+    STRING_LIST Clients;
+    m_pCommServer->GetClientNames(Clients);
 
-        std::ostringstream ss;
-        std::copy(Clients.begin(),Clients.end(),ostream_iterator<std::string>(ss,","));
-        
-        CMOOSMsg DBC(MOOS_NOTIFY,"DB_CLIENTS",ss.str());
-        DBC.m_sOriginatingCommunity = m_sCommunityName;
-        DBC.m_sSrc = m_sDBName;
-        OnNotify(DBC);
-        dfLastTime = dfNow;
+    std::ostringstream ss;
+    std::copy(Clients.begin(),Clients.end(),ostream_iterator<std::string>(ss,","));
+
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_CLIENTS",ss.str());
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
+}
+
+void CMOOSDB::UpdateQoSVar()
+{
+    CMOOSMsg DBQOS(MOOS_NOTIFY,"DB_QOS","");
+
+    if(!m_pCommServer->GetTimingStatisticSummary(DBQOS.m_sVal))
+        return;
+
+    DBQOS.m_sSrc = m_sDBName;
+    DBQOS.m_sOriginatingCommunity = m_sCommunityName;
+    OnNotify(DBQOS);
+
+}
+
+template< class T>
+void PrintCollection( const T & collection, ostream & out, const std::string & delim = "," )
+{
+    typename T::const_iterator q;
+    for(q = collection.begin();q!=collection.end();)
+    {
+        out<<(*q);
+        if(++q!=collection.end())
+            out<<delim;
+    }
+}
+
+void CMOOSDB::UpdateReadWriteSummaryVar()
+{
+
+    std::map<std::string,std::list<std::string> > Pub;
+    std::map<std::string,std::list<std::string> > Sub;
+
+    DBVAR_MAP::iterator p;
+
+    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    {
+        CMOOSDBVar  & rVar = p->second;
+        STRING_SET::iterator w;
+        REGISTER_INFO_MAP::iterator v;
+
+        std::stringstream ss;
+        for(v = rVar.m_Subscribers.begin();v!=rVar.m_Subscribers.end();v++)
+            Sub[v->second.m_sClientName].push_back(rVar.m_sName);
+
+        for(w = rVar.m_Writers.begin();w!=rVar.m_Writers.end();w++)
+            Pub[*w].push_back(rVar.m_sName);
+    }
+
+
+    STRING_LIST Clients;
+    m_pCommServer->GetClientNames(Clients);
+    STRING_LIST::iterator q;
+
+    std::ostringstream ss;
+    for(q=Clients.begin();q!=Clients.end();)
+    {
+        ss<<*q<<"=";
+        PrintCollection(Sub[*q],ss,":");
+        ss<<"&";
+        PrintCollection(Pub[*q],ss,":");
+
+        if(++q!=Clients.end())
+            ss<<",";
 
     }
+
+    CMOOSMsg DBS(MOOS_NOTIFY,"DB_RWSUMMARY",ss.str());
+    DBS.m_sSrc = m_sDBName;
+    DBS.m_sOriginatingCommunity = m_sCommunityName;
+    OnNotify(DBS);
 
 }
 
 void CMOOSDB::UpdateDBTimeVars()
 {
-    static double dfLastTime = MOOSTime();
-    double dfNow = MOOSTime();
-    if(dfNow-dfLastTime>1.0)
-    {
-        CMOOSMsg DBT(MOOS_NOTIFY,"DB_TIME",MOOSTime());
-        DBT.m_sOriginatingCommunity = m_sCommunityName;
-        DBT.m_sSrc = m_sDBName;
-        OnNotify(DBT);
-        dfLastTime = dfNow;
+    CMOOSMsg DBT(MOOS_NOTIFY,"DB_TIME",MOOSTime());
+    DBT.m_sOriginatingCommunity = m_sCommunityName;
+    DBT.m_sSrc = m_sDBName;
+    OnNotify(DBT);
 
-        CMOOSMsg DBUpT(MOOS_NOTIFY,"DB_UPTIME",MOOSTime()-GetStartTime());
-        DBUpT.m_sOriginatingCommunity = m_sCommunityName;
-        DBUpT.m_sSrc = m_sDBName;
-        OnNotify(DBUpT);    
-    }
+    CMOOSMsg DBUpT(MOOS_NOTIFY,"DB_UPTIME",MOOSTime()-GetStartTime());
+    DBUpT.m_sOriginatingCommunity = m_sCommunityName;
+    DBUpT.m_sSrc = m_sDBName;
+    OnNotify(DBUpT);
+
 }
 
 /**this will be called each time a new packet is recieved*/
@@ -498,14 +584,27 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
-    //good spot to update our internal time    
-    UpdateDBTimeVars();
 
-    //and send clients an occasional membersip list
-    UpdateDBClientsVar();
+    double dfNow = MOOS::Time();
+    if(dfNow-m_dfSummaryTime>2.0)
+    {
+        m_dfSummaryTime = dfNow;
 
-    //update a db summary var once in a while
-    UpdateSummaryVar();
+        //good spot to update our internal time
+        UpdateDBTimeVars();
+
+        //and send clients an occasional membersip list
+        UpdateDBClientsVar();
+
+        //update a db summary var once in a while
+        UpdateSummaryVar();
+
+        //update quality of service summary
+        UpdateQoSVar();
+
+        //update variable which publishes who is reading and writing what
+        UpdateReadWriteSummaryVar();
+    }
 
     if(!MsgListRx.empty())
     {
@@ -1059,11 +1158,6 @@ bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 
 void CMOOSDB::UpdateSummaryVar()
 {
-    double dfNow = MOOS::Time();
-    if(dfNow-m_dfSummaryTime<2.0)
-        return;
-
-    m_dfSummaryTime = dfNow;
 
     std::stringstream ss;
     DBVAR_MAP::iterator p;

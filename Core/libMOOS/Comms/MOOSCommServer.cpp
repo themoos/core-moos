@@ -1088,3 +1088,9 @@ bool CMOOSCommServer::GetClientNames(STRING_LIST &sList)
     }
     return true;
 }
+
+
+bool CMOOSCommServer::GetTimingStatisticSummary(std::string & sSummary)
+{
+    return m_Auditor.GetTimingStatisticSummary(sSummary);
+}

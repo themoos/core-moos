@@ -40,7 +40,6 @@
 #include "MOOS/libMOOS/Comms/ThreadedCommServer.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
-#include "MOOS/libMOOS/Comms/ServerAudit.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
 #include <iomanip>
 #include <iterator>
@@ -211,10 +210,9 @@ bool ThreadedCommServer::ServerLoop()
 {
 
 
-	MOOS::ServerAudit Auditor;
 
-	Auditor.SetQuiet(m_bQuiet);
-	Auditor.Run("localhost",m_nAuditPort);
+	m_Auditor.SetQuiet(m_bQuiet);
+	m_Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
     {
@@ -239,13 +237,13 @@ bool ThreadedCommServer::ServerLoop()
         {
         case ClientThreadSharedData::PKT_READ:
         {
-            ProcessClient(SDFromClient,Auditor);
+            ProcessClient(SDFromClient,m_Auditor);
             break;
         }
 
         case ClientThreadSharedData::CONNECTION_CLOSED:
             OnClientDisconnect(SDFromClient);
-            Auditor.Remove(SDFromClient._sClientName);
+            m_Auditor.Remove(SDFromClient._sClientName);
             break;
 
         default:
@@ -310,11 +308,12 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             //is there any sort of notification going on here?
             bool bIsNotification = false;
+            double dfLargeDelay = m_dfCommsLatencyConcern*GetMOOSTimeWarp();
             for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++)
             {
             	if(q->IsType(MOOS_NOTIFY))
             	{
-            		if(dfTNow-q->GetTime()>m_dfCommsLatencyConcern)
+            		if(dfTNow-q->GetTime()>dfLargeDelay)
             		{
             			std::cout<<"WARNING : Message "<<q->GetKey()<<" from "<<q->GetSource()<<" is "<<(dfTNow-q->GetTime())*1000<<" ms delayed\n";
             		}
@@ -331,8 +330,15 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             {
             	bTimingPresent = true;
             	TimingMsg =MsgLstRx.front();
+
             	MsgLstRx.pop_front();
+
+
             	TimingMsg.SetDouble( MOOSLocalTime());
+
+                Auditor.AddTimingStatistic(sWho,
+                                           TimingMsg.GetTime(),
+                                           TimingMsg.GetDouble());
 
             	//and here we control the speed of this clienttxt
             	TimingMsg.SetDoubleAux(pClient->GetConsolidationTime());

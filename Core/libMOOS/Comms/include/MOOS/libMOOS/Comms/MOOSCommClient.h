@@ -42,6 +42,7 @@
 #include "MOOS/libMOOS/Utils/Macros.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
+#include "MOOS/libMOOS/Comms/ClientCommsStatus.h"
 
 
 
@@ -251,6 +252,15 @@ public:
     uint64_t GetNumMsgsSent();
 
 
+    /** set / get scale factor which determines how to encourgage message bunching
+     * at high timewarps
+     * returns false if outside 0 - 1.0
+     * if timewarp was 100 and dfSF is 0.1 then 10ms delay is
+     * invoked in comms loop
+     */
+    bool SetCommsControlTimeWarpScaleFactor(double dfSF);
+    double GetCommsControlTimeWarpScaleFactor();
+
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
@@ -289,7 +299,7 @@ public:
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddActiveQueue(const std::string & sQueueName,
+    virtual bool AddActiveQueue(const std::string & sQueueName,
     				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
     				void * pYourParam );
 
@@ -401,6 +411,22 @@ public:
 
 
 
+    /** enable or disable comms status monitoring across the community*/
+    void EnableCommsStatusMonitoring(bool bEnable);
+
+    /** query the comms status of some other client*/
+    bool GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status);
+
+    /** get all client statuses */
+    void GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses);
+
+
+    /** internal function used to collect client status sumamries - do not use */
+    bool ProcessClientCommsStatusSummary(CMOOSMsg & M);
+
+
+
+
 
 protected:
     bool ClearResources();
@@ -422,6 +448,9 @@ protected:
     /** true if we want to be able to fake sources of messages (used by playback)*/
     bool m_bFakeSource;
     
+    /** true if w are monitoring all clients' comms status*/
+    bool m_bMonitorClientCommsStatus;
+
     /** performs a handshake with the server when a new connection is made. Within this
     function this class tells the server its name*/
     bool HandShake();
@@ -609,6 +638,31 @@ protected:
 
     /** true if after handshaking DB announces its ability to support aysnc comms*/
     bool m_bDBIsAsynchronous;
+
+
+    //how much to delay outgoing mail thread as a proportion oof timewarp
+    double m_dfOutGoingDelayTimeWarpScaleFactor;
+
+
+    /** turn on comms status monitoring of all clients */
+    bool ControlClientCommsStatusMonitoring(bool bEnable);
+
+
+    //used for monitoring status of all clients in network
+    std::map<std::string , MOOS::ClientCommsStatus> m_ClientStatuses;
+
+    //used to protect status monitoring variable m_ClientStatuses
+    CMOOSLock m_ClientStatusLock;
+
+
+    //some tools for recurrnent subscription management
+    CMOOSLock RecurrentSubscriptionLock;
+    bool AddRecurrentSubscription(const std::string &sVar, double dfPeriod);
+    bool RemoveRecurrentSubscription(const std::string & sVar);
+    bool ApplyRecurrentSubscriptions();
+
+private:
+    std::map< std::string, double > m_RecurrentSubscriptions;
 
 
 

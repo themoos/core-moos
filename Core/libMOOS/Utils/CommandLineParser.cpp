@@ -127,6 +127,24 @@ bool CommandLineParser::GetOption(const std::string option,  unsigned int & resu
 }
 
 
+bool CommandLineParser::GetVariable(const std::string var,  bool & result)
+{
+    std::string sT;
+    if(GetVariable(var,  sT))
+    {
+        if(sT=="true" || sT=="1" || sT=="True")
+            result=true;
+
+        return true;
+    }
+    else if(GetFlag(var))
+    {
+        result = true;
+        return true;
+    }
+    result = false;
+    return false;
+}
 
 bool CommandLineParser::GetVariable(const std::string var,  double & result)
 {
