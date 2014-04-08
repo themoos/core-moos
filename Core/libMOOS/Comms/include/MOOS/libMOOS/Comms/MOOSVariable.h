@@ -90,7 +90,8 @@ public:
     
     
     
-     
+    /** Get string contents, if applicable, as a const ref */
+	inline const std::string &GetStringRef() const { return m_sVal; }     
 
 
 protected:
