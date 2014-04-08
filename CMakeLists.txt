@@ -152,9 +152,11 @@ add_subdirectory(Core)
 # Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
 # (This is a CACHE INTERNAL variable)
 option(ENABLE_EXPORT "do you want CMake to record this build so other projects can find it " ON)
-
 if(ENABLE_EXPORT)
    message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
+endif()
+
+if(1)
     if (PROJECT_EXPORT_LIBS)
         
         message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
@@ -186,10 +188,12 @@ if(ENABLE_EXPORT)
         
     endif()
 
-# Stick build location in the central CMake user package registry, so that it may be easily found
-if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-  export(PACKAGE ${PROJECTNAME})
-endif()
+	if(ENABLE_EXPORT)
+		# Stick build location in the central CMake user package registry, so that it may be easily found
+		if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+		  export(PACKAGE ${PROJECTNAME})
+		endif()
+	endif()
 
 endif()
 
