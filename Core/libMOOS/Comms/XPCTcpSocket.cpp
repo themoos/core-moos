@@ -104,7 +104,8 @@ XPCTcpSocket *XPCTcpSocket::Accept(char *_sHost)
         // Get the ascii representation of the address
         char *sAddress = inet_ntoa((struct in_addr)clientAddress.sin_addr);
         
-        // Get the host name given the address
+#if !defined(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+		// Get the host name given the address
         try
         {
             XPCGetHostInfo getHostInfo(sAddress, ADDRESS);
@@ -116,7 +117,9 @@ XPCTcpSocket *XPCTcpSocket::Accept(char *_sHost)
             strcpy(_sHost, sAddress);
             printf("INFO: %s using numeric address %s\n",e.sGetException(),_sHost);
         }
-        
+#else
+        strcpy(_sHost, sAddress);
+#endif
     }
     
     // Create and return the new XPCTcpSocket object
