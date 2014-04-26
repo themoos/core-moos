@@ -45,6 +45,8 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 
+
+
 namespace MOOS {
 
 #define TIMING_MESSAGE_PERIOD 1.0
@@ -67,7 +69,7 @@ MOOSAsyncCommClient::MOOSAsyncCommClient() {
     m_dfOutGoingDelay = 0.0;
     m_bPostNewestToFront = false;
 
-    SetCommsControlTimeWarpScaleFactor(0.1);
+//    SetCommsControlTimeWarpScaleFactor(0.0);
 }
 ///default destructor
 MOOSAsyncCommClient::~MOOSAsyncCommClient() {
@@ -312,6 +314,8 @@ bool MOOSAsyncCommClient::DoWriting() {
 
 }
 
+
+
 bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
 {
     double WarpDelayMS = 0.0;
@@ -320,7 +324,7 @@ bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
     double TimeWarp =GetMOOSTimeWarp();
     if(TimeWarp>1.0)
     {
-        WarpDelayMS=TimeWarp*0.1;
+        WarpDelayMS=TimeWarp*GetCommsControlTimeWarpScaleFactor();
     }
     double TotalDelay = std::max(m_dfOutGoingDelay*1000,WarpDelayMS);
     unsigned int sleep_ms =

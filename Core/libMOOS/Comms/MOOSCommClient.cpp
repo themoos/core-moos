@@ -75,6 +75,10 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+#define MAX_TIME_WARP_AGGLOMERATION_CONSTANT 10.0
+#ifndef TIME_WARP_AGGLOMERATION_CONSTANT
+#define TIME_WARP_AGGLOMERATION_CONSTANT 0.2
+#endif
 
 
 
@@ -123,7 +127,7 @@ CMOOSCommClient::CMOOSCommClient()
 	//assume an old DB
 	m_bDBIsAsynchronous = false;
 
-	SetCommsControlTimeWarpScaleFactor(0.0);
+	SetCommsControlTimeWarpScaleFactor(TIME_WARP_AGGLOMERATION_CONSTANT);
     
     SetVerboseDebug(false);
 
@@ -1732,8 +1736,14 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 bool CMOOSCommClient::SetCommsControlTimeWarpScaleFactor(double dfSF)
 {
-    if(dfSF<0.0|| dfSF>1.0)
+
+    if(dfSF<0.0|| dfSF>MAX_TIME_WARP_AGGLOMERATION_CONSTANT)
+    {
+        std::cerr<<MOOS::ConsoleColours::Red();
+        std::cerr<<"Warning: Comms Scale factor out of range (0:10.0\n";
+        std::cerr<<MOOS::ConsoleColours::reset();
         return false;
+    }
 
     m_dfOutGoingDelayTimeWarpScaleFactor = dfSF;
     return true;
