@@ -23,7 +23,7 @@ public:
         Excellent,
         Good,
         Fair,
-        Poor,
+        Poor
     };
 
     double recent_latency_;
