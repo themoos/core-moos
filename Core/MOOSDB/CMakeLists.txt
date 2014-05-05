@@ -21,7 +21,9 @@ ENDIF(DISABLE_NAMES_LOOKUP)
 
 foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
     ADD_DEFINITIONS(-D${DEFINE})        
-    message(STATUS "adding -D${DEFINE} as required by MOOS")
+    IF ($ENV{VERBOSE})
+      message(STATUS "adding -D${DEFINE} as required by MOOS")
+    ENDIF()
 endforeach()
 
 

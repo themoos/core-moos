@@ -91,10 +91,15 @@ add_subdirectory(Core)
 option(ENABLE_EXPORT "do you want CMake to record this build so other projects can find it " ON)
 
 if(ENABLE_EXPORT)
+   IF ($ENV{VERBOSE})
    message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
+   ENDIF()
+
     if (PROJECT_EXPORT_LIBS)
         
-        message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
+        IF ($ENV{VERBOSE})
+          message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
+        ENDIF()
         
         # Provide a cmake config script for the build directory
         export(TARGETS
