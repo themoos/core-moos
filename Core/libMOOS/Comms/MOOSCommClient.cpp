@@ -1790,7 +1790,7 @@ bool CMOOSCommClient::ControlClientCommsStatusMonitoring(bool bEnable)
     return true;
 }
 
-bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status)
+bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & TheStatus)
 {
     MOOS::ScopedLock L(m_ClientStatusLock);
     std::map<std::string , MOOS::ClientCommsStatus>::iterator q = m_ClientStatuses.find(sClient);
@@ -1798,7 +1798,7 @@ bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::Cl
     if (q==m_ClientStatuses.end())
         return false;
 
-    Status = q->second;
+    TheStatus = q->second;
 
     return true;
 }

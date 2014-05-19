@@ -676,7 +676,14 @@ protected:
      response times. It is not recommended for general use*/
     bool UseMailCallBack();
 
-
+    /**
+     * look for  a parameter in the mission file and on the command line. If found in both command line
+     * wins. It is (default) assumed "--" is prepended on command line. So foo=xx in mission file appears as
+     * --foo=xx on command line
+     * @param sOption name of parameter
+     * @param var variable to be returned
+     * @param bPrependMinusMinusForCommandLine if true then add "--" to command line
+     */
     template <class T>
     bool GetParameterFromCommandLineOrConfigurationFile(std::string sOption, T & var,bool bPrependMinusMinusForCommandLine=true);
 

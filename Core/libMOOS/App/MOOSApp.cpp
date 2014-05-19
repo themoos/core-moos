@@ -440,6 +440,7 @@ bool CMOOSApp::GetFlagFromCommandLineOrConfigurationFile(std::string sOption,boo
     }
     if(bF)
     {
+        //std::cerr<<"found in config file:"<<sOption<<"\n";
         return bFlag;
     }
     return false;
