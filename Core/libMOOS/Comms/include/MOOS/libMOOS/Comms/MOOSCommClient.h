@@ -415,7 +415,7 @@ public:
     void EnableCommsStatusMonitoring(bool bEnable);
 
     /** query the comms status of some other client*/
-    bool GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status);
+    bool GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & TheStatus);
 
     /** get all client statuses */
     void GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses);

@@ -113,12 +113,21 @@ IF (DETECT_CLOCK_DRIFT)
 ENDIF (DETECT_CLOCK_DRIFT)
 MARK_AS_ADVANCED(DETECT_CLOCK_DRIFT)
 
-# Removed the extra field that was added to the MOOS message protocol in October 2009.
+# Remove the extra field that was added to the MOOS message protocol in October 2009.
 OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
 IF (DISABLE_AUX_SOURCE)
   ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
 ENDIF (DISABLE_AUX_SOURCE)
 MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
+
+
+set(TIME_WARP_AGGLOMERATION_CONSTANT  0.0 CACHE STRING "comms agglomeration scale factor for high time warps")
+IF (${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
+  ADD_DEFINITIONS(-DTIME_WARP_AGGLOMERATION_CONSTANT=${TIME_WARP_AGGLOMERATION_CONSTANT})
+ENDIF ()
+MARK_AS_ADVANCED(TIME_WARP_AGGLOMERATION_CONSTANT)
+
+
 
 OPTION(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
 OPTION(ENABLE_V10_IVP_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers as expected by IvP " OFF)

@@ -75,6 +75,10 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+#define MAX_TIME_WARP_AGGLOMERATION_CONSTANT 10.0
+#ifndef TIME_WARP_AGGLOMERATION_CONSTANT
+#define TIME_WARP_AGGLOMERATION_CONSTANT 0.2
+#endif
 
 
 
@@ -123,7 +127,7 @@ CMOOSCommClient::CMOOSCommClient()
 	//assume an old DB
 	m_bDBIsAsynchronous = false;
 
-	SetCommsControlTimeWarpScaleFactor(0.0);
+	SetCommsControlTimeWarpScaleFactor(TIME_WARP_AGGLOMERATION_CONSTANT);
     
     SetVerboseDebug(false);
 
@@ -1732,8 +1736,14 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 
 bool CMOOSCommClient::SetCommsControlTimeWarpScaleFactor(double dfSF)
 {
-    if(dfSF<0.0|| dfSF>1.0)
+
+    if(dfSF<0.0|| dfSF>MAX_TIME_WARP_AGGLOMERATION_CONSTANT)
+    {
+        std::cerr<<MOOS::ConsoleColours::Red();
+        std::cerr<<"Warning: Comms Scale factor out of range (0:10.0\n";
+        std::cerr<<MOOS::ConsoleColours::reset();
         return false;
+    }
 
     m_dfOutGoingDelayTimeWarpScaleFactor = dfSF;
     return true;
@@ -1780,7 +1790,7 @@ bool CMOOSCommClient::ControlClientCommsStatusMonitoring(bool bEnable)
     return true;
 }
 
-bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & Status)
+bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & TheStatus)
 {
     MOOS::ScopedLock L(m_ClientStatusLock);
     std::map<std::string , MOOS::ClientCommsStatus>::iterator q = m_ClientStatuses.find(sClient);
@@ -1788,7 +1798,7 @@ bool CMOOSCommClient::GetClientCommsStatus(const std::string & sClient, MOOS::Cl
     if (q==m_ClientStatuses.end())
         return false;
 
-    Status = q->second;
+    TheStatus = q->second;
 
     return true;
 }

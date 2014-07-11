@@ -440,6 +440,7 @@ bool CMOOSApp::GetFlagFromCommandLineOrConfigurationFile(std::string sOption,boo
     }
     if(bF)
     {
+        //std::cerr<<"found in config file:"<<sOption<<"\n";
         return bFlag;
     }
     return false;
@@ -671,7 +672,7 @@ void CMOOSApp::DoBanner()
 
 	if(GetMOOSTimeWarp()!=1.0)
 		MOOSTrace("\t|-Time Warp @ %.1f \n",GetMOOSTimeWarp());
-	if(m_Comms.GetCommsControlTimeWarpScaleFactor()>0.0)
+	if(m_Comms.GetCommsControlTimeWarpScaleFactor()>0.0  && GetMOOSTimeWarp()>1.0)
 	    MOOSTrace("\t|-Time Warp delay @ %.1f ms \n",m_Comms.GetCommsControlTimeWarpScaleFactor()*GetMOOSTimeWarp());
 
 
