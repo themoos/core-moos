@@ -241,7 +241,7 @@ target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
 #######################################
 # install headers
-install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx")
 
 
 # install libraries
