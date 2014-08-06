@@ -41,6 +41,7 @@
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
 #include "MOOS/libMOOS/Comms/MOOSVariable.h"
 
+#include "MOOS/libMOOS/App/ClientDefines.h"
 
 #include <set>
 #include <map>
