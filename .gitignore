@@ -5,3 +5,5 @@
 /Core/libMOOS/include/MOOS/libMOOS/GitVersion.h
 
 /GitVersion.h
+
+/Core/libMOOS/App/include/MOOS/libMOOS/App/ClientDefines.h
