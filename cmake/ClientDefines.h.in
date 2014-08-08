@@ -1,0 +1,3 @@
+#pragma once
+//this file is auto generated and defines various preprocessor macros needed by the CMOOSApp
+@ASYNCHRONOUS_CLIENT_DEFINE@
