@@ -95,15 +95,8 @@ include(PlatformDefines)
 #do we want to use the new fast asynchronous client architecture?
 OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
 IF (USE_ASYNC_COMMS)
-    cache_internal_append_unique(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
-    ADD_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
-ELSE (USE_ASYNC_COMMS)
-    message(STATUS "removing ASYNCHRONOUS_CLIENT")
-    cache_internal_remove(PROJECT_EXPORT_DEFINES ASYNCHRONOUS_CLIENT)
-    REMOVE_DEFINITIONS(-DASYNCHRONOUS_CLIENT)
+  set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
 ENDIF (USE_ASYNC_COMMS)
-
-
 
 
 #do we want to turn on the experimental clock skew detection?
@@ -149,6 +142,8 @@ IF (ENABLE_V10_COMPATIBILITY)
     ENDIF()
 ENDIF ()
 
+CONFIGURE_FILE(${CMAKE_MODULE_PATH}/ClientDefines.h.in
+${CMAKE_CURRENT_SOURCE_DIR}/App/include/MOOS/libMOOS/App/ClientDefines.h @ONLY)
 
 
 ##########################
