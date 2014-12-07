@@ -30,7 +30,7 @@
 
 #ifndef IPV4ADDRESS_H_
 #define IPV4ADDRESS_H_
-#include <cstdint>
+#include <stdint.h>
 
 /**
  * simple class to hold IPV4 IP addresses
