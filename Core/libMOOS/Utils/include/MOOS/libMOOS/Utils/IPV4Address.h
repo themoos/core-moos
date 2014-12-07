@@ -30,6 +30,7 @@
 
 #ifndef IPV4ADDRESS_H_
 #define IPV4ADDRESS_H_
+#include <cstdint>
 
 /**
  * simple class to hold IPV4 IP addresses
@@ -42,7 +43,7 @@ public:
 	IPV4Address();
 	virtual ~IPV4Address();
 
-	IPV4Address(const std::string & ip, unsigned int p);
+    IPV4Address(const std::string & ip, uint16_t p);
 	IPV4Address(const std::string & ip_and_port);
 	bool operator==(const IPV4Address & a) const;
 
@@ -59,13 +60,13 @@ public:
 	std::string host() const;
 	void set_host(const std::string & host);
 
-	unsigned int port() const;
-	void set_port(unsigned int port);
+    uint16_t port() const;
+    void set_port(uint16_t port);
 
 
 protected:
 	std::string host_;
-	unsigned int port_;
+    uint16_t port_;
 
 };
 

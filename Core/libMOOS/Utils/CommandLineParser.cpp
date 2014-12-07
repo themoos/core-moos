@@ -79,6 +79,8 @@ bool CommandLineParser::GetOption(const std::string option,  double & result)
 	return true;
 
 }
+
+
 bool CommandLineParser::GetOption(const std::string option,  std::string  & result)
 {
 	if(!IsAvailable())
@@ -93,8 +95,12 @@ bool CommandLineParser::GetOption(const std::string option,  std::string  & resu
 
 
 }
+
+
 bool CommandLineParser::GetOption(const std::string option,  int & result)
 {
+
+    std::cerr<<"in CommandLineParser::GetOption(const std::string option,  int & result)\n";
 	if(!IsAvailable())
 		return false;
 
@@ -156,6 +162,8 @@ bool CommandLineParser::GetVariable(const std::string var,  double & result)
 	return true;
 
 }
+
+
 bool CommandLineParser::GetVariable(const std::string var,  std::string  & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
@@ -165,8 +173,8 @@ bool CommandLineParser::GetVariable(const std::string var,  std::string  & resul
 
 	return true;
 
-
 }
+
 bool CommandLineParser::GetVariable(const std::string var,  int & result)
 {
 	if(!IsAvailable() || !VariableExists(var))

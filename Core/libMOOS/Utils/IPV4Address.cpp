@@ -62,7 +62,7 @@ IPV4Address::~IPV4Address() {
 	// TODO Auto-generated destructor stub
 }
 
-IPV4Address::IPV4Address(const std::string & host, unsigned int p):host_(host),port_(p)
+IPV4Address::IPV4Address(const std::string & host, uint16_t p):host_(host),port_(p)
 {
 
 };
@@ -95,7 +95,7 @@ void IPV4Address::set_host(const std::string & host)
 	host_=host;
 }
 
-void IPV4Address::set_port(unsigned int port)
+void IPV4Address::set_port(uint16_t port)
 {
 	port_=port;
 }
@@ -104,7 +104,8 @@ std::string IPV4Address::host() const
 {
 	return host_;
 }
-unsigned int IPV4Address::port() const
+
+uint16_t IPV4Address::port() const
 {
 	return port_;
 }
