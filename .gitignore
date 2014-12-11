@@ -7,3 +7,5 @@
 /GitVersion.h
 
 /Core/libMOOS/App/include/MOOS/libMOOS/App/ClientDefines.h
+
+CMakeLists.txt.user
