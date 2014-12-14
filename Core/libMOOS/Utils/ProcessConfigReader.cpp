@@ -396,7 +396,7 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::stri
 }
 
 
-bool CProcessConfigReader::GetConfigurationParam(std::string sParam, uint16_t & nVal)
+bool CProcessConfigReader::GetConfigurationParam(std::string sParam, unsigned short & nVal)
 {
     if (!m_sAppName.empty())
     {
@@ -410,7 +410,7 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sParam, uint16_t & 
     return false;
 }
 
-bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::string sParam, uint16_t &nVal)
+bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::string sParam, unsigned short &nVal)
 {
     std::string sTmp;
 
