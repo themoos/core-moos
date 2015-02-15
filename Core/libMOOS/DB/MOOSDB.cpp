@@ -1180,6 +1180,9 @@ void CMOOSDB::UpdateSummaryVar()
             ss<<p->second.m_sWhoChangedMe<<" ";
         }
 
+        //write frequency
+        ss << std::fixed << std::setw( 4 ) << std::setprecision( 1 ) << p->second.m_dfWriteFreq<< "Hz ";
+
         ss<<std::left<<std::setw(2);
         ss<<p->second.m_cDataType<<" ";
 

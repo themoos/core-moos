@@ -212,7 +212,7 @@ bool ThreadedCommServer::ServerLoop()
 
 
 	m_Auditor.SetQuiet(m_bQuiet);
-	m_Auditor.Run("localhost",m_nAuditPort);
+    m_Auditor.Run("localhost",m_nAuditPort);
 
     if(m_bBoostIOThreads)
     {
