@@ -39,13 +39,15 @@
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Utils/Macros.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
+#include "MOOS/libMOOS/Comms/ClientCommsStatus.h"
 
 
 
-#define OUTBOX_PENDING_LIMIT 1000
-#define INBOX_PENDING_LIMIT 1000
+#define OUTBOX_PENDING_LIMIT 2048
+#define INBOX_PENDING_LIMIT 2048
 #define CLIENT_DEFAULT_FUNDAMENTAL_FREQ 5
 #define CLIENT_MAX_FUNDAMENTAL_FREQ 200
 
@@ -125,6 +127,9 @@ public:
     /** returns true if this obecjt is connected to the server */
     bool IsConnected();
 
+    /** wait for a connection return false if not connected after nMilliseconds*/
+    bool WaitUntilConnected(const unsigned int nMilliseconds);
+
     /**
      * returns the name with which the client registers with the MOOSDB
      * @return
@@ -203,10 +208,6 @@ public:
     /** Have a peek at mail box and remove a particular message, by default all other messages
     are removed. Note this is quite different from ::PeekMail*/
     bool Peek(MOOSMSG_LIST &List, int nIDRequired, bool bClearBox = true);
-
-
-    /** return a string of the host machines's IP adress*/
-    static std::string GetLocalIPAddress();
     
     /** describe this client in a string */
     std::string GetDescription();
@@ -235,15 +236,30 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnreadMessages();
 
-    /** how much incoming mail is pending?*/
+    /** how much outgoing mail is pending?*/
     unsigned int GetNumberOfUnsentMessages();
 
     /** get total number of bytes sent*/
-    unsigned long long int GetNumBytesSent();
+    uint64_t GetNumBytesSent();
 
     /** get total number of bytes received*/
-    unsigned long long int GetNumBytesReceived();
+    uint64_t GetNumBytesReceived();
 
+    /** get total number of messages received*/
+    uint64_t GetNumMsgsReceived();
+
+    /** get total number of messages sent*/
+    uint64_t GetNumMsgsSent();
+
+
+    /** set / get scale factor which determines how to encourgage message bunching
+     * at high timewarps
+     * returns false if outside 0 - 1.0
+     * if timewarp was 100 and dfSF is 0.1 then 10ms delay is
+     * invoked in comms loop
+     */
+    bool SetCommsControlTimeWarpScaleFactor(double dfSF);
+    double GetCommsControlTimeWarpScaleFactor();
 
     /** used to control how verbose the connection process is */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
@@ -255,7 +271,10 @@ public:
     /** used to control debug printing */
     void SetVerboseDebug(bool bT){m_bVerboseDebug = bT;};
     
+    /** Set the number of ms between loops of the Comms thread (not relevent if teh cleint is Asynchoronous)*/
     bool SetCommsTick(int nCommsTick);
+
+    bool ExpectOutboxOverflow(unsigned int outbox_pending_size);
 
     /**
      * return name of community the client is attached to
@@ -274,32 +293,141 @@ public:
      * if you want rapid response use V10 */
     void SetOnMailCallBack(bool (*pfn)(void * pParamCaller), void * pCallerParam);
 
+
+
     /**
 	 * Register a custom call back for a particular message. This call back will be called from its own thread.
-	 * @param sCallbackName name for callback
-	 * @param sMsgName name of message to watch for
+	 * @param sQueueName
 	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
 	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
 	 * @return true on success
 	 */
-    bool AddMessageCallback(const std::string & sCallbackName,
-    		const std::string & sMsgName,
-    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
-    		void * pYourParam );
+    virtual bool AddActiveQueue(const std::string & sQueueName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
 
     /**
-     * remove the named callback
+     * same as above only with a wildcard...
+     */
+    bool AddWildcardActiveQueue(const std::string & sQueueName,
+    				const std::string & sPattern,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
+
+
+
+    /**
+	 * Register a custom call back for a particular message. This call back will be called from its own thread.
+	 * @param sQueueName
+	 * @param Instance of class on which to invoke member function
+	 * @param member function of class bool func(CMOOSMsg &M)
+	 * @return true on success
+	 */
+    template <class T>
+    bool AddActiveQueue(const std::string & sQueueName,
+    		T* Instance,
+    		bool (T::*memfunc)(CMOOSMsg &)  );
+
+    /**
+     * same as above only with a wildcard...
+     */
+    template <class T>
+    bool AddWildcardActiveQueue(const std::string & sQueueName,
+    				const std::string & sPattern,
+    	    		T* Instance,
+    	    		bool (T::*memfunc)(CMOOSMsg &)  );
+
+
+
+    /**
+	 * stop a message routing to a Active Queue
+	 * @param sQueueName name of Active Queue
+	 * @param sMsgName name of message to route to this queue
+	 * @return true on success
+	 */
+    bool RemoveMessageRouteToActiveQueue(const std::string & sQueueName,
+   		const std::string & sMsgName);
+
+
+    /**
+	 * make a message route to a Active Queue (which will call a custom callback)
+	 * @param sQueueName name of Active Queue
+	 * @param sMsgName name of message to route to this queue
+	 * @return true on success
+	 */
+     bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+    		const std::string & sMsgName);
+
+
+    /**
+     * Register a custom callback and create the active queue as needed.
+	 * @param sQueueName the queue name
+	 * @param sMsgName name of message to route to this queue
+	 * @param pfn  pointer to your function should be type bool func(CMOOSMsg &M, void *pParam)
+	 * @param pYourParam a void * pointer to the thing we want passed as pParam above
+	 * @return true on success
+     *
+     */
+    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam );
+
+    DEPRECATED(bool AddMessageCallBack(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    				void * pYourParam ));
+
+
+    /**
+	 * Register a custom callback and create the active queue as needed.
+	 * @param sQueueName the queue name
+	 * @param sMsgName name of message to route to this queue
+	  *@param Instance of class on which to invoke member function
+	 * @param member function of class bool func(CMOOSMsg &M)
+	 * @return true on success
+	 */
+    template <class T>
+    bool AddMessageRouteToActiveQueue(const std::string & sQueueName,
+    				const std::string & sMsgName,
+    				T* Instance,
+    				bool (T::*memfunc)(CMOOSMsg &) );
+
+
+    /**
+     * remove the named active queue
      * @param sCallbackName
      * @return
      */
-    bool RemoveMessageCallback(const std::string & sCallbackName);
+    bool RemoveActiveQueue(const std::string & sQueueName);
+
 
     /**
-     * Does this named callback exist?
+     * Does this named active queue exist?
      * @param sCallbackName
      * @return
      */
-    bool HasMessageCallback(const std::string & sCallbackName);
+    bool HasActiveQueue(const std::string & sQueueName);
+
+    /** Print all active queues*/
+    void PrintMessageToActiveQueueRouting();
+
+
+
+    /** enable or disable comms status monitoring across the community*/
+    void EnableCommsStatusMonitoring(bool bEnable);
+
+    /** query the comms status of some other client*/
+    bool GetClientCommsStatus(const std::string & sClient, MOOS::ClientCommsStatus & TheStatus);
+
+    /** get all client statuses */
+    void GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> & Statuses);
+
+
+    /** internal function used to collect client status sumamries - do not use */
+    bool ProcessClientCommsStatusSummary(CMOOSMsg & M);
+
+
 
 
 
@@ -314,7 +442,8 @@ protected:
     /** called when connection to server is closed */
     virtual bool OnCloseConnection();
     
-
+    /** get total number of Message Packets recieved*/
+    uint64_t GetNumPktsReceived();
 
     /** true if we are connected to the server */
     bool m_bConnected;
@@ -322,6 +451,9 @@ protected:
     /** true if we want to be able to fake sources of messages (used by playback)*/
     bool m_bFakeSource;
     
+    /** true if w are monitoring all clients' comms status*/
+    bool m_bMonitorClientCommsStatus;
+
     /** performs a handshake with the server when a new connection is made. Within this
     function this class tells the server its name*/
     bool HandShake();
@@ -427,6 +559,8 @@ protected:
     /** the set of messages names/keys that have been sent */
     std::set<std::string> m_Published;
 
+
+
     /** controls how verbose connectionn is*/
     bool m_bQuiet;
     
@@ -440,9 +574,25 @@ protected:
     std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
     /**
-     * list of active mail queues. Each Queue invokes a callback. Keyed by message name
+     * list of names of active mail queues for each message name
      */
-    std::map<std::string,std::list<MOOS::ActiveMailQueue*>  > ActiveQueues_;
+    std::map<std::string,std::set<std::string>  > Msg2ActiveQueueName_;
+
+    /**
+     * mapping a queue name to a pointer to a queue
+     */
+    std::map<std::string,MOOS::ActiveMailQueue*> ActiveQueueMap_;
+
+    /**
+     * a list of <queuename,pattern> pairs
+     */
+    std::map< std::string, std::string > WildcardQueuePatterns_;
+
+    /** the set of messages names/keys that have been received and
+     * because of that need not be shown again to the wildcard queues. Note
+     * that this may be a larger set than m_Registered because of wildcard
+     * subscriptions  */
+    std::set<std::string> WildcardCheckSet_;
 
     /*
      * a mutex protecting  ActiveQueues_
@@ -458,12 +608,29 @@ protected:
     /*
      * a counter for total bytes received
      */
-    unsigned long long int m_nBytesReceived;
+    uint64_t m_nBytesReceived;
 
     /*
      * a counter for total bytes received.
      */
-    unsigned long long int m_nBytesSent;
+    uint64_t m_nBytesSent;
+
+
+    /*
+     * a counter for total bytes received.
+     */
+    uint64_t m_nPktsReceived;
+
+     /*
+     * a counter for total message received.
+     */
+    uint64_t m_nMsgsReceived;
+
+
+    /*
+    * a counter for total message received.
+    */
+    uint64_t m_nMsgsSent;
 
 
     /**
@@ -476,7 +643,38 @@ protected:
     bool m_bDBIsAsynchronous;
 
 
+    /** true if we expect Comms to overflow and want older (unsent) messages to be replaced by new ones */
+    bool m_bExpectMailBoxOverFlow;
+
+    //how much to delay outgoing mail thread as a proportion oof timewarp
+    double m_dfOutGoingDelayTimeWarpScaleFactor;
+
+
+    /** turn on comms status monitoring of all clients */
+    bool ControlClientCommsStatusMonitoring(bool bEnable);
+
+
+    //used for monitoring status of all clients in network
+    std::map<std::string , MOOS::ClientCommsStatus> m_ClientStatuses;
+
+    //used to protect status monitoring variable m_ClientStatuses
+    CMOOSLock m_ClientStatusLock;
+
+
+    //some tools for recurrnent subscription management
+    CMOOSLock RecurrentSubscriptionLock;
+    bool AddRecurrentSubscription(const std::string &sVar, double dfPeriod);
+    bool RemoveRecurrentSubscription(const std::string & sVar);
+    bool ApplyRecurrentSubscriptions();
+
+private:
+    std::map< std::string, double > m_RecurrentSubscriptions;
+
+
 
 };
+
+#include "MOOS/libMOOS/Comms/MOOSCommClient.hxx"
+
 
 #endif // !defined(MOOSCommClientH)

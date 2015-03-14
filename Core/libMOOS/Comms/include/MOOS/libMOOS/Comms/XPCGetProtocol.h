@@ -25,7 +25,7 @@
 //
 
 #ifndef _XPCGetProtocol
-#define _XPCGetprotocol
+#define _XPCGetProtocol
 
 #ifdef UNIX
     #include <netdb.h>
@@ -43,7 +43,6 @@ class XPCGetProtocol
     char cIteratorFlag;        // Protocol database iteration flag
 #endif
     struct protoent *protocolPtr;    // Pointer to protocol database entry
-    struct protoent protocol;
 public:
 #ifdef UNIX
     // Default constructor.  Opens the protocol database
@@ -59,35 +58,15 @@ public:
     // Constructor.  Returns the protoent structure given the protocol number
     XPCGetProtocol(int _iProtocol);
 
-    // Desstructor closes the database connection  
-        ~XPCGetProtocol()
-        {
-#ifdef UNIX
-                endprotoent();
-#endif
-        }
+    // Destructor closes the database connection
+    ~XPCGetProtocol();
 
-    // Opens the protocol database and sets the cIteratorFlag to true
 #ifdef UNIX
-    void vOpenProtocolDb()
-    {
-        endprotoent();
-        cIteratorFlag = 1;
-        setprotoent(1);
-    }    
+    // Opens the protocol database and sets the cIteratorFlag to true
+    void vOpenProtocolDb();
 
     // Iterates through the list of protocols
-    char cGetNextProtocol()
-    {
-        if (cIteratorFlag == 1)
-        {
-            if ((protocolPtr = getprotoent()) == NULL)
-                return 0;
-            else
-                return 1;
-        }
-        return 0;
-    } 
+    char cGetNextProtocol();
 #endif
 
     // Returns the protocol name

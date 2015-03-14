@@ -297,11 +297,15 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
 }
 
 ///                               READ STRINGS
-
 bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::string sParam, std::string &sVal)
 {
     Reset();
-    
+
+    //remember all names we were asked for....
+    std::string sl = sParam;
+    MOOSToLower(sl);
+    m_Audit[sAppName].insert(sl);
+
     STRING_LIST sParams;
     
     if(GetConfigurationAndPreserveSpace( sAppName, sParams))
@@ -391,6 +395,36 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::stri
     return bSuccess;
 }
 
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sParam, unsigned short & nVal)
+{
+    if (!m_sAppName.empty())
+    {
+        return GetConfigurationParam(m_sAppName, sParam, nVal);
+    }
+    else
+    {
+        MOOSTrace("App Name not set in CProcessConfigReader::GetConfigurationParam()\n");
+    }
+
+    return false;
+}
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::string sParam, unsigned short &nVal)
+{
+    std::string sTmp;
+
+    if (GetConfigurationParam(sAppName, sParam, sTmp)) {
+        nVal = atoi(sTmp.c_str());
+        return true;
+    }
+
+    return false;
+}
+
+
+
+
 ///                               READ VECTORS
 
 bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::vector<double> & Vec, int & nRows, int & nCols)
@@ -402,6 +436,21 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::vector
     }
     return false;
 }
+
+
+std::list<std::string> CProcessConfigReader::GetSearchedParameters(const std::string & sAppName)
+{
+    std::list<std::string> L;
+    std::map<std::string, std::set<std::string>  >::iterator q = m_Audit.find(sAppName);
+    if(q!=m_Audit.end())
+    {
+        std::copy(q->second.begin(),q->second.end(), std::back_inserter(L));
+    }
+    return L;
+}
+
+
+
 
 
 

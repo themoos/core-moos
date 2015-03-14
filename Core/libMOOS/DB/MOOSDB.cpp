@@ -37,12 +37,17 @@
 #include "MOOS/libMOOS/MOOSLib.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
+#include "MOOS/libMOOS/MOOSVersion.h"
+#include "MOOS/libMOOS/GitVersion.h"
+#include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
 
 
-#include "MOOSDB.h"
+
+#include "MOOS/libMOOS/DB/MOOSDB.h"
 #include "assert.h"
 #include <iostream>
+#include <cmath>
 #include <sstream>
 #include <vector>
 #include <iterator>
@@ -75,15 +80,26 @@ bool CMOOSDB::OnDisconnectCallBack(string & sClient, void * pParam)
     return pMe->OnDisconnect(sClient);
 }
 
+bool CMOOSDB::OnConnectCallBack(string & sClient, void * pParam)
+{
+    CMOOSDB* pMe = (CMOOSDB*)(pParam);
+
+    return pMe->OnConnect(sClient);
+}
+
+
 CMOOSDB::CMOOSDB()
 {
     //here we set up default community names and DB Names
     m_sDBName = "MOOSDB#1";
     m_sCommunityName = "#1";
+    m_dfSummaryTime = MOOS::Time();
     
     //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     
+    m_bQuiet = false;
+
     //make our own variable called DB_TIME
     {
         CMOOSDBVar NewVar("DB_TIME");
@@ -117,6 +133,56 @@ CMOOSDB::CMOOSDB()
         m_VarMap["DB_CLIENTS"] = NewVar;
     }
     
+    //make our own variable called DB_EVENT
+    {
+        CMOOSDBVar NewVar("DB_EVENT");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_EVENT"] = NewVar;
+    }
+
+    //make our own variable called DB_VARSUMMARY
+    {
+        CMOOSDBVar NewVar("DB_VARSUMMARY");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_VARSUMMARY"] = NewVar;
+    }
+
+
+    //make our own variable called DB_QOS
+    {
+        CMOOSDBVar NewVar("DB_QOS");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_QOS"] = NewVar;
+    }
+
+    //make our own variable called DB_RWSUMMARY
+    {
+        CMOOSDBVar NewVar("DB_RWSUMMARY");
+        NewVar.m_cDataType = MOOS_STRING;
+        NewVar.m_dfVal= MOOSTime();
+        NewVar.m_sWhoChangedMe = m_sDBName;
+        NewVar.m_sOriginatingCommunity = m_sCommunityName;
+        NewVar.m_dfWrittenTime = MOOSTime();
+        m_VarMap["DB_RWSUMMARY"] = NewVar;
+    }
+
+
+
+
+
+
     //ignore broken pipes as is standard for network apps
 #ifndef _WIN32
     signal(SIGPIPE,SIG_IGN);
@@ -128,8 +194,8 @@ CMOOSDB::CMOOSDB()
 
 CMOOSDB::~CMOOSDB()
 {
-
-    
+    if(m_pCommServer.get()!=NULL)
+        m_pCommServer->Stop();
 }
 
 
@@ -145,6 +211,14 @@ void PrintHelpAndExit()
 	std::cout<<"--moos_port=<positive_integer>     specify server port number (default 9000)\n";
 	std::cout<<"--moos_time_warp=<positive_float>  specify time warp\n";
 	std::cout<<"--moos_community=<string>          specify community name\n";
+    std::cout<<"--moos_print_version               print build and version details\n";
+    std::cout<<"--moos_suicide_channel=<str>       suicide monitoring channel (IP address) \n";
+    std::cout<<"--moos_suicide_port=<int>          suicide monitoring port  \n";
+    std::cout<<"--moos_suicide_phrase=<str>        suicide pass phrase  \n";
+    std::cout<<"--moos_suicide_disable             disable suicide monitoring \n";
+    std::cout<<"--moos_suicide_print               print suicide conditions \n";
+
+
 
 
 
@@ -157,6 +231,8 @@ void PrintHelpAndExit()
 	std::cout<<"--response=<string-list>           specify tolerable client latencies in ms\n";
 	std::cout<<"--warning_latency=<positive_float>    specify latency above which warning is issued in ms\n";
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
+	std::cout<<"--audit_port=<unsigned int>        specify port on which to transmit statistics\n";
+    std::cout<<"--event_log=<file name>            specify file in which to record events\n";
 
 
 
@@ -170,8 +246,20 @@ void PrintHelpAndExit()
 	exit(0);
 }
 
-bool CMOOSDB::Run(int argc, char * argv[] )
+void CMOOSDB::OnPrintVersionAndExit()
 {
+    std::cout<<"--------------------------------------------------\n";
+    std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+    std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+    std::cout<<MOOS_GIT_VERSION<<"\n";
+    std::cout<<"--------------------------------------------------\n";
+    exit(0);
+}
+
+
+bool CMOOSDB::Run(int argc,  char * argv[] )
+{
+
 	MOOS::CommandLineParser P(argc,argv);
 
 
@@ -237,11 +325,22 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
     P.GetVariable("--moos_timeout",dfClientTimeout);
 
+    //do we want to fire up the event logger
+    std::string sEventLogFileName;
+    if(P.GetVariable("--event_log",sEventLogFileName))
+    {
+        m_EventLogger.Run(sEventLogFileName);
+    }
+
 
     ///////////////////////////////////////////////////////////
 	double dfWarningLatencyMS = 50;
 	m_MissionReader.GetValue("WarningLatency",dfWarningLatencyMS);
     P.GetVariable("--warning_latency",dfWarningLatencyMS);
+
+
+    if(P.GetFlag("--moos_print_version"))
+        OnPrintVersionAndExit();
 
 
 
@@ -267,6 +366,52 @@ bool CMOOSDB::Run(int argc, char * argv[] )
     //are we being asked to be old skool and use a single thread?
     bool bSingleThreaded = P.GetFlag("-s","--single_threaded");
 
+
+    //is the community name being specified on the cli?
+	unsigned int nAuditPort=9020;
+	P.GetVariable("--audit_port",nAuditPort);
+
+
+
+
+
+    std::string sSuicideAddress;
+    if(P.GetVariable("--moos_suicide_channel",sSuicideAddress))
+    {
+        m_SuicidalSleeper.SetChannel(sSuicideAddress);
+    }
+
+    int nSuicidePort;
+    if(P.GetVariable("--moos_suicide_port",nSuicidePort))
+    {
+        m_SuicidalSleeper.SetPort(nSuicidePort);
+    }
+
+    std::string sSuicidePhrase;
+    if(P.GetVariable("--moos_suicide_phrase",sSuicidePhrase))
+    {
+        m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
+    }
+
+    if(P.GetFlag("--moos_suicide_print"))
+    {
+        std::cerr<<"suicide terms and conditions are:\n";
+        std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
+        std::cerr<<" port     "<<m_SuicidalSleeper.GetPort()<<"\n";
+        std::cerr<<" phrase   \""<<m_SuicidalSleeper.GetPassPhrase()<<"\"\n";
+
+    }
+
+    if(!P.GetFlag("--moos_suicide_disable"))
+    {
+        m_SuicidalSleeper.SetName(m_sDBName);
+        m_SuicidalSleeper.Run();
+    }
+
+
+
+
+
     
     LogStartTime();
     
@@ -281,9 +426,13 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new MOOS::ThreadedCommServer);
     }
 
+    m_pCommServer->SetQuiet(m_bQuiet);
+
     m_pCommServer->SetOnRxCallBack(OnRxPktCallBack,this);
 
     m_pCommServer->SetOnDisconnectCallBack(OnDisconnectCallBack,this);
+
+    m_pCommServer->SetOnConnectCallBack(OnConnectCallBack,this);
 
     m_pCommServer->SetOnFetchAllMailCallBack(OnFetchAllMailCallBack,this);
 
@@ -297,56 +446,131 @@ bool CMOOSDB::Run(int argc, char * argv[] )
 
     m_pCommServer->SetCommandLineParameters(argc,argv);
 
-    m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp);
+    m_pCommServer->Run(m_nPort,m_sCommunityName,bDisableNameLookUp,nAuditPort);
 
-
+    m_EventLogger.AddEvent("DBStart","MOOSDB",MOOSFormat("Port=%d",m_nPort));
         
     return true;
 }
 
+bool CMOOSDB::IsRunning()
+{
+	if(m_pCommServer.get()==NULL)
+		return false;
 
+	return m_pCommServer->IsRunning();
+}
+
+
+bool CMOOSDB::SetQuiet(bool bQuiet)
+{
+    m_bQuiet = bQuiet;
+    if(m_pCommServer.get()!=NULL)
+        m_pCommServer->SetQuiet(m_bQuiet);
+
+    return true;
+}
 
 
 void CMOOSDB::UpdateDBClientsVar()
 {
-#define CLIENT_LIST_PUBLISH_PERIOD 2
-    static double dfLastTime = MOOSTime();
-    double dfNow = MOOSTime();
-    if(dfNow-dfLastTime>CLIENT_LIST_PUBLISH_PERIOD)
-    {
-        STRING_LIST Clients;
-        m_pCommServer->GetClientNames(Clients);
+    STRING_LIST Clients;
+    m_pCommServer->GetClientNames(Clients);
 
-        std::ostringstream ss;
-        std::copy(Clients.begin(),Clients.end(),ostream_iterator<std::string>(ss,","));
-        
-        CMOOSMsg DBC(MOOS_NOTIFY,"DB_CLIENTS",ss.str());
-        DBC.m_sOriginatingCommunity = m_sCommunityName;
-        DBC.m_sSrc = m_sDBName;
-        OnNotify(DBC);
-        dfLastTime = dfNow;
+    std::ostringstream ss;
+    std::copy(Clients.begin(),Clients.end(),ostream_iterator<std::string>(ss,","));
+
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_CLIENTS",ss.str());
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
+}
+
+void CMOOSDB::UpdateQoSVar()
+{
+    CMOOSMsg DBQOS(MOOS_NOTIFY,"DB_QOS","");
+
+    if(!m_pCommServer->GetTimingStatisticSummary(DBQOS.m_sVal))
+        return;
+
+    DBQOS.m_sSrc = m_sDBName;
+    DBQOS.m_sOriginatingCommunity = m_sCommunityName;
+    OnNotify(DBQOS);
+
+}
+
+template< class T>
+void PrintCollection( const T & collection, ostream & out, const std::string & delim = "," )
+{
+    typename T::const_iterator q;
+    for(q = collection.begin();q!=collection.end();)
+    {
+        out<<(*q);
+        if(++q!=collection.end())
+            out<<delim;
+    }
+}
+
+void CMOOSDB::UpdateReadWriteSummaryVar()
+{
+
+    std::map<std::string,std::list<std::string> > Pub;
+    std::map<std::string,std::list<std::string> > Sub;
+
+    DBVAR_MAP::iterator p;
+
+    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    {
+        CMOOSDBVar  & rVar = p->second;
+        STRING_SET::iterator w;
+        REGISTER_INFO_MAP::iterator v;
+
+        std::stringstream ss;
+        for(v = rVar.m_Subscribers.begin();v!=rVar.m_Subscribers.end();v++)
+            Sub[v->second.m_sClientName].push_back(rVar.m_sName);
+
+        for(w = rVar.m_Writers.begin();w!=rVar.m_Writers.end();w++)
+            Pub[*w].push_back(rVar.m_sName);
+    }
+
+
+    STRING_LIST Clients;
+    m_pCommServer->GetClientNames(Clients);
+    STRING_LIST::iterator q;
+
+    std::ostringstream ss;
+    for(q=Clients.begin();q!=Clients.end();)
+    {
+        ss<<*q<<"=";
+        PrintCollection(Sub[*q],ss,":");
+        ss<<"&";
+        PrintCollection(Pub[*q],ss,":");
+
+        if(++q!=Clients.end())
+            ss<<",";
 
     }
+
+    CMOOSMsg DBS(MOOS_NOTIFY,"DB_RWSUMMARY",ss.str());
+    DBS.m_sSrc = m_sDBName;
+    DBS.m_sOriginatingCommunity = m_sCommunityName;
+    OnNotify(DBS);
 
 }
 
 void CMOOSDB::UpdateDBTimeVars()
 {
-    static double dfLastTime = MOOSTime();
-    double dfNow = MOOSTime();
-    if(dfNow-dfLastTime>1.0)
-    {
-        CMOOSMsg DBT(MOOS_NOTIFY,"DB_TIME",MOOSTime());
-        DBT.m_sOriginatingCommunity = m_sCommunityName;
-        DBT.m_sSrc = m_sDBName;
-        OnNotify(DBT);
-        dfLastTime = dfNow;
+    CMOOSMsg DBT(MOOS_NOTIFY,"DB_TIME",MOOSTime());
+    DBT.m_sOriginatingCommunity = m_sCommunityName;
+    DBT.m_sSrc = m_sDBName;
+    OnNotify(DBT);
 
-        CMOOSMsg DBUpT(MOOS_NOTIFY,"DB_UPTIME",MOOSTime()-GetStartTime());
-        DBUpT.m_sOriginatingCommunity = m_sCommunityName;
-        DBUpT.m_sSrc = m_sDBName;
-        OnNotify(DBUpT);    
-    }
+    CMOOSMsg DBUpT(MOOS_NOTIFY,"DB_UPTIME",MOOSTime()-GetStartTime());
+    DBUpT.m_sOriginatingCommunity = m_sCommunityName;
+    DBUpT.m_sSrc = m_sDBName;
+    OnNotify(DBUpT);
+
 }
 
 /**this will be called each time a new packet is recieved*/
@@ -360,11 +584,27 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
         ProcessMsg(*p,MsgListTx);
     }
     
-    //good spot to update our internal time    
-    UpdateDBTimeVars();
 
-    //and send clients an occasional membersip list
-    UpdateDBClientsVar();
+    double dfNow = MOOS::Time();
+    if(dfNow-m_dfSummaryTime>2.0)
+    {
+        m_dfSummaryTime = dfNow;
+
+        //good spot to update our internal time
+        UpdateDBTimeVars();
+
+        //and send clients an occasional membersip list
+        UpdateDBClientsVar();
+
+        //update a db summary var once in a while
+        UpdateSummaryVar();
+
+        //update quality of service summary
+        UpdateQoSVar();
+
+        //update variable which publishes who is reading and writing what
+        UpdateReadWriteSummaryVar();
+    }
 
     if(!MsgListRx.empty())
     {
@@ -466,11 +706,36 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
     if(rVar.m_nWrittenTo==0)
     {
         rVar.m_cDataType=Msg.m_cDataType;
+
+
+        //look to see if any existing wildcards make us want to subscribe
+		//to this new message
+		HASH_MAP_TYPE<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
+		for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
+		{
+			//for every client
+			std::set<MOOS::MsgFilter>::const_iterator h;
+			for (h = g->second.begin(); h != g->second.end(); h++)
+			{
+				//for every filter
+				if (h->Matches(Msg))
+				{
+					//add the filter owner (client *g) as a subscriber
+					rVar.AddSubscriber(g->first, h->period());
+					if(!m_bQuiet)
+					{
+                        std::cout<<"+ subs of \""<<g->first<<"\" to \""
+                                <<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
+                                <<"\""<<std::endl;
+					}
+				}
+			}
+		}
+
     }
     
     if(rVar.m_cDataType==Msg.m_cDataType)
     {
-        double dfLastWrittenTime = rVar.m_dfWrittenTime;
         
         rVar.m_dfWrittenTime = dfTimeNow;
         
@@ -510,8 +775,9 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         rVar.m_nWrittenTo++;
         
         //how often is it being written?
-        double dfDT = (dfTimeNow-dfLastWrittenTime);
-        if(dfDT>0)
+        double dfDT = (dfTimeNow-rVar.m_Stats.m_dfLastStatsTime);
+        int nWrites  = rVar.m_nWrittenTo-rVar.m_Stats.m_nLastStatsWrites;
+        if(dfDT>0.5)
         {
             //this looks a little hookey - the numbers are arbitrary to give sensible
             //looking frequencies when timing is coarse
@@ -523,14 +789,13 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
             else
             {
                 //IIR FILTER COOEFFICENT
-                double dfAlpha = 0.95;
-                rVar.m_dfWriteFreq = dfAlpha*rVar.m_dfWriteFreq + (1.0-dfAlpha)/(dfDT/++rVar.m_nOverTicks);
-                rVar.m_nOverTicks=0;
+                double dfAlpha = 0.5;
+                double df = dfDT/nWrites;
+
+                rVar.m_dfWriteFreq = dfAlpha*rVar.m_dfWriteFreq + (1.0-dfAlpha)/(df);
             }
-        }
-        else
-        {
-            rVar.m_nOverTicks++;
+            rVar.m_Stats.m_nLastStatsWrites = rVar.m_nWrittenTo;
+            rVar.m_Stats.m_dfLastStatsTime = dfTimeNow;
         }
         
         //now comes the intersting part...
@@ -556,6 +821,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
                 
                 AddMessageToClientBox(sClient,Msg);
                 
+
                 //finally we remember when we sent this to the client in question
                 rInfo.SetLastTimeSent(dfTimeNow);
             }
@@ -668,8 +934,13 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 
 		CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
 
+		if(rVar.HasSubscriber(Msg.m_sSrc))
+			return true;
+
 		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
 			return false;
+
+		m_EventLogger.AddEvent("register",Msg.m_sSrc,rVar.m_sName);
 
 		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
 		{
@@ -681,6 +952,8 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 			ReplyMsg.m_cMsgType = MOOS_NOTIFY;
 
 			AddMessageToClientBox(Msg.m_sSrc,ReplyMsg);
+
+        	rVar.m_Subscribers[Msg.m_sSrc].SetLastTimeSent(MOOS::Time());
 
 		}
 	}
@@ -702,6 +975,9 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		m_ClientFilters[Msg.GetSource()].insert(F);
 
 
+        m_EventLogger.AddEvent("wildcard",Msg.m_sSrc,Msg.GetString());
+
+
 		//now iterate over all existing variables and see if they match
 		//if the do simply register for them...
 		DBVAR_MAP::iterator q;
@@ -715,15 +991,20 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 				M.m_cDataType = MOOS_DOUBLE;
 				M.m_dfVal = period;
 				M.m_sSrc = Msg.GetSource();
+
+				if(!m_bQuiet)
+				{
+                    std::cout<<MOOS::ConsoleColours::yellow()
+                            <<"+ subs of \""
+                            <<Msg.GetSource()<<"\" to variables matching \""
+                            <<var_pattern<<":"<<app_pattern<<"\""
+                            <<MOOS::ConsoleColours::reset()<<std::endl;
+				}
+
 				OnRegister(M);//smart...
 			}
 		}
 
-		std::cout<<MOOS::ConsoleColours::yellow()
-				<<"+ subs of \""
-				<<Msg.GetSource()<<"\" to variables matching \""
-				<<var_pattern<<":"<<app_pattern<<"\""
-				<<MOOS::ConsoleColours::reset()<<std::endl;
 
 
 	}
@@ -742,6 +1023,7 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
     //look up this variable name
     DBVAR_MAP::iterator p = m_VarMap.find(Msg.m_sKey);
     
+
     if(p==m_VarMap.end())
     {
         //we need to make a new variable here for this key
@@ -749,45 +1031,26 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         
         CMOOSDBVar NewVar(Msg.m_sKey);
         
-        if(Msg.m_cMsgType==MOOS_REGISTER)
+        switch(Msg.m_cMsgType)
         {
-            //interesting case is when this method is being used to 
-            //register for a variable that has not been written to. Here
-            //we simply make the variable but don't commit to its data type
-            NewVar.m_cDataType = MOOS_NOT_SET;
+        case MOOS_REGISTER:
+        	//interesting case is when this method is being used to
+        	//register for a variable that has not been written to. Here
+        	//we simply make the variable but don't commit to its data type
+        	NewVar.m_cDataType = MOOS_NOT_SET;
+        	break;
+        case MOOS_NOTIFY:
+        	//we are making a new variable
+    		//new variable will have data type of request message
+        	NewVar.m_cDataType = Msg.m_cDataType;
+        	break;
+        default:
+        	///nothing to do  - I wonder what this is?
+        	break;
         }
-        else
-        {
-            //new variable will have data type of request message
-            NewVar.m_cDataType = Msg.m_cDataType;
-
-            if(!VariableExists(Msg.GetKey()))
-			{
-				//look to see if any existing wildcards make us want to subscribe
-				//to this new message
-				std::map<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
-				for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
-				{
-					//for every client
-					std::set<MOOS::MsgFilter>::const_iterator h;
-					for (h = g->second.begin(); h != g->second.end(); h++)
-					{
-						//for every filter
-						if (h->Matches(Msg))
-						{
-							//add the filter owner (client *g) as a subscriber
-							NewVar.AddSubscriber(g->first, h->period());
-							std::cout<<"+ subs of \""<<g->first<<"\" to \""
-									<<Msg.GetKey()<<"\" via wildcard \""<<h->as_string()
-									<<"\""<<std::endl;
-						}
-					}
-				}
-			}
 
 
-        }
-        
+
         //index our new creation
         m_VarMap[Msg.m_sKey] = NewVar;
         
@@ -803,8 +1066,12 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         MOOSTrace("    Src =\"%s\"\n",Msg.m_sSrc.c_str());
         MOOSTrace("    Type =\"%c\"\n",NewVar.m_cDataType);
 #endif
+
+        m_EventLogger.AddEvent("create",Msg.GetSource(),Msg.GetName());
+
     }
     
+
     //ok we know what you are talking about
     CMOOSDBVar & rVar = p->second;
     
@@ -812,10 +1079,28 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
     return rVar;
 }
 
+
+bool CMOOSDB::OnConnect(string &sClient)
+{
+    m_EventLogger.AddEvent("connect",sClient,"client connects");
+
+    //notify ourselves....
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("connected=%s",sClient.c_str()));
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
+
+    return true;
+}
+
 bool CMOOSDB::OnDisconnect(string &sClient)
 {
     //for all variables remove subscriptions to sClient
-    std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    if(!m_bQuiet)
+    {
+        std::cout<<MOOS::ConsoleColours::yellow()<<sClient<<" is leaving...           ";
+    }
     
     DBVAR_MAP::iterator p;
     
@@ -831,8 +1116,19 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     }
     
     m_HeldMailMap.erase(sClient);
-    std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
     
+    if(!m_bQuiet)
+        std::cout<<MOOS::ConsoleColours::Green()<<"[OK]\n"<<MOOS::ConsoleColours::reset();
+
+    m_EventLogger.AddEvent("disconnect",sClient,"client disconnects");
+
+
+    //notify ourselves....
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_EVENT",MOOSFormat("disconnected=%s",sClient.c_str()));
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
     return true;
 }
 
@@ -860,6 +1156,82 @@ bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     
     return false;
+}
+
+void CMOOSDB::UpdateSummaryVar()
+{
+
+    std::stringstream ss;
+    DBVAR_MAP::iterator p;
+
+    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    {
+        ss<<std::left<<std::setw(20);
+        ss<<p->first<<" ";
+
+        ss<<std::left<<std::setw(20);
+        ss<<MOOS::TimeToDate(p->second.m_dfWrittenTime,false,true)<<" ";
+
+        ss<<std::left<<std::setw(20);
+        if(p->second.m_sWhoChangedMe.empty())
+        {
+            ss<<"(write pending)"<<" ";
+        }
+        else
+        {
+            ss<<p->second.m_sWhoChangedMe<<" ";
+        }
+
+        //write frequency
+        ss << std::fixed << std::setw( 4 ) << std::setprecision( 1 ) << p->second.m_dfWriteFreq<< "Hz ";
+
+        ss<<std::left<<std::setw(2);
+        ss<<p->second.m_cDataType<<" ";
+
+        ss<<std::left<<std::setw(20);
+        switch(p->second.m_cDataType)
+        {
+            ss<<std::left<<std::setw(25);
+            case MOOS_DOUBLE:
+                ss<<p->second.m_dfVal<<" ";break;
+            case MOOS_STRING:
+            {
+                unsigned int s = p->second.m_sVal.size();
+                if(s>25)
+                    ss<<(p->second.m_sVal.substr(0,22)+"...");
+                else
+                    ss<<p->second.m_sVal;
+
+                break;
+            }
+                ss<<p->second.m_sVal<<" ";break;
+            case MOOS_BINARY_STRING:
+            {
+                unsigned int s = p->second.m_sVal.size();
+                std::string bss;
+                if(s<1024)
+                    bss = MOOSFormat("*binary* %-4d B  ",s);
+                else if(s<1024*1024)
+                    bss = MOOSFormat("*binary* %.3f KB ",s/(1024.0));
+                else
+                    bss = MOOSFormat("*binary* %.3f MB ",s/(1024.0*1024.0));
+
+                ss<<bss;
+                break;
+            }
+
+        }
+
+
+        ss<<"\n";
+
+    }
+
+    CMOOSMsg DBC(MOOS_NOTIFY,"DB_VARSUMMARY",ss.str());
+    DBC.m_sOriginatingCommunity = m_sCommunityName;
+    DBC.m_sSrc = m_sDBName;
+    OnNotify(DBC);
+
 }
 
 bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
@@ -924,7 +1296,6 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 
 bool CMOOSDB::OnServerAllRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
-    
     
     DBVAR_MAP::iterator p;
     

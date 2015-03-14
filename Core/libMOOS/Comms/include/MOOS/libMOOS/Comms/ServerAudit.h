@@ -44,6 +44,22 @@ public:
 	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming);
 	bool Run(const std::string & destination_host = "localhost", unsigned int port = DEFAULT_AUDIT_PORT);
 	bool Remove(const std::string & sClient);
+	bool SetQuiet(bool bQuiet);
+	bool AddTimingStatistic(const std::string & sClient,
+                           double dfTransmitTime,
+                           double dfReceiveTime);
+
+    /**fill in a string which tells us all about client timing statistics.
+     * @param sSummary has format clientname=a:b:c:d,.....
+     * @param a recent latency in ms
+     * @param b max latency in ms
+     * @param c min latency in ms
+     * @param d moving average latency
+     */
+
+	bool GetTimingStatisticSummary(std::string & sSummary);
+
+
 
 	class Impl;
 protected:

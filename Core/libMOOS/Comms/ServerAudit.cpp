@@ -46,18 +46,30 @@ namespace MOOS {
 
 struct ClientAudit
 {
-	long long unsigned int total_received_;
-	long long unsigned int total_sent_;
-	long long unsigned int recently_received_;
-	long long unsigned int recently_sent_;
-	long long unsigned int max_size_received_;
-	long long unsigned int max_size_sent_;
-	long long unsigned int min_size_received_;
-	long long unsigned int min_size_sent_;
+    uint64_t total_received_;
+    uint64_t total_sent_;
+    uint64_t recently_received_;
+    uint64_t recently_sent_;
+    uint64_t max_size_received_;
+    uint64_t max_size_sent_;
+    uint64_t min_size_received_;
+    uint64_t min_size_sent_;
 	int recent_packets_received_;
 	int recent_packets_sent_;
 	int recent_messages_sent_;
 	int recent_messages_received_;
+	uint64_t timing_messages_received_;
+
+    double max_latency_ms_;
+    double min_latency_ms_;
+	double moving_average_latency_ms_;
+	double recent_latency_ms_;
+	double latency_sum_;
+
+	ClientAudit()
+	{
+	    ClearAll();
+	}
 
 	void ClearAll()
 	{
@@ -73,6 +85,14 @@ struct ClientAudit
 		recent_packets_sent_ = 0;
 		recent_messages_received_=0;
 		recent_messages_sent_=0;
+	    timing_messages_received_=0;
+
+	    max_latency_ms_=0;
+	    min_latency_ms_=1e9;
+	    moving_average_latency_ms_=0;
+	    recent_latency_ms_=0;
+	    latency_sum_=0;
+
 
 	}
 	void ClearRecents()
@@ -94,6 +114,7 @@ class ServerAudit::Impl
 public:
 	Impl()
 	{
+	    quiet_ = false;
 		thread_.Initialise(AuditDispatch,this);
 	}
 
@@ -106,10 +127,19 @@ public:
 		destination_host_ = destination_host;
 		destination_port_ = port;
 
-		std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
-		std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		if(!quiet_)
+		{
+		    std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
+		    std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+		}
 
 		return thread_.Start();
+	}
+
+	bool SetQuiet(bool bQuiet)
+	{
+	    quiet_=bQuiet;
+	    return true;
 	}
 
 	bool Work()
@@ -124,12 +154,12 @@ public:
 
 			std::stringstream ss;
 
-			long long unsigned int total_in = 0;
-			long long unsigned int total_out = 0;
-			long long unsigned int total_packets_in = 0;
-			long long unsigned int total_packets_out = 0;
-			long long unsigned int total_messages_in = 0;
-			long long unsigned int total_messages_out = 0;
+			uint64_t total_in = 0;
+			uint64_t total_out = 0;
+			uint64_t total_packets_in = 0;
+			uint64_t total_packets_out = 0;
+			uint64_t total_messages_in = 0;
+			uint64_t total_messages_out = 0;
 
 			lock_.Lock();
 			{
@@ -218,6 +248,81 @@ public:
 		return true;
 	}
 
+	bool GetTimingStatisticSummary(std::string & sSummary)
+	{
+	    std::map<std::string,ClientAudit>::iterator q;
+	    for(q =Audits_.begin();q!=Audits_.end();q++ )
+	    {
+	        std::string sT;
+	        if(!GetTimingStatisticSummary(q->first,sT))
+	            return false;
+
+            sSummary+=sT;
+
+	    }
+	    return true;
+	}
+
+
+    bool GetTimingStatisticSummary(const std::string & sClient,std::string & sSummary)
+    {
+        std::map<std::string,ClientAudit>::iterator q = Audits_.find(sClient);
+        if(q==Audits_.end())
+            return false;
+
+        std::stringstream ss;
+        ClientAudit & rA = q->second;
+        ss<<sClient<<"=";
+        ss<<rA.recent_latency_ms_<<":";
+        ss<<rA.max_latency_ms_<<":";
+        ss<<rA.min_latency_ms_<<":";
+        ss<<rA.moving_average_latency_ms_<<",";
+
+        sSummary=ss.str();
+
+        return true;
+
+    }
+
+
+
+    bool AddTimingStatistic(const std::string & sClient,
+                               double dfTransmitTime,
+                               double dfReceiveTime)
+    {
+        MOOS::ScopedLock L(lock_);
+
+        if(sClient.empty())
+        {
+            std::cerr<<"AddTimingStatistic:: empty client name\n";
+            return false;
+        }
+
+        ClientAudit & rA = Audits_[sClient];
+        double dfLatencyMS = (dfReceiveTime-dfTransmitTime)*1000.0;
+        rA.max_latency_ms_=std::max<double>(rA.max_latency_ms_,dfLatencyMS);
+        rA.min_latency_ms_=std::min<double>(rA.min_latency_ms_,dfLatencyMS);
+
+        rA.latency_sum_+=dfLatencyMS;
+        if(++rA.timing_messages_received_>=5)
+        {
+            rA.latency_sum_-=rA.recent_latency_ms_;
+            rA.recent_latency_ms_ = dfLatencyMS;
+            rA.moving_average_latency_ms_=rA.latency_sum_/5;
+        }
+
+//        std::cerr<<"\n"<<sClient<<":\n";
+//        std::cerr<<rA.recent_latency_ms_<<" ";
+//        std::cerr<<rA.max_latency_ms_<<" ";
+//        std::cerr<<rA.min_latency_ms_<<" ";
+//        std::cerr<<rA.moving_average_latency_ms_<<"\n";
+
+
+
+        return true;
+    }
+
+
 	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
 	{
 		MOOS::DeliberatelyNotUsed(dfTime);
@@ -228,8 +333,8 @@ public:
 		{
 			rA.recently_received_+=nBytes;
 			rA.total_received_+=nBytes;
-			rA.max_size_received_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_received_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_received_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_received_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_received_+=1;
 			rA.recent_messages_received_+=nMessages;
 
@@ -239,8 +344,8 @@ public:
 		{
 			rA.recently_sent_+=nBytes;
 			rA.total_sent_+=nBytes;
-			rA.max_size_sent_=std::max<unsigned long long>(rA.max_size_received_,nBytes);
-			rA.min_size_sent_=std::min<unsigned long long>(rA.min_size_received_,nBytes);
+			rA.max_size_sent_=std::max<uint64_t>(rA.max_size_received_,nBytes);
+			rA.min_size_sent_=std::min<uint64_t>(rA.min_size_received_,nBytes);
 			rA.recent_packets_sent_+=1;
 			rA.recent_messages_sent_+=nMessages;
 
@@ -257,6 +362,7 @@ public:
 
 	std::string destination_host_;
 	unsigned int destination_port_;
+	bool quiet_;
 
 	std::map<std::string,ClientAudit> Audits_;
 
@@ -291,11 +397,34 @@ bool ServerAudit::Remove(const std::string & sClient)
 	return Impl_->Remove(sClient);
 }
 
+bool ServerAudit::SetQuiet(bool bQuiet)
+{
+    return Impl_->SetQuiet(bQuiet);
+}
 
-bool ServerAudit::AddStatistic(const std::string sClient, unsigned int nBytes,unsigned int nMessages, double dfTime, bool bIncoming)
+bool ServerAudit::AddStatistic(const std::string sClient,
+                               unsigned int nBytes,
+                               unsigned int nMessages,
+                               double dfTime,
+                               bool bIncoming)
 {
 
 	return Impl_->AddStatistic(sClient,nBytes,nMessages,dfTime,bIncoming);
+}
+
+
+bool ServerAudit::GetTimingStatisticSummary(std::string & sSummary)
+{
+    return Impl_->GetTimingStatisticSummary(sSummary);
+}
+
+
+bool ServerAudit::AddTimingStatistic(const std::string & sClient,
+                           double dfTransmitTime,
+                           double dfReceiveTime)
+{
+
+    return Impl_->AddTimingStatistic(sClient,dfTransmitTime,dfReceiveTime);
 }
 
 

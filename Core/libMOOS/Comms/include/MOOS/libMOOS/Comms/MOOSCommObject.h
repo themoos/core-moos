@@ -48,6 +48,7 @@ public:
 protected:
     bool SendPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktTx);
     bool ReadPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktRx,int nSecondsTimeOut = -1);
+    bool ReadPktV2(XPCTcpSocket* pSocket,CMOOSCommPkt & PktRx,int nSecondsTimeOut = -1);
     bool SendMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg);
     bool ReadMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg, int nSecondsTimeOut = -1);
 
@@ -76,6 +77,9 @@ public:
 
     /*enable or don't the NAGLE algorithm for sockets */
     void SetTCPNoDelay(bool bTCPNoDelay);
+
+    /** return a string of the host machines's IP adress*/
+    static std::string GetLocalIPAddress();
 
 
 protected:

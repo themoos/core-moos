@@ -36,6 +36,8 @@
 	#include <ifaddrs.h>
 	#include <arpa/inet.h>
 	#include <netdb.h> 
+
+
 #elif _WIN32
     #include <winsock2.h>
 #endif
@@ -60,7 +62,7 @@ IPV4Address::~IPV4Address() {
 	// TODO Auto-generated destructor stub
 }
 
-IPV4Address::IPV4Address(const std::string & host, unsigned int p):host_(host),port_(p)
+IPV4Address::IPV4Address(const std::string & host, uint16_t p):host_(host),port_(p)
 {
 
 };
@@ -93,7 +95,7 @@ void IPV4Address::set_host(const std::string & host)
 	host_=host;
 }
 
-void IPV4Address::set_port(unsigned int port)
+void IPV4Address::set_port(uint16_t port)
 {
 	port_=port;
 }
@@ -102,7 +104,8 @@ std::string IPV4Address::host() const
 {
 	return host_;
 }
-unsigned int IPV4Address::port() const
+
+uint16_t IPV4Address::port() const
 {
 	return port_;
 }
@@ -142,6 +145,52 @@ std::string IPV4Address::GetNumericAddress(const std::string & address)
 
 	return std::string(inet_ntoa( *(struct in_addr *) hp->h_addr_list[0]));
 
+
+}
+
+std::string IPV4Address::GetIPAddress()
+{
+
+    struct ifaddrs *ifaddr, *ifa;
+    char host[NI_MAXHOST];
+
+    if (getifaddrs(&ifaddr) == -1)
+    {
+      return "127.0.0.1";
+    }
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == NULL)
+            continue;
+
+        int family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_INET)
+        {
+
+            if(getnameinfo(
+                    ifa->ifa_addr,
+                    sizeof(struct sockaddr_in),
+                    host,
+                    NI_MAXHOST,
+                    NULL,
+                    0,
+                    NI_NUMERICHOST)==0)
+            {
+                std::string sHost(host);
+                if(sHost.find("127.0.0.1")==std::string::npos)
+                {
+                    return  sHost;
+                }
+            }
+
+        }
+    }
+
+    freeifaddrs(ifaddr);
+
+    return "127.0.0.1";
 
 }
 

@@ -30,6 +30,7 @@
  *      Author: pnewman
  */
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
+#include "MOOS/libMOOS/Comms/MessageQueueAccumulator.h"
 #include "MOOS/libMOOS/Utils/ThreadPrint.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 #include "MOOS/libMOOS/App/MOOSApp.h"
@@ -48,6 +49,13 @@ bool func_alt(CMOOSMsg & M, void *pParam)
 	gPrinter.Print(MOOSFormat("in alternate callback for %s",M.GetKey().c_str()));
 	return true;
 }
+
+bool func_wildcard(CMOOSMsg & M, void *pParam)
+{
+	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
+	return true;
+}
+
 
 bool func_wild(CMOOSMsg & M, void *pParam)
 {
@@ -70,9 +78,43 @@ void PrintHelpAndExit()
 	std::cerr<<" a) la appearing in callback \"func\"\n";
 	std::cerr<<" b) di appearing in callback \"func\" and \"func_alt\"\n";
 	std::cerr<<" c) di appearing in callback \"func_wild\" because it is caught by the wildcard queue\n";
+	std::cerr<<" c) la appearing in callback \"class-method-callback\" because it is caught by a class member\n";
 	exit(0);
 
 }
+
+class InterestedParty
+{
+public:
+	bool HandleMessageA(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageA for %s",M.GetKey().c_str()));
+		return true;
+	}
+	bool HandleMessageB(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageB for %s",M.GetKey().c_str()));
+		return true;
+	}
+	bool HandleMessageC(CMOOSMsg &M)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageC for %s",M.GetKey().c_str()));
+		return true;
+	}
+	bool HandleMessageSet(std::vector<CMOOSMsg> & Mvec)
+	{
+		gPrinter.Print(MOOSFormat("in class::HandleMessageSet"));
+		for(unsigned int k = 0;k<Mvec.size();k++)
+		{
+			gPrinter.Print(MOOSFormat("     %s %10.3f",Mvec[k].GetKey().c_str(), Mvec[k].GetTime() ));
+		}
+
+
+
+		return true;
+	}
+
+};
 
 
 int main(int argc, char * argv[])
@@ -85,25 +127,47 @@ int main(int argc, char * argv[])
 		PrintHelpAndExit();
 	}
 
+	InterestedParty aClass;
 
-	C.AddMessageCallback("CallbackA","la",func,NULL);
-	C.AddMessageCallback("CallbackB","di",func,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackA","la",func,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackB","di",func,NULL);
+	//C.AddMessageRouteToActiveQueue("CallbackC","di",func_alt,NULL);
+	//C.AddMessageRouteToActiveQueue("Wildcard","*", func_wild,NULL);
+	//C.AddMessageRouteToActiveQueue("ClassMember","la", &aClass,&InterestedParty::HandleMessageA);
+	//C.AddMessageRouteToActiveQueue("ClassMember","di", &aClass,&InterestedParty::HandleMessageB);
+	//C.AddWildcardActiveQueue("WCA","*", func_wildcard,NULL);
 
-	C.AddMessageCallback("CallbackC","di",func_alt,NULL);
+	//C.PrintMessageToActiveQueueRouting();
 
-	C.AddMessageCallback("Wildcard","*", func_wild,NULL);
 
+	MOOS::MessageQueueAccumulator Acc;
+
+	std::vector<std::string> Names;
+	Names.push_back("di");
+	Names.push_back("la");
+
+	Acc.Configure(Names);
+	C.AddMessageRouteToActiveQueue("Accumulator","di", &Acc,&MOOS::MessageQueueAccumulator::AddMessage);
+	C.AddMessageRouteToActiveQueue("Accumulator","la", &Acc,&MOOS::MessageQueueAccumulator::AddMessage);
+	Acc.SetCallback(&aClass,&InterestedParty::HandleMessageSet);
+
+
+
+	//C.lala();
 	C.SetOnConnectCallBack(on_connect, &C);
 	C.Run("localhost",9000,"queue_test");
 
-	while(1)
+
+	unsigned int j = 0;
+	while(++j)
 	{
-		MOOSPause(10000);
-		C.RemoveMessageCallback("CallbackB");
-		C.AddMessageCallback("CallbackB","di",func_alt,NULL);
-		MOOSPause(10000);
-		C.RemoveMessageCallback("CallbackB");
-		C.AddMessageCallback("CallbackB","di",func,NULL);
+		if(j%100==0)
+		{
+			C.AddWildcardActiveQueue("WCB","d*", &aClass,&InterestedParty::HandleMessageC);
+			C.PrintMessageToActiveQueueRouting();
+		}
+		MOOSPause(100);
+		continue;
 	}
 
 

@@ -48,6 +48,8 @@
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
+#include "MOOS/libMOOS/Comms/ServerAudit.h"
+
 
 class XPCTcpSocket;
 #include <list>
@@ -84,6 +86,15 @@ public:
     @param pParam      user suplied parameter to be passed to callback function
     */
     void SetOnDisconnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
+
+
+    /** Set the connect  call back handler.  The supplied call back must be of the form
+    static bool MyCallBack(std::string  & sClient,, void * pParam).
+    @param sClient   Name of client just connected
+    @param pParam      user suplied parameter to be passed to callback function
+    */
+    void SetOnConnectCallBack(bool (*pfn)(std::string  & sClient,void * pParam),void * pParam);
+
 
 
     /**
@@ -125,14 +136,27 @@ public:
     /** Initialise the server. This is a non blocking call and launches the MOOS Comms server threads.
     @param lPort port number to listen on
     */
-    virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false);
+    virtual bool Run(long lPort,const std::string  & sCommunityName, bool bDisableNameLookUp = false, unsigned int nAuditPort = 9020);
     
-    virtual void SetCommandLineParameters(int argc, char * argv[]);
+    /*stop the server*/
+    virtual bool Stop();
+
+    virtual void SetCommandLineParameters(int argc,  char * argv[]);
     
     /** used to control how verbose the server is. Setting to true turns off all Tracing */
     void SetQuiet(bool bQ){m_bQuiet = bQ;};
 
+    /** return true if server is running */
+    bool IsRunning(){return m_bQuit==false;};
 
+    /**fill in a string which tells us all about client timing statistics.
+     * @param sSummary has format clientname=a:b:c:d,.....
+     * @param a recent latency in ms
+     * @param b max latency in ms
+     * @param c min latency in ms
+     * @param d moving average latency
+     */
+    bool GetTimingStatisticSummary(std::string & sSummary);
 
 
     /// default constructor
@@ -206,6 +230,15 @@ protected:
     void * m_pDisconnectCallBackParam;
 
 
+    /** user supplied OnConnect callback
+    @see SetOnConnectCallBack */
+    bool (*m_pfnConnectCallBack)(std::string  & sClient,void * pParam);
+
+    /** place holder for the address of the object passed back to the user during a Connect callback
+    @see SetOnConnectCallBack */
+    void * m_pConnectCallBackParam;
+
+
 
     /** user supplied FetchAllMail callback which is called after a message has caused a call back
 	@see SetOnFetchAllMailCallBack */
@@ -242,6 +275,7 @@ protected:
     /** called from Server loop this function handles all the processing for the current client call. It inturn
     invokes the user supplied callback function */
     virtual bool    ProcessClient();
+
 
     /**
      * remove a socket from list of sockets that have open connections
@@ -283,6 +317,13 @@ protected:
     //what threshold in transit time from client to DB worries us
     //and will cause us to issue a warning
     double m_dfCommsLatencyConcern;
+
+    //what port will we broadcast stats on by default
+    unsigned int m_nAuditPort;
+
+    MOOS::ServerAudit m_Auditor;
+
+
 
 
 };

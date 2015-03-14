@@ -1,3 +1,4 @@
+/**
 ///////////////////////////////////////////////////////////////////////////
 //
 //   This file is part of the MOOS project
@@ -20,37 +21,56 @@
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
 ////////////////////////////////////////////////////////////////////////////
-// MOOSRegisterInfo.cpp: implementation of the CMOOSRegisterInfo class.
-//
-//////////////////////////////////////////////////////////////////////
+**/
 
-#include "MOOSRegisterInfo.h"
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
 
-CMOOSRegisterInfo::CMOOSRegisterInfo()
+
+#include "MOOS/libMOOS/DB/MsgFilter.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
+#include <iostream>
+
+namespace MOOS
 {
-    m_dfLastTimeSent = 0;
-    m_dfPeriod = 0.5;
+bool MsgFilter::Matches(const CMOOSMsg & M) const
+{
+	return MOOSWildCmp(app_filter(),M.GetSource()) &&
+			MOOSWildCmp(var_filter(),M.GetKey() );
 }
 
-CMOOSRegisterInfo::~CMOOSRegisterInfo()
+std::string MsgFilter::app_filter() const
 {
-
+	return filters_.first;
+}
+std::string MsgFilter::var_filter() const
+{
+	return filters_.second;
 }
 
-
-bool CMOOSRegisterInfo::Expired(double dfTimeNow)
+std::string MsgFilter::as_string() const
 {
-    if(m_dfPeriod==0.0)
-        return true;
-
-    return dfTimeNow-m_dfLastTimeSent>=m_dfPeriod ;
+	return var_filter()+":"+app_filter();
 }
 
-void CMOOSRegisterInfo::SetLastTimeSent(double dfTimeSent)
+double MsgFilter::period() const
 {
-    m_dfLastTimeSent = dfTimeSent;
+	return period_;
+}
+MsgFilter::MsgFilter()
+{
+	period_ = 0.0;
+	filters_=std::make_pair("","");
+}
+MsgFilter::MsgFilter(const std::string & A, const std::string & V, double p)
+{
+	period_ = p;
+	filters_=std::make_pair(A,V);
+}
+
+bool  MsgFilter::operator < ( const MsgFilter & F) const
+{
+	return filters_<F.filters_;
+}
+
 }

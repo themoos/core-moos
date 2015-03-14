@@ -86,7 +86,7 @@ int main(int argc, char * argv[])
 
 	if(P.GetFlag("--send"))
 	{
-		XPCTcpSocket* pSocket;
+		XPCTcpSocket* pSocket=NULL;
 		while(1)
 		{
 			try
@@ -136,7 +136,7 @@ int main(int argc, char * argv[])
 		while(1)
 		{
 			Msg M;
-			XPCTcpSocket* pSocket;
+			XPCTcpSocket* pSocket=NULL;
 			double dfT0 = MOOSLocalTime();
 			try
 			{
@@ -158,7 +158,8 @@ int main(int argc, char * argv[])
 			catch(XPCException & e)
 			{
 				std::cerr<<e.sGetException()<<"\n";
-				delete pSocket;
+				if(pSocket!=NULL)
+				    delete pSocket;
 			}
 
 		}

@@ -28,8 +28,9 @@
 #endif
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
-#include "MOOSDBVar.h"
+#include "MOOS/libMOOS/DB/MOOSDBVar.h"
 #include <iostream>
+#include <cmath>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -44,7 +45,8 @@ CMOOSDBVar::CMOOSDBVar()
     m_sWhoChangedMe = "";
     m_nWrittenTo = 0;
     m_dfWrittenTime = -1;
-    m_nOverTicks = 0;
+    m_Stats.m_dfLastStatsTime = -1.0;
+    m_Stats.m_nLastStatsWrites = 0;
 }
 
 
@@ -59,7 +61,6 @@ CMOOSDBVar::CMOOSDBVar(const string & sName)
     m_nWrittenTo = 0;
     m_dfWriteFreq = 0;
     m_dfWrittenTime = -1;
-    m_nOverTicks = 0;
 
 }
 
@@ -77,16 +78,39 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
        MOOSTrace("[X] Failed to add subscription to \"%s\" for a client with empty name \n",m_sName.c_str());
        return false;
     }
-    Info.m_dfPeriod = dfPeriod;
-    Info.m_sClientName = sClient;
 
-    m_Subscribers[sClient] = Info;
+    REGISTER_INFO_MAP::iterator q = m_Subscribers.find(sClient);
 
-    MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
+    if(q!=m_Subscribers.end())
+    {
+    	//MOOSTrace("[!] ignoring repeat subscription to \"%s\" for %s \n",m_sName.c_str(),m_sName.c_str());
+    	return true;
+    }
+    else
+    {
+        Info.m_sClientName = sClient;
+        Info.m_dfPeriod = dfPeriod;
+
+    	m_Subscribers[sClient] = Info;
+
+    	//MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
+
+    }
+
 
     return true;
 
 }
+
+bool CMOOSDBVar::HasSubscriber(const string & sClient)
+{
+	if(m_Subscribers.empty())
+		return false;
+	else
+		return m_Subscribers.find(sClient)!=m_Subscribers.end();
+
+}
+
 
 void CMOOSDBVar::RemoveSubscriber(string &sWho)
 {
@@ -96,7 +120,7 @@ void CMOOSDBVar::RemoveSubscriber(string &sWho)
     {
     //MOOSTrace("MOOSDB: Removing \"%s\"'s subscription to \"%s\"\n",sWho.c_str(),m_sName.c_str());
     	m_Subscribers.erase(p);
-    	MOOSTrace("- subs of \"%s\" to \"%s\" \n",sWho.c_str(),m_sName.c_str());
+    	//MOOSTrace("- subs of \"%s\" to \"%s\" \n",sWho.c_str(),m_sName.c_str());
 
     }
 }

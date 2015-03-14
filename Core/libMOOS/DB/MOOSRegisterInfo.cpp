@@ -1,4 +1,3 @@
-/**
 ///////////////////////////////////////////////////////////////////////////
 //
 //   This file is part of the MOOS project
@@ -21,56 +20,43 @@
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 //
 ////////////////////////////////////////////////////////////////////////////
-**/
+// MOOSRegisterInfo.cpp: implementation of the CMOOSRegisterInfo class.
+//
+//////////////////////////////////////////////////////////////////////
 
+#include "MOOS/libMOOS/DB/MOOSRegisterInfo.h"
 
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
 
-
-#include "MsgFilter.h"
-#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
-#include "MOOS/libMOOS/Comms/MOOSMsg.h"
-#include <iostream>
-
-namespace MOOS
+CMOOSRegisterInfo::CMOOSRegisterInfo()
 {
-bool MsgFilter::Matches(const CMOOSMsg & M) const
-{
-	return MOOSWildCmp(app_filter(),M.GetSource()) &&
-			MOOSWildCmp(var_filter(),M.GetKey() );
+    m_dfLastTimeSent = 0;
+    m_dfPeriod = 0.5;
 }
 
-std::string MsgFilter::app_filter() const
+CMOOSRegisterInfo::~CMOOSRegisterInfo()
 {
-	return filters_.first;
-}
-std::string MsgFilter::var_filter() const
-{
-	return filters_.second;
+
 }
 
-std::string MsgFilter::as_string() const
+double CMOOSRegisterInfo::GetLastTimeSent()
 {
-	return var_filter()+":"+app_filter();
+	return m_dfLastTimeSent;
 }
 
-double MsgFilter::period() const
+
+
+bool CMOOSRegisterInfo::Expired(double dfTimeNow)
 {
-	return period_;
-}
-MsgFilter::MsgFilter()
-{
-	period_ = 0.0;
-	filters_=std::make_pair("","");
-}
-MsgFilter::MsgFilter(const std::string & A, const std::string & V, double p)
-{
-	period_ = p;
-	filters_=std::make_pair(A,V);
+    if(m_dfPeriod==0.0)
+        return true;
+
+    return dfTimeNow-m_dfLastTimeSent>=m_dfPeriod ;
 }
 
-bool  MsgFilter::operator < ( const MsgFilter & F) const
+void CMOOSRegisterInfo::SetLastTimeSent(double dfTimeSent)
 {
-	return filters_<F.filters_;
-}
-
+    m_dfLastTimeSent = dfTimeSent;
 }

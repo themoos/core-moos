@@ -35,6 +35,7 @@
  */
 
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
+#include <iostream>
 
 namespace MOOS {
 
@@ -48,6 +49,8 @@ bool dispatch(void * pParam)
 ActiveMailQueue::ActiveMailQueue(const std::string & Name) : Name_(Name)
 {
 	// TODO Auto-generated constructor stub
+	pClassMemberFunctionCallback_ = NULL;
+	pfn_ = NULL;
 
 
 }
@@ -98,18 +101,50 @@ bool ActiveMailQueue::DoWork()
 			case MOOS_TERMINATE_CONNECTION:
 				return true;
 			case MOOS_NOTIFY:
-				(*pfn_)(M,caller_param_);
+			{
+				//now there are two ways to register a callback
+				//you can install a MOOS::MsgFunctor
+				//which lets you point to a memebr function of
+				//another class!
+				if(pClassMemberFunctionCallback_)
+				{
+					if(!(*pClassMemberFunctionCallback_)(M))
+					{
+						std::cerr<<"ActiveMailQueue::DoWork() user callback returns false\n";
+					}
+				}
+
+				//or you can have an old style cfunction
+				if(pfn_)
+				{
+					if(!(*pfn_)(M,caller_param_))
+					{
+						std::cerr<<"ActiveMailQueue::DoWork() user callback returns false\n";
+					}
+
+				}
 				break;
+			}
 		}
 
 	}
 	return true;
 }
 
+
+bool ActiveMailQueue::IsRunning()
+{
+    return thread_.IsThreadRunning();
+}
+
 void ActiveMailQueue::SetCallback(bool (*pfn)(CMOOSMsg &M, void * pParam), void * pCallerParam)
 {
+	pClassMemberFunctionCallback_ = NULL;
+
 	pfn_=pfn;
 	caller_param_ = pCallerParam;
+
+	//std::cerr<<"set pfn to "<<std::hex<<(void *)pfn_<<"\n";
 }
 
 

@@ -52,14 +52,15 @@ CommandLineParser::~CommandLineParser() {
 }
 
 
-CommandLineParser::CommandLineParser(int argc, char * argv[])
+CommandLineParser::CommandLineParser(int argc,  char * argv[])
 {
 	Open(argc,argv);
 }
 
 
-bool CommandLineParser::Open(int argc, char * argv[])
+bool CommandLineParser::Open(int argc,  char * argv[])
 {
+
 	pcl_ = std::auto_ptr<GetPot>(new GetPot(argc,argv) );
 	return true;
 }
@@ -78,6 +79,8 @@ bool CommandLineParser::GetOption(const std::string option,  double & result)
 	return true;
 
 }
+
+
 bool CommandLineParser::GetOption(const std::string option,  std::string  & result)
 {
 	if(!IsAvailable())
@@ -92,8 +95,12 @@ bool CommandLineParser::GetOption(const std::string option,  std::string  & resu
 
 
 }
+
+
 bool CommandLineParser::GetOption(const std::string option,  int & result)
 {
+
+    std::cerr<<"in CommandLineParser::GetOption(const std::string option,  int & result)\n";
 	if(!IsAvailable())
 		return false;
 
@@ -126,6 +133,24 @@ bool CommandLineParser::GetOption(const std::string option,  unsigned int & resu
 }
 
 
+bool CommandLineParser::GetVariable(const std::string var,  bool & result)
+{
+    std::string sT;
+    if(GetVariable(var,  sT))
+    {
+        if(sT=="true" || sT=="1" || sT=="True")
+            result=true;
+
+        return true;
+    }
+    else if(GetFlag(var))
+    {
+        result = true;
+        return true;
+    }
+    result = false;
+    return false;
+}
 
 bool CommandLineParser::GetVariable(const std::string var,  double & result)
 {
@@ -137,6 +162,8 @@ bool CommandLineParser::GetVariable(const std::string var,  double & result)
 	return true;
 
 }
+
+
 bool CommandLineParser::GetVariable(const std::string var,  std::string  & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
@@ -146,8 +173,8 @@ bool CommandLineParser::GetVariable(const std::string var,  std::string  & resul
 
 	return true;
 
-
 }
+
 bool CommandLineParser::GetVariable(const std::string var,  int & result)
 {
 	if(!IsAvailable() || !VariableExists(var))

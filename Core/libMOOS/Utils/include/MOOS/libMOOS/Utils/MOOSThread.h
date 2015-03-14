@@ -26,7 +26,9 @@
 #define MOOSThreadh
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include <iostream>
 #ifndef _WIN32
 #include <errno.h>
 #endif
@@ -52,6 +54,8 @@ public:
 #endif
         m_nThreadID = 0;
         
+        Verbose(false);
+
     }
     
     
@@ -75,7 +79,8 @@ public:
     //! Destructor just stops the thread if there's one running
     ~CMOOSThread()
     {
-        Stop();
+    	if(IsThreadRunning())
+    		Stop();
     }
     
     
@@ -108,6 +113,16 @@ public:
     }
 
 
+    inline void Name(const std::string & sName)
+    {
+    	m_sName = sName;
+    }
+
+    inline std::string  Name()
+    {
+    	return m_sName;
+    }
+
 
     //! Starts the thread running (as long as the class has been properly initialised!)
     bool Start(bool bCreatUnixDetached = false)
@@ -115,17 +130,12 @@ public:
 #ifdef _WIN32
 		bCreatUnixDetached;
 #endif
-        m_lock.Lock();
-        {
-            if (m_bRunning) {
-                m_lock.UnLock();
-                return false;
-            }
-            
-            m_bRunning       = true;
-            m_bQuitRequested = false;
-        }
-        m_lock.UnLock();
+		if(IsThreadRunning())
+		    return false;
+
+		m_bQuitRequested = false;
+
+		SetRunningFlag(true);
  
 #ifdef _WIN32
         m_hThread = ::CreateThread(NULL,
@@ -148,6 +158,12 @@ public:
             return false;
         }
 #endif
+
+
+        if(!Name().empty() && m_bVerbose)
+        	std::cerr<<"Thread "<<Name()<<" started\n";
+
+
  
         return true;
     }
@@ -162,15 +178,11 @@ public:
     // of this class, to find out whether it needs to stop itself.
     bool Stop()
     {
-        m_lock.Lock();
-        {
-            if (!m_bRunning || m_bQuitRequested) {
-                m_lock.UnLock();
-                return true;
-            }
-            m_bQuitRequested = true;
-        }
-        m_lock.UnLock();
+
+    	if(!IsThreadRunning())
+    		return true;
+
+    	SetQuitFlag(true);
         
         // Now wait for the thread to finish.  It's important that the
         // mutex isn't locked during the wait, because the thread may
@@ -181,9 +193,7 @@ public:
             WaitForSingleObject(m_hThread,INFINITE);
         }
 #else
-        // This should not be necessary... Why was it here again ?
-		//yes it is needed - we need to wait for the thread!
-        
+
         void * Result;
         int retval = pthread_join( m_nThreadID,&Result);
         if (retval != 0)
@@ -191,22 +201,28 @@ public:
 			switch (retval)
 			{
 				case EINVAL:
-					MOOSTrace("pthread_join returned error: EINVAL\n", retval);					
+					MOOSTrace("pthread_join returned error: EINVAL\n", retval);
+					break;
 				case ESRCH:
 					MOOSTrace("pthread_join returned error: ESRCH\n", retval);
+					break;
 				case EDEADLK:
 					MOOSTrace("pthread_join returned error: EDEADLK\n", retval);
+					break;
 			}
 			
             MOOSTrace("pthread_join returned error: %d\n", retval);
         }
         
 #endif
+
         
-        // There is the potential for a race condition here, if some other
-        // code tries to read and act on the running flag between pthread_join
-        // finishing and the running flag being set to false.  Yikes!
+
         SetRunningFlag(false);
+
+        if(!Name().empty() && m_bVerbose)
+        	std::cerr<<"Thread "<<Name()<<" stopped\n";
+
 
         return true;
     }
@@ -241,31 +257,23 @@ public:
 private:
     
     void SetQuitFlag(bool bState) {
-        m_lock.Lock();
         m_bQuitRequested = bState;
-        m_lock.UnLock();
     }
     
     void SetRunningFlag(bool bState) {
-        m_lock.Lock();
         m_bRunning = bState;
-        m_lock.UnLock();
     }
     
+    void Verbose(bool bV){
+    	m_bVerbose = bV;
+    }
+
     bool GetQuitFlag() {
-        bool bState = false;
-        m_lock.Lock();
-        bState = m_bQuitRequested;
-        m_lock.UnLock();
-        return bState;
+        return  m_bQuitRequested;
     }
     
     bool GetRunningFlag() {
-        bool bState = false;
-        m_lock.Lock();
-        bState = m_bRunning;
-        m_lock.UnLock();
-        return bState;
+        return  m_bRunning;
     }
     
 
@@ -302,9 +310,12 @@ private:
 
     ////////////////
     // These are only accessed through Set/Get
-    // functions with mutexes
-    bool m_bRunning;
-    bool m_bQuitRequested;
+	// volatile to give thread safety of a basic type
+    volatile bool m_bRunning;
+    volatile bool m_bQuitRequested;
+
+    bool m_bVerbose;
+
     ////////////////
     
     // This is where we store the address of the function
@@ -319,6 +330,8 @@ private:
     // to the owner to decide.
     void *m_pThreadData;
     
+    std::string m_sName;
+
 };
 #endif
 

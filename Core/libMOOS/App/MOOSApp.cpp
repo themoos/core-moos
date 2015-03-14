@@ -38,6 +38,8 @@
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/MOOSVersion.h"
+#include "MOOS/libMOOS/GitVersion.h"
+
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -197,8 +199,15 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_app_tick=<number>    : frequency of application (if relevant) \n";
 	std::cout<<"  --moos_max_app_tick=<number>: max frequency of application (if relevant) \n";
 	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
+    std::cout<<"  --moos_tw_delay_factor=<num>: comms delay as \% of time warp (if relevant) \n";
+
+
+
 	std::cout<<"  --moos_iterate_Mode=<0,1,2> : set app iterate mode \n";
 	std::cout<<"  --moos_time_warp=<number>   : set time warp \n";
+    std::cout<<"  --moos_suicide_channel=<str>: suicide monitoring channel (IP address) \n";
+    std::cout<<"  --moos_suicide_port=<int>   : suicide monitoring port  \n";
+    std::cout<<"  --moos_suicide_phrase=<str> : suicide pass phrase  \n";
 
 	std::cout<<"\nflags:\n";
 	std::cout<<"  --moos_iterate_no_comms     : enable iterate without comms \n";
@@ -208,6 +217,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_quiet                : don't print banner information \n";
 	std::cout<<"  --moos_quit_on_iterate_fail : quit if iterate fails \n";
 	std::cout<<"  --moos_no_colour            : disable colour printing \n";
+    std::cout<<"  --moos_suicide_disable      : disable suicide monitoring \n";
+    std::cout<<"  --moos_suicide_print        : print suicide conditions \n";
+
 
 
 	std::cout<<"\nhelp:\n";
@@ -215,6 +227,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_print_interface      : describe the interface (subscriptions/pubs) \n";
 	std::cout<<"  --moos_print_version        : print the version of moos in play \n";
 	std::cout<<"  --moos_help                 : print help on moos switches\n";
+    std::cout<<"  --moos_configuration_audit  : print configuration terms searched for\n";
 	std::cout<<"  --help                      : print help on moos switches and custom help\n";
 
 
@@ -223,8 +236,9 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 void CMOOSApp::OnPrintVersionAndExit()
 {
 	std::cout<<"--------------------------------------------------\n";
-	std::cout<<"libMOOS version "<<MOOS_VERSION_NUMBER<<"\n";
+	std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
 	std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
+	std::cout<<MOOS_GIT_VERSION<<"\n";
 	std::cout<<"--------------------------------------------------\n";
 	exit(0);
 }
@@ -246,13 +260,13 @@ bool CMOOSApp::Run(const std::string & sName,const std::string & sMissionFile,co
 }
 
 //this is an overloaded 3 parameter version which allows explicit setting of the registration name
-bool CMOOSApp::Run(const std::string &  sName,int argc, char * argv[])
+bool CMOOSApp::Run(const std::string &  sName,int argc,  char * argv[])
 {
 	SetCommandLineParameters(argc,argv);
 	return Run(sName);
 }
 
-bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc, char * argv[])
+bool  CMOOSApp::Run(const std::string &  sName,const std::string & sMissionFile, int argc,  char * argv[])
 {
 	SetCommandLineParameters(argc,argv);
 	return Run(sName,sMissionFile);
@@ -297,7 +311,9 @@ bool CMOOSApp::Run( const std::string & sName,
 	if(m_CommandLineParser.GetFlag("--help"))
 	{
 		PrintDefaultCommandLineSwitches();
+		std::cout<<"\ncustom help:\n";
 		OnPrintHelpAndExit();
+		exit(0);
 	}
 
 	if(m_CommandLineParser.GetFlag("--moos_print_example"))
@@ -309,11 +325,7 @@ bool CMOOSApp::Run( const std::string & sName,
 	if(m_CommandLineParser.GetFlag("--moos_print_version"))
 		OnPrintVersionAndExit();
 
-	if(m_CommandLineParser.GetFlag("--moos_iterate_no_comms"))
-		EnableIterateWithoutComms(true);
 
-	if(m_CommandLineParser.GetFlag("--moos_quiet"))
-		SetQuiet(true);
 
 
 	//look at mission file etc
@@ -362,8 +374,6 @@ bool CMOOSApp::Run( const std::string & sName,
         MOOSPause(500);
     }
 
-
-
     /** let derivatives do stuff before execution*/
     if(!OnStartUpPrepare())
     {
@@ -383,6 +393,12 @@ bool CMOOSApp::Run( const std::string & sName,
         return false;
     }
 
+    if(m_CommandLineParser.GetFlag("--moos_configuration_audit"))
+    {
+        PrintSearchedConfigurationFileParameters();
+        return true;
+    }
+
 
     DoBanner();
 
@@ -397,6 +413,8 @@ bool CMOOSApp::Run( const std::string & sName,
 
 		if(m_bQuitOnIterateFail && !bOK)
 			return MOOSFail("MOOSApp Exiting as requested");
+
+
     }
 
     /***************************   END OF MOOS APP LOOP ***************************************/
@@ -406,68 +424,151 @@ bool CMOOSApp::Run( const std::string & sName,
     return true;
 }
 
+
+bool CMOOSApp::GetFlagFromCommandLineOrConfigurationFile(std::string sOption,bool bPrependMinusMinusForCommandLine)
+{
+    bool bC,bF,bFlag;
+    bF = m_MissionReader.GetConfigurationParam(sOption,bFlag);
+
+    if(bPrependMinusMinusForCommandLine)
+        sOption = "--"+sOption;
+
+    bC = m_CommandLineParser.GetFlag(sOption);
+    if(bC)
+    {
+        return true;
+    }
+    if(bF)
+    {
+        //std::cerr<<"found in config file:"<<sOption<<"\n";
+        return bFlag;
+    }
+    return false;
+}
+
+
+
 bool CMOOSApp::Configure()
 {
 
-	//can we see the mission file
+    //are we being asked to be quiet?
+    SetQuiet(GetFlagFromCommandLineOrConfigurationFile("moos_quiet"));
 
+	//can we see the mission file?
 	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
 	{
-		std::cerr<<MOOS::ConsoleColours::yellow();
-		std::cerr<<"note mission file "<<m_sMissionFile<<" was not found\n";
-		std::cerr<<MOOS::ConsoleColours::reset();
+	    if(!m_bQuiet)
+	    {
+            std::cerr<<MOOS::ConsoleColours::yellow();
+            std::cerr<<"note mission file "<<m_sMissionFile<<" was not found\n";
+            std::cerr<<MOOS::ConsoleColours::reset();
+	    }
 	}
+
+	//are we being asked to iterate without comms
+    EnableIterateWithoutComms(GetFlagFromCommandLineOrConfigurationFile("moos_iterate_no_comms"));
+
+    //are we having our suicide address being set?
+    std::string sSuicideAddress;
+    if(GetParameterFromCommandLineOrConfigurationFile("moos_suicide_channel",sSuicideAddress))
+    {
+        m_SuicidalSleeper.SetChannel(sSuicideAddress);
+    }
+
+    //are we having our suicide port being set?
+    int nSuicidePort=-1;
+    if(GetParameterFromCommandLineOrConfigurationFile("moos_suicide_port",nSuicidePort))
+    {
+        m_SuicidalSleeper.SetPort(nSuicidePort);
+    }
+
+    //are we having our suicide phrase being set?
+    std::string sSuicidePhrase;
+    if(GetParameterFromCommandLineOrConfigurationFile("moos_suicide_phrase",sSuicidePhrase))
+    {
+        m_SuicidalSleeper.SetPassPhrase(sSuicidePhrase);
+    }
+
+    //are we being told to print out how to get us to commit suicide?
+    if(GetFlagFromCommandLineOrConfigurationFile("moos_suicide_print"))
+    {
+        std::cerr<<"suicide terms and conditions are:\n";
+        std::cerr<<" channel  "<<m_SuicidalSleeper.GetChannel()<<"\n";
+        std::cerr<<" port     "<<m_SuicidalSleeper.GetPort()<<"\n";
+        std::cerr<<" phrase   \""<<m_SuicidalSleeper.GetPassPhrase()<<"\"\n";
+    }
+
+    //are we being told to disable suicide?
+    if(!GetFlagFromCommandLineOrConfigurationFile("moos_suicide_disable"))
+    {
+
+        //no - then allow it....
+        m_SuicidalSleeper.SetName(GetAppName());
+        m_SuicidalSleeper.Run();
+    }
 
 
 	//what is the global time warp
 	double dfTimeWarp = 1.0;
-	if(m_CommandLineParser.GetOption("--moos_time_warp",dfTimeWarp) ||
-			m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
+
+    if(GetParameterFromCommandLineOrConfigurationFile("moos_time_warp",dfTimeWarp) ||
+            m_MissionReader.GetValue("MOOSTimeWarp", dfTimeWarp))
 	{
 		SetMOOSTimeWarp(dfTimeWarp);
 	}
 
+    double dfTimeWarpCommsFactor = 0.0;
+    if(GetParameterFromCommandLineOrConfigurationFile("moos_tw_delay_factor",dfTimeWarpCommsFactor))
+    {
+        if(!m_Comms.SetCommsControlTimeWarpScaleFactor(dfTimeWarpCommsFactor))
+        {
+            std::cerr<<MOOS::ConsoleColours::Red();
+            std::cerr<<"ERROR: failed to set moos_tw_delay_factor\n";
+            std::cerr<<MOOS::ConsoleColours::reset();
+        }
+    }
+
 
 	//are we expected to use MOOS comms?
-	m_MissionReader.GetConfigurationParam("UseMOOSComms",m_bUseMOOSComms);
-	m_bUseMOOSComms&=!m_CommandLineParser.GetFlag("--moos_no_comms");
+    if(GetFlagFromCommandLineOrConfigurationFile("moos_no_comms"))
+    {
+        m_bUseMOOSComms = false;
+    }
+    //alternative (older version)
+    m_MissionReader.GetValue("UseMOOSComms", m_bUseMOOSComms);
+
 
 	//are we being asked to sort mail by time..
-	m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
-	m_bSortMailByTime&=!m_CommandLineParser.GetFlag("--moos_no_sort_mail");
+    m_bSortMailByTime = true;
+    if(GetFlagFromCommandLineOrConfigurationFile("moos_no_sort_mail"))
+    {
+        m_bSortMailByTime = false;
+    }
+    //alternative
+    m_MissionReader.GetConfigurationParam("SortMailByTime",m_bSortMailByTime);
+
 
 	//are we being asked to quit if iterate fails?
-	m_bQuitOnIterateFail|=m_CommandLineParser.GetFlag("--moos_quit_on_iterate_fail");
+    if(GetFlagFromCommandLineOrConfigurationFile("moos_quit_on_iterate_fail"))
+    {
+        m_bQuitOnIterateFail = true;
+    }
 
-	//are we in debug mode
-	m_MissionReader.GetConfigurationParam("DEBUG",m_bDebug);
 
-	//are we in simulator mode?
-	string sSim;
-	if(m_MissionReader.GetValue("SIMULATOR",sSim))
-	{
-		m_bSimMode = MOOSStrCmp(sSim,"TRUE");
-	}
-
-	//are we in playback mode
-	string sPlayBack;
-	if(m_MissionReader.GetValue("PLAYBACK",sPlayBack))
-	{
-		SetMOOSPlayBack(MOOSStrCmp(sPlayBack,"TRUE"));
-	}
 
 	//OK now figure out our tick speeds  above what is set by default
 	//in derived class constructors this can be set in the process config block
 	//by the mission architect
+    GetParameterFromCommandLineOrConfigurationFile("moos_app_tick",m_dfFreq);
 	m_MissionReader.GetConfigurationParam("APPTICK",m_dfFreq);
-	m_CommandLineParser.GetVariable("--moos_app_tick",m_dfFreq);
 
+    GetParameterFromCommandLineOrConfigurationFile("moos_max_app_tick",m_dfMaxAppTick);
 	m_MissionReader.GetConfigurationParam("MAXAPPTICK",m_dfMaxAppTick);
-	m_CommandLineParser.GetVariable("--moos_max_app_tick",m_dfMaxAppTick);
 
 	unsigned int nMode = 0;
+
+    GetParameterFromCommandLineOrConfigurationFile("moos_iterate_mode",nMode);
 	m_MissionReader.GetConfigurationParam("ITERATEMODE",nMode);
-	m_CommandLineParser.GetVariable("--moos_iterate_mode",nMode);
 
 
 	switch(nMode)
@@ -482,13 +583,26 @@ bool CMOOSApp::Configure()
 
 
 	//do we want to enable command filtering (default is set in constructor)
-	m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
-	m_bCommandMessageFiltering|=m_CommandLineParser.GetFlag("--moos_filter_command");
-
-
+    if(GetFlagFromCommandLineOrConfigurationFile("moos_filter_command"))
+    {
+        m_bCommandMessageFiltering = true;
+    }
+    //alternative
+    m_MissionReader.GetConfigurationParam("CatchCommandMessages",m_bCommandMessageFiltering);
 
 
 	return IsConfigOK();
+
+}
+
+void CMOOSApp::PrintSearchedConfigurationFileParameters()
+{
+    std::list<std::string> L = m_MissionReader.GetSearchedParameters(GetAppName());
+    std::cout<<MOOS::ConsoleColours::Green();
+    std::cout<<"\nThis application has searched the configuration file for the following parameters:\n\n   ";
+    std::cout<<MOOS::ConsoleColours::green();
+    std::copy(L.begin(),L.end(),std::ostream_iterator<std::string>(std::cerr,"\n   ") );
+    std::cout<<MOOS::ConsoleColours::reset();
 
 }
 
@@ -512,6 +626,12 @@ bool CMOOSApp::SetQuiet(bool bQ)
 	m_Comms.SetQuiet(m_bQuiet);
 	return true;
 }
+
+void CMOOSApp::SetMOOSName(const std::string &sMOOSName)
+{
+	m_sMOOSName=sMOOSName;
+}
+
 
 void CMOOSApp::DoBanner()
 {
@@ -551,7 +671,9 @@ void CMOOSApp::DoBanner()
 	}
 
 	if(GetMOOSTimeWarp()!=1.0)
-		MOOSTrace("\t Time Warp @ %.1f \n",GetMOOSTimeWarp());
+		MOOSTrace("\t|-Time Warp @ %.1f \n",GetMOOSTimeWarp());
+	if(m_Comms.GetCommsControlTimeWarpScaleFactor()>0.0  && GetMOOSTimeWarp()>1.0)
+	    MOOSTrace("\t|-Time Warp delay @ %.1f ms \n",m_Comms.GetCommsControlTimeWarpScaleFactor()*GetMOOSTimeWarp());
 
 
 	std::cout<<"\n\n";
@@ -697,6 +819,8 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 
 	//so how long do we need to pause for
 	int nSleep = (nAppPeriod_ms - nElapsedTime_ms);
+
+
 	if(nSleep<1){
 		//std::cerr<<"no sleep for "<<nSleep<<"\n";
 		return;//nothing to do...
@@ -764,14 +888,50 @@ void CMOOSApp::SleepAsRequired(bool &  bIterateShouldRun)
 }
 
 
-bool CMOOSApp::AddCustomMessageCallback(const std::string & sCallbackName,const std::string & sMsgName, bool (*pfn)(CMOOSMsg &M, void * pYourParam), void * pYourParam )
+bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
+                    const std::string & sMsgName)
 {
-	return m_Comms.AddMessageCallback(sCallbackName,sMsgName,pfn,pYourParam);
+    if(!m_Comms.HasActiveQueue(sQueueName))
+    {
+        return false;
+    }
+    return m_Comms.AddMessageRouteToActiveQueue(sQueueName,sMsgName);
+
 }
 
+bool CMOOSApp::AddMessageRouteToActiveQueue(const std::string & sQueueName,
+		const std::string & sMsgName,
+		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+		void * pYourParam )
+{
+	//first do we have that queue made already?
+	if(!m_Comms.HasActiveQueue(sQueueName))
+	{
+		//no we had better make one...
+		m_Comms.AddActiveQueue(sQueueName,pfn,pYourParam);
+	}
+	//finally make sure this message routes to this message.
+	return m_Comms.AddMessageRouteToActiveQueue(sQueueName,sMsgName);
+}
+
+bool CMOOSApp::AddActiveMessageQueueCallback(const std::string & sQueueName,
+    		const std::string & sMsgName,
+    		bool (*pfn)(CMOOSMsg &M, void * pYourParam),
+    		void * pYourParam )
+{
+	return AddMessageRouteToActiveQueue(sQueueName,sMsgName,pfn,pYourParam);
+}
+
+
+
+bool CMOOSApp::AddMessageRouteToOnMessage(const std::string & sMsgName)
+{
+	return AddMessageRouteToActiveQueue(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
+}
+//deprecated version
 bool CMOOSApp::AddMessageCallback(const std::string & sMsgName)
 {
-	return m_Comms.AddMessageCallback(sMsgName+"_CB",sMsgName,MOOSAPP_OnMessage,this);
+	return AddMessageRouteToOnMessage(sMsgName);
 }
 
 
@@ -807,7 +967,7 @@ void CMOOSApp::SetAppError(bool bErr, const std::string & sErr)
     m_sAppError =  m_bAppError ? sErr : "";
 }
 
-void CMOOSApp::SetCommandLineParameters(int argc, char * argv[])
+void CMOOSApp::SetCommandLineParameters(int argc,  char * argv[])
 {
 	m_CommandLineParser.Open(argc,argv);
 }
@@ -851,7 +1011,7 @@ bool CMOOSApp::OnMessage(CMOOSMsg &M)
 
 bool CMOOSApp::OnDisconnectFromServer()
 {
-    MOOSTrace("- default OnDisconnectFromServer called\n");
+//    MOOSTrace("- default OnDisconnectFromServer called\n");
     return true;
 }
 
@@ -1306,7 +1466,7 @@ void CMOOSApp::EnableCommandMessageFiltering(bool bEnable)
 double CMOOSApp::GetCPULoad()
 {
 	double dfLoad=0;
-	m_CPULoadMonitor.GetPercentageCPULoad(dfLoad);
+	m_ProcessMonitor.GetPercentageCPULoad(dfLoad);
 	return dfLoad;
 }
 
@@ -1323,10 +1483,18 @@ std::string CMOOSApp::MakeStatusString()
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
 
     double dfCPULoad;
-    if(m_CPULoadMonitor.GetPercentageCPULoad(dfCPULoad))
+    if(m_ProcessMonitor.GetPercentageCPULoad(dfCPULoad))
     {
     	ssStatus<<"cpuload="<<std::setprecision(4)<<dfCPULoad<<",";
     }
+
+    size_t memory_now, memory_max;
+    if(m_ProcessMonitor.GetMemoryUsage(memory_now,memory_max))
+    {
+    	ssStatus<<"memory_kb="<<std::setprecision(4)<<memory_now/(1024.0)<<",";
+    	ssStatus<<"memory_max_kb="<<std::setprecision(4)<<memory_max/(1024.0)<<",";
+    }
+
 
     ssStatus<<"MOOSName="<<GetAppName()<<",";
 

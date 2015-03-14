@@ -28,14 +28,9 @@
 #if !defined(MOOSCOMMPKTH)
 #define MOOSCOMMPKTH
 
-#include <list>
-//using namespace std;
-
-#include "MOOSMsg.h"
-
-#define MOOS_PKT_DEFAULT_SPACE 32768
 
 
+#include "MOOS/libMOOS/Comms/CommsTypes.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 //Here we define the current protocol string for this version of the library
@@ -44,10 +39,8 @@
 #define MOOS_PROTOCOL_STRING_BUFFER_SIZE 32
 //#define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 30/7/10"
 #define MOOS_PROTOCOL_STRING "ELKS CAN'T DANCE 2/8/10"
+#define MOOS_PKT_DEFAULT_SPACE 32768
 
-
-
-typedef std::list<CMOOSMsg> MOOSMSG_LIST;
 
 /** This class is part of MOOS's internal transport mechanism. It any number of CMOOSMsg's
 can be packed into a CMOOSCommPkt and sent in one lump between a CMOOSCommServer and CMOOSCommClient
@@ -55,32 +48,50 @@ object. It is never used by a user of MOOSLib */
 class CMOOSCommPkt  
 {
 public:
-    bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
-    int     GetStreamLength();
-    bool    Fill(unsigned char * InData,int nData);
-    int     GetBytesRequired();
-	double	GetCompression();
-
     CMOOSCommPkt();
     virtual ~CMOOSCommPkt();
 
-    unsigned char * m_pStream;
-    unsigned char * m_pNextData;
-    int                m_nStreamSpace;
-    unsigned char    DefaultStream[MOOS_PKT_DEFAULT_SPACE];
+    /**
+     * serialise to or from a list of CMOOSMsgs
+     */
+    bool    Serialize(MOOSMSG_LIST & List, bool bToStream = true, bool bNoNULL =false,double * pdfPktTime=NULL);
+
+    /**
+     * return length of serialised stream
+     */
+    int     GetStreamLength();
+
+    bool    Fill(unsigned char * InData,int nData);
+
+    bool    OnBytesWritten(unsigned char * PositionWrittento,int nData);
+
+    int     GetBytesRequired();
+
+    unsigned int    GetNumMessagesSerialised();
+
+    unsigned char * Stream();
+
+    unsigned char * NextWrite();
 
 protected:
-    bool InflateTo(int nNewStreamSize);
-    bool CopyToStream(unsigned char * pData, int nBytes);
+    bool InflateTo(unsigned int nNewStreamSize);
     int m_nByteCount;
     int m_nMsgLen;
-    /**true is the packet has been infated to increase capicity and m_pStream no longer
+
+    unsigned char * m_pStream;
+    unsigned char * m_pNextData;
+    int             m_nStreamSpace;
+
+    /**true if the packet has been inflated to increase capicity and m_pStream no longer
     points to DefaultStream but to heap space allocated with new */
-    bool    m_bAllocated;
-	double m_dfCompression;
+	std::vector<unsigned char > m_Storage;
+
+	//how many messages are contained in this  packet when serialsised to a stream?
+	unsigned int m_nToStreamCount;
+
+	//how many messages are serialsied
+	unsigned int m_nMsgsSerialised;
 
 };
 
-typedef std::list<CMOOSCommPkt> MOOSPKT_LIST;
-
-#endif // !defined(AFX_MOOSCOMMPKT_H__2645E53D_479F_4F8D_9020_B5C8DBCF4789__INCLUDED_)
+#endif
