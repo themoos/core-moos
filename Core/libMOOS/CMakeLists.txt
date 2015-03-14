@@ -71,6 +71,7 @@ set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Bugcheck.cpp
   Thirdparty/PocoBits/src/Debugger.cpp
   Thirdparty/AppCasting/AppCastingMOOSApp.cpp
+  Thirdparty/AppCasting/AppCastingMOOSInstrument.cpp
   Thirdparty/AppCasting/AppCast.cpp
 )
 
