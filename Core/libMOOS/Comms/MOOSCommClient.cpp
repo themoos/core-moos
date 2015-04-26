@@ -116,6 +116,8 @@ CMOOSCommClient::CMOOSCommClient()
 
     m_bPostNewestToFront = false;
 
+    m_bExpectMailBoxOverFlow = false;
+
 
     //by default this client will adjust the local time skew
     //by using time information sent by the CommServer sitting
@@ -208,6 +210,28 @@ bool CMOOSCommClient::SetCommsTick(int nCommTick)
         return true;
     }
     
+}
+
+
+bool CMOOSCommClient::ExpectOutboxOverflow(unsigned int outbox_pending_size)
+{
+    m_OutLock.Lock();
+
+    m_bExpectMailBoxOverFlow = true;
+
+    m_nOutPendingLimit = outbox_pending_size;
+
+    while(m_OutBox.size()>m_nOutPendingLimit)
+    {
+        if(m_bPostNewestToFront)
+            m_OutBox.pop_back();
+        else
+            m_OutBox.pop_front();
+    }
+
+    m_OutLock.UnLock();
+
+    return true;
 }
 
 
@@ -1003,8 +1027,11 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 
 	if(m_OutBox.size()>m_nOutPendingLimit)
 	{	
-		MOOSTrace("\nThe outbox is very full. This is suspicious and dangerous.\n");
-		MOOSTrace("\nRemoving old unsent messages as new ones are added\n");
+        if(!m_bExpectMailBoxOverFlow)
+        {
+            MOOSTrace("\nThe outbox is very full. This is suspicious and dangerous.\n");
+            MOOSTrace("\nRemoving old unsent messages as new ones are added\n");
+        }
 		//remove oldest message...
 
 		if(m_bPostNewestToFront)

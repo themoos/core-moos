@@ -1066,9 +1066,11 @@ CMOOSDBVar & CMOOSDB::GetOrMakeVar(CMOOSMsg &Msg)
         MOOSTrace("    Src =\"%s\"\n",Msg.m_sSrc.c_str());
         MOOSTrace("    Type =\"%c\"\n",NewVar.m_cDataType);
 #endif
+
+        m_EventLogger.AddEvent("create",Msg.GetSource(),Msg.GetName());
+
     }
     
-    m_EventLogger.AddEvent("create",Msg.GetSource(),Msg.GetName());
 
     //ok we know what you are talking about
     CMOOSDBVar & rVar = p->second;
@@ -1179,6 +1181,9 @@ void CMOOSDB::UpdateSummaryVar()
         {
             ss<<p->second.m_sWhoChangedMe<<" ";
         }
+
+        //write frequency
+        ss << std::fixed << std::setw( 4 ) << std::setprecision( 1 ) << p->second.m_dfWriteFreq<< "Hz ";
 
         ss<<std::left<<std::setw(2);
         ss<<p->second.m_cDataType<<" ";

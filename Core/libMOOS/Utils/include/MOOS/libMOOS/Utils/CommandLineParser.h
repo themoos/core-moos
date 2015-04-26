@@ -31,6 +31,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <stdint.h>
 /*
  *
  */
@@ -54,16 +55,22 @@ public:
 
 	// -x=7 or -name=fred  (s var name=value)
 	bool GetVariable(const std::string var,  double & result);
-	bool GetVariable(const std::string var,  std::string  & result);
+    bool GetVariable(const std::string var,  std::string  & result);
 	bool GetVariable(const std::string var,  int & result);
 	bool GetVariable(const std::string var,  unsigned int & result);
 	bool GetVariable(const std::string var,  bool & result);
 
 	//-x 7  -name fred    (so no equals)
 	bool GetOption(const std::string option,  double & result);
-	bool GetOption(const std::string option,  std::string  & result);
+    bool GetOption(const std::string option,  std::string  & result);
 	bool GetOption(const std::string option,  int & result);
 	bool GetOption(const std::string option,  unsigned int & result);
+
+    template<class T>
+    bool GetVariable(const std::string option,  T & result);
+
+    template<class T>
+    bool GetOption(const std::string option,  T & result);
 
 	// -k -t  -s   (so test is a single flag is set)
 	bool GetFlag(const std::string & flag, const std::string & alternative="");
@@ -93,11 +100,9 @@ private:
 
 
 
-
-
-
-
-
 }
+
+#include "MOOS/libMOOS/Utils/CommandLineParser.hxx"
+
 
 #endif /* COMMANDLINEPARSER_H_ */

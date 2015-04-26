@@ -395,6 +395,36 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::stri
     return bSuccess;
 }
 
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sParam, unsigned short & nVal)
+{
+    if (!m_sAppName.empty())
+    {
+        return GetConfigurationParam(m_sAppName, sParam, nVal);
+    }
+    else
+    {
+        MOOSTrace("App Name not set in CProcessConfigReader::GetConfigurationParam()\n");
+    }
+
+    return false;
+}
+
+bool CProcessConfigReader::GetConfigurationParam(std::string sAppName, std::string sParam, unsigned short &nVal)
+{
+    std::string sTmp;
+
+    if (GetConfigurationParam(sAppName, sParam, sTmp)) {
+        nVal = atoi(sTmp.c_str());
+        return true;
+    }
+
+    return false;
+}
+
+
+
+
 ///                               READ VECTORS
 
 bool CProcessConfigReader::GetConfigurationParam(std::string sParam, std::vector<double> & Vec, int & nRows, int & nCols)

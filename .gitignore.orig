@@ -8,4 +8,8 @@
 
 /Core/libMOOS/App/include/MOOS/libMOOS/App/ClientDefines.h
 
+<<<<<<< HEAD
 /CMakeLists.txt.user
+=======
+CMakeLists.txt.user
+>>>>>>> 83a6a89654a9fd2563895dac9e41336ada8250ac

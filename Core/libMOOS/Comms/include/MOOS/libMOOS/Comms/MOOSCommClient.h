@@ -236,7 +236,7 @@ public:
     /** how much incoming mail is pending?*/
     unsigned int GetNumberOfUnreadMessages();
 
-    /** how much incoming mail is pending?*/
+    /** how much outgoing mail is pending?*/
     unsigned int GetNumberOfUnsentMessages();
 
     /** get total number of bytes sent*/
@@ -271,7 +271,10 @@ public:
     /** used to control debug printing */
     void SetVerboseDebug(bool bT){m_bVerboseDebug = bT;};
     
+    /** Set the number of ms between loops of the Comms thread (not relevent if teh cleint is Asynchoronous)*/
     bool SetCommsTick(int nCommsTick);
+
+    bool ExpectOutboxOverflow(unsigned int outbox_pending_size);
 
     /**
      * return name of community the client is attached to
@@ -639,6 +642,9 @@ protected:
     /** true if after handshaking DB announces its ability to support aysnc comms*/
     bool m_bDBIsAsynchronous;
 
+
+    /** true if we expect Comms to overflow and want older (unsent) messages to be replaced by new ones */
+    bool m_bExpectMailBoxOverFlow;
 
     //how much to delay outgoing mail thread as a proportion oof timewarp
     double m_dfOutGoingDelayTimeWarpScaleFactor;
