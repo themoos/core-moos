@@ -3,23 +3,23 @@
 //
 //   This file is part of the MOOS project
 //
-//   MOOS : Mission Oriented Operating Suite A suit of 
-//   Applications and Libraries for Mobile Robotics Research 
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
 //   Copyright (C) Paul Newman
-//    
-//   This software was written by Paul Newman at MIT 2001-2002 and 
-//   the University of Oxford 2003-2013 
-//   
-//   email: pnewman@robots.ox.ac.uk. 
-//              
+//
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
 //   http://www.gnu.org/licenses/lgpl.txt
-//          
-//   This program is distributed in the hope that it will be useful, 
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
 **/
@@ -68,6 +68,7 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
     case 500000:    nLinuxBaudRate = B500000; break;
 #endif
     case 115200:    nLinuxBaudRate = B115200; break;
+    case 57600:     nLinuxBaudRate = B57600;  break;
     case 38400:     nLinuxBaudRate = B38400;  break;
     case 19200:     nLinuxBaudRate = B19200;  break;
     case 9600:      nLinuxBaudRate = B9600;   break;
@@ -119,7 +120,7 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
 
 	if(m_nPortFD!=0)
 		m_sPort = sPort;
-	
+
     return  m_nPortFD!=0;
 }
 
