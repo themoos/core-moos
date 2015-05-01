@@ -68,6 +68,7 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
     case 500000:    nLinuxBaudRate = B500000; break;
 #endif
     case 115200:    nLinuxBaudRate = B115200; break;
+    case 57600:     nLinuxBaudRate = B57600;  break;
     case 38400:     nLinuxBaudRate = B38400;  break;
     case 19200:     nLinuxBaudRate = B19200;  break;
     case 9600:      nLinuxBaudRate = B9600;   break;
