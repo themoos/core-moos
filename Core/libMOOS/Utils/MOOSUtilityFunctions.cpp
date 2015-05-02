@@ -63,6 +63,8 @@
 #include "winbase.h"
 #include "winnt.h"
 #include <conio.h>
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
 #endif
 
 #include <iostream>
