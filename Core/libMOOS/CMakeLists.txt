@@ -98,6 +98,11 @@ IF (USE_ASYNC_COMMS)
   set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
 ENDIF (USE_ASYNC_COMMS)
 
+#do we want to use the new fast asynchronous client architecture?
+OPTION(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
+IF(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+    ADD_DEFINITIONS(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+ENDIF(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
 
 #do we want to turn on the experimental clock skew detection?
 OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
