@@ -36,44 +36,59 @@
 #endif
 
 #include "XPCException.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+#include <string>
+#include <vector>
 
 class XPCGetProtocol
 {
+    private:
+        static CMOOSLock _ProtocolLock;
+        // Helper class: encapsulates a copy of the protoent structure
+        class ProtoEnt {
+            private:
+                std::string _name;
+                std::vector<std::string> _aliases;
+                int _number;
+
+            public:
+                ProtoEnt(struct protoent const* ent);
+                ~ProtoEnt();
+                std::string const& name() const;
+                int number() const;
+        };
+        int _index;
+        std::vector<ProtoEnt> _protocols;
+    public:
 #ifdef UNIX
-    char cIteratorFlag;        // Protocol database iteration flag
-#endif
-    struct protoent *protocolPtr;    // Pointer to protocol database entry
-public:
-#ifdef UNIX
-    // Default constructor.  Opens the protocol database
-    XPCGetProtocol()
-    {
-        vOpenProtocolDb();
-    }
-#endif
-
-    // Constructor.  Returns the protoent structure given the protocol name.
-    XPCGetProtocol(const char *_sName);
-
-    // Constructor.  Returns the protoent structure given the protocol number
-    XPCGetProtocol(int _iProtocol);
-
-    // Destructor closes the database connection
-    ~XPCGetProtocol();
-
-#ifdef UNIX
-    // Opens the protocol database and sets the cIteratorFlag to true
-    void vOpenProtocolDb();
-
-    // Iterates through the list of protocols
-    char cGetNextProtocol();
+        // Default constructor.  Opens the protocol database
+        XPCGetProtocol()
+        {
+            vOpenProtocolDb();
+        }
 #endif
 
-    // Returns the protocol name
-    char *sGetProtocolName() { return protocolPtr->p_name; }
+        // Constructor.  Returns the protoent structure given the protocol name.
+        XPCGetProtocol(const char *_sName);
 
-    // Returns the protcol number
-    int iGetProtocolNumber() { return protocolPtr->p_proto; }
+        // Constructor.  Returns the protoent structure given the protocol number
+        XPCGetProtocol(int _iProtocol);
+
+        // Destructor closes the database connection
+        ~XPCGetProtocol();
+
+#ifdef UNIX
+        // Opens and reads the protocol database
+        void vOpenProtocolDb();
+
+        // Iterates through the list of protocols
+        char cGetNextProtocol();
+#endif
+
+        // Returns the protocol name
+        char const* sGetProtocolName() { return _index >= static_cast<int>(_protocols.size())? "": _protocols[_index].name().c_str(); }
+
+        // Returns the protcol number
+        int iGetProtocolNumber() { return _index >= static_cast<int>(_protocols.size())? 0: _protocols[_index].number(); }
 };
-
 #endif
