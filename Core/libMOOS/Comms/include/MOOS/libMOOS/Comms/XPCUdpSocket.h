@@ -30,6 +30,7 @@
 
 #include "XPCSocket.h"
 #include <map>
+#include <string>
 
 
 class XPCUdpSocket : public XPCSocket
