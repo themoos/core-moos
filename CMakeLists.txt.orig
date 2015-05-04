@@ -14,7 +14,7 @@ set(PROJECTNAME MOOS)
 
 set(PACKAGE_VERSION_MAJOR 10)
 set(PACKAGE_VERSION_MINOR 0)
-set(PACKAGE_VERSION_PATCH 2)
+set(PACKAGE_VERSION_PATCH 1)
 
 set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 message(STATUS "+++  This MOOS version ${PACKAGE_VERSION} +++")
@@ -97,6 +97,7 @@ if(CODE_COVERAGE)
       message(STATUS "Enabling CDash targets as coverage has been enabled.")
     endif()
   endif(CMAKE_COMPILER_IS_GNUCXX)
+<<<<<<< HEAD
 endif()
 
 # Option for explicitly linking against the GNU libstdc++ instead of libc++ on
@@ -127,6 +128,8 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       string(REPLACE "-stdlib=libstdc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     endif()
   endif()
+=======
+>>>>>>> 11b8ff129dc04cdf076fd32d39b8503f576122df
 endif()
 
 
@@ -151,11 +154,9 @@ add_subdirectory(Core)
 # Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
 # (This is a CACHE INTERNAL variable)
 option(ENABLE_EXPORT "do you want CMake to record this build so other projects can find it " ON)
+
 if(ENABLE_EXPORT)
    message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
-endif()
-
-if(1)
     if (PROJECT_EXPORT_LIBS)
         
         message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
@@ -181,18 +182,16 @@ if(1)
         
         foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
             file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")        
-            #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")\n" )
+            file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")" )
         endforeach()
         
         
     endif()
 
-	if(ENABLE_EXPORT)
-		# Stick build location in the central CMake user package registry, so that it may be easily found
-		if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-		  export(PACKAGE ${PROJECTNAME})
-		endif()
-	endif()
+# Stick build location in the central CMake user package registry, so that it may be easily found
+if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+  export(PACKAGE ${PROJECTNAME})
+endif()
 
 endif()
 
