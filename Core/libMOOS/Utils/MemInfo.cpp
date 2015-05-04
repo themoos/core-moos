@@ -31,6 +31,10 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <psapi.h>
+ #ifdef _MSC_VER
+ # pragma comment(lib, "psapi.lib")
+ #endif
+
 
 #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 #include <unistd.h>

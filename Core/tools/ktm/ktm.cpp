@@ -4,15 +4,21 @@
  *  Created on: Feb 6, 2014
  *      Author: pnewman
  */
-
+#if !defined(_WIN32)
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <arpa/inet.h>
+#else
+#include <winsock2.h>
+#include <stdio.h>
+#include <stdlib.h>
+#endif
+
 #include <string>
 #include <cstring>
-#include <arpa/inet.h>
 #include <stdexcept>
 
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"

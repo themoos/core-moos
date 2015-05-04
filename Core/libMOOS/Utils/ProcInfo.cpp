@@ -37,8 +37,9 @@
 
 #include <iostream>
 #include <iomanip>
+#if !defined(_MSC_VER)
 #include <unistd.h>
-
+#endif
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/ScopedLock.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex.h"

@@ -63,6 +63,8 @@
 #include "winbase.h"
 #include "winnt.h"
 #include <conio.h>
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
 #endif
 
 #include <iostream>
@@ -122,6 +124,12 @@ namespace MOOS
 
 	    nowtime = TimeVal.tv_sec;
 	    nowtm = localtime(&nowtime);
+
+		if (!nowtm)  // This happens e.g. when this is called with dfTime<0 (it really happens in MOOSDB!)
+		{
+			snprintf(stimeall, sizeof stimeall, "%03f", dfTime);
+			return std::string(stimeall);
+		}
 
 	    strftime(sdate, sizeof sdate, "%Y-%m-%d ", nowtm);
         strftime(stime, sizeof stime, "%H:%M:%S", nowtm);
