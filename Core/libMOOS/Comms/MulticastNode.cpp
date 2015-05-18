@@ -26,6 +26,7 @@
 #include "MOOS/libMOOS/Utils/CommsTools.h"
 #include "MOOS/libMOOS/Comms/MulticastNode.h"
 
+#include <cstring>
 
 namespace MOOS {
 
