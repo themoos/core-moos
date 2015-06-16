@@ -32,6 +32,8 @@
 
 #ifndef _WIN32
 #include "unistd.h"
+#else
+#include <io.h>
 #endif
 
 using namespace std;
