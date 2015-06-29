@@ -130,7 +130,8 @@ public:
 		if(!quiet_)
 		{
 		    std::cout<<MOOS::ConsoleColours::Yellow()<<"network performance data published on "<<destination_host_<<":"<<destination_port_<<"\n";
-		    std::cout<<"listen with \"nc -u -lk "<<destination_port_<<"\"\n";
+            std::cout<<"listen with \"nc -u -lk "<<destination_port_
+                    <<"\"\n"<<MOOS::ConsoleColours::reset();
 		}
 
 		return thread_.Start();

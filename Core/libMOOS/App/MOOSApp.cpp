@@ -452,7 +452,7 @@ bool CMOOSApp::Configure()
 {
 
     //are we being asked to be quiet?
-    SetQuiet(GetFlagFromCommandLineOrConfigurationFile("moos_quiet"));
+    SetQuiet(GetFlagFromCommandLineOrConfigurationFile("moos_quiet") || m_bQuiet);
 
 	//can we see the mission file?
 	if(!m_MissionReader.SetFile(m_sMissionFile.c_str()))
