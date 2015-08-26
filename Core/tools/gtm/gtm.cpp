@@ -184,7 +184,9 @@ public:
                     w!=rmessage.producers_.end();
                     w++)
                 {
+                    std::cerr<<MOOS::ConsoleColours::Red();
                     std::cerr<<*w<<" sends "<<m->first<<" to "<<kNoConsumer<<"\n";
+                    std::cerr<<MOOS::ConsoleColours::reset();
 
                     PrintMessageRoute(output_file,*w,kNoConsumer,m->first,true,false);
                 }
@@ -198,7 +200,10 @@ public:
                     w!=rmessage.consumers_.end();
                     w++)
                 {
+                    std::cerr<<MOOS::ConsoleColours::Red();
                     std::cerr<<*w<<" wants "<<m->first<<" from  "<<kNoProducer<<"\n";
+                    std::cerr<<MOOS::ConsoleColours::reset();
+
                     PrintMessageRoute(output_file,kNoProducer,*w,m->first,true,false);
                 }
             }

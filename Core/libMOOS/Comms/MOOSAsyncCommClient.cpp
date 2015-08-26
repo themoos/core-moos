@@ -110,7 +110,8 @@ bool MOOSAsyncCommClient::StartThreads() {
 
 bool MOOSAsyncCommClient::Close(bool) {
 
-    //std::cerr<<"MOOSAsyncCommClient::Close...\n";
+
+
 
     BASE::Close();
 
