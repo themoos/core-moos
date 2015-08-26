@@ -94,7 +94,8 @@ CMOOSDB::CMOOSDB()
     m_sDBName = "MOOSDB#1";
     m_sCommunityName = "#1";
     m_dfSummaryTime = MOOS::Time();
-    
+
+
     //her is the default port to listen on
     m_nPort = DEFAULT_MOOS_SERVER_PORT;
     
@@ -604,6 +605,12 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
 
         //update variable which publishes who is reading and writing what
         UpdateReadWriteSummaryVar();
+
+        size_t current_mem, max_mem;
+        m_ProcInfo.GetMemoryUsage(current_mem,max_mem);
+        m_EventLogger.AddEvent("memory",
+                               "moosdb",
+                               MOOSFormat("current=%.9d,max=%.9d", current_mem,max_mem));
     }
 
     if(!MsgListRx.empty())

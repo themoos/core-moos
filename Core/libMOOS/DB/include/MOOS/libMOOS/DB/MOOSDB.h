@@ -44,7 +44,7 @@
 #include "MOOS/libMOOS/DB/MOOSDBHTTPServer.h"
 #include "MOOS/libMOOS/DB/MsgFilter.h"
 #include "MOOS/libMOOS/DB/MOOSDBLogger.h"
-
+#include "MOOS/libMOOS/Utils/ProcInfo.h"
 
 //#ifdef HAVE_TR1_UNORDERED_MAP
 //	#include <tr1/unordered_map>
@@ -158,6 +158,7 @@ private:
     MOOSMSG_LIST_STRING_MAP m_HeldMailMap;
     DBVAR_MAP    m_VarMap;
 
+    MOOS::ProcInfo m_ProcInfo;
 
 
     HASH_MAP_TYPE<std::string,std::set< MOOS::MsgFilter > > m_ClientFilters;
