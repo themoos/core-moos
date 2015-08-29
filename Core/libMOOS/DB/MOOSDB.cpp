@@ -1152,7 +1152,11 @@ bool CMOOSDB::DoServerRequest(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     {
         return OnClearRequested(Msg,MsgTxList);
     }
-    
+    else if(Msg.m_sKey.find("FETCH_ALL_REGISTERED")!=string::npos)
+    {
+        return OnFetchAllRegistered(Msg,MsgTxList);
+    }
+
     
     
     return false;
@@ -1293,6 +1297,29 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     return true;
     
 }
+
+
+
+bool CMOOSDB::OnFetchAllRegistered(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
+{
+    MOOSMSG_LIST tmp;
+    if(!OnServerAllRequested(Msg,tmp))
+        return false;
+
+    MOOSMSG_LIST::iterator p;
+
+    for(p=tmp.begin();p!=tmp.end();p++){
+        if(m_VarMap.find(p->m_sKey)==m_VarMap.end())
+            continue; //strange...
+
+        if(m_VarMap[p->m_sKey].HasSubscriber(Msg.GetSource())){
+            MsgTxList.push_back(*p);
+        }
+    }
+    return true;
+
+}
+
 
 bool CMOOSDB::OnServerAllRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {

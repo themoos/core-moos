@@ -120,13 +120,14 @@ protected:
     bool VariableExists(const std::string & sVar);
     bool DoVarLookup(CMOOSMsg & Msg, MOOSMSG_LIST &MsgTxList);
 
-    /** Next three functions are unusual and their genus should not proliferate.
+    /** Next four functions are unusual and their genus should not proliferate.
     Very occasionally a client with a singularly unusual role may want to ask questions
     directly to the DB. The paired function is in MOOCCommClient::ServerRequest which
     unusually, is blocking (with timeout) - hence my edgey feel about these utilities*/
     bool OnServerAllRequested(CMOOSMsg & Msg, MOOSMSG_LIST & MsgTxList);
     bool OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList);
     bool OnVarSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList);
+    bool OnFetchAllRegistered(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList);
 
     void UpdateDBTimeVars();
     void UpdateDBClientsVar();
