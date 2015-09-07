@@ -34,6 +34,10 @@
 #include "unistd.h"
 #endif
 
+#ifdef _WIN32
+#include <io.h>
+#endif
+
 using namespace std;
 //----------------------------------------------------------------
 // Constructor(s)
@@ -317,8 +321,11 @@ bool AppCastingMOOSInstrument::OnStartUpDirectives(string directives)
 
   // Use isatty to detect if stdout is going to /dev/null/
   // If so, set m_term_reporting to false.
-  if(!MOOSStrCmp(term_reporting, "true") && (isatty(1) == 0))
-    m_term_reporting = false;
+#ifdef _WIN32
+  if (!MOOSStrCmp(term_reporting, "true") && (_isatty(1) == 0))
+#else
+  if (!MOOSStrCmp(term_reporting, "true") && (isatty(1) == 0))
+#endif 
   
   return(return_value);
 }
