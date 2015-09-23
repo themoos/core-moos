@@ -89,7 +89,7 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
     if (m_nPortFD <0)
     {
         perror(sPort);
-        exit(-1);
+        return false;
     }
 
     //save the current configuration
