@@ -628,7 +628,7 @@ bool ThreadedCommServer::ClientThread::Run()
 
         case 0:
             //timeout...nothing to read - spin
-        	if(MOOSLocalTime()-dfLastGoodComms>_dfClientTimeout)
+        	if(MOOSLocalTime(false)-dfLastGoodComms>_dfClientTimeout)
         	{
         		std::cout<<MOOS::ConsoleColours::Red();
         		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<_dfClientTimeout<<" seconds of silence\n";
