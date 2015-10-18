@@ -651,7 +651,7 @@ bool ThreadedCommServer::ClientThread::Run()
                 }
 
                 //something good happened so record our success
-        		dfLastGoodComms = MOOSLocalTime();
+                dfLastGoodComms = MOOSLocalTime(false);
             }
             else
             {
