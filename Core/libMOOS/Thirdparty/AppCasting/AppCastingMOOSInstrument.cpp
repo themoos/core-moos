@@ -1,41 +1,44 @@
+///////////////////////////////////////////////////////////////////////////
+//
+//   This file is part of the MOOS project
+//
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
+//   Copyright (C) Paul Newman
+//
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
+//   This source code and the accompanying materials
+//   are made available under the terms of the GNU Lesser Public License v2.1
+//   which accompanies this distribution, and is available at
+//   http://www.gnu.org/licenses/lgpl.txt
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
-/*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
-/*    FILE: AppCastingMOOSApp.cpp                                */
-/*    DATE: June 5th 2012                                        */
+/*    NAME: Mohamed Saad Ibn Seddik                              */
+/*    ORGN: ENSTA Bretagne, Brest, FRANCE                        */
+/*    FILE: AppCastingMOOSInstrument.h                           */
+/*    DATE: March 14th 2015                                      */
 /*                                                               */
-/* This program is free software; you can redistribute it and/or */
-/* modify it under the terms of the GNU General Public License   */
-/* as published by the Free Software Foundation; either version  */
-/* 2 of the License, or (at your option) any later version.      */
-/*                                                               */
-/* This program is distributed in the hope that it will be       */
-/* useful, but WITHOUT ANY WARRANTY; without even the implied    */
-/* warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR       */
-/* PURPOSE. See the GNU General Public License for more details. */
-/*                                                               */
-/* You should have received a copy of the GNU General Public     */
-/* License along with this program; if not, write to the Free    */
-/* Software Foundation, Inc., 59 Temple Place - Suite 330,       */
-/* Boston, MA 02111-1307, USA.                                   */
-/*****************************************************************/
 
 #include <iostream>
-#include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
+#include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSInstrument.h"
 
 #ifndef _WIN32
 #include "unistd.h"
-#else
-#	include <stdio.h>
-#	include <io.h>
-#	define isatty _isatty  // MSVC define _isatty() instead of isatty()
 #endif
 
 using namespace std;
 //----------------------------------------------------------------
 // Constructor(s)
 
-AppCastingMOOSApp::AppCastingMOOSApp()
+AppCastingMOOSInstrument::AppCastingMOOSInstrument()
 {
   m_iteration  = 0;
   m_curr_time  = 0;
@@ -56,7 +59,7 @@ AppCastingMOOSApp::AppCastingMOOSApp()
 //----------------------------------------------------------------
 // Procedure: Iterate()
 
-bool AppCastingMOOSApp::Iterate()
+bool AppCastingMOOSInstrument::Iterate()
 {
   m_iteration++;
   m_curr_time = MOOSTime();
@@ -83,7 +86,7 @@ bool AppCastingMOOSApp::Iterate()
 //----------------------------------------------------------------
 // Procedure: PostReport()
 
-void AppCastingMOOSApp::PostReport(const string& directive)
+void AppCastingMOOSInstrument::PostReport(const string& directive)
 {
   m_ac.setIteration(m_iteration);
 
@@ -165,15 +168,16 @@ void AppCastingMOOSApp::PostReport(const string& directive)
 //----------------------------------------------------------------
 // Procedure: OnStartUp
 
-bool AppCastingMOOSApp::OnStartUp()
+bool AppCastingMOOSInstrument::OnStartUp()
 {
+  CMOOSInstrument::OnStartUp();
   return(OnStartUpDirectives());
 }
 
 //----------------------------------------------------------------
 // Procedure: OnStartUpDirectives
 
-bool AppCastingMOOSApp::OnStartUpDirectives(string directives)
+bool AppCastingMOOSInstrument::OnStartUpDirectives(string directives)
 {
   // First handle any special directives
   bool   must_have_moosblock = true;
@@ -322,7 +326,7 @@ bool AppCastingMOOSApp::OnStartUpDirectives(string directives)
 //----------------------------------------------------------------
 // Procedure: RegisterVariables
 
-void AppCastingMOOSApp::RegisterVariables()
+void AppCastingMOOSInstrument::RegisterVariables()
 {
   m_Comms.Register("APPCAST_REQ", 0);
 }
@@ -330,7 +334,7 @@ void AppCastingMOOSApp::RegisterVariables()
 //----------------------------------------------------------------
 // Procedure: OnNewMail()
 
-bool AppCastingMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
+bool AppCastingMOOSInstrument::OnNewMail(MOOSMSG_LIST &NewMail)
 {
   m_curr_time = MOOSTime();
 
@@ -357,7 +361,7 @@ bool AppCastingMOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
 //                  key=uMAC_438,       (name of client requesting)
 //                  thresh=any          (threshold for AC generation)
 
-void AppCastingMOOSApp::handleMailAppCastRequest(const string& str)
+void AppCastingMOOSInstrument::handleMailAppCastRequest(const string& str)
 {
   string s_key;
   string s_duration;
@@ -406,7 +410,7 @@ void AppCastingMOOSApp::handleMailAppCastRequest(const string& str)
 //            them has an appcast request that hasn't expired. All it 
 //            takes is one, and the appcast is thereby warranted.
 
-bool AppCastingMOOSApp::appcastRequested()
+bool AppCastingMOOSInstrument::appcastRequested()
 {
   bool requested = false;
 
@@ -434,7 +438,7 @@ bool AppCastingMOOSApp::appcastRequested()
 //----------------------------------------------------------------
 // Procedure: reportEvent
 
-void AppCastingMOOSApp::reportEvent(const string& str)
+void AppCastingMOOSInstrument::reportEvent(const string& str)
 {
   double timestamp = m_curr_time - m_start_time;
   m_ac.event(str, timestamp);
@@ -446,7 +450,7 @@ void AppCastingMOOSApp::reportEvent(const string& str)
 //----------------------------------------------------------------
 // Procedure: reportConfigWarning
 
-void AppCastingMOOSApp::reportConfigWarning(const string& str)
+void AppCastingMOOSInstrument::reportConfigWarning(const string& str)
 {
   m_new_cfg_warning = true;
   m_ac.cfgWarning(str);
@@ -455,7 +459,7 @@ void AppCastingMOOSApp::reportConfigWarning(const string& str)
 //----------------------------------------------------------------
 // Procedure: reportUnhandledConfigWarning
 
-void AppCastingMOOSApp::reportUnhandledConfigWarning(const string& orig)
+void AppCastingMOOSInstrument::reportUnhandledConfigWarning(const string& orig)
 {
   string orig_copy = orig;
   string param = MOOSToUpper(MOOSChomp(orig_copy, "="));
@@ -471,7 +475,7 @@ void AppCastingMOOSApp::reportUnhandledConfigWarning(const string& orig)
 //----------------------------------------------------------------
 // Procedure: reportRunWarning
 
-bool AppCastingMOOSApp::reportRunWarning(const string& str)
+bool AppCastingMOOSInstrument::reportRunWarning(const string& str)
 {
   m_new_run_warning = true;
   m_ac.runWarning(str);
@@ -481,7 +485,7 @@ bool AppCastingMOOSApp::reportRunWarning(const string& str)
 //----------------------------------------------------------------
 // Procedure: retractRunWarning
 
-void AppCastingMOOSApp::retractRunWarning(const string& str)
+void AppCastingMOOSInstrument::retractRunWarning(const string& str)
 {
   if(m_ac.getRunWarningCount() == 0)
     return;
@@ -500,7 +504,7 @@ void AppCastingMOOSApp::retractRunWarning(const string& str)
 // Procedure: getWarningCount()
 //      Note: Acceptable arguments: "config", "run", "all"
 
-unsigned int AppCastingMOOSApp::getWarningCount(const string& filter) const
+unsigned int AppCastingMOOSInstrument::getWarningCount(const string& filter) const
 {
   unsigned int total = 0;
   if((filter == "all") || (filter == "config"))

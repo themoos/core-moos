@@ -191,7 +191,8 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
 
             if (nCopied == -1) {
                 std::cerr << "big problem failed serialisation: "
-                        << __PRETTY_FUNCTION__ << "\n";
+                        << "CMOOSCommPkt::Serialize()" << "\n";  // Was: __PRETTY_FUNCTION__ which only exists in GCC
+
                 return false;
             }
 

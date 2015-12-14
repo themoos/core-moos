@@ -89,9 +89,8 @@ public:
     double 		GetCommsTime() const {return m_dfCommsTime;};
     
     
-    
-     
-
+    /** Get string contents, if applicable, as a const ref */
+    inline const std::string &GetStringRef() const { return m_sVal; }
 
 protected:
     double m_dfVal;

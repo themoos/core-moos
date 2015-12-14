@@ -45,7 +45,10 @@
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 
-
+#ifdef max
+#   undef min  // undefine so we can use std::min()
+#   undef max  // undefine so we can use std::max()
+#endif
 
 namespace MOOS {
 

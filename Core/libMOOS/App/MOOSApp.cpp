@@ -199,7 +199,7 @@ void CMOOSApp::PrintDefaultCommandLineSwitches()
 	std::cout<<"  --moos_app_tick=<number>    : frequency of application (if relevant) \n";
 	std::cout<<"  --moos_max_app_tick=<number>: max frequency of application (if relevant) \n";
 	std::cout<<"  --moos_comms_tick=<number>  : frequency of comms (if relevant) \n";
-    std::cout<<"  --moos_tw_delay_factor=<num>: comms delay as \% of time warp (if relevant) \n";
+    std::cout<<"  --moos_tw_delay_factor=<num>: comms delay as % of time warp (if relevant) \n";
 
 
 

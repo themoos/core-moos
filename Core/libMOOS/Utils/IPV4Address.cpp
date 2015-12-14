@@ -150,7 +150,9 @@ std::string IPV4Address::GetNumericAddress(const std::string & address)
 
 std::string IPV4Address::GetIPAddress()
 {
-
+#ifdef _MSC_VER
+    return "127.0.0.1";
+#else
     struct ifaddrs *ifaddr, *ifa;
     char host[NI_MAXHOST];
 
@@ -191,7 +193,7 @@ std::string IPV4Address::GetIPAddress()
     freeifaddrs(ifaddr);
 
     return "127.0.0.1";
-
+#endif
 }
 
 bool IPV4Address::ConvertHostToNumeric()
