@@ -9,14 +9,14 @@ compiler:
 
 before_script:
     - mkdir build/
-    - if ["`uname`" != "Darwin"]; then export MOOS_CXX_FLAGS="-fPIC -Wno-long-long"; fi
+    - if [ "`uname`" != "Darwin" ] ; then export MOOS_CXX_FLAGS="-fPIC -Wno-long-long"; fi
 
 env:
     - BUILD_TYPE=Release
 
 script:
     - cd build/
-    - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DTIME_WARP_AGGLOMERATION=0.4 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="$MOOS_CXX_FLAGS"..
+    - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DTIME_WARP_AGGLOMERATION=0.4 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS=$MOOS_CXX_FLAGS ..
     - cmake --build . --config Release
 
 after_script:
