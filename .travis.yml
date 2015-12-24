@@ -1,0 +1,23 @@
+language: cpp
+
+os:
+    - linux
+    - osx
+
+compiler:
+    - gcc
+
+before_script:
+    - mkdir build/
+    
+env:
+    - BUILD_TYPE=Release
+
+script:
+    - cd build/
+    - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DTIME_WARP_AGGLOMERATION=0.4 -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+    - cmake --build . --config Release
+
+after_script:
+    - cmake --build . --config Release --target install
+
