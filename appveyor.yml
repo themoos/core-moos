@@ -13,7 +13,7 @@ environment:
       VS_VERSION: Visual Studio 12
       
     - BUILD_TYPE: cmake
-      VS_VERSION: Visual Studio 13
+      VS_VERSION: Visual Studio 14 2015
 
 shallow_clone: true
 
