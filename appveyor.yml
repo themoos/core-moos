@@ -7,10 +7,10 @@ platform:
 environment:
     matrix:
     - BUILD_TYPE: cmake
-      VS_VERSION: Visual Studio 11
+      VS_VERSION: Visual Studio 11 2012
     
     - BUILD_TYPE: cmake
-      VS_VERSION: Visual Studio 12
+      VS_VERSION: Visual Studio 12 2013
       
     - BUILD_TYPE: cmake
       VS_VERSION: Visual Studio 14 2015
@@ -24,7 +24,7 @@ init:
 
 build_script:
     - cd build
-    - cmake -G "%VS_FULL%" -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DTIME_WARP_AGGLOMERATION=0.4 -DCMAKE_BUILD_TYPE=$BUILD_TYPE ../
+    - cmake -G "%VS_FULL%" -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DTIME_WARP_AGGLOMERATION=0.4 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="/w" ../
     - cmake --build . --config Release
 
 on_success:
