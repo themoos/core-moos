@@ -578,7 +578,7 @@ bool ThreadedCommServer::ClientThread::Run()
     struct timeval timeout;        // The timeout value for the select system call
     fd_set fdset;                // Set of "watched" file descriptors
 
-    double dfLastGoodComms = MOOSLocalTime();
+    double dfLastGoodComms = MOOSLocalTime(false);
 
     //this is an io-bound important thread...
     if(_bBoostThread)
@@ -651,7 +651,7 @@ bool ThreadedCommServer::ClientThread::Run()
                 }
 
                 //something good happened so record our success
-        		dfLastGoodComms = MOOSLocalTime();
+        		dfLastGoodComms = MOOSLocalTime(false);
             }
             else
             {
