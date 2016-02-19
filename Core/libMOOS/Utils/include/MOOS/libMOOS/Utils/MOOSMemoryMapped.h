@@ -104,7 +104,7 @@ public:
         }
 #else
         //linux side..
-        m_hMapHandle = open(m_sName.c_str(), O_RDWR, 0);
+        m_hMapHandle = open(m_sName.c_str(), O_RDONLY, 0);
         if (m_hMapHandle != -1)
         {
             //get file stats
