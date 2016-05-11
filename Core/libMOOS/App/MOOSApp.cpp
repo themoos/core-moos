@@ -3,21 +3,21 @@
 //
 //   This file is part of the MOOS project
 //
-//   MOOS : Mission Oriented Operating Suite A suit of 
-//   Applications and Libraries for Mobile Robotics Research 
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
 //   Copyright (C) Paul Newman
-//    
-//   This software was written by Paul Newman at MIT 2001-2002 and 
-//   the University of Oxford 2003-2013 
-//   
-//   email: pnewman@robots.ox.ac.uk. 
-//              
+//
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
-//   http://www.gnu.org/licenses/lgpl.txt  This program is distributed in the hope that it will be useful, 
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//   http://www.gnu.org/licenses/lgpl.txt  This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
 **/
@@ -55,7 +55,7 @@
 using namespace std;
 
 // predicate for sorting on time
-bool MOOSMsgTimeSorter(const CMOOSMsg  &M1, const CMOOSMsg &M2) 
+bool MOOSMsgTimeSorter(const CMOOSMsg  &M1, const CMOOSMsg &M2)
 {
     return (M1.GetTime() < M2.GetTime());
 }
@@ -103,13 +103,13 @@ bool MOOSAPP_OnMail(void *pParam)
     if(pParam!=NULL)
     {
         CMOOSApp* pApp = (CMOOSApp*)pParam;
-        
+
         //client mail work
         return pApp->OnMailCallBack();
-        
+
     }
     return false;
-    
+
 }
 
 bool MOOSAPP_OnMessage(CMOOSMsg & M, void *pParam)
@@ -150,9 +150,9 @@ CMOOSApp::CMOOSApp()
 	m_bAppError = false;
     m_bQuitOnIterateFail = false;
 	m_bQuitRequested = false;
-    
+
     SetMOOSTimeWarp(1.0);
-    
+
 #ifdef ASYNCHRONOUS_CLIENT
     m_pMailEvent = new Poco::Event;
     UseMailCallBack();
@@ -339,7 +339,7 @@ bool CMOOSApp::Run( const std::string & sName,
 	//or do more work in configuring
 	if(m_CommandLineParser.IsAvailable())
 		OnProcessCommandLine();
-    
+
 	//what time did we start?
 	m_dfAppStartTime = MOOSTime();
 
@@ -680,7 +680,7 @@ void CMOOSApp::DoBanner()
 
 }
 
-/*called by a third party to request a MOOS App to quit - only useful for 
+/*called by a third party to request a MOOS App to quit - only useful for
  example if a MOOSApp is run in a secondary thread */
 bool CMOOSApp::RequestQuit()
 {
@@ -710,23 +710,23 @@ bool CMOOSApp::DoRunWork()
             //   process mail
             if(m_bSortMailByTime)
                 MailIn.sort(MOOSMsgTimeSorter);
-            
-            
+
+
             //call our own private version
             OnNewMailPrivate(MailIn);
-            
+
             //classes will have their own personal versions of this
             OnNewMail(MailIn);
-            
+
             m_nMailCount++;
         }
-        
+
 
         if(m_Comms.IsConnected() ||  CanIterateWithoutComms() )
         {
             //do private work
             IteratePrivate();
-            
+
             if(bIterateRequired)
             {
 				//////////////////////////////////////
@@ -748,7 +748,7 @@ bool CMOOSApp::DoRunWork()
 
 
             }
-            
+
             m_nIterateCount++;
         }
     }
@@ -766,16 +766,16 @@ bool CMOOSApp::DoRunWork()
 			if(m_bQuitOnIterateFail && !bOK)
 				return false;
         }
-        
+
         m_nIterateCount++;
     }
-    
 
-    
+
+
 
 
     return true;
-    
+
 }
 
 bool CMOOSApp::SetIterateMode(IterateMode Mode)
@@ -1151,14 +1151,14 @@ bool CMOOSApp::ConfigureComms()
 
     //register a callback for On Connect
     m_Comms.SetOnConnectCallBack(MOOSAPP_OnConnect,this);
-    
+
     //and one for the disconnect callback
     m_Comms.SetOnDisconnectCallBack(MOOSAPP_OnDisconnect,this);
 
     //start the comms client....
     if(m_sMOOSName.empty())
         m_sMOOSName = m_sAppName;
-    
+
     m_Comms.Run(m_sServerHost.c_str(),m_lServerPort,m_sMOOSName.c_str(),m_nCommsFreq);
 
     return true;
@@ -1256,7 +1256,7 @@ bool CMOOSApp::PublishFreshMOOSVariables()
     for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();p++)
     {
         CMOOSVariable & Var = p->second;
-        if(Var.IsFresh())
+        if(Var.IsFresh() && !(Var.GetPublishName().empty()))
         {
             if(Var.IsDouble())
             {
@@ -1303,10 +1303,10 @@ bool CMOOSApp::SetMOOSVar(const string &sVarName,const  string &sVal, double dfT
 bool CMOOSApp::SetMOOSVar(const CMOOSVariable& Var)
 {
     MOOSVARMAP::iterator p = m_MOOSVars.find(Var.GetName ());
-	
+
     if(p==m_MOOSVars.end())
         return false;
-	
+
     p->second = Var;
     p->second.SetFresh (true);
     return true;
@@ -1479,7 +1479,7 @@ std::string CMOOSApp::MakeStatusString()
     ssStatus<<"AppErrorFlag="<<(m_bAppError?"true":"false")<<",";
     if(m_bAppError)
         ssStatus<<"AppErrorReason="<<m_sAppError<<",";
-    
+
     ssStatus<<"Uptime="<<MOOSTime()-GetAppStartTime()<<",";
 
     double dfCPULoad;
