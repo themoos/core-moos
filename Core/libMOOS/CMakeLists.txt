@@ -98,7 +98,7 @@ if(USE_ASYNC_COMMS)
   set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
 endif()
 
-#do we want to use the new fast asynchronous client architecture?
+#do we want to disable host name lookups?
 option(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
 if(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
     add_definitions(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)

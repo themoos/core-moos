@@ -55,7 +55,7 @@ namespace MOOS
 
 
 
-////////////////////// STRING MANIPULATION/EXTRATION TOOLS ///////////////////////////////
+////////////////////// STRING MANIPULATION/EXTRACTION TOOLS ///////////////////////////////
 
 typedef std::list<std::string> STRING_LIST ;
 

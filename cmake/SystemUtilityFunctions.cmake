@@ -97,7 +97,7 @@ function( moos_get_compiler_version COMPILER_VERSION )
 
   endif()
 
-  # replace any forward slashs with a -, the submission name changes at
+  # replace any forward slashes with a -, the submission name changes at
   # different stages otherwise, resulting in apparent multiple commits
   string(REGEX REPLACE "/" "-" compiler_info ${compiler_info})
   set( ${COMPILER_VERSION} "${compiler_info}" PARENT_SCOPE )

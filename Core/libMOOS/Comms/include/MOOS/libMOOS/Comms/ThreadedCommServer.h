@@ -40,7 +40,7 @@ namespace MOOS
 {
 
 //this is a small container structure used to hold data which is shared
-//between classes the in concert support teh threadedcommserver
+//between classes the in concert support the threadedcommserver
 struct ClientThreadSharedData
 {
 
