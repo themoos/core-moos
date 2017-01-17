@@ -41,9 +41,10 @@
 
 //some conditional stuff..
 #ifdef _WIN32
-    #include "windows.h"
+    #include <winsock2.h>
     #include "winbase.h"
     #include "winnt.h"
+    #include "windows.h"
 #else
     #include <pthread.h>
 #endif
