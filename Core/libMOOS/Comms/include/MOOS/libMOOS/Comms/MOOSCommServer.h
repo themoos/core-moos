@@ -323,6 +323,9 @@ protected:
 
     MOOS::ServerAudit m_Auditor;
 
+    //print heartbeat;
+    bool m_bPrintHeartBeat;
+
 
 
 

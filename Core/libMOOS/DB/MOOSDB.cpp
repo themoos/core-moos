@@ -233,6 +233,7 @@ void PrintHelpAndExit()
 	std::cout<<"--tcpnodelay                       disable nagle algorithm \n";
 	std::cout<<"--audit_port=<unsigned int>        specify port on which to transmit statistics\n";
     std::cout<<"--event_log=<file name>            specify file in which to record events\n";
+    std::cout<<"--print_heart_beat                 indicate DB heartbeat every second\n";
 
 
 

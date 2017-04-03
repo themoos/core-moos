@@ -132,6 +132,7 @@ CMOOSCommServer::CMOOSCommServer()
     m_bQuiet  = false;
 	m_bDisableNameLookUp = true;
 	m_bQuit = false;
+    m_bPrintHeartBeat = false;
 
 	m_bBoostIOThreads= false;
 
@@ -208,7 +209,7 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 	if(m_CommandLineParser.IsAvailable())
 	{
 
-
+        m_bPrintHeartBeat = m_CommandLineParser.GetFlag("--print_heart_beat");
 
 		//here we look to parse latency
 		//--latency=y:10
@@ -523,7 +524,6 @@ bool CMOOSCommServer::ServerLoop()
     if(m_bBoostIOThreads)
     	MOOS::BoostThisThread();
 
-
     while(!m_ServerThread.IsQuitRequested())
     {
 
@@ -619,6 +619,10 @@ bool CMOOSCommServer::ServerLoop()
 
         //zero socket set..
         FD_ZERO(&fdset);
+
+        if(m_bPrintHeartBeat){
+            std::cerr<<"DB::ServerLoop ticks at "<< MOOSTime()<<"\n";
+        }
 
     }
 

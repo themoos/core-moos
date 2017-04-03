@@ -224,30 +224,32 @@ bool ThreadedCommServer::ServerLoop()
     {
         ClientThreadSharedData SDFromClient;
 
-       
-        if(m_SharedDataListFromClient.IsEmpty())
-        {
+        if(m_bPrintHeartBeat){
+            std::cerr<<"DB::ServerLoop (threaded) ticks at "<< (int)MOOSTime()<<"\n";
+        }
+
+
+        if(m_SharedDataListFromClient.IsEmpty()){
             if(!m_SharedDataListFromClient.WaitForPush(1000))
                 continue;
         }
 
         m_SharedDataListFromClient.Pull(SDFromClient);
 
-        switch(SDFromClient._Status)
-        {
-        case ClientThreadSharedData::PKT_READ:
-        {
-            ProcessClient(SDFromClient,m_Auditor);
-            break;
-        }
+        switch(SDFromClient._Status){
+            case ClientThreadSharedData::PKT_READ:
+            {
+                ProcessClient(SDFromClient,m_Auditor);
+                break;
+            }
 
-        case ClientThreadSharedData::CONNECTION_CLOSED:
-            OnClientDisconnect(SDFromClient);
-            m_Auditor.Remove(SDFromClient._sClientName);
-            break;
+            case ClientThreadSharedData::CONNECTION_CLOSED:
+                OnClientDisconnect(SDFromClient);
+                m_Auditor.Remove(SDFromClient._sClientName);
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
 
     }
