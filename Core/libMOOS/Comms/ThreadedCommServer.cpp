@@ -209,7 +209,8 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
 bool ThreadedCommServer::ServerLoop()
 {
 
-
+    double last_heart_beat = MOOS::Time();
+    const double kHeartBeatPrintPeriod = 1.0;
 
 	m_Auditor.SetQuiet(m_bQuiet);
     m_Auditor.Run("localhost",m_nAuditPort);
@@ -224,8 +225,10 @@ bool ThreadedCommServer::ServerLoop()
     {
         ClientThreadSharedData SDFromClient;
 
-        if(m_bPrintHeartBeat){
-            std::cerr<<"DB::ServerLoop (threaded) ticks at "<< (int)MOOSTime()<<"\n";
+
+        if(m_bPrintHeartBeat && MOOS::Time()-last_heart_beat>kHeartBeatPrintPeriod){
+            last_heart_beat = MOOS::Time();
+            std::cerr<<"DB::ServerLoop (threaded) ticks at "<< (int)last_heart_beat<<"\n";
         }
 
 

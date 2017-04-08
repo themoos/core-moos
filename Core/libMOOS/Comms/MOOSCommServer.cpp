@@ -69,7 +69,7 @@ using namespace std;
 #define INVALID_SOCKET_SELECT EBADF
 #endif
 
-
+const double kHeartBeatPrintPeriod = 1.0;
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -524,6 +524,8 @@ bool CMOOSCommServer::ServerLoop()
     if(m_bBoostIOThreads)
     	MOOS::BoostThisThread();
 
+    double last_heart_beat = MOOS::Time();
+
     while(!m_ServerThread.IsQuitRequested())
     {
 
@@ -620,8 +622,9 @@ bool CMOOSCommServer::ServerLoop()
         //zero socket set..
         FD_ZERO(&fdset);
 
-        if(m_bPrintHeartBeat){
-            std::cerr<<"DB::ServerLoop ticks at "<< MOOSTime()<<"\n";
+        if(m_bPrintHeartBeat && MOOS::Time()-last_heart_beat>kHeartBeatPrintPeriod){
+            last_heart_beat = MOOS::Time();
+            std::cerr<<"DB::ServerLoop ticks at "<< last_heart_beat<<"\n";
         }
 
     }
