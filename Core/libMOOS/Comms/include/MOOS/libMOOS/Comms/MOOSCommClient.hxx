@@ -57,6 +57,8 @@ bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
 	if(!AddActiveQueue(sQueueName,Instance,memfunc))
 		return false;
 
+	MOOS::ScopedLock L(ActiveQueuesLock_);
+
 	WildcardQueuePatterns_[sQueueName]=sPattern;
 
 	//now we had better see if the wildcard queue is interested
