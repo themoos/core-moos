@@ -241,7 +241,7 @@ cache_internal_append_unique(PROJECT_EXPORT_LIBS
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
 include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS})
-add_library(${LIBNAME} STATIC ${SOURCES} ${PUBLIC_HEADERS})
+add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
 target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
 
 
