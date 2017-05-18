@@ -1256,6 +1256,9 @@ void MOOSTrace(string  sStr)
 void MOOSTrace(const char *FmtStr,...)
 {
 
+    //lock it! - just here - in case we use need MOOS trace furher down
+    MOOS::ScopedLock Lock(gTraceLock);
+
     //initially we wqnt to check to see if printing
     //from this thread has been inhibited by a call to
     //
@@ -1266,8 +1269,6 @@ void MOOSTrace(const char *FmtStr,...)
 #endif
 
     {
-        //lock it! - just here - in case we use need MOOS trace furher down
-        MOOS::ScopedLock Lock(gTraceLock);
 
         if(!gThread2TraceMap.empty())
 
@@ -1301,7 +1302,7 @@ void MOOSTrace(const char *FmtStr,...)
 
         if(n==sizeof(buf))
         {
-            MOOSTrace("WARNING MOOSTrace() TRUNCATED TO %d CHARS",sizeof(buf));
+            std::cerr<<"WARNING MOOSTrace() TRUNCATED TO"<<sizeof(buf)<<"CHARS"<<"\n";
         }
 
         va_end( arg_ptr );
@@ -1317,7 +1318,8 @@ void MOOSTrace(const char *FmtStr,...)
     //fputs(buf, stdout);
 
         //changed by pmn to use c++ streams
-        std::cout<<buf;
+        //changed 3/5/2017 to flush
+        std::cout<<buf<<std::flush;
 
     }
 }
