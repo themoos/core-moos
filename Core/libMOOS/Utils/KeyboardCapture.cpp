@@ -69,8 +69,7 @@ bool KeyboardCapture::Capture()
 #else
 	if(isatty(0)==0)
 #endif
-	{
-		std::cout<<"KeyboardCapture::Capture std::cin is not a tty. Thread exiting.\n";
+	{		
 		return false;
 	}
 
@@ -91,8 +90,24 @@ bool KeyboardCapture::Capture()
 	}
 	return true;
 }
+
+bool KeyboardCapture::CanCapture(){
+
+#ifdef _WIN32
+    if(_isatty(0)==0)
+#else
+    if(isatty(0)==0)
+#endif
+    {
+        return false;
+    }else{
+        return true;
+    }
+}
+
 bool KeyboardCapture::Start()
 {
+
 	impl_->worker_.Initialise(dispatch,this);
 	return impl_->worker_.Start();
 }
