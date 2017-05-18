@@ -43,6 +43,8 @@
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
 #include "MOOS/libMOOS/Comms/ClientCommsStatus.h"
+#include "MOOS/libMOOS/Comms/EndToEndAudit.h"
+
 
 
 
@@ -670,6 +672,7 @@ protected:
 private:
     std::map< std::string, double > m_RecurrentSubscriptions;
 
+    MOOS::EndToEndAudit end_to_end_auditor_;
 
 
 };

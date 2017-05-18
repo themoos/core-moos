@@ -105,6 +105,7 @@ bool MOOSAsyncCommClient::StartThreads() {
     if (!ReadingThread_.Start())
         return false;
 
+
     return true;
 }
 

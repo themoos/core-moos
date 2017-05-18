@@ -64,7 +64,7 @@
 #include "MOOS/libMOOS/Comms/MOOSSkewFilter.h"
 
 
-
+#include "MOOS/libMOOS/Comms/MulticastNode.h"
 
 
 
@@ -134,6 +134,12 @@ CMOOSCommClient::CMOOSCommClient()
     SetVerboseDebug(false);
 
 	SocketsInit();
+
+#ifdef ENABLE_DETAILED_TIMING_AUDIT
+    std::cerr<<"starting detailed timing audit\n";
+    end_to_end_auditor_.Start();
+#endif
+
 
 }
 
@@ -762,7 +768,9 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 
 	MOOS::ScopedLock L(ActiveQueuesLock_);
 
-
+#ifdef ENABLE_DETAILED_TIMING_AUDIT
+    double time_now = MOOSLocalTime();
+#endif
 	//before we start we can see if we have a default queue installed...
 	std::map<std::string, std::set<std::string> >::iterator q;
 
@@ -771,6 +779,10 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 	//iterate over all pending messages.
 	while(t!=m_InBox.end())
 	{
+
+#ifdef ENABLE_DETAILED_TIMING_AUDIT
+    end_to_end_auditor_.AddForAudit(*t,m_sMyName,time_now);
+#endif
 
 //	    std::cerr<<"Inbox size:"<<m_InBox.size()<<"\n";
 //	    t->Trace();
@@ -888,6 +900,7 @@ bool CMOOSCommClient::StartThreads()
         return false;
     if(!m_ClientThread.Start())
         return false;
+
 
 	return true;
 }
