@@ -32,6 +32,7 @@ public:
 	bool Capture();
 	bool Start();
 	bool GetKeyboardInput(char & input);
+    bool CanCapture();
 private:
 	class Impl;
 	Impl* impl_;
