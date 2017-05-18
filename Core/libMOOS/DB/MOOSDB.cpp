@@ -217,6 +217,7 @@ void PrintHelpAndExit()
     std::cout<<"--moos_suicide_phrase=<str>        suicide pass phrase  \n";
     std::cout<<"--moos_suicide_disable             disable suicide monitoring \n";
     std::cout<<"--moos_suicide_print               print suicide conditions \n";
+    std::cout<<"--moos_no_colour                   dont use colour in printing \n";
 
 
 
@@ -262,6 +263,11 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 {
 
 	MOOS::CommandLineParser P(argc,argv);
+
+    //disable colour printing maybe
+    if(P.GetFlag("--moos_no_colour")){
+        MOOS::ConsoleColours::Enable(false);
+    }
 
 
 	//mission file could be first free parameter
@@ -342,7 +348,6 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
     if(P.GetFlag("--moos_print_version"))
         OnPrintVersionAndExit();
-
 
 
 	bool bTCPNoDelay = false;
