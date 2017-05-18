@@ -124,7 +124,6 @@ public:
         _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
         _bShowTimingAdjustment  = m_CommandLineParser.GetFlag("-k","--skew");
 
-
         if(m_CommandLineParser.GetFlag("--moos_boost"))
         {
         	m_Comms.BoostIOPriority(true);
@@ -323,7 +322,13 @@ public:
         Scheduler.Initialise(ScheduleDispatch,this);
         Scheduler.Start();
 
-        _KeyBoardCapture.Start();
+        if(!_KeyBoardCapture.CanCapture()){
+            MOOSTrace("\ncannot capture keyboard from this terminal\n");
+        }else{
+            _KeyBoardCapture.Start();
+        }
+
+
 
         return true;
     }
@@ -704,8 +709,9 @@ int main (int argc, char* argv[])
 	std::stringstream ss;
 	srand ( static_cast<unsigned int>( time(NULL)) );
 	ss<<"umm-"<< rand() %1024;
-	std::string default_name = ss.str();
-	std::string app_name = P.GetFreeParameter(1, default_name);
+    std::string app_name = ss.str();
+
+    P.GetVariable("--moos_name",app_name);
 
     UMMClient TC1;
 
