@@ -20,7 +20,9 @@
 const int kFlusheveryN = 1;
 const int64_t kDefaultIgnoreDelayBelow=3000;
 
-const std::string kAuditDirectory = "moos_commms_audits";
+const std::string kDefaultLogFile = "default.moos_audit.log";
+const std::string kDefaultAuditDirectory = "moos_comms_audits";
+
 std::string multicast_address = "224.1.1.8";
 int multicast_port = 4000;
 std::string name_pattern;
@@ -52,7 +54,7 @@ void OpenLogFile(std::ofstream & ofs,
 
     std::string log_file_path;
     if(logfile_name.empty()){
-        log_file_path = logging_directory+"/"+MOOSGetTimeStampString()+".moos_audit";
+        log_file_path = logging_directory+"/"+MOOSGetTimeStampString()+".moos_audit.log";
     }else{
         log_file_path = logging_directory+"/"+logfile_name;
     }
@@ -143,8 +145,8 @@ int main(int argc, char *argv[])
         PrintHelpAndExit();
 
     //sort out logging!
-    std::string logging_directory = kAuditDirectory;
-    std::string log_file_name="moos_audit.log";
+    std::string logging_directory = kDefaultAuditDirectory;
+    std::string log_file_name=kDefaultLogFile;
     P.GetVariable("--log_directory",logging_directory);
     P.GetVariable("--log_name",log_file_name);
     bool logging = P.GetFlag("--log");
