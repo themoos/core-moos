@@ -75,19 +75,19 @@ void PrettyPrint(std::ostream & output_stream,const MOOS::EndToEndAudit::Message
 void LogToFile(std::ofstream & output_stream,const MOOS::EndToEndAudit::MessageStatistic & ms){
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<ms.receive_time-ms.source_time<<" ";
+    output_stream<<ms.receive_time-ms.source_time<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<ms.message_name<<" ";
+    output_stream<<ms.message_name<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<ms.source_client<<" ";
+    output_stream<<ms.source_client<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<ms.destination_client<<" ";
+    output_stream<<ms.destination_client<<",";
 
     output_stream<<std::left<<std::setw(20);
-    output_stream<<ms.receive_time<<" ";
+    output_stream<<ms.receive_time<<",";
 
     output_stream<<std::left<<std::setw(15);
     output_stream<<ms.cpu_load<<"\n";
@@ -104,19 +104,19 @@ void LogToFile(std::ofstream & output_stream,const MOOS::EndToEndAudit::MessageS
 
 void WriteHeader(std::ofstream & output_stream){
     output_stream<<std::left<<std::setw(15);
-    output_stream<<"%delay(uS)"<<" ";
+    output_stream<<"%delay(uS)"<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<"name"<<" ";
+    output_stream<<"name"<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<"src"<<" ";
+    output_stream<<"src"<<",";
 
     output_stream<<std::left<<std::setw(15);
-    output_stream<<"dest"<<" ";
+    output_stream<<"dest"<<",";
 
     output_stream<<std::left<<std::setw(20);
-    output_stream<<"rx_time"<<" ";
+    output_stream<<"rx_time"<<",";
 
     output_stream<<std::left<<std::setw(15);
     output_stream<<"cpu_load"<<"\n";
