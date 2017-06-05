@@ -39,15 +39,19 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
+#include "MOOS/libMOOS/Utils/ProcInfo.h"
 #include <queue>
 #include <ctime>
 #include <cmath>
 
 
+static double kMaxCPULoadPercent = 1600;
+
 #ifndef _WIN32
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
+
 
 unsigned int GetScreenWidth()
 {
@@ -63,6 +67,61 @@ unsigned int GetScreenWidth()
 }
 
 #endif
+
+/**
+ * @brief The CPUCoreLoader class loads one core
+ */
+class CPUCoreLoader{
+public:
+    CPUCoreLoader(double target_load){
+        target_load_ = std::max(0.0,target_load);
+        thread_.Initialise(dispatch,this);
+        thread_.Start();
+    }
+    static bool dispatch(void * pP){
+       CPUCoreLoader* pMe = (CPUCoreLoader*)pP;
+       return pMe->Worker();
+    }
+    bool Worker(){
+        int64_t iterations = 0;
+        double gain = 1000.0;
+        while(!thread_.IsQuitRequested()){
+            double load_now;
+            proc_info_.GetPercentageCPULoad(load_now);
+
+            iterations = std::max(0LL,iterations+ (int64_t)(gain*( target_load_-load_now)));
+            double dummy = 0;
+            for(int64_t i = 0;i<iterations;i++){
+                dummy+=std::max(0.0,std::atan(rand()+i/1.0));
+            }
+            MOOS::Pause(std::max(10,(int) -dummy ));
+
+        }
+        return true;
+    }
+    double target_load_;
+    CMOOSThread thread_;
+    MOOS::ProcInfo proc_info_;
+};
+
+class CPULoader{
+public:
+    CPULoader(double target_load):target_load_(target_load){
+        int num_core_loaders = int(target_load_)/100+1;
+        for(int i = 0;i<num_core_loaders;i++){
+            CPUCoreLoader* pCL = new CPUCoreLoader(target_load_);
+            core_loaders_.push_back(pCL);
+        }
+    }
+    ~CPULoader(){
+        for(int i = 0;i<core_loaders_.size();i++){
+            delete core_loaders_[i];
+        }
+    }
+
+    std::vector<CPUCoreLoader*> core_loaders_;
+    double target_load_;
+};
 
 
 void PrintHelp()
@@ -95,6 +154,7 @@ void PrintHelp()
     MOOSTrace("  --network_failure_prob=<numeric>       : probability of each DB interaction having network failure [0.1]\n");
     MOOSTrace("  --network_failure_time=<numeric>       : duration of network failure [3s]\n");
     MOOSTrace("  --application_failure_prob=<numeric>   : probability of application failing during DB-communication [0]\n");
+    MOOSTrace("  --cpu_load=<numeric>                   : percentage cpu loading to simulate (400% takes 4 cores etc.. )  [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
     MOOSTrace("  ./moos_test --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
@@ -214,6 +274,17 @@ public:
 
         _ApplicationExitProb = 0.0;
         m_CommandLineParser.GetVariable("--application_failure_prob",_ApplicationExitProb);
+
+        _cpu_load=0.0;
+        if(m_CommandLineParser.GetVariable("--cpu_load",_cpu_load)){
+            if(_cpu_load<0 || _cpu_load>kMaxCPULoadPercent){
+                std::cerr<<"CPU Load must be >0 and <= "<<kMaxCPULoadPercent<<"\n";
+            }else{
+                cpu_loader_ = new CPULoader(_cpu_load);
+            }
+        }
+
+
 
         _SimulateNetworkFailure= m_CommandLineParser.GetFlag("-N","--simulate_network_failure");
 
@@ -633,6 +704,9 @@ private:
     bool _bPingRxd;
     std::ofstream _LogFile;
     int _TxCount;
+    double _cpu_load;
+
+    CPULoader* cpu_loader_;
 
 
 
