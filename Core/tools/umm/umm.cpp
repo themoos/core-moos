@@ -40,6 +40,7 @@
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
+#include <algorithm>
 #include <queue>
 #include <ctime>
 #include <cmath>
