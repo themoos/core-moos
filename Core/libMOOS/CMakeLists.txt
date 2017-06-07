@@ -111,6 +111,13 @@ IF(ENABLE_DETAILED_TIMING_AUDIT)
     ADD_DEFINITIONS(-DENABLE_DETAILED_TIMING_AUDIT)
 ENDIF(ENABLE_DETAILED_TIMING_AUDIT)
 
+#do we want to enable multicast performance reporting
+OPTION(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON)
+IF(DEFAULT_NO_NAGLE)
+    ADD_DEFINITIONS(-DDEFAULT_NO_NAGLE)
+ENDIF(DEFAULT_NO_NAGLE)
+
+
 
 #do we want to turn on the experimental clock skew detection?
 OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)

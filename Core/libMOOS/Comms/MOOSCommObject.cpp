@@ -41,6 +41,9 @@
 #define DEFAULT_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
 #define DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB 128
 
+const int kMaxBufferSizeKB = 2048;
+
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -59,6 +62,13 @@ CMOOSCommObject::CMOOSCommObject()
     SetSendBufferSizeInKB(DEFAULT_SOCKET_SEND_BUFFER_SIZE_KB);
 
 
+#ifdef DEFAULT_NO_NAGLE
+    SetTCPNoDelay(true);
+#else
+    SetTCPNoDelay(false);
+#endif
+
+
 }
 
 CMOOSCommObject::~CMOOSCommObject()
@@ -66,21 +76,21 @@ CMOOSCommObject::~CMOOSCommObject()
 
 }
 
-bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,double dfDodgeyCommsDelay, double dfTerminateProbability)
+bool CMOOSCommObject::ConfigureCommsTesting(double dfDodgeyCommsProbability,
+                                            double dfDodgeyCommsDelay,
+                                            double dfTerminateProbability)
 {
     m_bFakeDodgyComms = true;
     m_dfDodgeyCommsProbability = dfDodgeyCommsProbability;
     m_dfDodgeyCommsDelay = dfDodgeyCommsDelay;
     m_dfTerminateProbability = dfTerminateProbability;
-
-
     return true;
 }
 
 
 bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
 {
-	if(KBytes>0 && KBytes<2048)
+    if(KBytes>0 && KBytes<kMaxBufferSizeKB)
 	{
 		m_nReceiveBufferSizeKB = KBytes;
 		return true;
@@ -109,7 +119,7 @@ void CMOOSCommObject::BoostIOPriority(bool bBoost)
 */
 bool CMOOSCommObject::SetSendBufferSizeInKB(unsigned int KBytes)
 {
-	if(KBytes>0 && KBytes<2048)
+    if(KBytes>0 && KBytes<kMaxBufferSizeKB)
 	{
 		m_nSendBufferSizeKB = KBytes;
 		return true;

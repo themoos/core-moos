@@ -398,6 +398,11 @@ bool CMOOSCommServer::ListenLoop()
 
         m_pListenSocket->vSetReuseAddr(1);
 #endif
+
+        if(m_bDisableNagle){
+            m_pListenSocket->vSetNoDelay(1);
+        }
+
         m_pListenSocket->vBindSocket();
     }
     catch(XPCException e)
