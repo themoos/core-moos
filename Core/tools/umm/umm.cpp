@@ -90,7 +90,7 @@ public:
             double load_now;
             proc_info_.GetPercentageCPULoad(load_now);
 
-            iterations = std::max(0LL,iterations+ (int64_t)(gain*( target_load_-load_now)));
+            iterations = std::max((int64_t)0,iterations+ (int64_t)(gain*( target_load_-load_now)));
             double dummy = 0;
             for(int64_t i = 0;i<iterations;i++){
                 dummy+=std::max(0.0,std::atan(rand()+i/1.0));
@@ -115,7 +115,7 @@ public:
         }
     }
     ~CPULoader(){
-        for(int i = 0;i<core_loaders_.size();i++){
+        for(size_t i = 0;i<core_loaders_.size();i++){
             delete core_loaders_[i];
         }
     }
