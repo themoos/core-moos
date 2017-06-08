@@ -174,6 +174,8 @@ int main(int argc, char *argv[])
     int number_messages_rxed = 0;
     int number_messages_logged = 0;
     double last_display_time = MOOSTime();
+    double average_latency_us = 0;
+    double alpha = 0.01;
     while(1)
     {
         std::string sReply;
@@ -183,6 +185,9 @@ int main(int argc, char *argv[])
             ms.FromString(sReply);
 
             number_messages_rxed++;
+            int64_t latency = ms.receive_time-ms.source_time;
+            average_latency_us=alpha*latency+(1.0-alpha)*average_latency_us;
+
             if(ShouldBeLogged(ms,ignore_delay_below_us)){
                 if(logging){
                     LogToFile(output_stream,ms);
@@ -195,9 +200,11 @@ int main(int argc, char *argv[])
 
         if(MOOSTime()-last_display_time>10.0){
             last_display_time = MOOSTime();
-            std::cerr<<MOOSFormat("\rprocessed %.8d messages and logged %.6d of them",
+            std::cerr<<MOOSFormat("processed %.8d messages and logged %.6d. "
+                                  "Mean delay %.2fuS\n",
                                   number_messages_rxed,
-                                  number_messages_logged);
+                                  number_messages_logged,
+                                  average_latency_us);
         }
 
 
