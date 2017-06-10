@@ -214,70 +214,70 @@ bool CMOOSCommObject::ReadPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nS
     return true;
 }
 
-bool CMOOSCommObject::ReadPktV2(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
-{
-    #define CHUNK_READ 8192
-    unsigned char Buffer[CHUNK_READ];
-    unsigned char *pBuffer = Buffer;
+//bool CMOOSCommObject::ReadPktV2(XPCTcpSocket *pSocket, CMOOSCommPkt &PktRx, int nSecondsTimeout)
+//{
+//    #define CHUNK_READ 8192
+//    unsigned char Buffer[CHUNK_READ];
+//    unsigned char *pBuffer = Buffer;
 
-    //now receive a message back..
-    int nRqd=0;
-    while((nRqd=PktRx.GetBytesRequired())!=0)
-    {
-        int nRxd = 0;
+//    //now receive a message back..
+//    int nRqd=0;
+//    while((nRqd=PktRx.GetBytesRequired())!=0)
+//    {
+//        int nRxd = 0;
 
-        try
-        {
-            if(nRqd<CHUNK_READ)
-            {
-                //read in in chunks of 1k
-                if(nSecondsTimeout<0)
-                {
-                    nRxd  = pSocket->iRecieveMessage(pBuffer,nRqd);
-                }
-                else
-                {
-                    nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,nRqd,(double)nSecondsTimeout);
-                }
-            }
-            else
-            {
-                //read in in chunks of 1k
-                if(nSecondsTimeout<0)
-                {
-                    nRxd  = pSocket->iRecieveMessage(pBuffer,CHUNK_READ);
-                }
-                else
-                {
-                    nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,CHUNK_READ,(double)nSecondsTimeout);
-                }
-            }
-        }
-        catch(XPCException e)
-        {
-            MOOSTrace("Exception %s\n",e.sGetException());
-            throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");
-        }
+//        try
+//        {
+//            if(nRqd<CHUNK_READ)
+//            {
+//                //read in in chunks of 1k
+//                if(nSecondsTimeout<0)
+//                {
+//                    nRxd  = pSocket->iRecieveMessage(pBuffer,nRqd);
+//                }
+//                else
+//                {
+//                    nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,nRqd,(double)nSecondsTimeout);
+//                }
+//            }
+//            else
+//            {
+//                //read in in chunks of 1k
+//                if(nSecondsTimeout<0)
+//                {
+//                    nRxd  = pSocket->iRecieveMessage(pBuffer,CHUNK_READ);
+//                }
+//                else
+//                {
+//                    nRxd  = pSocket->iReadMessageWithTimeOut(pBuffer,CHUNK_READ,(double)nSecondsTimeout);
+//                }
+//            }
+//        }
+//        catch(XPCException e)
+//        {
+//            MOOSTrace("Exception %s\n",e.sGetException());
+//            throw CMOOSException("CMOOSCommObject::ReadPkt() Failed Rx");
+//        }
 
-        switch(nRxd)
-        {
-        case -1:
-            throw CMOOSException("Gross error....");
-            break;
-        case 0:
-            if(nSecondsTimeout>0)
-                throw CMOOSException(MOOSFormat("remote side closed or lazy client ( waited more than %ds )",nSecondsTimeout));
-            else
-                throw CMOOSException("remote side closed....");
-            break;
-        default:
-            PktRx.Fill(pBuffer,nRxd);
-            break;
-        }
-    }
+//        switch(nRxd)
+//        {
+//        case -1:
+//            throw CMOOSException("Gross error....");
+//            break;
+//        case 0:
+//            if(nSecondsTimeout>0)
+//                throw CMOOSException(MOOSFormat("remote side closed or lazy client ( waited more than %ds )",nSecondsTimeout));
+//            else
+//                throw CMOOSException("remote side closed....");
+//            break;
+//        default:
+//            PktRx.Fill(pBuffer,nRxd);
+//            break;
+//        }
+//    }
 
-    return true;
-}
+//    return true;
+//}
 
 bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
 {

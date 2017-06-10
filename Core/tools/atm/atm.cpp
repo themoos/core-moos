@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
     double alpha = 0.01;
     while(1)
     {
+
         std::string sReply;
 
         if(multicast_listener.Read(sReply,1000)){
