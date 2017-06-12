@@ -1,0 +1,7 @@
+language: cpp
+compiler: gcc
+dist: trusty
+
+script:
+  - cmake .
+  - make -j3
