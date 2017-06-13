@@ -32,6 +32,10 @@
 
 #ifndef _WIN32
 #include "unistd.h"
+#else
+#	include <stdio.h>
+#	include <io.h>
+#	define isatty _isatty  // MSVC define _isatty() instead of isatty()
 #endif
 
 using namespace std;
