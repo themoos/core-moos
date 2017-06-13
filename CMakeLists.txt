@@ -4,10 +4,10 @@
 #   pnewman@robots.ox.ac.uk
 ###########################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8)
 
 cmake_policy(SET CMP0003 NEW)
-if (POLICY CMP0042)
+if(POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
 endif()
 
@@ -21,7 +21,7 @@ set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE
 message(STATUS "+++  This MOOS version ${PACKAGE_VERSION} +++")
 
 # If user specifies the build type, use theirs, otherwise use release
-if (NOT DEFINED CMAKE_BUILD_TYPE)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "")
 endif()
 
@@ -60,12 +60,12 @@ include(CacheInternalHelpers)
 option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
 mark_as_advanced(UPDATE_GIT_VERSION_INFO)
 if(UPDATE_GIT_VERSION_INFO)
-	include(GitInfo)
+    include(GitInfo)
 endif()
 
 # Do we want to create dynamic libraries?
 option(BUILD_SHARED_LIBS "Build lib${PROJECTNAME} as a shared library" OFF)
-if (BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS)
     message("-- Building lib${PROJECTNAME} as a shared library")
 else()
     message("-- Building lib${PROJECTNAME} as a static library")
@@ -73,11 +73,11 @@ endif()
 
 # Enable Doxygen build with 'make doxygen'
 option(ENABLE_DOXYGEN "Enable a 'make doc' target for Doxygen documentation")
-if (ENABLE_DOXYGEN)
+if(ENABLE_DOXYGEN)
     include(UseDoxygen)
 endif()
 
-# Enable CDash testing 
+# Enable CDash testing
 option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
 if( CDASH_SUPPORT )
   include(SystemUtilityFunctions)
@@ -89,7 +89,9 @@ if( CDASH_SUPPORT )
 endif()
 
 # Option for code coverage
-option(CODE_COVERAGE "Build code coverage results, requires GCC compiler (forces Debug build)" OFF)
+option(CODE_COVERAGE
+    "Build code coverage results, requires GCC compiler (forces Debug build)"
+    OFF)
 if(CODE_COVERAGE)
   if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_DEBUG
@@ -97,17 +99,17 @@ if(CODE_COVERAGE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 
     # Ensure that CDash targets are always enabled if coverage is enabled.
-    if (NOT CDASH_SUPPORT)
+    if(NOT CDASH_SUPPORT)
       get_property(HELP_STRING CACHE CDASH_SUPPORT PROPERTY HELPSTRING)
       set(CDASH_SUPPORT ON CACHE BOOL "${HELP_STRING}" FORCE)
       message(STATUS "Enabling CDash targets as coverage has been enabled.")
     endif()
-  endif(CMAKE_COMPILER_IS_GNUCXX)
+  endif()
 endif()
 
 # Option for explicitly linking against the GNU libstdc++ instead of libc++ on
 # OSX Mavericks, required in order to use iMatlab as MATLAB still uses libstdc++
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # On OSX, get the version number.
   find_program(SW_VERS_PROGRAM sw_vers)
   mark_as_advanced(SW_VERS_PROGRAM)
@@ -118,11 +120,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Mavericks (10.9) and above use libc++ as the default.
   set(OSX_MAVERICKS_VERSION 10.9)
 
-  if (OSX_VERSION VERSION_EQUAL OSX_MAVERICKS_VERSION OR
+  if(OSX_VERSION VERSION_EQUAL OSX_MAVERICKS_VERSION OR
       OSX_VERSION VERSION_GREATER OSX_MAVERICKS_VERSION)
     option(USE_LIBSTDCPP
       "Use (legacy) GNU libstdc++ on OSX >= ${OSX_MAVERICKS_VERSION}, instead of default LLVM libc++ (required for iMatlab)" OFF)
-    if (USE_LIBSTDCPP)
+    if(USE_LIBSTDCPP)
       message("Running OS X Mavericks (specific version: ${OSX_VERSION}) using "
         "legacy GNU libstdc++ instead of default LLVM libc++, disable "
         "USE_LIBSTDCPP option to revert to default LLVM libc++.")
@@ -130,7 +132,8 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     else()
       # Remove any previous specification of libstdc++.
       message(STATUS "Using default LLVM libc++.")
-      string(REPLACE "-stdlib=libstdc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+      string(REPLACE "-stdlib=libstdc++" "" CMAKE_CXX_FLAGS
+        "${CMAKE_CXX_FLAGS}")
     endif()
   endif()
 endif()
@@ -142,9 +145,9 @@ include(PlatformDefines)
 
 #####################################################
 # Toby Schneider's request for fPIC on amd64
-IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
- SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
-ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
 
 
 add_subdirectory(Core)
@@ -156,26 +159,27 @@ add_subdirectory(Core)
 
 # Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
 # (This is a CACHE INTERNAL variable)
-option(ENABLE_EXPORT "do you want CMake to record this build so other projects can find it " ON)
+option(ENABLE_EXPORT
+  "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
-   message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
+  message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
 endif()
 
 if(1)
-    if (PROJECT_EXPORT_LIBS)
-        
+    if(PROJECT_EXPORT_LIBS)
+
         message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
-        
+
         # Provide a cmake config script for the build directory
         export(TARGETS
             ${PROJECT_EXPORT_LIBS}
             FILE
             Use${PROJECTNAME}.cmake
         )
-    
+
         set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
         configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
-        
+
         # Append libary specific lines to the generated config script
         foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
             file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
@@ -184,21 +188,20 @@ if(1)
             file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
             file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
         endforeach()
-        
-        foreach(DEFINE ${PROJECT_EXPORT_DEFINES})        
-            file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")        
+
+        foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
+            file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")
             #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required my MOOS\")\n" )
         endforeach()
-        
-        
+
     endif()
 
-	if(ENABLE_EXPORT)
-		# Stick build location in the central CMake user package registry, so that it may be easily found
-		if ("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-		  export(PACKAGE ${PROJECTNAME})
-		endif()
-	endif()
+    if(ENABLE_EXPORT)
+        # Stick build location in the central CMake user package registry, so that it may be easily found
+        if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+          export(PACKAGE ${PROJECTNAME})
+        endif()
+    endif()
 
 endif()
 

@@ -1,10 +1,10 @@
 set(LIBNAME MOOS)
 
-SET(COMMS_SOURCES
+set(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
     Comms/MOOSAsyncCommClient.cpp
-	Comms/ClientCommsStatus.cpp
+    Comms/ClientCommsStatus.cpp
     Comms/MOOSCommObject.cpp
     Comms/MOOSCommPkt.cpp
     Comms/MOOSCommServer.cpp
@@ -21,43 +21,43 @@ SET(COMMS_SOURCES
     Comms/MessageQueueAccumulator.cpp
     Comms/SuicidalSleeper.cpp
     Comms/MulticastNode.cpp
-    Comms/EndToEndAudit.cpp       
+    Comms/EndToEndAudit.cpp
 )
 
-SET(APP_SOURCES
+set(APP_SOURCES
     App/MOOSApp.cpp
     App/MOOSInstrument.cpp
 )
 
 
-SET(UTILS_SOURCES
-   Utils/MOOSException.cpp
-   Utils/MOOSLock.cpp
-   Utils/MOOSFileReader.cpp
-   Utils/MOOSUtilityFunctions.cpp
-   Utils/ProcessConfigReader.cpp
-   Utils/MOOSLinuxSerialPort.cpp
-   Utils/MOOSSerialPort.cpp
-#  Utils/MOOSPlaybackStatus.cpp
-   Utils/IPV4Address.cpp
-   Utils/KeyboardCapture.cpp
-   Utils/ThreadPrint.cpp
-   Utils/CommandLineParser.cpp
-   Utils/ProcInfo.cpp
-   Utils/MemInfo.cpp
-   Utils/ThreadPriority.cpp
-   Utils/PeriodicEvent.cpp
-   Utils/ConsoleColours.cpp
-   Utils/CommsTools.cpp   
-   )
+set(UTILS_SOURCES
+    Utils/MOOSException.cpp
+    Utils/MOOSLock.cpp
+    Utils/MOOSFileReader.cpp
+    Utils/MOOSUtilityFunctions.cpp
+    Utils/ProcessConfigReader.cpp
+    Utils/MOOSLinuxSerialPort.cpp
+    Utils/MOOSSerialPort.cpp
+    #  Utils/MOOSPlaybackStatus.cpp
+    Utils/IPV4Address.cpp
+    Utils/KeyboardCapture.cpp
+    Utils/ThreadPrint.cpp
+    Utils/CommandLineParser.cpp
+    Utils/ProcInfo.cpp
+    Utils/MemInfo.cpp
+    Utils/ThreadPriority.cpp
+    Utils/PeriodicEvent.cpp
+    Utils/ConsoleColours.cpp
+    Utils/CommsTools.cpp
+)
 
-IF(WIN32)
-    SET(UTILS_SOURCES 
-	${UTILS_SOURCES}
- 	Utils/NTSerial.cpp
- 	Utils/MOOSNTSerialPort.cpp
- 	)
-ENDIF(WIN32)
+if(WIN32)
+    set(UTILS_SOURCES
+        ${UTILS_SOURCES}
+        Utils/NTSerial.cpp
+        Utils/MOOSNTSerialPort.cpp
+    )
+endif()
 
 
 
@@ -75,7 +75,7 @@ set(THIRDPARTY_SOURCES
 )
 
 
-SET(DB_SOURCES
+set(DB_SOURCES
     DB/MOOSDB.cpp
     DB/MOOSDBVar.cpp
     DB/MOOSRegisterInfo.cpp
@@ -87,98 +87,100 @@ SET(DB_SOURCES
 
 
 
-set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES}) 
+set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES})
 
 include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?
-OPTION(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
-IF (USE_ASYNC_COMMS)
+option(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
+if(USE_ASYNC_COMMS)
   set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
-ENDIF (USE_ASYNC_COMMS)
+endif()
 
 #do we want to use the new fast asynchronous client architecture?
-OPTION(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
-IF(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
-    ADD_DEFINITIONS(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
-ENDIF(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+option(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
+if(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+    add_definitions(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+endif()
 
 
 #do we want to enable multicast performance reporting
-OPTION(ENABLE_DETAILED_TIMING_AUDIT "enable detailed timing audit (for use with atm)" OFF)
-IF(ENABLE_DETAILED_TIMING_AUDIT)
-    ADD_DEFINITIONS(-DENABLE_DETAILED_TIMING_AUDIT)
-ENDIF(ENABLE_DETAILED_TIMING_AUDIT)
+option(ENABLE_DETAILED_TIMING_AUDIT "enable detailed timing audit (for use with atm)" OFF)
+if(ENABLE_DETAILED_TIMING_AUDIT)
+    add_definitions(-DENABLE_DETAILED_TIMING_AUDIT)
+endif()
 
 #do we want to enable multicast performance reporting
-OPTION(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON)
-IF(DEFAULT_NO_NAGLE)
-    ADD_DEFINITIONS(-DDEFAULT_NO_NAGLE)
-ENDIF(DEFAULT_NO_NAGLE)
+option(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON)
+if(DEFAULT_NO_NAGLE)
+    add_definitions(-DDEFAULT_NO_NAGLE)
+endif()
 
 
 
 #do we want to turn on the experimental clock skew detection?
-OPTION(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
-IF (DETECT_CLOCK_DRIFT)
-    ADD_DEFINITIONS(-DMOOS_DETECT_CLOCK_DRIFT)
-ENDIF (DETECT_CLOCK_DRIFT)
-MARK_AS_ADVANCED(DETECT_CLOCK_DRIFT)
+option(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
+if(DETECT_CLOCK_DRIFT)
+    add_definitions(-DMOOS_DETECT_CLOCK_DRIFT)
+endif()
+mark_as_advanced(DETECT_CLOCK_DRIFT)
 
 # Remove the extra field that was added to the MOOS message protocol in October 2009.
-OPTION(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
-IF (DISABLE_AUX_SOURCE)
-  ADD_DEFINITIONS(-DDISABLE_AUX_SOURCE)
-ENDIF (DISABLE_AUX_SOURCE)
-MARK_AS_ADVANCED(DISABLE_AUX_SOURCE)
+option(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
+if(DISABLE_AUX_SOURCE)
+  add_definitions(-DDISABLE_AUX_SOURCE)
+endif()
+mark_as_advanced(DISABLE_AUX_SOURCE)
 
 
 set(TIME_WARP_AGGLOMERATION_CONSTANT  0.0 CACHE STRING "comms agglomeration scale factor for high time warps")
-IF (${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
-  ADD_DEFINITIONS(-DTIME_WARP_AGGLOMERATION_CONSTANT=${TIME_WARP_AGGLOMERATION_CONSTANT})
-ENDIF ()
-MARK_AS_ADVANCED(TIME_WARP_AGGLOMERATION_CONSTANT)
+if(${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
+  add_definitions(-DTIME_WARP_AGGLOMERATION_CONSTANT=${TIME_WARP_AGGLOMERATION_CONSTANT})
+endif()
+mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 
 
 
-OPTION(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
-OPTION(ENABLE_V10_IVP_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers as expected by IvP " OFF)
-MARK_AS_ADVANCED(ENABLE_V10_IVP_COMPATIBILITY)
+option(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
+option(ENABLE_V10_IVP_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers as expected by IvP " OFF)
+mark_as_advanced(ENABLE_V10_IVP_COMPATIBILITY)
 
-IF (ENABLE_V10_COMPATIBILITY)
-    IF(ENABLE_V10_IVP_COMPATIBILITY)
-        set(COMPATIBILITY_HEADER_ROOTS 
+if(ENABLE_V10_COMPATIBILITY)
+    if(ENABLE_V10_IVP_COMPATIBILITY)
+        set(COMPATIBILITY_HEADER_ROOTS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSLIB
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSGenLib
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials/MOOSUtlityLib
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)        
-        message(WARNING "IVP V10 compatibility will be removed soon - please consider adding qualified include directories") 
-    ELSE()
-        set(COMPATIBILITY_HEADER_ROOTS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)
+        message(WARNING "IVP V10 compatibility will be removed soon - please consider adding qualified include directories")
+    else()
+        set(COMPATIBILITY_HEADER_ROOTS
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
         ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)
-    ENDIF()
-ENDIF ()
+    endif()
+endif()
 
-CONFIGURE_FILE(${CMAKE_MODULE_PATH}/ClientDefines.h.in
-${CMAKE_CURRENT_SOURCE_DIR}/App/include/MOOS/libMOOS/App/ClientDefines.h @ONLY)
+configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/include/MOOS/libMOOS/App/ClientDefines.h
+    @ONLY
+)
 
 
 ##########################
 # Packages / Dependencies
-set(INCLUDE_ROOTS  
+set(INCLUDE_ROOTS
 
 # this first entry is most likely empty but some souls may not want to update headers.
 # placing this location at the start of the search list will enable some
 # indirection
-                                    
+
     ${COMPATIBILITY_HEADER_ROOTS}
-    
+
 # these are standard locations for the (functional) partitioning of the libMOOS
 # library
-        
+
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
@@ -187,30 +189,30 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
-    )
-    
+)
+
 set(${LIBNAME}_DEPEND_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
     CACHE INTERNAL
-    "List of include dirs for the dependencies of ${LIBNAME}"    
+    "List of include dirs for the dependencies of ${LIBNAME}"
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
 
 if(UNIX)
     set(DEPENDENCIES pthread m)
-endif(UNIX)
+endif()
 
-IF(WIN32)
+if(WIN32)
   set(DEPENDENCIES wsock32 comctl32 ws2_32) # adding ws2_32 to support IPv6
   cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x600) # XP does not support IPv6. Moving to Vista and latter.
-  add_definitions(-D_WIN32_WINNT=0x600 )
-ENDIF(WIN32)
-    
+  add_definitions(-D_WIN32_WINNT=0x600)
+endif()
+
 
 set(${LIBNAME}_DEPEND_LIBRARIES
     ${DEPENDENCIES}
     CACHE INTERNAL
-    "List of libraries which are dependencies of ${LIBNAME}"    
+    "List of libraries which are dependencies of ${LIBNAME}"
 )
 list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_LIBRARIES)
 
@@ -237,11 +239,9 @@ list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
 ######################################
 #export the library - this is picked up and used by the chunk of
 #script at the end of the top level CMakeLists.txt file
-cache_internal_append_unique(PROJECT_EXPORT_LIBS 
+cache_internal_append_unique(PROJECT_EXPORT_LIBS
     ${LIBNAME}
 )
-
-
 
 #######################################
 # Create the library
@@ -260,7 +260,7 @@ install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MAT
 
 
 # install libraries
-INSTALL(TARGETS ${LIBNAME}
+install(TARGETS ${LIBNAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
