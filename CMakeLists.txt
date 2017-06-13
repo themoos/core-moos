@@ -49,7 +49,7 @@ include(EnableAllWarnings)
 # Bring in helper functions for dealing with CACHE INTERNAL variables
 include(CacheInternalHelpers)
 
-#figure out our git version
+# Figure out our git version
 option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
 mark_as_advanced(UPDATE_GIT_VERSION_INFO)
 if(UPDATE_GIT_VERSION_INFO)
@@ -70,34 +70,35 @@ if(ENABLE_DOXYGEN)
     include(UseDoxygen)
 endif()
 
-# Enable CDash testing
+# Option to enable CDash testing
 option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
-if( CDASH_SUPPORT )
-  include(SystemUtilityFunctions)
-  moos_make_informative_build_name(CTEST_BUILD_NAME)
-  # BUILDNAME is what is required for CTest
-  set(BUILDNAME ${CTEST_BUILD_NAME})
-  enable_testing()
-  include( CTest )
-endif()
 
 # Option for code coverage
-option(CODE_COVERAGE
-    "Build code coverage results, requires GCC compiler (forces Debug build)"
-    OFF)
+include(CMakeDependentOption)
+set(REQUIRE_CDASH_SUPPORT OFF)
+cmake_dependent_option(CODE_COVERAGE
+    "Build code coverage results, requires GCC compiler (forces Debug build)" OFF
+    "NOT CMAKE_COMPILER_IS_GNUCXX" OFF)
 if(CODE_COVERAGE)
-  if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_DEBUG
-      "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+        "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 
     # Ensure that CDash targets are always enabled if coverage is enabled.
     if(NOT CDASH_SUPPORT)
-      get_property(HELP_STRING CACHE CDASH_SUPPORT PROPERTY HELPSTRING)
-      set(CDASH_SUPPORT ON CACHE BOOL "${HELP_STRING}" FORCE)
-      message(STATUS "Enabling CDash targets as coverage has been enabled.")
+        get_property(HELP_STRING CACHE CDASH_SUPPORT PROPERTY HELPSTRING)
+        set(CDASH_SUPPORT ON CACHE BOOL "${HELP_STRING}" FORCE)
+        message(STATUS "Enabling CDash targets as coverage has been enabled.")
     endif()
-  endif()
+endif()
+
+if( CDASH_SUPPORT )
+  enable_testing()
+
+  # The BUILDNAME var is picked up by the CTest script
+  include(SystemUtilityFunctions)
+  moos_make_informative_build_name(BUILDNAME)
+  include( CTest )
 endif()
 
 # Option for explicitly linking against the GNU libstdc++ instead of libc++ on
