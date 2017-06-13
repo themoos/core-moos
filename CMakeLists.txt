@@ -149,16 +149,13 @@ endif()
 ###########  SETTING UP PREPROCESSOR ################
 include(PlatformDefines)
 
-
-#####################################################
-# Toby Schneider's request for fPIC on amd64
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+if(UNIX OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    # Cause shared libraries to be built with the -fPIC flag
+    # This flag requires CMake 2.8.9 or greater.
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-
 add_subdirectory(Core)
-
 
 #########################
 # Config Script Creation
