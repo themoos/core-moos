@@ -311,13 +311,7 @@ std::string & MOOSAddValToString(std::string & sIn, const std::string & sTok,con
 
 
 ///////// USEFUL MACRO FOR PREVENTING COMPILER WARNINGS
-#ifdef _WIN32
-#define UNUSED_PARAMETER(a) a
-#else
-#define UNUSED_PARAMETER(a)
-#endif
-
-
+#define UNUSED_PARAMETER(arg) ((void)&(arg))
 
 #endif
 
