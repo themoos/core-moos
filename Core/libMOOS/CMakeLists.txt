@@ -135,7 +135,6 @@ list(REMOVE_DUPLICATES MOOS_DEPEND_LIBRARIES)
 
 #######################################
 # Export include and library locations
-# This is essentially boilerplate.  Shouldn't need to change it.
 
 set(MOOS_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
@@ -153,9 +152,6 @@ list(REMOVE_DUPLICATES MOOS_LIBRARIES)
 
 #######################################
 # Create the library
-# This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
-# variables
-include_directories(${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_library(MOOS
     ${THIRDPARTY_SOURCES}
     ${UTILS_SOURCES}
@@ -163,6 +159,12 @@ add_library(MOOS
     ${APP_SOURCES}
     ${DB_SOURCES}
 )
+
+target_include_directories(MOOS PUBLIC
+    ${MOOS_INCLUDE_DIRS}
+    ${MOOS_DEPEND_INCLUDE_DIRS}
+)
+
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
 
 if(WIN32)
