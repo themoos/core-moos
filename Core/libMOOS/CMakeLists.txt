@@ -109,13 +109,6 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
 )
 
-set(MOOS_DEPEND_INCLUDE_DIRS
-    ${INCLUDE_ROOTS}
-    CACHE INTERNAL
-    "List of include dirs for the dependencies of MOOS"
-)
-list(REMOVE_DUPLICATES MOOS_DEPEND_INCLUDE_DIRS)
-
 if(UNIX)
     set(DEPENDENCIES pthread m)
 endif()
@@ -162,7 +155,6 @@ add_library(MOOS
 
 target_include_directories(MOOS PUBLIC
     ${MOOS_INCLUDE_DIRS}
-    ${MOOS_DEPEND_INCLUDE_DIRS}
 )
 
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
