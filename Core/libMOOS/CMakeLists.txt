@@ -1,5 +1,3 @@
-set(LIBNAME MOOS)
-
 set(COMMS_SOURCES
     Comms/MOOSVariable.cpp
     Comms/MOOSCommClient.cpp
@@ -159,12 +157,12 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
 )
 
-set(${LIBNAME}_DEPEND_INCLUDE_DIRS
+set(MOOS_DEPEND_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
     CACHE INTERNAL
-    "List of include dirs for the dependencies of ${LIBNAME}"
+    "List of include dirs for the dependencies of MOOS"
 )
-list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_INCLUDE_DIRS)
+list(REMOVE_DUPLICATES MOOS_DEPEND_INCLUDE_DIRS)
 
 if(UNIX)
     set(DEPENDENCIES pthread m)
@@ -177,47 +175,47 @@ if(WIN32)
 endif()
 
 
-set(${LIBNAME}_DEPEND_LIBRARIES
+set(MOOS_DEPEND_LIBRARIES
     ${DEPENDENCIES}
     CACHE INTERNAL
-    "List of libraries which are dependencies of ${LIBNAME}"
+    "List of libraries which are dependencies of MOOS"
 )
-list(REMOVE_DUPLICATES ${LIBNAME}_DEPEND_LIBRARIES)
+list(REMOVE_DUPLICATES MOOS_DEPEND_LIBRARIES)
 
 
 #######################################
 # Export include and library locations
 # This is essentially boilerplate.  Shouldn't need to change it.
 
-set(${LIBNAME}_INCLUDE_DIRS
+set(MOOS_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
     CACHE INTERNAL
-    "Where to find ${LIBNAME} include directories"
+    "Where to find MOOS include directories"
 )
-list(REMOVE_DUPLICATES ${LIBNAME}_INCLUDE_DIRS)
+list(REMOVE_DUPLICATES MOOS_INCLUDE_DIRS)
 
-set(${LIBNAME}_LIBRARIES
-    ${LIBNAME}
+set(MOOS_LIBRARIES
+    MOOS
     CACHE INTERNAL
-    "List of libraries needed to link ${LIBNAME} library"
+    "List of libraries needed to link MOOS library"
 )
-list(REMOVE_DUPLICATES ${LIBNAME}_LIBRARIES)
+list(REMOVE_DUPLICATES MOOS_LIBRARIES)
 
 
 ######################################
 #export the library - this is picked up and used by the chunk of
 #script at the end of the top level CMakeLists.txt file
 cache_internal_append_unique(PROJECT_EXPORT_LIBS
-    ${LIBNAME}
+    MOOS
 )
 
 #######################################
 # Create the library
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
-include_directories(${${LIBNAME}_INCLUDE_DIRS} ${${LIBNAME}_DEPEND_INCLUDE_DIRS})
-add_library(${LIBNAME} ${SOURCES} ${PUBLIC_HEADERS})
-target_link_libraries(${LIBNAME} ${${LIBNAME}_DEPEND_LIBRARIES})
+include_directories(${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
+add_library(MOOS ${SOURCES} ${PUBLIC_HEADERS})
+target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
 
 
 
@@ -228,7 +226,7 @@ install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MAT
 
 
 # install libraries
-install(TARGETS ${LIBNAME}
+install(TARGETS MOOS
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )
