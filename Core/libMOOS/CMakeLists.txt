@@ -90,40 +90,6 @@ configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
     @ONLY
 )
 
-#do we want to disable host name lookups?
-option(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
-if(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
-    add_definitions(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
-endif()
-
-#do we want to enable multicast performance reporting
-option(ENABLE_DETAILED_TIMING_AUDIT "enable detailed timing audit (for use with atm)" OFF)
-if(ENABLE_DETAILED_TIMING_AUDIT)
-    add_definitions(-DENABLE_DETAILED_TIMING_AUDIT)
-endif()
-
-#do we want to enable multicast performance reporting
-option(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON)
-if(DEFAULT_NO_NAGLE)
-    add_definitions(-DDEFAULT_NO_NAGLE)
-endif()
-
-#do we want to turn on the experimental clock skew detection?
-option(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
-if(DETECT_CLOCK_DRIFT)
-    add_definitions(-DMOOS_DETECT_CLOCK_DRIFT)
-endif()
-mark_as_advanced(DETECT_CLOCK_DRIFT)
-
-
-set(TIME_WARP_AGGLOMERATION_CONSTANT  0.0 CACHE STRING "comms agglomeration scale factor for high time warps")
-if(${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
-  add_definitions(-DTIME_WARP_AGGLOMERATION_CONSTANT=${TIME_WARP_AGGLOMERATION_CONSTANT})
-endif()
-mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
-
-
-
 
 
 ##########################
@@ -208,6 +174,39 @@ add_library(MOOS
     ${DB_SOURCES}
 )
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
+
+#do we want to disable host name lookups?
+option(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)
+if(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+    target_compile_definitions(MOOS PRIVATE MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
+endif()
+
+#do we want to enable multicast performance reporting
+option(ENABLE_DETAILED_TIMING_AUDIT "enable detailed timing audit (for use with atm)" OFF)
+if(ENABLE_DETAILED_TIMING_AUDIT)
+    target_compile_definitions(MOOS PRIVATE ENABLE_DETAILED_TIMING_AUDIT)
+endif()
+
+#do we want to enable multicast performance reporting
+option(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON)
+if(DEFAULT_NO_NAGLE)
+    target_compile_definitions(MOOS PRIVATE DEFAULT_NO_NAGLE)
+endif()
+
+#do we want to turn on the experimental clock skew detection?
+option(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
+if(DETECT_CLOCK_DRIFT)
+    target_compile_definitions(MOOS PRIVATE MOOS_DETECT_CLOCK_DRIFT)
+endif()
+mark_as_advanced(DETECT_CLOCK_DRIFT)
+
+set(TIME_WARP_AGGLOMERATION_CONSTANT  0.0 CACHE STRING "comms agglomeration scale factor for high time warps")
+if(${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
+  target_compile_definitions(MOOS PRIVATE
+      TIME_WARP_AGGLOMERATION_CONSTANT=${TIME_WARP_AGGLOMERATION_CONSTANT}
+  )
+endif()
+mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 
 
 #######################################
