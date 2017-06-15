@@ -83,10 +83,6 @@ set(DB_SOURCES
     DB/MOOSDBLogger.cpp
 )
 
-
-
-set(SOURCES ${THIRDPARTY_SOURCES} ${UTILS_SOURCES} ${COMMS_SOURCES} ${APP_SOURCES} ${DB_SOURCES})
-
 include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
@@ -214,7 +210,13 @@ cache_internal_append_unique(PROJECT_EXPORT_LIBS
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
 include_directories(${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
-add_library(MOOS ${SOURCES})
+add_library(MOOS
+    ${THIRDPARTY_SOURCES}
+    ${UTILS_SOURCES}
+    ${COMMS_SOURCES}
+    ${APP_SOURCES}
+    ${DB_SOURCES}
+)
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
 
 
