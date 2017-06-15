@@ -109,13 +109,6 @@ set(INCLUDE_ROOTS
     ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
 )
 
-if(UNIX)
-    set(DEPENDENCIES pthread m)
-endif()
-
-if(WIN32)
-  set(DEPENDENCIES wsock32 comctl32 ws2_32) # adding ws2_32 to support IPv6
-endif()
 
 # MOOS_INCLUDE_DIRS global variable gets used in top level CMakeLists.txt to
 # configure the MOOSConfig.cmake file.
@@ -137,12 +130,19 @@ target_include_directories(MOOS PUBLIC
     ${INCLUDE_ROOTS}
 )
 
-target_link_libraries(MOOS
-  # PUBLIC because the pthread dependency is exposed in the libMOOS headers :-(
-  PUBLIC ${DEPENDENCIES}
-)
+if(UNIX)
+    # pthread is PUBLIC because the dependency is exposed in the libMOOS headers :-(
+    target_link_libraries(MOOS
+        PUBLIC pthread
+        PRIVATE m
+    )
+elseif(WIN32)
+    target_link_libraries(MOOS PRIVATE
+        wsock32
+        comctl32
+        ws2_32   # to support IPv6
+    )
 
-if(WIN32)
     # XP does not support IPv6. Therefore MOOS only supports Vista and later.
     target_compile_definitions(MOOS PUBLIC _WIN32_WINNT=0x600)
 endif()
