@@ -3,7 +3,7 @@
 
 include_directories(${MOOS_INCLUDE_DIRS})
 add_executable(mqos mqos.cpp)
-target_link_libraries(mqos ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(mqos ${MOOS_LIBRARIES})
 
 install(TARGETS mqos
   RUNTIME DESTINATION bin

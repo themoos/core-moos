@@ -182,7 +182,6 @@ configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
 file(APPEND ${CONFIG_FILE} "\n# Export variables for MOOS Library\n")
 file(APPEND ${CONFIG_FILE} "set(MOOS_LIBRARIES \"${MOOS_LIBRARIES}\")\n")
 file(APPEND ${CONFIG_FILE} "set(MOOS_INCLUDE_DIRS \"${MOOS_INCLUDE_DIRS}\")\n")
-file(APPEND ${CONFIG_FILE} "set(MOOS_DEPEND_LIBRARIES \"${MOOS_DEPEND_LIBRARIES}\")\n")
 
 if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that

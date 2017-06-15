@@ -3,7 +3,7 @@
 
 include_directories(${MOOS_INCLUDE_DIRS})
 add_executable(ktm ktm.cpp)
-target_link_libraries(ktm ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(ktm ${MOOS_LIBRARIES})
 
 install(TARGETS ktm
   RUNTIME DESTINATION bin

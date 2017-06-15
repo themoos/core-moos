@@ -19,7 +19,7 @@ endif()
 
 include_directories(${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS})
 add_executable(${EXECNAME} ${SRCS})
-target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES})
 
 install(TARGETS ${EXECNAME}
   RUNTIME DESTINATION bin

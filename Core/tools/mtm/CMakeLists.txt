@@ -3,7 +3,7 @@
 
 include_directories(${MOOS_INCLUDE_DIRS})
 add_executable(mtm mtm)
-target_link_libraries(mtm ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(mtm ${MOOS_LIBRARIES})
 
 install(TARGETS mtm
   RUNTIME DESTINATION bin

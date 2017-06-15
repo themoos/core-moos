@@ -117,15 +117,6 @@ if(WIN32)
   set(DEPENDENCIES wsock32 comctl32 ws2_32) # adding ws2_32 to support IPv6
 endif()
 
-
-set(MOOS_DEPEND_LIBRARIES
-    ${DEPENDENCIES}
-    CACHE INTERNAL
-    "List of libraries which are dependencies of MOOS"
-)
-list(REMOVE_DUPLICATES MOOS_DEPEND_LIBRARIES)
-
-
 #######################################
 # Export include and library locations
 
@@ -157,7 +148,10 @@ target_include_directories(MOOS PUBLIC
     ${MOOS_INCLUDE_DIRS}
 )
 
-target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(MOOS
+  # PUBLIC because the pthread dependency is exposed in the libMOOS headers :-(
+  PUBLIC ${DEPENDENCIES}
+)
 
 if(WIN32)
     # XP does not support IPv6. Therefore MOOS only supports Vista and later.

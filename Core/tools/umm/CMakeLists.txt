@@ -3,7 +3,7 @@
 
 include_directories(${MOOS_INCLUDE_DIRS})
 add_executable(umm umm.cpp)
-target_link_libraries(umm ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
+target_link_libraries(umm ${MOOS_LIBRARIES})
 
 install(TARGETS umm
   RUNTIME DESTINATION bin
