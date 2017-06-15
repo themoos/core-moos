@@ -10,8 +10,6 @@ endif()
 set(SRCS  MOOSDBMain.cpp
     ${RESOURCES})
 
-include(PlatformDefines)
-
 # An option to disable names lookup in MOOS server.
 set(DISABLE_NAMES_LOOKUP OFF CACHE BOOL "Disable client names lookup in MOOSDB")
 if(DISABLE_NAMES_LOOKUP)

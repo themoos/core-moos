@@ -68,7 +68,6 @@ set(THIRDPARTY_SOURCES
   Thirdparty/AppCasting/AppCast.cpp
 )
 
-
 set(DB_SOURCES
     DB/MOOSDB.cpp
     DB/MOOSDBVar.cpp
@@ -78,8 +77,6 @@ set(DB_SOURCES
     DB/MOOSDBHTTPServer.cpp
     DB/MOOSDBLogger.cpp
 )
-
-include(PlatformDefines)
 
 ##############   FAST COMMS?   ################
 #do we want to use the new fast asynchronous client architecture?
