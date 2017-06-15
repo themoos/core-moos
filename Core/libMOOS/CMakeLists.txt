@@ -27,7 +27,6 @@ set(APP_SOURCES
     App/MOOSInstrument.cpp
 )
 
-
 set(UTILS_SOURCES
     Utils/MOOSException.cpp
     Utils/MOOSLock.cpp
@@ -50,14 +49,11 @@ set(UTILS_SOURCES
 )
 
 if(WIN32)
-    set(UTILS_SOURCES
-        ${UTILS_SOURCES}
+    list(APPEND UTILS_SOURCES
         Utils/NTSerial.cpp
         Utils/MOOSNTSerialPort.cpp
     )
 endif()
-
-
 
 set(THIRDPARTY_SOURCES
   Thirdparty/PocoBits/src/Event.cpp
@@ -98,7 +94,6 @@ if(MOOS_DISABLE_XPCTCP_NAME_LOOKUP)
     add_definitions(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
 endif()
 
-
 #do we want to enable multicast performance reporting
 option(ENABLE_DETAILED_TIMING_AUDIT "enable detailed timing audit (for use with atm)" OFF)
 if(ENABLE_DETAILED_TIMING_AUDIT)
@@ -110,8 +105,6 @@ option(DEFAULT_NO_NAGLE "by default turn off nagle (makes for lower latency)" ON
 if(DEFAULT_NO_NAGLE)
     add_definitions(-DDEFAULT_NO_NAGLE)
 endif()
-
-
 
 #do we want to turn on the experimental clock skew detection?
 option(DETECT_CLOCK_DRIFT  "MOOSCommClient<->MOOSDB Clock drift detection (experimental)" OFF)
@@ -218,8 +211,6 @@ add_library(MOOS
     ${DB_SOURCES}
 )
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
-
-
 
 
 #######################################
