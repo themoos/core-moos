@@ -214,7 +214,7 @@ cache_internal_append_unique(PROJECT_EXPORT_LIBS
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
 # variables
 include_directories(${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
-add_library(MOOS ${SOURCES} ${PUBLIC_HEADERS})
+add_library(MOOS ${SOURCES})
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
 
 
