@@ -122,8 +122,6 @@ endif()
 
 if(WIN32)
   set(DEPENDENCIES wsock32 comctl32 ws2_32) # adding ws2_32 to support IPv6
-  cache_internal_append_unique(PROJECT_EXPORT_DEFINES _WIN32_WINNT=0x600) # XP does not support IPv6. Moving to Vista and latter.
-  add_definitions(-D_WIN32_WINNT=0x600)
 endif()
 
 
@@ -174,6 +172,11 @@ add_library(MOOS
     ${DB_SOURCES}
 )
 target_link_libraries(MOOS ${MOOS_DEPEND_LIBRARIES})
+
+if(WIN32)
+    # XP does not support IPv6. Therefore MOOS only supports Vista and later.
+    target_compile_definitions(MOOS PUBLIC _WIN32_WINNT=0x600)
+endif()
 
 #do we want to disable host name lookups?
 option(MOOS_DISABLE_XPCTCP_NAME_LOOKUP "Disable host name look ups" OFF)

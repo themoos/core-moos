@@ -193,11 +193,6 @@ if(PROJECT_EXPORT_LIBS)
         file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
     endforeach()
 
-    foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
-        file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")
-        #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required by MOOS\")\n" )
-    endforeach()
-
 endif()
 
 if(ENABLE_EXPORT)

@@ -17,17 +17,9 @@ if(DISABLE_NAMES_LOOKUP)
     add_definitions(-DMOOS_DISABLE_XPCTCP_NAME_LOOKUP)
 endif()
 
-foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
-    add_definitions(-D${DEFINE})
-    message(STATUS "adding -D${DEFINE} as required by MOOS")
-endforeach()
-
-
 include_directories(${${EXECNAME}_INCLUDE_DIRS} ${MOOS_INCLUDE_DIRS} ${MOOS_DEPEND_INCLUDE_DIRS})
 add_executable(${EXECNAME} ${SRCS})
 target_link_libraries(${EXECNAME} ${MOOS_LIBRARIES} ${MOOS_DEPEND_LIBRARIES})
-
-
 
 install(TARGETS ${EXECNAME}
   RUNTIME DESTINATION bin
