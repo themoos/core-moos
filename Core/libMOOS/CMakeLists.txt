@@ -142,25 +142,6 @@ mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 
 
 
-option(ENABLE_V10_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers " OFF)
-option(ENABLE_V10_IVP_COMPATIBILITY  "Enable compatibility for source which includes pre V10 headers as expected by IvP " OFF)
-mark_as_advanced(ENABLE_V10_IVP_COMPATIBILITY)
-
-if(ENABLE_V10_COMPATIBILITY)
-    if(ENABLE_V10_IVP_COMPATIBILITY)
-        set(COMPATIBILITY_HEADER_ROOTS
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSLIB
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core/MOOSGenLib
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials/MOOSUtlityLib
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)
-        message(WARNING "IVP V10 compatibility will be removed soon - please consider adding qualified include directories")
-    else()
-        set(COMPATIBILITY_HEADER_ROOTS
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Core
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/MOOS/Compatibility/Essentials)
-    endif()
-endif()
 
 configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include/MOOS/libMOOS/App/ClientDefines.h
@@ -171,12 +152,6 @@ configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
 ##########################
 # Packages / Dependencies
 set(INCLUDE_ROOTS
-
-# this first entry is most likely empty but some souls may not want to update headers.
-# placing this location at the start of the search list will enable some
-# indirection
-
-    ${COMPATIBILITY_HEADER_ROOTS}
 
 # these are standard locations for the (functional) partitioning of the libMOOS
 # library
