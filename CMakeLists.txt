@@ -161,15 +161,15 @@ add_subdirectory(Core)
 # Config Script Creation
 #########################
 
-# Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
-# (This is a CACHE INTERNAL variable)
+# Add your library's name to the PROJECT_EXPORT_LIBS global property if you wish
+# to have it exported.
 option(ENABLE_EXPORT
   "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
   message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
 endif()
 
-
+get_property(PROJECT_EXPORT_LIBS GLOBAL PROPERTY PROJECT_EXPORT_LIBS)
 if(PROJECT_EXPORT_LIBS)
 
     message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")

@@ -151,14 +151,6 @@ set(MOOS_LIBRARIES
 )
 list(REMOVE_DUPLICATES MOOS_LIBRARIES)
 
-
-######################################
-#export the library - this is picked up and used by the chunk of
-#script at the end of the top level CMakeLists.txt file
-cache_internal_append_unique(PROJECT_EXPORT_LIBS
-    MOOS
-)
-
 #######################################
 # Create the library
 # This is boilerplate.  Any extra libs you want to link should be in the '..._DEPEND_...'
@@ -223,6 +215,12 @@ install(TARGETS MOOS
   ARCHIVE DESTINATION lib
 )
 
+######################################
+#export the library - this is picked up and used by the chunk of
+#script at the end of the top level CMakeLists.txt file
+set_property(GLOBAL APPEND PROPERTY PROJECT_EXPORT_LIBS
+    MOOS
+)
 
 add_subdirectory(testing)
 
