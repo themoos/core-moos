@@ -171,15 +171,17 @@ export(TARGETS
     Use${PROJECTNAME}.cmake
 )
 
-set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
-configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
-
 # Support existing projects that expect to find MOOS_LIBRARIES and
 # MOOS_INCLUDE_DIRS variables.
 set(MOOS_LIBRARIES MOOS)
-file(APPEND ${CONFIG_FILE} "\n# Export variables for MOOS Library\n")
-file(APPEND ${CONFIG_FILE} "set(MOOS_LIBRARIES \"${MOOS_LIBRARIES}\")\n")
-file(APPEND ${CONFIG_FILE} "set(MOOS_INCLUDE_DIRS \"${MOOS_INCLUDE_DIRS}\")\n")
+
+# Generate the config file for other projects to find the MOOS build dir
+set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSConfig.cmake")
+configure_file(
+    "MOOSConfig.cmake.in"
+    "${CONFIG_FILE}"
+    @ONLY
+)
 
 if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that
