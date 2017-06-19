@@ -179,6 +179,7 @@ configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
 
 # Support existing projects that expect to find MOOS_LIBRARIES and
 # MOOS_INCLUDE_DIRS variables.
+set(MOOS_LIBRARIES MOOS)
 file(APPEND ${CONFIG_FILE} "\n# Export variables for MOOS Library\n")
 file(APPEND ${CONFIG_FILE} "set(MOOS_LIBRARIES \"${MOOS_LIBRARIES}\")\n")
 file(APPEND ${CONFIG_FILE} "set(MOOS_INCLUDE_DIRS \"${MOOS_INCLUDE_DIRS}\")\n")

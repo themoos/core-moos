@@ -117,9 +117,6 @@ if(WIN32)
   set(DEPENDENCIES wsock32 comctl32 ws2_32) # adding ws2_32 to support IPv6
 endif()
 
-#######################################
-# Export include and library locations
-
 # MOOS_INCLUDE_DIRS global variable gets used in top level CMakeLists.txt to
 # configure the MOOSConfig.cmake file.
 set(MOOS_INCLUDE_DIRS
@@ -127,14 +124,6 @@ set(MOOS_INCLUDE_DIRS
     CACHE INTERNAL "Where to find MOOS include directories"
 )
 
-set(MOOS_LIBRARIES
-    MOOS
-    CACHE INTERNAL
-    "List of libraries needed to link MOOS library"
-)
-list(REMOVE_DUPLICATES MOOS_LIBRARIES)
-
-#######################################
 # Create the library
 add_library(MOOS
     ${THIRDPARTY_SOURCES}
