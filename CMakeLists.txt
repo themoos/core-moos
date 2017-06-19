@@ -183,6 +183,14 @@ configure_file(
     @ONLY
 )
 
+# Save a version file in the project's binary directory
+include(CMakePackageConfigHelpers)
+set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
+write_basic_package_version_file("${VERSION_FILE}"
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
 if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that
     # it may be easily found.
@@ -190,10 +198,6 @@ if(ENABLE_EXPORT)
         export(PACKAGE ${PROJECTNAME})
     endif()
 endif()
-
-# Save a version file in the project's binary directory
-set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
-configure_file( "cmake/ProjectConfigVersion.cmake.in" ${VERSION_FILE} @ONLY )
 
 include(UninstallTarget)
 configure_uninstall_target(${CMAKE_CURRENT_BINARY_DIR}/Uninstall.cmake)
