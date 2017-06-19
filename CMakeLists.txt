@@ -46,9 +46,6 @@ set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
 # Turn on all compiler warnings
 include(EnableAllWarnings)
 
-# Bring in helper functions for dealing with CACHE INTERNAL variables
-include(CacheInternalHelpers)
-
 # Figure out our git version
 option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
 mark_as_advanced(UPDATE_GIT_VERSION_INFO)
