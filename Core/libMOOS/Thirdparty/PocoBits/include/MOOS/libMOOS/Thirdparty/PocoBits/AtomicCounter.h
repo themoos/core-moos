@@ -202,7 +202,8 @@ inline AtomicCounter::ValueType AtomicCounter::value() const
 	return _counter;
 }
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 inline AtomicCounter::ValueType AtomicCounter::operator ++ () // prefix
 {
 	return OSAtomicIncrement32(&_counter);
@@ -227,6 +228,7 @@ inline AtomicCounter::ValueType AtomicCounter::operator -- (int) // postfix
 	ValueType result = OSAtomicDecrement32(&_counter);
 	return ++result;
 }
+#pragma GCC diagnostic pop
 
 	
 inline bool AtomicCounter::operator ! () const
