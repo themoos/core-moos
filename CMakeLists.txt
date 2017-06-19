@@ -209,6 +209,5 @@ endif()
 set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
 configure_file( "cmake/ProjectConfigVersion.cmake.in" ${VERSION_FILE} @ONLY )
 
-
-
-
+include(UninstallTarget)
+configure_uninstall_target(${CMAKE_CURRENT_BINARY_DIR}/Uninstall.cmake)
