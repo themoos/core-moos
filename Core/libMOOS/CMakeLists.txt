@@ -126,13 +126,6 @@ if(DETECT_CLOCK_DRIFT)
 endif()
 mark_as_advanced(DETECT_CLOCK_DRIFT)
 
-# Remove the extra field that was added to the MOOS message protocol in October 2009.
-option(DISABLE_AUX_SOURCE "Disable the AUX_SRC field in MOOS messages.  Only change this if you know what it is!" OFF)
-if(DISABLE_AUX_SOURCE)
-  add_definitions(-DDISABLE_AUX_SOURCE)
-endif()
-mark_as_advanced(DISABLE_AUX_SOURCE)
-
 
 set(TIME_WARP_AGGLOMERATION_CONSTANT  0.0 CACHE STRING "comms agglomeration scale factor for high time warps")
 if(${TIME_WARP_AGGLOMERATION_CONSTANT} GREATER 0.0)
