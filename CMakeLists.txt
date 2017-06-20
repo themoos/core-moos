@@ -158,12 +158,6 @@ add_subdirectory(Core)
 # Config Script Creation
 #########################
 
-option(ENABLE_EXPORT
-  "Cause CMake to record this build so other projects can find it " ON)
-if(ENABLE_EXPORT)
-  message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
-endif()
-
 # Provide a cmake config script for the build directory
 export(TARGETS
     MOOS
@@ -191,12 +185,16 @@ write_basic_package_version_file("${VERSION_FILE}"
   COMPATIBILITY AnyNewerVersion
 )
 
+option(ENABLE_EXPORT
+  "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that
     # it may be easily found.
-    if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-        export(PACKAGE ${PROJECTNAME})
-    endif()
+    message(STATUS "Location of this build will be exported. "
+        "Set ENABLE_EXPORT to OFF if you don't want this and "
+        "delete ~/.cmake/projects/MOOS "
+    )
+    export(PACKAGE ${PROJECTNAME})
 endif()
 
 include(UninstallTarget)
