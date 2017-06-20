@@ -154,7 +154,7 @@ CMOOSApp::CMOOSApp()
     SetMOOSTimeWarp(1.0);
     
 #ifdef ASYNCHRONOUS_CLIENT
-    m_pMailEvent = new Poco::Event;
+    m_pMailEvent = new MOOS::Poco::Event;
     UseMailCallBack();
 #endif
 

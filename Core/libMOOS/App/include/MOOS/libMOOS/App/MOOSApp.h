@@ -57,10 +57,11 @@ typedef std::map<std::string,CMOOSVariable> MOOSVARMAP;
 
 #ifdef ASYNCHRONOUS_CLIENT
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
-namespace Poco
-{
+namespace MOOS {
+namespace Poco {
 class Event;
-}
+} // namespace Poco
+} // namespace MOOS
 #endif
 
 
@@ -703,7 +704,7 @@ private:
     bool m_bIterateWithoutComms;
 
 #ifdef ASYNCHRONOUS_CLIENT
-    Poco::Event * m_pMailEvent;
+    MOOS::Poco::Event * m_pMailEvent;
 #endif
 
 

@@ -40,6 +40,7 @@
 #include <sys/time.h>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -117,3 +118,4 @@ bool EventImpl::waitImpl(long milliseconds)
 
 
 } // namespace Poco
+} // namespace MOOS

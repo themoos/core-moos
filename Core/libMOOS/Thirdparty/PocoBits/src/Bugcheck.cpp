@@ -43,6 +43,7 @@
 #include <sstream>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -104,3 +105,4 @@ std::string Bugcheck::what(const char* msg, const char* file, int line)
 
 
 } // namespace Poco
+} // namespace MOOS

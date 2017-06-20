@@ -51,6 +51,7 @@
 #endif // POCO_OS
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -319,6 +320,7 @@ inline bool AtomicCounter::operator ! () const
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_AtomicCounter_INCLUDED

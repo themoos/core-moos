@@ -58,6 +58,7 @@
 // might not have been initialized yet.
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -183,3 +184,4 @@ void Debugger::enter(const char* file, int line)
 
 
 } // namespace Poco
+} // namespace MOOS

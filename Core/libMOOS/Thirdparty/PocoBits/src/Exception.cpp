@@ -41,6 +41,7 @@
 #include <typeinfo>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -194,3 +195,4 @@ POCO_IMPLEMENT_EXCEPTION(ApplicationException, Exception, "Application exception
 POCO_IMPLEMENT_EXCEPTION(BadCastException, RuntimeException, "Bad cast exception")
 
 } // namespace Poco
+} // namespace MOOS

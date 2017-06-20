@@ -41,6 +41,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -82,3 +83,4 @@ bool MutexImpl::tryLockImpl(long milliseconds)
 
 
 } // namespace Poco
+} // namespace MOOS
