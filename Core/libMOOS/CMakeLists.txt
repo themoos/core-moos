@@ -95,10 +95,6 @@ configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
 ##########################
 # Packages / Dependencies
 set(INCLUDE_ROOTS
-
-# these are standard locations for the (functional) partitioning of the libMOOS
-# library
-
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/App/include
     ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
@@ -183,7 +179,11 @@ mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 
 #######################################
 # install headers
-install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx")
+install(
+    DIRECTORY ${INCLUDE_ROOTS}
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx"
+)
 
 # install libraries
 install(TARGETS MOOS
