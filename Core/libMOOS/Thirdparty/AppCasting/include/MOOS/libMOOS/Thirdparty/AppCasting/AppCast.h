@@ -52,10 +52,13 @@ class AppCast
   void  setMaxEvents(unsigned int v)         {m_max_events=v;};
   void  setMaxRunWarnings(unsigned int v)    {m_max_run_warnings=v;};
 
-  unsigned int getIteration() const          {return(m_iteration);};
-  unsigned int size() const                  {return(m_messages.size());};
+  std::string::size_type size() const { return (m_messages.size()); };
+  std::string::size_type getCfgWarningCount() const {
+    return (m_config_warnings.size());
+  };
+
+  unsigned int getIteration() const          {return (m_iteration);};
   unsigned int getRunWarningCount() const    {return(m_cnt_run_warnings);};
-  unsigned int getCfgWarningCount() const    {return(m_config_warnings.size());};
   unsigned int getMaxEvents() const          {return(m_max_events);};
   std::string  getProcName() const           {return(m_proc_name);};
   std::string  getNodeName() const           {return(m_node_name);};
