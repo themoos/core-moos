@@ -36,8 +36,8 @@
 //
 
 
-#ifndef SHAREDPTR_H_
-#define SHAREDPTR_H_
+#ifndef MOOS_POCO_SHAREDPTR_H_
+#define MOOS_POCO_SHAREDPTR_H_
 
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
@@ -243,7 +243,7 @@ public:
         /// Example: (assume class Sub: public Super)
         ///    SharedPtr<Super> super(new Sub());
         ///    SharedPtr<Sub> sub = super.cast<Sub>();
-        ///    poco_assert (sub.get());
+        ///    moos_poco_assert (sub.get());
     {
         Other* pOther = dynamic_cast<Other*>(_ptr);
         if (pOther)
@@ -257,7 +257,7 @@ public:
         /// Example: (assume class Sub: public Super)
         ///    SharedPtr<Super> super(new Sub());
         ///    SharedPtr<Sub> sub = super.unsafeCast<Sub>();
-        ///    poco_assert (sub.get());
+        ///    moos_poco_assert (sub.get());
     {
         Other* pOther = static_cast<Other*>(_ptr);
         return SharedPtr<Other, RC, RP>(_pCounter, _releasePolicy, pOther);
@@ -419,7 +419,7 @@ private:
 
     void release()
     {
-        poco_assert_dbg (_pCounter);
+        moos_poco_assert_dbg (_pCounter);
         int i = _pCounter->release();
         if (i == 0)
         {
@@ -434,7 +434,7 @@ private:
     SharedPtr(RC* pCounter, const RP& releasePolicy, C* ptr): _releasePolicy(releasePolicy), _pCounter(pCounter), _ptr(ptr)
         /// for cast operation
     {
-        poco_assert_dbg (_pCounter);
+        moos_poco_assert_dbg (_pCounter);
         _pCounter->duplicate();
     }
 
@@ -458,4 +458,4 @@ inline void swap(SharedPtr<C, RC, RP>& p1, SharedPtr<C, RC, RP>& p2)
 } // namespace MOOS
 
 
-#endif /* SHAREDPTR_H_ */
+#endif /* MOOS_POCO_SHAREDPTR_H_ */

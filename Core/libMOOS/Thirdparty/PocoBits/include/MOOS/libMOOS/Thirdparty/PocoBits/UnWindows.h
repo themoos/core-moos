@@ -17,7 +17,7 @@
 // There is also a macro (GetUserName) that's either defined to be the Unicode
 // name or the ASCII name, depending on whether the UNICODE macro is #define'd
 // or not. POCO always calls the Unicode or ASCII functions directly (depending
-// on whether POCO_WIN32_UTF8 is #define'd or not), so the macros are not ignored.
+// on whether MOOS_POCO_WIN32_UTF8 is #define'd or not), so the macros are not ignored.
 //
 // These macro definitions are a frequent case of problems and naming conflicts,
 // especially for C++ programmers. Say, you define a class with a member function named

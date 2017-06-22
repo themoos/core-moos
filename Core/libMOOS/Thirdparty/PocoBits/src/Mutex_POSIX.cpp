@@ -39,7 +39,7 @@
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Mutex_POSIX.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
-#if !defined(POCO_NO_SYS_SELECT_H)
+#if !defined(MOOS_POCO_NO_SYS_SELECT_H)
 #include <sys/select.h>
 #endif
 #include <unistd.h>
@@ -49,7 +49,7 @@
 #if defined(_POSIX_TIMEOUTS) && (_POSIX_TIMEOUTS - 200112L) >= 0L
 #if defined(_POSIX_THREADS) && (_POSIX_THREADS - 200112L) >= 0L
 #if !(defined(__SUNPRO_CC))
-#define POCO_HAVE_MUTEX_TIMEOUT
+#define MOOS_POCO_HAVE_MUTEX_TIMEOUT
 #endif
 #endif
 #endif
@@ -103,7 +103,7 @@ MutexImpl::~MutexImpl()
 
 bool MutexImpl::tryLockImpl(long milliseconds)
 {
-#if defined(POCO_HAVE_MUTEX_TIMEOUT)
+#if defined(MOOS_POCO_HAVE_MUTEX_TIMEOUT)
 	struct timespec abstime;
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
