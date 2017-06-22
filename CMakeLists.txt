@@ -159,42 +159,44 @@ if(ENABLE_EXPORT)
   message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
 endif()
 
-    if(PROJECT_EXPORT_LIBS)
 
-        message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
+if(PROJECT_EXPORT_LIBS)
 
-        # Provide a cmake config script for the build directory
-        export(TARGETS
-            ${PROJECT_EXPORT_LIBS}
-            FILE
-            Use${PROJECTNAME}.cmake
-        )
+    message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
 
-        set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
-        configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
+    # Provide a cmake config script for the build directory
+    export(TARGETS
+        ${PROJECT_EXPORT_LIBS}
+        FILE
+        Use${PROJECTNAME}.cmake
+    )
 
-        # Append libary specific lines to the generated config script
-        foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
-            file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
-            file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_LIBRARIES \"${${EXPORT_LIB}_LIBRARIES}\")\n")
-            file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_INCLUDE_DIRS \"${${EXPORT_LIB}_INCLUDE_DIRS}\")\n")
-            file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
-            file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
-        endforeach()
+    set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
+    configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
 
-        foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
-            file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")
-            #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required by MOOS\")\n" )
-        endforeach()
+    # Append libary specific lines to the generated config script
+    foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
+        file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_LIBRARIES \"${${EXPORT_LIB}_LIBRARIES}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_INCLUDE_DIRS \"${${EXPORT_LIB}_INCLUDE_DIRS}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
+        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
+    endforeach()
 
+    foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
+        file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")
+        #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required by MOOS\")\n" )
+    endforeach()
+
+endif()
+
+if(ENABLE_EXPORT)
+    # Stick build location in the central CMake user package registry, so that
+    # it may be easily found.
+    if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
+        export(PACKAGE ${PROJECTNAME})
     endif()
-
-    if(ENABLE_EXPORT)
-        # Stick build location in the central CMake user package registry, so that it may be easily found
-        if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-          export(PACKAGE ${PROJECTNAME})
-        endif()
-    endif()
+endif()
 
 # Save a version file in the project's binary directory
 set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
