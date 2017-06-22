@@ -349,8 +349,11 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
     if(P.GetFlag("--moos_print_version"))
         OnPrintVersionAndExit();
 
-
-	bool bTCPNoDelay = false;
+#ifdef DEFAULT_NO_NAGLE
+    bool bTCPNoDelay = true;
+#elif
+    bool bTCPNoDelay = false;
+#endif
     m_MissionReader.GetValue("tcpnodelay",bTCPNoDelay);
 
     if(P.GetFlag("--tcpnodelay"))
@@ -366,7 +369,6 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
     ///////////////////////////////////////////////////////////
 	//are we looking for help?
 	bool bBoost = P.GetFlag("--moos_boost","-b");
-
 
     ///////////////////////////////////////////////////////////
     //are we being asked to be old skool and use a single thread?

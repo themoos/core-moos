@@ -101,6 +101,12 @@ bool CMOOSCommObject::SetReceiveBufferSizeInKB(unsigned int KBytes)
 
 void CMOOSCommObject::SetTCPNoDelay(bool bTCPNoDelay)
 {
+#ifdef DEFAULT_NO_NAGLE
+    if(!bTCPNoDelay){
+            std::cerr<<"ignoring setting SetTCPNoDelay"
+                       "to false because of compile flag \n";
+    }
+#endif
 	m_bDisableNagle = bTCPNoDelay;
 }
 

@@ -45,6 +45,7 @@
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
+#include "MOOS/libMOOS/Utils/ThreadPrint.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -61,7 +62,7 @@ using namespace std;
 #define DEFAULT_SERVER_SOCKET_RECEIVE_BUFFER_SIZE_KB 128
 #define DEFAULT_SERVER_SOCKET_SEND_BUFFER_SIZE_KB 128
 
-
+MOOS::ThreadPrint gMOOSCommsServerTheadPrinter(std::cerr);
 
 #ifdef _WIN32
 #define INVALID_SOCKET_SELECT WSAEINVAL
@@ -383,7 +384,7 @@ bool CMOOSCommServer::ListenLoop()
     if(m_bQuiet)
         InhibitMOOSTraceInThisThread(true);
     
-    
+
     
     m_pListenSocket = new XPCTcpSocket(m_lListenPort);
 
@@ -398,8 +399,8 @@ bool CMOOSCommServer::ListenLoop()
 
         m_pListenSocket->vSetReuseAddr(1);
 #endif
-
         if(m_bDisableNagle){
+            gMOOSCommsServerTheadPrinter.SimplyPrintTimeAndMessage("disabling nagle");
             m_pListenSocket->vSetNoDelay(1);
         }
 
