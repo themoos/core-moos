@@ -62,7 +62,7 @@ CMOOSCommPkt::~CMOOSCommPkt()
 
 
 
-bool CMOOSCommPkt::InflateTo(unsigned int nNewStreamSize) {
+bool CMOOSCommPkt::InflateTo(int nNewStreamSize) {
     //maybe there is nothing to do....
     if (nNewStreamSize <= m_nStreamSpace) {
         return true;
@@ -129,7 +129,7 @@ unsigned char * CMOOSCommPkt::NextWrite(){
 }
 
 
-unsigned int CMOOSCommPkt::GetNumMessagesSerialised()
+int CMOOSCommPkt::GetNumMessagesSerialised()
 {
     return m_nMsgsSerialised;
 }

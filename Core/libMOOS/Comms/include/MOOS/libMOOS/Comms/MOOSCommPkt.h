@@ -65,14 +65,14 @@ public:
 
     int     GetBytesRequired();
 
-    unsigned int    GetNumMessagesSerialised();
+    int    GetNumMessagesSerialised();
 
     unsigned char * Stream();
 
     unsigned char * NextWrite();
 
 protected:
-    bool InflateTo(unsigned int nNewStreamSize);
+    bool InflateTo(int nNewStreamSize);
     int m_nByteCount;
     int m_nMsgLen;
 
@@ -80,15 +80,11 @@ protected:
     unsigned char * m_pNextData;
     int             m_nStreamSpace;
 
-    /**true if the packet has been inflated to increase capicity and m_pStream no longer
-    points to DefaultStream but to heap space allocated with new */
-    //std::vector<unsigned char > m_Storage;
-
 	//how many messages are contained in this  packet when serialsised to a stream?
-	unsigned int m_nToStreamCount;
+    int m_nToStreamCount;
 
 	//how many messages are serialsied
-	unsigned int m_nMsgsSerialised;
+    int m_nMsgsSerialised;
 
 };
 
