@@ -40,7 +40,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Event.h"
 
 
-#if defined(POCO_OS_FAMILY_WINDOWS)
+#if defined(MOOS_POCO_OS_FAMILY_WINDOWS)
 #include "Event_WIN32.cpp"
 #else
 #include "Event_POSIX.cpp"

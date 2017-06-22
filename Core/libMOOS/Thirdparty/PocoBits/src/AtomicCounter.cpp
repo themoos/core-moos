@@ -44,7 +44,7 @@ namespace MOOS {
 namespace Poco {
 
 
-#if POCO_OS == POCO_OS_WINDOWS_NT
+#if MOOS_POCO_OS == MOOS_POCO_OS_WINDOWS_NT
 //
 // Windows
 //
@@ -85,7 +85,7 @@ AtomicCounter& AtomicCounter::operator = (AtomicCounter::ValueType value)
 }
 
 
-#elif POCO_OS == POCO_OS_MAC_OS_X
+#elif MOOS_POCO_OS == MOOS_POCO_OS_MAC_OS_X
 //
 // Mac OS X
 //
@@ -169,7 +169,7 @@ AtomicCounter& AtomicCounter::operator = (AtomicCounter::ValueType value)
 }
 
 
-#endif // POCO_OS
+#endif // MOOS_POCO_OS
 
 
 } // namespace Poco
