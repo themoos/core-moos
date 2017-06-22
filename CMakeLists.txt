@@ -101,6 +101,23 @@ if( CDASH_SUPPORT )
   include( CTest )
 endif()
 
+
+if (CMAKE_VERSION VERSION_EQUAL 3.1.0 OR CMAKE_VERSION VERSION_GREATER 3.1.0)
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+  include(CheckCXXCompilerFlag)
+  CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+  if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  else()
+    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. "
+      "Please use a different C++ compiler.")
+  endif()
+endif()
+
+
 # Option for explicitly linking against the GNU libstdc++ instead of libc++ on
 # OSX Mavericks, required in order to use iMatlab as MATLAB still uses libstdc++
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

@@ -46,10 +46,8 @@ using namespace std;
 
 CMOOSCommPkt::CMOOSCommPkt() {
 
-    m_Storage.resize(MOOS_PKT_DEFAULT_SPACE);
-    m_nStreamSpace = m_Storage.size();
-
-    m_pStream = m_Storage.data();
+    m_nStreamSpace  = sizeof(int);
+    m_pStream = new unsigned char [m_nStreamSpace];
     m_pNextData = m_pStream;
     m_nByteCount = 0;
     m_nMsgLen = 0;
@@ -59,22 +57,25 @@ CMOOSCommPkt::CMOOSCommPkt() {
 
 CMOOSCommPkt::~CMOOSCommPkt()
 {
+    delete [] m_pStream;
 }
 
 
 
 bool CMOOSCommPkt::InflateTo(unsigned int nNewStreamSize) {
     //maybe there is nothing to do....
-
-    //std::cerr<<"inflating to "<<nNewStreamSize<<" from "<<m_Storage.size()<<"\n";
-    if (nNewStreamSize <= m_Storage.size()) {
+    if (nNewStreamSize <= m_nStreamSpace) {
         return true;
-    }
-    m_Storage.resize(nNewStreamSize);
-    m_pStream = m_Storage.data();
-    m_nStreamSpace = nNewStreamSize;
-    m_pNextData = m_pStream + m_nByteCount;
+    }else{
 
+        unsigned char * t = new unsigned char [nNewStreamSize];
+        memcpy(t, m_pStream,m_nByteCount);
+        delete [] m_pStream;
+        m_pStream=t;
+        m_nStreamSpace = nNewStreamSize;
+        m_pNextData = m_pStream + m_nByteCount;
+
+    }
     return true;
 }
 
@@ -105,28 +106,6 @@ bool CMOOSCommPkt::OnBytesWritten(unsigned char * /*PositionWrittento*/,int nDat
 }
 
 
-bool CMOOSCommPkt::Fill(unsigned char *InData, int nData) {
-
-    if (m_nByteCount + nData >= m_nStreamSpace) {
-        InflateTo(m_nStreamSpace + nData);
-    }
-    memcpy(m_pNextData, InData, nData);
-    m_pNextData += nData;
-    m_nByteCount += nData;
-
-    if (m_nByteCount <= (int) sizeof(int)) {
-        if (m_nByteCount == sizeof(int)) {
-            memcpy((void*) (&m_nMsgLen), (void*) m_pStream, sizeof(int));
-
-            //look to swap byte order if this machine is Big End in
-            if (!IsLittleEndian()) {
-                m_nMsgLen = SwapByteOrder<int> (m_nMsgLen);
-            }
-        }
-    }
-
-    return true;
-}
 
 int CMOOSCommPkt::GetBytesRequired() {
     if (m_nByteCount < (int) sizeof(int)) {

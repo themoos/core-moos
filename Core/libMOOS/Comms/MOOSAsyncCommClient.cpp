@@ -41,6 +41,7 @@
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
+#include "MOOS/libMOOS/Utils/ThreadPrint.h"
 
 #include "MOOS/libMOOS/Comms/MOOSAsyncCommClient.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -51,6 +52,8 @@
 #endif
 
 namespace MOOS {
+
+ThreadPrint  gMOOSAsyncCommsClientPrinter(std::cerr);
 
 #define TIMING_MESSAGE_PERIOD 1.0
 
@@ -186,9 +189,10 @@ bool MOOSAsyncCommClient::WritingLoop() {
 
         try
         {
-            if (m_bDisableNagle)
+            if (m_bDisableNagle){
+                gMOOSAsyncCommsClientPrinter.Print("disabling nagle");
                 m_pSocket->vSetNoDelay(1);
-
+            }
             m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB * 1024);
             m_pSocket->vSetSendBuf(m_nSendBufferSizeKB * 1024);
         }
@@ -336,7 +340,7 @@ bool MOOSAsyncCommClient::MonitorAndLimitWriteSpeed()
             static_cast<unsigned int> (TotalDelay);
     if (sleep_ms > 0)
     {
-        //std::cerr << "I'm sleeping for " << TotalDelay << " ms ("<<TotalDelay/GetMOOSTimeWarp()<<" real ms)\n";
+        std::cerr << "I'm sleeping for " << TotalDelay << " ms ("<<TotalDelay/GetMOOSTimeWarp()<<" real ms)\n";
         MOOSPause(sleep_ms,false);
     }
 
@@ -449,6 +453,7 @@ bool MOOSAsyncCommClient::DoReading()
                         //and we can update the outgoing thread's speed
                         //as controlled by the DB.
                         m_dfOutGoingDelay = q->GetDoubleAux();
+
                     }
 
                     m_InBox.erase(q);

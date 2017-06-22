@@ -61,8 +61,6 @@ public:
      */
     int     GetStreamLength();
 
-    bool    Fill(unsigned char * InData,int nData);
-
     bool    OnBytesWritten(unsigned char * PositionWrittento,int nData);
 
     int     GetBytesRequired();
@@ -84,7 +82,7 @@ protected:
 
     /**true if the packet has been inflated to increase capicity and m_pStream no longer
     points to DefaultStream but to heap space allocated with new */
-	std::vector<unsigned char > m_Storage;
+    //std::vector<unsigned char > m_Storage;
 
 	//how many messages are contained in this  packet when serialsised to a stream?
 	unsigned int m_nToStreamCount;

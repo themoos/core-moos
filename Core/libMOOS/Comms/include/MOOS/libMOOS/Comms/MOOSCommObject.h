@@ -48,7 +48,6 @@ public:
 protected:
     bool SendPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktTx);
     bool ReadPkt(XPCTcpSocket* pSocket,CMOOSCommPkt & PktRx,int nSecondsTimeOut = -1);
-    bool ReadPktV2(XPCTcpSocket* pSocket,CMOOSCommPkt & PktRx,int nSecondsTimeOut = -1);
     bool SendMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg);
     bool ReadMsg(XPCTcpSocket* pSocket,CMOOSMsg & Msg, int nSecondsTimeOut = -1);
 

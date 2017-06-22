@@ -69,9 +69,12 @@ void OpenLogFile(std::ofstream & ofs,
 
 
 void PrettyPrint(std::ostream & output_stream,const MOOS::EndToEndAudit::MessageStatistic & ms){
+    static double last = ms.source_time;
+    output_stream<<std::left<<std::setw(7)<<std::setprecision(12)<<ms.source_time-last<<" ";
     output_stream<<std::left<<std::setw(7)<<std::setprecision(4);
     output_stream<<(ms.receive_time-ms.source_time)/1000.0<<" ms delay ";
     output_stream<<ms.source_client<<" |----  "<<ms.message_name<<"["<<ms.message_size<<"]  ----> "<<ms.destination_client<<std::endl;
+    last = ms.source_time;
 }
 
 void LogToFile(std::ofstream & output_stream,const MOOS::EndToEndAudit::MessageStatistic & ms){
@@ -178,6 +181,7 @@ int main(int argc, char *argv[])
     double alpha = 0.01;
     while(1)
     {
+
         std::string sReply;
 
         if(multicast_listener.Read(sReply,1000)){
