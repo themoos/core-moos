@@ -52,6 +52,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -139,6 +140,7 @@ inline void Event::reset()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Event_INCLUDED

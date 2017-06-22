@@ -104,7 +104,7 @@ void LogMessage(CMOOSMsg & M)
 
 }
 
-bool func(CMOOSMsg & M, void *pParam)
+bool func(CMOOSMsg & M, void * /*pParam*/)
 {
 	LogMessage(M);
 	return true;

@@ -59,7 +59,7 @@ public:
 		return true;
 	}
 
-	bool OnNewMail(MOOSMSG_LIST & List)
+  bool OnNewMail(MOOSMSG_LIST & /*List*/)
 	{
 		static double dfRate = 0;
 		static double dfLastTime = 0.0;

@@ -28,7 +28,7 @@
 
 MOOS::ThreadPrint gPrinter(std::cerr);
 
-bool func(CMOOSMsg & M, void *pParam)
+bool func(CMOOSMsg & M, void * /*pParam*/)
 {
 	gPrinter.Print(MOOSFormat("in callback for %s",M.GetKey().c_str()));
 	return true;

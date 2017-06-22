@@ -46,6 +46,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -86,6 +87,7 @@ inline void EventImpl::resetImpl()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Event_WIN32_INCLUDED

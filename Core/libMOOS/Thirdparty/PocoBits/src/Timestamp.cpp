@@ -50,6 +50,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -174,3 +175,4 @@ void Timestamp::toFileTimeNP(UInt32& fileTimeLow, UInt32& fileTimeHigh) const
 
 
 } // namespace Poco
+} // namespace MOOS

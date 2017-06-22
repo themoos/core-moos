@@ -38,7 +38,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
-
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 
 
 #ifndef _WIN32
@@ -52,6 +52,7 @@
 
 CMOOSLock::CMOOSLock(bool bInitial)
 {
+  UNUSED_PARAMETER(bInitial);
 #ifdef _WIN32
     m_hLock = ::CreateEvent(NULL,false,bInitial,NULL);
 #else

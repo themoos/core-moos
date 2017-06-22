@@ -38,6 +38,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Event_WIN32.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -82,3 +83,4 @@ bool EventImpl::waitImpl(long milliseconds)
 
 
 } // namespace Poco
+} // namespace MOOS

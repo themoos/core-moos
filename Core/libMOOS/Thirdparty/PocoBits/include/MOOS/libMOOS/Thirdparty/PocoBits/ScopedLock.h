@@ -44,6 +44,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -113,6 +114,7 @@ private:
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_ScopedLock_INCLUDED

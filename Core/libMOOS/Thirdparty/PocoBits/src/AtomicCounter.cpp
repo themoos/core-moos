@@ -40,6 +40,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/AtomicCounter.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -172,3 +173,4 @@ AtomicCounter& AtomicCounter::operator = (AtomicCounter::ValueType value)
 
 
 } // namespace Poco
+} // namespace MOOS

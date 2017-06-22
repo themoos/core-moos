@@ -46,6 +46,7 @@
 #include <algorithm>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -453,7 +454,8 @@ inline void swap(SharedPtr<C, RC, RP>& p1, SharedPtr<C, RC, RP>& p2)
 }
 
 
-} // namespace poco
+} // namespace Poco
+} // namespace MOOS
 
 
 #endif /* SHAREDPTR_H_ */

@@ -53,6 +53,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 template< class T > void deliberately_unused(const T &) {}
@@ -288,6 +289,7 @@ inline void FastMutex::unlock()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Mutex_INCLUDED

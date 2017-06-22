@@ -44,6 +44,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -91,6 +92,7 @@ public:
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Debugger_INCLUDED

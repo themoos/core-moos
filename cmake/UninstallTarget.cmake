@@ -10,10 +10,10 @@
 macro(configure_uninstall_target outfile)
 
     # First configure the script
-    CONFIGURE_FILE(${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in ${outfile} IMMEDIATE @ONLY)
+    configure_file(${CMAKE_MODULE_PATH}/cmake_uninstall.cmake.in ${outfile} IMMEDIATE @ONLY)
 
     # Now set it as the 'uninstall' target
-    ADD_CUSTOM_TARGET(uninstall
+    add_custom_target(uninstall
         "${CMAKE_COMMAND}" -P "${outfile}")
 
 endmacro()

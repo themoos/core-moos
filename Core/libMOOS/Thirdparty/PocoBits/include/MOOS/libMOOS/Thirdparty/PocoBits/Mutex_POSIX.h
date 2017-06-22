@@ -47,6 +47,7 @@
 #include <errno.h>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -105,6 +106,7 @@ inline void MutexImpl::unlockImpl()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Mutex_POSIX_INCLUDED

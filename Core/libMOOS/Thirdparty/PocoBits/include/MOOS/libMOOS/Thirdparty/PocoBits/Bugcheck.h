@@ -47,6 +47,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -90,6 +91,7 @@ protected:
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 //

@@ -215,6 +215,8 @@ bool IsLittleEndian()
 bool gbWin32HPTiming = true;
 bool SetWin32HighPrecisionTiming(bool bEnable)
 {
+  UNUSED_PARAMETER(bEnable);
+
 #ifndef _WIN32
 	return false;
 #else
