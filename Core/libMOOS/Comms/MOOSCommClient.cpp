@@ -726,7 +726,7 @@ bool CMOOSCommClient::DoClientWork()
 			m_nMsgsReceived+=m_InBox.size()-num_pending;
 
 			//did you manage to grab the DB time while you were there?
-			if(m_bDoLocalTimeCorrection && !isnan(dfServerPktTxTime))
+            if(m_bDoLocalTimeCorrection && !std::isnan(dfServerPktTxTime))
             {
 				UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
             }
