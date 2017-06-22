@@ -46,6 +46,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -70,3 +71,4 @@ FastMutex::~FastMutex()
 
 
 } // namespace Poco
+} // namespace MOOS

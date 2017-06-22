@@ -28,14 +28,6 @@
     #pragma warning(disable : 4786)
 #endif
 
-#ifndef UNUSED_PARAMETER
-    #ifdef _WIN32
-        #define UNUSED_PARAMETER(a) a
-    #else
-        #define UNUSED_PARAMETER(a) 
-    #endif
-#endif
-
 #ifdef _WIN32
     #include <winsock2.h>
     #include "windows.h"

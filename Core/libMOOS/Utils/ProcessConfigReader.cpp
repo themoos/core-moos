@@ -29,6 +29,7 @@
 //////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 #pragma warning(disable : 4786)
+#include <iterator>
 #endif
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"

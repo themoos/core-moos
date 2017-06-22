@@ -45,18 +45,6 @@
 #include "MOOS/libMOOS/DB/MsgFilter.h"
 #include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 
-
-//#ifdef HAVE_TR1_UNORDERED_MAP
-//	#include <tr1/unordered_map>
-//	#define HASH_MAP_TYPE tr1::unordered_map
-//#else
-//	#ifdef HAVE_STD_UNORDERED_MAP
-//		#include <unordered_map>
-//		#define HASH_MAP_TYPE std::unordered_map
-//	#else
-//	#endif
-//#endif
-
 #define HASH_MAP_TYPE std::map
 typedef HASH_MAP_TYPE<std::string,MOOSMSG_LIST> MOOSMSG_LIST_STRING_MAP;
 typedef HASH_MAP_TYPE<std::string,CMOOSDBVar> DBVAR_MAP;

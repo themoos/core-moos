@@ -1,0 +1,26 @@
+language: cpp
+dist: trusty
+
+os:
+    - linux
+    - osx
+
+compiler:
+    - gcc
+
+before_script:
+    - mkdir build/
+
+env:
+    - BUILD_TYPE=Debug
+    - BUILD_TYPE=Release BUILD_SHARED_LIBS=OFF
+    - BUILD_TYPE=Release BUILD_SHARED_LIBS=ON
+
+script:
+    - cd build/
+    - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} ..
+    - cmake --build . --config Release
+
+after_script:
+    - cmake --build . --config Release --target install
+

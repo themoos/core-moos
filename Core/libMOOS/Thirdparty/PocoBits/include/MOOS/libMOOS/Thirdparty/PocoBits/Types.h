@@ -44,6 +44,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Foundation.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -210,6 +211,7 @@ namespace Poco {
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Types_INCLUDED

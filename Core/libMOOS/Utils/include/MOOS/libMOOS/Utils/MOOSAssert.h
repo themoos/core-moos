@@ -50,6 +50,13 @@
 
 inline void MOOSAssert(bool cond, const char *msg=NULL, const char *filename=NULL, int line=0)
 {
+  // Suppress unused parameter warnings, since some MOOS_ASSERT_LEVEL code paths
+  // don't use these parameters.
+  UNUSED_PARAMETER(cond);
+  UNUSED_PARAMETER(msg);
+  UNUSED_PARAMETER(filename);
+  UNUSED_PARAMETER(line);
+
 #if (defined(_DEBUG) || defined(ALLOW_RELEASE_ASSERTS))
 #if (MOOS_ASSERT_LEVEL > 0)
 

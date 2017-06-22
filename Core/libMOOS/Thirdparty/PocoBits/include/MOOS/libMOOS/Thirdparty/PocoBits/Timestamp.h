@@ -45,6 +45,7 @@
 #include <ctime>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -256,6 +257,7 @@ inline void swap(Timestamp& s1, Timestamp& s2)
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Timestamp_INCLUDED

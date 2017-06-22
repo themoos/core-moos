@@ -47,6 +47,7 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -106,6 +107,7 @@ inline void MutexImpl::unlockImpl()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Mutex_WIN32_INCLUDED

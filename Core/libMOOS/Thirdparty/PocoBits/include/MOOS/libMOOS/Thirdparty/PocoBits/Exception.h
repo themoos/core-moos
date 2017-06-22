@@ -45,6 +45,7 @@
 #include <stdexcept>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -272,6 +273,7 @@ POCO_DECLARE_EXCEPTION(Foundation_API, BadCastException, RuntimeException)
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Exception_INCLUDED

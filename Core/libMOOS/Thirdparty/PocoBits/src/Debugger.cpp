@@ -38,6 +38,7 @@
 
 
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Debugger.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 #include <sstream>
 #include <cstdlib>
 #include <cstdio>
@@ -58,6 +59,7 @@
 // might not have been initialized yet.
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -94,6 +96,9 @@ bool Debugger::isAvailable()
 
 void Debugger::message(const std::string& msg)
 {
+  // Suppress unused param warnings for some code paths.
+  UNUSED_PARAMETER(msg);
+
 #if defined(_DEBUG)
 	std::fputs("\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n", stderr);
 	std::fputs(msg.c_str(), stderr);
@@ -120,6 +125,11 @@ void Debugger::message(const std::string& msg)
 
 void Debugger::message(const std::string& msg, const char* file, int line)
 {
+  // Suppress unused param warnings for some code paths.
+  UNUSED_PARAMETER(msg);
+  UNUSED_PARAMETER(file);
+  UNUSED_PARAMETER(line);
+
 #if defined(_DEBUG)
 	std::ostringstream str;
 	str << msg << " [in file \"" << file << "\", line " << line << "]";
@@ -157,6 +167,9 @@ void Debugger::enter()
 
 void Debugger::enter(const std::string& msg)
 {
+  // Suppress unused param warnings for some code paths.
+  UNUSED_PARAMETER(msg);
+
 #if defined(_DEBUG)
 	message(msg);
 	enter();
@@ -166,6 +179,11 @@ void Debugger::enter(const std::string& msg)
 
 void Debugger::enter(const std::string& msg, const char* file, int line)
 {
+  // Suppress unused param warnings for some code paths.
+  UNUSED_PARAMETER(msg);
+  UNUSED_PARAMETER(file);
+  UNUSED_PARAMETER(line);
+
 #if defined(_DEBUG)
 	message(msg, file, line);
 	enter();
@@ -175,6 +193,10 @@ void Debugger::enter(const std::string& msg, const char* file, int line)
 
 void Debugger::enter(const char* file, int line)
 {
+  // Suppress unused param warnings for some code paths.
+  UNUSED_PARAMETER(file);
+  UNUSED_PARAMETER(line);
+
 #if defined(_DEBUG)
 	message("BREAK", file, line);
 	enter();
@@ -183,3 +205,4 @@ void Debugger::enter(const char* file, int line)
 
 
 } // namespace Poco
+} // namespace MOOS

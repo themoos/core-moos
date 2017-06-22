@@ -47,6 +47,7 @@
 #endif
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -61,3 +62,4 @@ Event::~Event()
 
 
 } // namespace Poco
+} // namespace MOOS

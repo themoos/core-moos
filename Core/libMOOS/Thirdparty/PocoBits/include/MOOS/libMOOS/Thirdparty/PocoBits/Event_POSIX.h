@@ -47,6 +47,7 @@
 #include <errno.h>
 
 
+namespace MOOS {
 namespace Poco {
 
 
@@ -95,6 +96,7 @@ inline void EventImpl::resetImpl()
 
 
 } // namespace Poco
+} // namespace MOOS
 
 
 #endif // Foundation_Event_POSIX_INCLUDED
