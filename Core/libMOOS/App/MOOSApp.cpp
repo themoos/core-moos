@@ -1110,7 +1110,7 @@ bool CMOOSApp::OnMailCallBack()
 #endif
 }
 
-bool CMOOSApp::OnCommandMsg(CMOOSMsg  CmdMsg)
+bool CMOOSApp::OnCommandMsg(CMOOSMsg /*CmdMsg*/)
 {
     MOOSTrace("- default OnCommandMsg called\n");
     return true;

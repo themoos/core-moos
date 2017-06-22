@@ -17,7 +17,7 @@ double dfMean = 0;
 double dfVar = 0;
 unsigned int N = 0;
 
-bool f(double TimeNow,double TimeLastRun,double TimeScheduled, void * pParamCaller)
+bool f(double TimeNow,double TimeLastRun,double TimeScheduled, void * /*pParamCaller*/)
 {
 	//lets wait a while
 	MOOSPause(2);
@@ -44,7 +44,7 @@ bool f(double TimeNow,double TimeLastRun,double TimeScheduled, void * pParamCall
 	return true;
 }
 
-int main(int argc, char * argv[])
+int main()
 {
 	MOOS::PeriodicEvent P;
 

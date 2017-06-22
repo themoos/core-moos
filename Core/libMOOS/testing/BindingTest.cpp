@@ -10,7 +10,7 @@
 class Whatever
 {
 public:
-	bool perhaps(CMOOSMsg & M)
+  bool perhaps(CMOOSMsg & /*M*/)
 	{
 		std::cout<<"perhaps\n";
 		return true;
@@ -28,7 +28,7 @@ class CBind
 		SetCallBack<CBind>(&CBind::UseMe,this);
 	}
 protected:
-	bool UseMe(CMOOSMsg & M)
+  bool UseMe(CMOOSMsg & /*M*/)
 	{
 		std::cout<<"yep\n";
 		return true;
@@ -60,7 +60,7 @@ private:
 
 class MyClass : public CBind
 {
-	bool UseMe(CMOOSMsg & M)
+  bool UseMe(CMOOSMsg & /*M*/)
 	{
 		std::cout<<"yep B\n";
 		return true;
@@ -75,10 +75,8 @@ public:
 };
 
 
-int main(int argc, char * argv[])
+int main()
 {
-
-
 	Whatever Y;
 	MOOS::MsgFunctor* pG = MOOS::BindMsgFunctor<Whatever>(&Y,&Whatever::perhaps);
 	CMOOSMsg X;

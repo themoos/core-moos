@@ -63,7 +63,7 @@ CMOOSLock Lock;
 std::map<std::string,std::vector<double> >  LagLogs;
 bool bEnableCapture=false;
 
-bool _OnConnectNULL(void * pParam)
+bool _OnConnectNULL(void * /*pParam*/)
 {
 	return true;
 }

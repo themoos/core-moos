@@ -79,7 +79,7 @@ bool CMOOSCommPkt::InflateTo(unsigned int nNewStreamSize) {
 }
 
 
-bool CMOOSCommPkt::OnBytesWritten(unsigned char * PositionWrittento,int nData)
+bool CMOOSCommPkt::OnBytesWritten(unsigned char * /*PositionWrittento*/,int nData)
 {
     //std::cerr<<__PRETTY_FUNCTION__<<" "<<nData<<"\n";
 

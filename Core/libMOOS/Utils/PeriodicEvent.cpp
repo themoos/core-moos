@@ -32,6 +32,8 @@ namespace MOOS
 
 		static bool DefaultCallback(double TimeNow,double TimeLastRun,double TimeScheduled, void * pParamCaller)
 		{
+      UNUSED_PARAMETER(pParamCaller);
+
 			std::cout.setf(std::ios::fixed);
 
 			std::cout<<std::setprecision(4);
@@ -52,6 +54,7 @@ namespace MOOS
 
 		void SetCallback(bool (*pfn)(double TimeNow,double TimeLastRun,double TimeScheduled, void * pParamCaller), void * pCallerParam)
 		{
+      UNUSED_PARAMETER(pCallerParam);
 			pfn_ = pfn;
 			//pParamCaller_ = pCallerParam;
 

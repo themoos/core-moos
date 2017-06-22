@@ -38,26 +38,26 @@
 
 MOOS::ThreadPrint gPrinter(std::cerr);
 
-bool func(CMOOSMsg & M, void *pParam)
+bool func(CMOOSMsg & M, void * /*pParam*/)
 {
 	gPrinter.Print(MOOSFormat("in callback for %s",M.GetKey().c_str()));
 	return true;
 }
 
-bool func_alt(CMOOSMsg & M, void *pParam)
+bool func_alt(CMOOSMsg & M, void * /*pParam*/)
 {
 	gPrinter.Print(MOOSFormat("in alternate callback for %s",M.GetKey().c_str()));
 	return true;
 }
 
-bool func_wildcard(CMOOSMsg & M, void *pParam)
+bool func_wildcard(CMOOSMsg & M, void * /*pParam*/)
 {
 	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
 	return true;
 }
 
 
-bool func_wild(CMOOSMsg & M, void *pParam)
+bool func_wild(CMOOSMsg & M, void * /*pParam*/)
 {
 	gPrinter.Print(MOOSFormat("in wildcard callback for %s",M.GetKey().c_str()));
 	return true;
