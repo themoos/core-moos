@@ -351,7 +351,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
 #ifdef DEFAULT_NO_NAGLE
     bool bTCPNoDelay = true;
-#elif
+#else
     bool bTCPNoDelay = false;
 #endif
     m_MissionReader.GetValue("tcpnodelay",bTCPNoDelay);
