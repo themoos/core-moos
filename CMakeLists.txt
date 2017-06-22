@@ -159,7 +159,6 @@ if(ENABLE_EXPORT)
   message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
 endif()
 
-if(1)
     if(PROJECT_EXPORT_LIBS)
 
         message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
@@ -196,8 +195,6 @@ if(1)
           export(PACKAGE ${PROJECTNAME})
         endif()
     endif()
-
-endif()
 
 # Save a version file in the project's binary directory
 set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
