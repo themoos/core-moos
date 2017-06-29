@@ -1,29 +1,47 @@
 language: cpp
-dist: trusty
 
 os:
-    - linux
-    - osx
+  - linux
+  - osx
+
+dist:
+  - trusty
 
 compiler:
-    - gcc
-    - clang
+  - clang
+  - gcc
 
-before_script:
-    - mkdir build/
+git:
+  depth: 3
 
 env:
-    - BUILD_TYPE=Debug
-    - BUILD_TYPE=Release BUILD_SHARED_LIBS=OFF
-    - BUILD_TYPE=Release BUILD_SHARED_LIBS=ON
-    - BUILD_TYPE=Release BUILD_SHARED_LIBS=ON USE_CXX11_IF_AVAILABLE=ON
-    - BUILD_TYPE=Release BUILD_SHARED_LIBS=ON USE_CXX11_IF_AVAILABLE=OFF
+  global:
+    - BUILD_SHARED_LIBS=OFF
+    - BUILD_TYPE=Release
+  matrix:
+    - USE_CXX11_IF_AVAILABLE=OFF
+    - USE_CXX11_IF_AVAILABLE=ON
+
+matrix:
+  exclude:
+    # Don't compile with gcc on MacOS
+    - os: osx
+      compiler: gcc
+  include:
+    # Make sure that things still work OK by default on a non c++11 compiler
+    - os: linux
+      dist: precise
+      env: DIST=precise # Just to provide a useful label in travis web view
+    # Check that a shared libs build works
+    - os: linux
+      dist: trusty
+      env: BUILD_SHARED_LIBS=ON
+
+before_script:
+  - mkdir build/
 
 script:
-    - cd build/
-    - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DUSE_CXX11_IF_AVAILABLE=$USE_CXX11_IF_AVAILABLE ..
-    - cmake --build . --config Release
-
-after_script:
-    - cmake --build . --config Release --target install
-
+  - cd build/
+  - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DUSE_CXX11_IF_AVAILABLE=$USE_CXX11_IF_AVAILABLE ..
+  - cmake --build . --config Release -- -j3
+  - sudo cmake --build . --config Release --target install
