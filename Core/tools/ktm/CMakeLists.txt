@@ -2,7 +2,7 @@
 #to probe and play with MOOS comms
 
 add_executable(ktm ktm.cpp)
-target_link_libraries(ktm ${MOOS_LIBRARIES})
+target_link_libraries(ktm MOOS)
 
 install(TARGETS ktm
   RUNTIME DESTINATION bin

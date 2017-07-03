@@ -2,7 +2,7 @@
 #to monitor the moos
 
 add_executable(mtm mtm)
-target_link_libraries(mtm ${MOOS_LIBRARIES})
+target_link_libraries(mtm MOOS)
 
 install(TARGETS mtm
   RUNTIME DESTINATION bin

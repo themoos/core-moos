@@ -2,7 +2,7 @@
 #to graph MOOS connectivity
 
 add_executable(gtm gtm.cpp)
-target_link_libraries(gtm ${MOOS_LIBRARIES})
+target_link_libraries(gtm MOOS)
 
 install(TARGETS gtm
   RUNTIME DESTINATION bin

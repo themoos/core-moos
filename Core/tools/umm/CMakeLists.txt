@@ -2,7 +2,7 @@
 #to probe and play with MOOS comms
 
 add_executable(umm umm.cpp)
-target_link_libraries(umm ${MOOS_LIBRARIES})
+target_link_libraries(umm MOOS)
 
 install(TARGETS umm
   RUNTIME DESTINATION bin
