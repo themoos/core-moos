@@ -37,6 +37,9 @@ matrix:
       dist: trusty
       env: BUILD_SHARED_LIBS=ON
 
+before_install:
+  - .travis/install_packages.sh
+
 before_script:
   - mkdir build/
 

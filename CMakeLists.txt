@@ -4,7 +4,7 @@
 #   pnewman@robots.ox.ac.uk
 ###########################################################
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 cmake_policy(SET CMP0003 NEW)
 if(POLICY CMP0042)
@@ -14,8 +14,8 @@ endif()
 set(PROJECTNAME MOOS)
 
 set(PACKAGE_VERSION_MAJOR 10)
-set(PACKAGE_VERSION_MINOR 0)
-set(PACKAGE_VERSION_PATCH 3)
+set(PACKAGE_VERSION_MINOR 1)
+set(PACKAGE_VERSION_PATCH 0)
 
 set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 message(STATUS "+++  This is MOOS version ${PACKAGE_VERSION} +++")
