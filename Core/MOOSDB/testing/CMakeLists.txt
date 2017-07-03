@@ -3,8 +3,6 @@
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests)
 
-include_directories(${MOOS_INCLUDE_DIRS})
-
 add_executable(async_test DBAsyncTest.cpp)
 target_link_libraries(async_test ${MOOS_LIBRARIES})
 

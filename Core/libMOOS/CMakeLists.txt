@@ -145,7 +145,7 @@ add_library(MOOS
 )
 
 target_include_directories(MOOS PUBLIC
-    ${MOOS_INCLUDE_DIRS}
+    ${INCLUDE_ROOTS}
 )
 
 target_link_libraries(MOOS
