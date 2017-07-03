@@ -38,7 +38,6 @@
     #include "windows.h"
     #include "winbase.h"
     #include "winnt.h"
-    #define isnan _isnan
 #else
     #include <pthread.h>
 #endif
@@ -57,6 +56,7 @@
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
+#include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
 
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
 #include "MOOS/libMOOS/Comms/MOOSCommClient.h"
@@ -726,7 +726,7 @@ bool CMOOSCommClient::DoClientWork()
 			m_nMsgsReceived+=m_InBox.size()-num_pending;
 
 			//did you manage to grab the DB time while you were there?
-            if(m_bDoLocalTimeCorrection && !std::isnan(dfServerPktTxTime))
+            if(m_bDoLocalTimeCorrection && !MOOS::isnan(dfServerPktTxTime))
             {
 				UpdateMOOSSkew(dfLocalPktTxTime, dfServerPktTxTime, dfLocalPktRxTime);
             }
