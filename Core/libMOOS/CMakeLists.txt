@@ -202,18 +202,10 @@ mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 # install headers
 install(DIRECTORY ${INCLUDE_ROOTS} DESTINATION ${CMAKE_INSTALL_PREFIX} FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx")
 
-
 # install libraries
 install(TARGETS MOOS
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-)
-
-######################################
-#export the library - this is picked up and used by the chunk of
-#script at the end of the top level CMakeLists.txt file
-set_property(GLOBAL APPEND PROPERTY PROJECT_EXPORT_LIBS
-    MOOS
 )
 
 add_subdirectory(testing)

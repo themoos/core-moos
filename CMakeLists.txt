@@ -161,38 +161,28 @@ add_subdirectory(Core)
 # Config Script Creation
 #########################
 
-# Add your library's name to the PROJECT_EXPORT_LIBS global property if you wish
-# to have it exported.
 option(ENABLE_EXPORT
   "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
   message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
 endif()
 
-get_property(PROJECT_EXPORT_LIBS GLOBAL PROPERTY PROJECT_EXPORT_LIBS)
-if(PROJECT_EXPORT_LIBS)
+# Provide a cmake config script for the build directory
+export(TARGETS
+    MOOS
+    FILE
+    Use${PROJECTNAME}.cmake
+)
 
-    message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
+set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
+configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
 
-    # Provide a cmake config script for the build directory
-    export(TARGETS
-        ${PROJECT_EXPORT_LIBS}
-        FILE
-        Use${PROJECTNAME}.cmake
-    )
-
-    set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
-    configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
-
-    # Append libary specific lines to the generated config script
-    foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
-        file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_LIBRARIES \"${${EXPORT_LIB}_LIBRARIES}\")\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_INCLUDE_DIRS \"${${EXPORT_LIB}_INCLUDE_DIRS}\")\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
-    endforeach()
-
-endif()
+# Support existing projects that expect to find MOOS_LIBRARIES and
+# MOOS_INCLUDE_DIRS variables.
+file(APPEND ${CONFIG_FILE} "\n# Export variables for MOOS Library\n")
+file(APPEND ${CONFIG_FILE} "set(MOOS_LIBRARIES \"${MOOS_LIBRARIES}\")\n")
+file(APPEND ${CONFIG_FILE} "set(MOOS_INCLUDE_DIRS \"${MOOS_INCLUDE_DIRS}\")\n")
+file(APPEND ${CONFIG_FILE} "set(MOOS_DEPEND_LIBRARIES \"${MOOS_DEPEND_LIBRARIES}\")\n")
 
 if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that
