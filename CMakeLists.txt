@@ -6,7 +6,10 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
+# Libraries linked via full path no longer produce linker search paths.
 cmake_policy(SET CMP0003 NEW)
+
+# MACOSX_RPATH is enabled by default.
 if(POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
 endif()
@@ -33,6 +36,36 @@ if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 endif()
 if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+endif()
+
+##############################
+# Set up RPATH for executables
+##############################
+
+# Use @rpath library install names on OSX
+# Also set by policy CMP00042
+set(CMAKE_MACOSX_RPATH TRUE)
+
+# Use (don't skip) RPATH for binaries in the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# Don't append external paths to the RPATH
+# They're not needed, because MOOS has no dependencies
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
+# Don't use the install RPATH for a normal build.
+# Only use it when the binaries are installed.
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+# Set RPATH value for installed executables. This should point
+# at the directory containing the MOOS library. Relative paths used to allow
+# installed files to be relocated.
+if(BUILD_SHARED_LIBS)
+    if(APPLE)
+        set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+    elseif(UNIX)
+        set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
+    endif()
 endif()
 
 project(${PROJECTNAME})
