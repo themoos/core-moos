@@ -127,9 +127,17 @@ target_include_directories(MOOS PUBLIC
 )
 
 if(UNIX)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
+    if (TARGET Threads::Threads)
+        set(THREAD_LIB Threads::Threads)
+    else()
+        set(THREAD_LIB "${CMAKE_THREAD_LIBS_INIT}")
+    endif()
     # pthread is PUBLIC because the dependency is exposed in the libMOOS headers :-(
     target_link_libraries(MOOS
-        PUBLIC pthread
+        PUBLIC "${THREAD_LIB}"
         PRIVATE m
     )
 elseif(WIN32)
