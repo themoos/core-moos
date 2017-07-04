@@ -20,7 +20,7 @@ set(PACKAGE_VERSION_PATCH 3)
 set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 message(STATUS "+++  This is MOOS version ${PACKAGE_VERSION} +++")
 
-# If user specifies the build type, use theirs, otherwise use release
+# If user specifies the build type, use theirs, otherwise use Release
 if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "")
 endif()
