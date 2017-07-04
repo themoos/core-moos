@@ -58,11 +58,6 @@ endif()
 
 # Do we want to create dynamic libraries?
 option(BUILD_SHARED_LIBS "Build lib${PROJECTNAME} as a shared library" OFF)
-if(BUILD_SHARED_LIBS)
-    message("-- Building lib${PROJECTNAME} as a shared library")
-else()
-    message("-- Building lib${PROJECTNAME} as a static library")
-endif()
 
 # Enable Doxygen build with 'make doxygen'
 option(ENABLE_DOXYGEN "Enable a 'make doc' target for Doxygen documentation")
