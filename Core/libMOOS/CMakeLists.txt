@@ -201,6 +201,7 @@ install(
 
 # install libraries
 install(TARGETS MOOS
+  EXPORT MOOS
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )

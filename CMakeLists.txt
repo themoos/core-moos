@@ -213,6 +213,33 @@ write_basic_package_version_file("${VERSION_FILE}"
   COMPATIBILITY AnyNewerVersion
 )
 
+#########################
+# Install target
+#########################
+
+# Provide a cmake config script for the install directory
+set(PROJECT_CONFIG_PATH "lib/cmake/MOOS")
+install(
+    EXPORT MOOS
+    FILE UseMOOS.cmake
+    DESTINATION ${PROJECT_CONFIG_PATH}
+)
+
+# Headers are all combined into one common 'include' dir when MOOS is installed
+set(MOOS_INCLUDE_DIRS "include")
+set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSInstallConfig.cmake")
+configure_file( "MOOSConfig.cmake.in" ${CONFIG_FILE} @ONLY )
+install(
+    FILES "${CONFIG_FILE}"
+    RENAME MOOSConfig.cmake
+    DESTINATION "${PROJECT_CONFIG_PATH}"
+)
+
+# Save a version file in the project's install directory
+install(FILES ${VERSION_FILE} DESTINATION "${PROJECT_CONFIG_PATH}")
+
+#########################
+
 option(ENABLE_EXPORT
   "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
