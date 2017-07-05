@@ -389,7 +389,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
         m_SuicidalSleeper.SetChannel(sSuicideAddress);
     }
 
-    int nSuicidePort;
+    int nSuicidePort(0);
     if(P.GetVariable("--moos_suicide_port",nSuicidePort))
     {
         m_SuicidalSleeper.SetPort(nSuicidePort);
