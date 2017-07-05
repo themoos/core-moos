@@ -15,7 +15,7 @@ if(POLICY CMP0042)
 endif()
 
 set(PACKAGE_VERSION_MAJOR 10)
-set(PACKAGE_VERSION_MINOR 2)
+set(PACKAGE_VERSION_MINOR 3)
 set(PACKAGE_VERSION_PATCH 0)
 
 set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
@@ -187,15 +187,15 @@ add_subdirectory(Core)
 #########################
 
 # Provide a cmake config script for the build directory
-export(TARGETS
-    MOOS
-    FILE
-    UseMOOS.cmake
+export(
+    TARGETS MOOS
+    NAMESPACE MOOS::
+    FILE UseMOOS.cmake
 )
 
 # Support existing projects that expect to find MOOS_LIBRARIES and
 # MOOS_INCLUDE_DIRS variables.
-set(MOOS_LIBRARIES MOOS)
+set(MOOS_LIBRARIES MOOS::MOOS)
 
 # Generate the config file for other projects to find the MOOS build dir
 set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSConfig.cmake")
@@ -221,6 +221,7 @@ write_basic_package_version_file("${VERSION_FILE}"
 set(PROJECT_CONFIG_PATH "lib/cmake/MOOS")
 install(
     EXPORT MOOS
+    NAMESPACE MOOS::
     FILE UseMOOS.cmake
     DESTINATION ${PROJECT_CONFIG_PATH}
 )
