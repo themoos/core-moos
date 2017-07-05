@@ -14,8 +14,6 @@ if(POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
 endif()
 
-set(PROJECTNAME MOOS)
-
 set(PACKAGE_VERSION_MAJOR 10)
 set(PACKAGE_VERSION_MINOR 2)
 set(PACKAGE_VERSION_PATCH 0)
@@ -68,7 +66,7 @@ if(BUILD_SHARED_LIBS)
     endif()
 endif()
 
-project(${PROJECTNAME})
+project(MOOS)
 
 set(CMakeScripts_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
@@ -84,7 +82,7 @@ if(UPDATE_GIT_VERSION_INFO)
 endif()
 
 # Do we want to create dynamic libraries?
-option(BUILD_SHARED_LIBS "Build lib${PROJECTNAME} as a shared library" OFF)
+option(BUILD_SHARED_LIBS "Build libMOOS as a shared library" OFF)
 
 # Enable Doxygen build with 'make doxygen'
 option(ENABLE_DOXYGEN "Enable a 'make doc' target for Doxygen documentation")
@@ -192,7 +190,7 @@ add_subdirectory(Core)
 export(TARGETS
     MOOS
     FILE
-    Use${PROJECTNAME}.cmake
+    UseMOOS.cmake
 )
 
 # Support existing projects that expect to find MOOS_LIBRARIES and
@@ -209,7 +207,7 @@ configure_file(
 
 # Save a version file in the project's binary directory
 include(CMakePackageConfigHelpers)
-set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
+set(VERSION_FILE "${PROJECT_BINARY_DIR}/MOOSConfigVersion.cmake")
 write_basic_package_version_file("${VERSION_FILE}"
   VERSION ${PACKAGE_VERSION}
   COMPATIBILITY AnyNewerVersion
@@ -224,7 +222,7 @@ if(ENABLE_EXPORT)
         "Set ENABLE_EXPORT to OFF if you don't want this and "
         "delete ~/.cmake/projects/MOOS "
     )
-    export(PACKAGE ${PROJECTNAME})
+    export(PACKAGE MOOS)
 endif()
 
 include(UninstallTarget)
