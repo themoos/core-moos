@@ -120,12 +120,12 @@ endif()
 #######################################
 # Export include and library locations
 
+# MOOS_INCLUDE_DIRS global variable gets used in top level CMakeLists.txt to
+# configure the MOOSConfig.cmake file.
 set(MOOS_INCLUDE_DIRS
     ${INCLUDE_ROOTS}
-    CACHE INTERNAL
-    "Where to find MOOS include directories"
+    CACHE INTERNAL "Where to find MOOS include directories"
 )
-list(REMOVE_DUPLICATES MOOS_INCLUDE_DIRS)
 
 set(MOOS_LIBRARIES
     MOOS
