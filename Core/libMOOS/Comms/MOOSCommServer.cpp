@@ -921,21 +921,26 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
 //chances of a comm packet spelling out a protocol name are pretty damn slim.....
 bool CheckProtocol(XPCTcpSocket *pNewClient)
 {
-	char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1];
-	sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE]='\0';
-	int nRead = pNewClient->iRecieveMessage(sProtocol, MOOS_PROTOCOL_STRING_BUFFER_SIZE );
-	if (nRead <=0 || !MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
-	{
-		//this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
-		return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
-				"Expecting protocol named \"%s\".\n  Client is using a protocol"
-				" called  \"%s\"\n\n  Make sure the client and MOOSDB"
-				" are linking against a MOOSLIB which uses the same"
-				" protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
-	}
-	
-	return true;
-		
+    char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1] = {};
+    int nRead = pNewClient->iRecieveMessage(sProtocol, MOOS_PROTOCOL_STRING_BUFFER_SIZE );
+    if (nRead <=0)
+    {
+        return MOOSFail("Client disconnected during wire protocol transmission.\n"
+                        "Make sure the client and MOOSDB are linking against a "
+                        "MOOSLIB which uses the same protocol.\n");
+
+    }
+    if (!MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
+    {
+        //this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
+        return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
+                        "Expecting protocol named \"%s\".\n  Client is using a protocol"
+                        " called  \"%s\"\n\n  Make sure the client and MOOSDB"
+                        " are linking against a MOOSLIB which uses the same"
+                        " protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
+    }
+
+    return true;
 }
 
 
