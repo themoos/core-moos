@@ -122,8 +122,14 @@ add_library(MOOS
     ${DB_SOURCES}
 )
 
+foreach(INCLUDE_ROOT IN LISTS INCLUDE_ROOTS)
+    target_include_directories(MOOS PUBLIC
+        "$<BUILD_INTERFACE:${INCLUDE_ROOT}>"
+    )
+endforeach()
+
 target_include_directories(MOOS PUBLIC
-    ${INCLUDE_ROOTS}
+    $<INSTALL_INTERFACE:include>
 )
 
 if(UNIX)
