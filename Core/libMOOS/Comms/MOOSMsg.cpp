@@ -343,9 +343,7 @@ unsigned int CMOOSMsg::GetSizeInBytesWhenSerialised() const
     unsigned int nInt = 2*sizeof(int);
     unsigned int nChar = 2*sizeof(char);
     unsigned int nString = sizeof(int)+m_sSrc.size()+
-#ifndef DISABLE_AUX_SOURCE
             sizeof(int)+m_sSrcAux.size()+
-#endif
             sizeof(int)+m_sOriginatingCommunity.size()+
             sizeof(int)+m_sKey.size()+
             sizeof(int)+m_sVal.size();
@@ -386,10 +384,8 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //from whence does it come
             (*this)<<m_sSrc;
 
-#ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)<<m_sSrcAux;
-#endif
 
             //and from which community?
             (*this)<<m_sOriginatingCommunity;
@@ -452,11 +448,9 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             //from whence does it come
             (*this)>>m_sSrc;
 
-#ifndef DISABLE_AUX_SOURCE
 			//extra source info
 			(*this)>>m_sSrcAux;
 
-#endif			
             //and from which community?
             (*this)>>m_sOriginatingCommunity;
 
