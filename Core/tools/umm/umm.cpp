@@ -182,7 +182,7 @@ public:
 
         _bShowLatency =  m_CommandLineParser.GetFlag("-l","--latency");
         _bVerbose = m_CommandLineParser.GetFlag("-v","--verbose");
-        _bShowBandwidth =   m_CommandLineParser.GetFlag("-b","--bandwidth");
+        _bShowBandwidth =   m_CommandLineParser.GetFlag("-W","--bandwidth");
         _bShowTimingAdjustment  = m_CommandLineParser.GetFlag("-k","--skew");
 
         if(m_CommandLineParser.GetFlag("--moos_boost"))
@@ -504,18 +504,19 @@ public:
 			bi  = m_Comms.GetNumBytesReceived();
 			bo = m_Comms.GetNumBytesSent();
 
+
 			if(_bShowBandwidth)
 			{
 				std::cout<<MOOS::ConsoleColours::yellow()<<"--Bandwidth--    ";
 				std::cout<<MOOS::ConsoleColours::green()<<"Incoming: "<<std::setw(8)<<  8*(bi-nByteInCounter)/(1024.0*1024.0)<<"  Mb/s  ";
 				std::cout<<MOOS::ConsoleColours::Green()<<"Outgoing: "<<std::setw(8)<<  8*(bo-nByteOutCounter)/(1024.0*1024.0) <<"  Mb/s\r";
 				std::cout<<MOOS::ConsoleColours::reset();
+                std::flush(std::cout);
 			}
 
 			if(_bShowTimingAdjustment)
 			{
 			    std::cout<<MOOS::ConsoleColours::magenta()<<"timing correction : "<<std::left<<std::setw(8)<<1e6*GetMOOSSkew()<<"us \n";
-
 			    std::cout<<MOOS::ConsoleColours::reset();
 			}
 
