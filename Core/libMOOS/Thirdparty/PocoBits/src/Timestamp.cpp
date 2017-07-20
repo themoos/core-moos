@@ -40,12 +40,12 @@
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Timestamp.h"
 #include "MOOS/libMOOS/Thirdparty/PocoBits/Exception.h"
 #include <algorithm>
-#if defined(POCO_OS_FAMILY_UNIX)
+#if defined(MOOS_POCO_OS_FAMILY_UNIX)
 #include <time.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#elif defined(POCO_OS_FAMILY_WINDOWS)
+#elif defined(MOOS_POCO_OS_FAMILY_WINDOWS)
 #include "MOOS/libMOOS/Thirdparty/PocoBits/UnWindows.h"
 #endif
 
@@ -113,7 +113,7 @@ Timestamp Timestamp::fromUtcTime(UtcTimeVal val)
 
 void Timestamp::update()
 {
-#if defined(POCO_OS_FAMILY_WINDOWS)
+#if defined(MOOS_POCO_OS_FAMILY_WINDOWS)
 
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);

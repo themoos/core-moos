@@ -1,5 +1,8 @@
 # core-moos
-A very light weight, easy to use middleware. You will need core-moos above all other components
+A very light weight, easy to use middleware.
+
+See the MOOS homepage at https://sites.google.com/site/moossoftware/ for more information and documentation.
+
 # Build Statuses
 OS|Build Status
 --|------------

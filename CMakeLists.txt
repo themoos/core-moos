@@ -4,50 +4,75 @@
 #   pnewman@robots.ox.ac.uk
 ###########################################################
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
+# Libraries linked via full path no longer produce linker search paths.
 cmake_policy(SET CMP0003 NEW)
+
+# MACOSX_RPATH is enabled by default.
 if(POLICY CMP0042)
   cmake_policy(SET CMP0042 NEW)
 endif()
 
-set(PROJECTNAME MOOS)
-
 set(PACKAGE_VERSION_MAJOR 10)
-set(PACKAGE_VERSION_MINOR 0)
-set(PACKAGE_VERSION_PATCH 3)
+set(PACKAGE_VERSION_MINOR 3)
+set(PACKAGE_VERSION_PATCH 0)
 
 set(PACKAGE_VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
 message(STATUS "+++  This is MOOS version ${PACKAGE_VERSION} +++")
 
-# If user specifies the build type, use theirs, otherwise use release
+# If user specifies the build type, use theirs, otherwise use Release
 if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "")
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "")
 endif()
-
-
-project(${PROJECTNAME})
-
-
 
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 endif()
 if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 endif()
 if(NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 endif()
+
+##############################
+# Set up RPATH for executables
+##############################
+
+# Use @rpath library install names on OSX
+# Also set by policy CMP00042
+set(CMAKE_MACOSX_RPATH TRUE)
+
+# Use (don't skip) RPATH for binaries in the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# Don't append external paths to the RPATH
+# They're not needed, because MOOS has no dependencies
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
+# Don't use the install RPATH for a normal build.
+# Only use it when the binaries are installed.
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+# Set RPATH value for installed executables. This should point
+# at the directory containing the MOOS library. Relative paths used to allow
+# installed files to be relocated.
+if(BUILD_SHARED_LIBS)
+    if(APPLE)
+        set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+    elseif(UNIX)
+        set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")
+    endif()
+endif()
+
+project(MOOS)
 
 set(CMakeScripts_MODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMakeScripts_MODULE_DIR})
 
 # Turn on all compiler warnings
 include(EnableAllWarnings)
-
-# Bring in helper functions for dealing with CACHE INTERNAL variables
-include(CacheInternalHelpers)
 
 # Figure out our git version
 option(UPDATE_GIT_VERSION_INFO "update git version info in source tree" ON)
@@ -57,12 +82,7 @@ if(UPDATE_GIT_VERSION_INFO)
 endif()
 
 # Do we want to create dynamic libraries?
-option(BUILD_SHARED_LIBS "Build lib${PROJECTNAME} as a shared library" OFF)
-if(BUILD_SHARED_LIBS)
-    message("-- Building lib${PROJECTNAME} as a shared library")
-else()
-    message("-- Building lib${PROJECTNAME} as a static library")
-endif()
+option(BUILD_SHARED_LIBS "Build libMOOS as a shared library" OFF)
 
 # Enable Doxygen build with 'make doxygen'
 option(ENABLE_DOXYGEN "Enable a 'make doc' target for Doxygen documentation")
@@ -101,7 +121,7 @@ if( CDASH_SUPPORT )
   include( CTest )
 endif()
 
-#optionally try to compile with c++11 is it is available
+#optionally try to compile with c++11 if it is available
 option(USE_CXX11_IF_AVAILABLE "use c++11 if available" ON)
 if(USE_CXX11_IF_AVAILABLE)
     include(CheckCXXCompilerFlag)
@@ -118,7 +138,6 @@ if(USE_CXX11_IF_AVAILABLE)
       message(STATUS "no c++11 compiler found -> not using c++11")
     endif()
 endif()
-
 
 # Option for explicitly linking against the GNU libstdc++ instead of libc++ on
 # OSX Mavericks, required in order to use iMatlab as MATLAB still uses libstdc++
@@ -155,71 +174,84 @@ endif()
 ###########  SETTING UP PREPROCESSOR ################
 include(PlatformDefines)
 
-
-#####################################################
-# Toby Schneider's request for fPIC on amd64
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+if(UNIX OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    # Cause shared libraries to be built with the -fPIC flag
+    # This flag requires CMake 2.8.9 or greater.
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-
 add_subdirectory(Core)
-
 
 #########################
 # Config Script Creation
 #########################
 
-# Add your library's name to PROJECT_EXPORT_LIBS if you wish to have it exported
-# (This is a CACHE INTERNAL variable)
+# Provide a cmake config script for the build directory
+export(
+    TARGETS MOOS
+    NAMESPACE MOOS::
+    FILE UseMOOS.cmake
+)
+
+# Support existing projects that expect to find MOOS_LIBRARIES and
+# MOOS_INCLUDE_DIRS variables.
+set(MOOS_LIBRARIES MOOS::MOOS)
+
+# Generate the config file for other projects to find the MOOS build dir
+set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSConfig.cmake")
+configure_file(
+    "MOOSConfig.cmake.in"
+    "${CONFIG_FILE}"
+    @ONLY
+)
+
+# Save a version file in the project's binary directory
+include(CMakePackageConfigHelpers)
+set(VERSION_FILE "${PROJECT_BINARY_DIR}/MOOSConfigVersion.cmake")
+write_basic_package_version_file("${VERSION_FILE}"
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+#########################
+# Install target
+#########################
+
+# Provide a cmake config script for the install directory
+set(PROJECT_CONFIG_PATH "lib/cmake/MOOS")
+install(
+    EXPORT MOOS
+    NAMESPACE MOOS::
+    FILE UseMOOS.cmake
+    DESTINATION ${PROJECT_CONFIG_PATH}
+)
+
+# Headers are all combined into one common 'include' dir when MOOS is installed
+set(MOOS_INCLUDE_DIRS "include")
+set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSInstallConfig.cmake")
+configure_file( "MOOSConfig.cmake.in" ${CONFIG_FILE} @ONLY )
+install(
+    FILES "${CONFIG_FILE}"
+    RENAME MOOSConfig.cmake
+    DESTINATION "${PROJECT_CONFIG_PATH}"
+)
+
+# Save a version file in the project's install directory
+install(FILES ${VERSION_FILE} DESTINATION "${PROJECT_CONFIG_PATH}")
+
+#########################
+
 option(ENABLE_EXPORT
   "Cause CMake to record this build so other projects can find it " ON)
 if(ENABLE_EXPORT)
-  message(STATUS "location of this build will be exported, set ENABLE_EXPORT to OFF if you don't want this and delete ~/.cmake/projects/MOOS ")
-endif()
-
-
-if(PROJECT_EXPORT_LIBS)
-
-    message(STATUS "PROJECT_EXPORT_LIBS = ${PROJECT_EXPORT_LIBS}")
-
-    # Provide a cmake config script for the build directory
-    export(TARGETS
-        ${PROJECT_EXPORT_LIBS}
-        FILE
-        Use${PROJECTNAME}.cmake
-    )
-
-    set(CONFIG_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}Config.cmake")
-    configure_file( "cmake/ProjectConfig.cmake.in" ${CONFIG_FILE} @ONLY )
-
-    # Append libary specific lines to the generated config script
-    foreach(EXPORT_LIB ${PROJECT_EXPORT_LIBS})
-        file(APPEND ${CONFIG_FILE} "\n# Export variables for ${EXPORT_LIB} Library\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_LIBRARIES \"${${EXPORT_LIB}_LIBRARIES}\")\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_INCLUDE_DIRS \"${${EXPORT_LIB}_INCLUDE_DIRS}\")\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_LIBRARIES \"${${EXPORT_LIB}_DEPEND_LIBRARIES}\")\n")
-        file(APPEND ${CONFIG_FILE} "set(${EXPORT_LIB}_DEPEND_INCLUDE_DIRS \"${${EXPORT_LIB}_DEPEND_INCLUDE_DIRS}\")\n")
-    endforeach()
-
-    foreach(DEFINE ${PROJECT_EXPORT_DEFINES})
-        file(APPEND ${CONFIG_FILE} "ADD_DEFINITIONS(-D${DEFINE})\n")
-        #file(APPEND ${CONFIG_FILE}  "message(STATUS \"adding -D${DEFINE} as required by MOOS\")\n" )
-    endforeach()
-
-endif()
-
-if(ENABLE_EXPORT)
     # Stick build location in the central CMake user package registry, so that
     # it may be easily found.
-    if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" GREATER 2.7)
-        export(PACKAGE ${PROJECTNAME})
-    endif()
+    message(STATUS "Location of this build will be exported. "
+        "Set ENABLE_EXPORT to OFF if you don't want this and "
+        "delete ~/.cmake/projects/MOOS "
+    )
+    export(PACKAGE MOOS)
 endif()
-
-# Save a version file in the project's binary directory
-set(VERSION_FILE "${PROJECT_BINARY_DIR}/${PROJECTNAME}ConfigVersion.cmake")
-configure_file( "cmake/ProjectConfigVersion.cmake.in" ${VERSION_FILE} @ONLY )
 
 include(UninstallTarget)
 configure_uninstall_target(${CMAKE_CURRENT_BINARY_DIR}/Uninstall.cmake)

@@ -32,6 +32,7 @@
 #endif
 
 #include <stdint.h>
+#include <cmath>
 #include <string>
 #include <list>
 #include <vector>
@@ -50,6 +51,20 @@ namespace MOOS
 	double StringToDouble(const std::string & sNum);
 	template< class T > void DeliberatelyNotUsed(const T &) {}
 
+  template <class T> bool isnan(T val) {
+#if defined(_MSC_VER)
+    return _isnan(val);
+#else
+    // isnan wasn't added to the standard until C99 and C++11,
+    // so this code is not fully portable and may need extra clauses added
+    // for specific compilers. It does however mirror the way MOOS has been
+    // using isnan for many years already.
+#if __cplusplus >= 201103L
+  using std::isnan;
+#endif
+    return isnan(val);
+#endif
+  }
 
 }
 
