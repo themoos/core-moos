@@ -227,7 +227,7 @@ install(
 )
 
 # Headers are all combined into one common 'include' dir when MOOS is installed
-set(MOOS_INCLUDE_DIRS "include")
+set(MOOS_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/../../../include")
 set(CONFIG_FILE "${PROJECT_BINARY_DIR}/MOOSInstallConfig.cmake")
 configure_file( "MOOSConfig.cmake.in" ${CONFIG_FILE} @ONLY )
 install(

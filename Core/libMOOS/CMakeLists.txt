@@ -195,7 +195,7 @@ mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 # install headers
 install(
     DIRECTORY ${INCLUDE_ROOTS}
-    DESTINATION include
+    DESTINATION .
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx"
 )
 
