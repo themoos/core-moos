@@ -277,8 +277,17 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 
 }
 
+std::string CMOOSCommClient::GetDBHostname(){
+    return m_sDBHost;
+}
 
+int CMOOSCommClient::GetDBHostPort(){
+    return m_lPort;
+}
 
+std::string CMOOSCommClient::GetClientName(){
+    return m_sMyName;
+}
 
 uint64_t CMOOSCommClient::GetNumBytesSent()
 {

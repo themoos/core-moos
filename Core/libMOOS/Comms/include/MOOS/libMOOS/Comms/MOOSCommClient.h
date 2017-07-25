@@ -253,6 +253,16 @@ public:
     /** get total number of messages sent*/
     uint64_t GetNumMsgsSent();
 
+    /** get db host name*/
+    std::string GetDBHostname();
+
+    /** get port of DB */
+    int GetDBHostPort();
+
+    /** get client name */
+    std::string GetClientName();
+
+
 
     /** set / get scale factor which determines how to encourgage message bunching
      * at high timewarps

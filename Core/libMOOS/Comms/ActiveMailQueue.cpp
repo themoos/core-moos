@@ -88,7 +88,7 @@ bool ActiveMailQueue::Push(const CMOOSMsg & M)
 bool ActiveMailQueue::DoWork()
 {
 	while(!thread_.IsQuitRequested())
-	{
+    {
 		CMOOSMsg M;
 		while(queue_.IsEmpty())
 		{
@@ -108,7 +108,7 @@ bool ActiveMailQueue::DoWork()
 				//another class!
 				if(pClassMemberFunctionCallback_)
 				{
-					if(!(*pClassMemberFunctionCallback_)(M))
+                    if(!(*pClassMemberFunctionCallback_)(M))
 					{
 						std::cerr<<"ActiveMailQueue::DoWork() user callback returns false\n";
 					}
@@ -116,8 +116,8 @@ bool ActiveMailQueue::DoWork()
 
 				//or you can have an old style cfunction
 				if(pfn_)
-				{
-					if(!(*pfn_)(M,caller_param_))
+                {
+                    if(!(*pfn_)(M,caller_param_))
 					{
 						std::cerr<<"ActiveMailQueue::DoWork() user callback returns false\n";
 					}
