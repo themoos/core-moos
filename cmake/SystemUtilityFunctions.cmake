@@ -83,25 +83,15 @@ endfunction()
 # Returns the first line of the compiler --version result.
 # Need to know if using gcc or clang.
 function( moos_get_compiler_version COMPILER_VERSION )
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    execute_process(COMMAND clang++ --version
-                    COMMAND head -n1
-                    OUTPUT_VARIABLE compiler_info
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    execute_process(COMMAND g++ --version
-                    COMMAND head -n1
-                    OUTPUT_VARIABLE compiler_info
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  endif()
+  execute_process(COMMAND "${CMAKE_CXX_COMPILER}" --version
+                  COMMAND head -n1
+                  OUTPUT_VARIABLE compiler_info
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # replace any forward slashes with a -, the submission name changes at
   # different stages otherwise, resulting in apparent multiple commits
-  string(REGEX REPLACE "/" "-" compiler_info ${compiler_info})
+  string(REGEX REPLACE "/" "-" compiler_info "${compiler_info}")
   set( ${COMPILER_VERSION} "${compiler_info}" PARENT_SCOPE )
-
 endfunction()
 
 ###########################################################################
