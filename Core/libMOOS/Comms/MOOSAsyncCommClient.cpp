@@ -190,7 +190,9 @@ bool MOOSAsyncCommClient::WritingLoop() {
         try
         {
             if (m_bDisableNagle){
-                gMOOSAsyncCommsClientPrinter.Print("disabling nagle");
+                if(!m_bQuiet){
+                    gMOOSAsyncCommsClientPrinter.Print("disabling nagle");
+                }
                 m_pSocket->vSetNoDelay(1);
             }
             m_pSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB * 1024);

@@ -400,7 +400,9 @@ bool CMOOSCommServer::ListenLoop()
         m_pListenSocket->vSetReuseAddr(1);
 #endif
         if(m_bDisableNagle){
-            gMOOSCommsServerTheadPrinter.SimplyPrintTimeAndMessage("disabling nagle");
+            if(!m_bQuiet){
+                gMOOSCommsServerTheadPrinter.SimplyPrintTimeAndMessage("disabling nagle");
+            }
             m_pListenSocket->vSetNoDelay(1);
         }
 
