@@ -65,7 +65,10 @@ int main(int argc, char * argv[])
 		std::cerr<<"registering for \"X\" and \"Y\"\n";
 		C.Register("X");
 		C.Register("Y");
-	}
+        MOOSPause(5000);
+        C.Register("Y",1.0);
+        MOOSPause(5000);
+    }
 
 
 

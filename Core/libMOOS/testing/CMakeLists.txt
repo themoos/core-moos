@@ -12,3 +12,4 @@ target_link_libraries(suicide_test MOOS)
 add_executable(binding_test BindingTest.cpp)
 target_link_libraries(binding_test MOOS)
 
+

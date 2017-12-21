@@ -942,13 +942,22 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 
 		CMOOSDBVar & rVar  = GetOrMakeVar(Msg);
 
-		if(rVar.HasSubscriber(Msg.m_sSrc))
-			return true;
+        //PMN drops this check to allow notification
+        //periods to be changed dynamically 21/12/17
+//		if(rVar.HasSubscriber(Msg.m_sSrc))
+//			return true;
 
 		if(!rVar.AddSubscriber(Msg.m_sSrc,Msg.m_dfVal))
 			return false;
 
-		m_EventLogger.AddEvent("register",Msg.m_sSrc,rVar.m_sName);
+        double dfActualPeriod;
+        if(!rVar.GetUpdatePeriod(Msg.m_sSrc,dfActualPeriod)){
+            return false;
+        }
+        std::string detail =MOOSFormat("%s@%.1f",rVar.m_sName.c_str(),dfActualPeriod);
+        m_EventLogger.AddEvent("register",
+                               Msg.m_sSrc,
+                               detail);
 
 		if(bAlreadyThere && rVar.m_nWrittenTo!=0)
 		{

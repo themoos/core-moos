@@ -69,9 +69,15 @@ CMOOSDBVar::~CMOOSDBVar()
 
 }
 
+bool CMOOSDBVar::GetUpdatePeriod(const string & sClient, double & dfPeriod){
+    if(!HasSubscriber(sClient))
+        return false;
+    dfPeriod = m_Subscribers[sClient].m_dfPeriod;
+    return true;
+}
+
 bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
 {
-    CMOOSRegisterInfo Info;
 
     if(sClient.empty())
     {
@@ -79,27 +85,12 @@ bool CMOOSDBVar::AddSubscriber(const string &sClient, double dfPeriod)
        return false;
     }
 
-    REGISTER_INFO_MAP::iterator q = m_Subscribers.find(sClient);
-
-    if(q!=m_Subscribers.end())
-    {
-    	//MOOSTrace("[!] ignoring repeat subscription to \"%s\" for %s \n",m_sName.c_str(),m_sName.c_str());
-    	return true;
-    }
-    else
-    {
-        Info.m_sClientName = sClient;
-        Info.m_dfPeriod = dfPeriod;
-
-    	m_Subscribers[sClient] = Info;
-
-    	//MOOSTrace("+ subs of \"%s\" to \"%s\" every %.1f seconds\n",sClient.c_str(),m_sName.c_str(),dfPeriod);
-
-    }
-
+    CMOOSRegisterInfo Info;
+    Info.m_sClientName = sClient;
+    Info.m_dfPeriod = dfPeriod;
+    m_Subscribers[sClient] = Info;
 
     return true;
-
 }
 
 bool CMOOSDBVar::HasSubscriber(const string & sClient)

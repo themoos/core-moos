@@ -59,7 +59,7 @@ public:
     void RemoveSubscriber(string & sWho);
     bool AddSubscriber(const string & sClient, double dfPeriod);
     bool HasSubscriber(const string & sClient);
-
+    bool GetUpdatePeriod(const string & sClient, double & dfPeriod);
 
     char   m_cDataType;
     string m_sName;

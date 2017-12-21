@@ -108,9 +108,6 @@ public:
 		{
 			gPrinter.Print(MOOSFormat("     %s %10.3f",Mvec[k].GetKey().c_str(), Mvec[k].GetTime() ));
 		}
-
-
-
 		return true;
 	}
 
