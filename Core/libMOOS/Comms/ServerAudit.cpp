@@ -324,7 +324,7 @@ public:
     }
 
 
-	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
+	bool AddStatistic(const std::string& sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
 	{
 		MOOS::DeliberatelyNotUsed(dfTime);
 
@@ -403,7 +403,7 @@ bool ServerAudit::SetQuiet(bool bQuiet)
     return Impl_->SetQuiet(bQuiet);
 }
 
-bool ServerAudit::AddStatistic(const std::string sClient,
+bool ServerAudit::AddStatistic(const std::string & sClient,
                                unsigned int nBytes,
                                unsigned int nMessages,
                                double dfTime,
