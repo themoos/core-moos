@@ -288,7 +288,7 @@ protected:
     struct message
     {
         message(){};
-        message(const std::string & s): name_(s),has_no_consumer_(false),has_no_producer_(false){};
+        explicit message(const std::string & s): name_(s),has_no_consumer_(false),has_no_producer_(false){}
         std::string name_;
         std::set<std::string> producers_;
         std::set<std::string> consumers_;

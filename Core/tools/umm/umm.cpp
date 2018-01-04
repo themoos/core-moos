@@ -74,7 +74,7 @@ unsigned int GetScreenWidth()
  */
 class CPUCoreLoader{
 public:
-    CPUCoreLoader(double target_load){
+    explicit CPUCoreLoader(double target_load){
         target_load_ = std::max(0.0,target_load);
         thread_.Initialise(dispatch,this);
         thread_.Start();
@@ -107,7 +107,7 @@ public:
 
 class CPULoader{
 public:
-    CPULoader(double target_load):target_load_(target_load){
+    explicit CPULoader(double target_load):target_load_(target_load){
         int num_core_loaders = int(target_load_)/100+1;
         for(int i = 0;i<num_core_loaders;i++){
             CPUCoreLoader* pCL = new CPUCoreLoader(target_load_);
