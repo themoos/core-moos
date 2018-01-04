@@ -77,9 +77,9 @@ bool KeyboardCapture::Capture()
 	while(!impl_->worker_.IsQuitRequested())
 	{
 
-		char c;
 		if(!std::cin.eof())
 		{
+			char c;
 			std::cin>>c;
 			impl_->queue_.Push(c);
 		}

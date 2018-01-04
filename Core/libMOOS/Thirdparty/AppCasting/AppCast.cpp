@@ -154,11 +154,11 @@ string AppCast::getAppCastString() const
 	ss << osep;
 
 	// Add the messages (the free-form content of the appcast)
-	unsigned int i, vsize = m_config_warnings.size();
+	const unsigned int vsize = m_config_warnings.size();
 	if (vsize != 0)
 	{
 		ss << "config_warnings=";
-		for (i = 0; i < vsize - 1; i++)
+		for (unsigned int i = 0; i < vsize - 1; i++)
 		{
 			ss << m_config_warnings[i] << isep;
 		}
