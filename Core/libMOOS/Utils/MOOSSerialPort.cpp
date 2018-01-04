@@ -454,7 +454,6 @@ int CMOOSSerialPort::ReadNWithTimeOut(char *pData, int nLen, double dfTimeOut,do
     int nSpace = nLen;                  //space left in buffer
     int nRead = 0;                      //total number of chars read
     bool bQuit = false;                 // exit flag on complete message
-    int nGrabbed = 0;
     
     double  dfStopTime=MOOSLocalTime()+dfTimeOut;
     
@@ -464,7 +463,7 @@ int CMOOSSerialPort::ReadNWithTimeOut(char *pData, int nLen, double dfTimeOut,do
 
         
         //try the read
-        nGrabbed = GrabN(pData+nRead,nSpace);
+        int nGrabbed = GrabN(pData+nRead,nSpace);
         
         if (nGrabbed == 0)
         {
