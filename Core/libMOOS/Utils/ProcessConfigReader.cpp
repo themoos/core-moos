@@ -70,8 +70,6 @@ std::string CProcessConfigReader::GetFileName()
 
 bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName, STRING_LIST &Params)
 {
-	Params.clear();
-
 	int nBrackets = 0;
 	Params.clear();
 
