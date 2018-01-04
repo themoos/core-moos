@@ -66,6 +66,7 @@ namespace MOOS
 	class MsgFunctor
 	{
 	public:
+		virtual ~MsgFunctor() {}
 		virtual bool operator()(CMOOSMsg &) = 0;
 		virtual bool operator()(std::vector<CMOOSMsg> &) = 0;
 	};
