@@ -820,11 +820,7 @@ bool CMOOSCommServer::OnClientDisconnect()
         //MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
 
         m_Socket2ClientMap.erase(p);
-
-        if(m_AsynchronousClientSet.find(sWho)!=m_AsynchronousClientSet.end())
-        {
-        	m_AsynchronousClientSet.erase(sWho);
-        }
+        m_AsynchronousClientSet.erase(sWho);
     }
 
 
