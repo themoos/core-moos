@@ -117,7 +117,7 @@ bool on_mail(void * pParam)
 	pC->Fetch(Mail);
 
 	MOOSMSG_LIST::iterator q;
-	for(q=Mail.begin();q!=Mail.end();q++)
+  for(q=Mail.begin();q!=Mail.end();++q)
 	{
 		LogMessage(*q);
 	}
@@ -129,7 +129,7 @@ bool on_mail(void * pParam)
 bool on_connect(void * pParam)
 {
 	CMOOSCommClient * pC = static_cast<CMOOSCommClient*> (pParam);
-	for(unsigned int k = 0;k<vars.size();k++)
+  for(unsigned int k = 0;k<vars.size();++k)
 		pC->Register(vars[k]);
 
 	return true;

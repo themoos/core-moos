@@ -84,7 +84,7 @@ bool CMOOSFileReader::SetFile(const std::string  & sFile)
 
     THREAD2FILE_MAP::iterator p;
 
-    for(p=m_FileMap.begin();p!=m_FileMap.end();p++)
+    for(p=m_FileMap.begin();p!=m_FileMap.end();++p)
     {
         std::ifstream * pFile = p->second;
 

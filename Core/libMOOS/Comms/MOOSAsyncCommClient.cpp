@@ -272,7 +272,7 @@ bool MOOSAsyncCommClient::DoWriting() {
         OutGoingQueue_.AppendToOtherInConstantTime(StuffToSend);
 
         for (MOOSMSG_LIST::iterator q = StuffToSend.begin(); q
-                != StuffToSend.end(); q++)
+                != StuffToSend.end(); ++q)
         {
             if (q->IsType(MOOS_TERMINATE_CONNECTION))
             {

@@ -1341,7 +1341,7 @@ bool MOOSGetValueFromToken(STRING_LIST & sParams,const string & sToken,string & 
 {
     STRING_LIST::iterator p;
 
-    for(p = sParams.begin();p!=sParams.end();p++)
+    for(p = sParams.begin();p!=sParams.end();++p)
     {
         string sLine = *p;
 

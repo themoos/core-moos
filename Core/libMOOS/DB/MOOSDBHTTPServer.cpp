@@ -158,7 +158,7 @@ bool CMOOSDBHTTPServer::Listen()
                 }
                 else
                 {
-                    q++;
+                    ++q;
                 }
             }
 

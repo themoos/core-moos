@@ -167,7 +167,7 @@ bool CMOOSCommServer::Stop()
     }
 
     SOCKETLIST::iterator q;
-    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();q++)
+    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();++q)
     {
         XPCTcpSocket* pSocket = *q;
 
@@ -217,7 +217,7 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 		std::string sLatency = "0";
 		m_CommandLineParser.GetVariable("--response",sLatency);
 		std::vector<std::string> sLL = MOOS::StringListToVector(sLatency);
-		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();q++)
+		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();++q)
 		{
 			try
 			{
@@ -558,7 +558,7 @@ bool CMOOSCommServer::ServerLoop()
             m_ClientSocketList.push_front(m_ClientSocketList.back());
             m_ClientSocketList.pop_back();
 
-            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
             {
                 FD_SET((*p)->iGetSocketFd(), &fdset);
             }
@@ -607,7 +607,7 @@ bool CMOOSCommServer::ServerLoop()
         default:
             //something to read:
             m_SocketListLock.Lock();
-            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
             {
                 m_pFocusSocket = *p;
 
@@ -902,7 +902,7 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
 {
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
 
-    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();p++)
+    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();++p)
     {
         if(p->second==sClientName)
         {
@@ -1079,7 +1079,7 @@ int CMOOSCommServer::GetMaxSocketFD()
     SOCKETLIST::iterator p;
 
     m_nMaxSocketFD = 0;
-    for(p=m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+    for(p=m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
     {
         m_nMaxSocketFD = m_nMaxSocketFD > (*p)->iGetSocketFd()
             ? m_nMaxSocketFD :
@@ -1097,7 +1097,7 @@ bool CMOOSCommServer::GetClientNames(STRING_LIST &sList)
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
 
-    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();p++)
+    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();++p)
     {
         sList.push_front(p->second);
     }

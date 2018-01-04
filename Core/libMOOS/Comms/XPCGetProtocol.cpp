@@ -102,7 +102,7 @@ XPCGetProtocol::ProtoEnt::ProtoEnt(struct protoent const* ent):
     _number(ent? ent->p_proto: 0)
 {
     if (ent == 0) return;
-    for (char** alias = ent->p_aliases; *alias; alias++) {
+    for (char** alias = ent->p_aliases; *alias; ++alias) {
         _aliases.push_back(std::string(*alias));
     } 
 }

@@ -519,7 +519,7 @@ bool CHTTPConnection::BuildFullDBWebPageContents( std::ostringstream & wp,MOOSMS
 
         MOOSMSG_LIST::iterator q;
 
-        for(q =  MsgList.begin(); q!=MsgList.end();q++)
+        for(q =  MsgList.begin(); q!=MsgList.end();++q)
         {
             CMOOSMsg & rMsg = *q;
             

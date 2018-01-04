@@ -142,7 +142,7 @@ bool CMOOSSerialPort::Configure(STRING_LIST sParams)
     
     STRING_LIST::iterator p;
     
-    for(p=sParams.begin();p!=sParams.end();p++)
+    for(p=sParams.begin();p!=sParams.end();++p)
     {
         std::string sLine = *p;
         

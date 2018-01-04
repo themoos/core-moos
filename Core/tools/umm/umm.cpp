@@ -215,7 +215,7 @@ public:
         {
         	vBounce = MOOS::StringListToVector(temp);
         	std::vector<std::string>::iterator q;
-        	for(q=vBounce.begin();q!=vBounce.end();q++)
+        	for(q=vBounce.begin();q!=vBounce.end();++q)
         	{
 
         		std::string v  = MOOS::Chomp(*q,":");
@@ -244,7 +244,7 @@ public:
         {
         	std::vector<std::string> v = MOOS::StringListToVector(temp);
         	std::vector<std::string>::iterator q;
-        	for(q=v.begin();q!=v.end();q++)
+        	for(q=v.begin();q!=v.end();++q)
         	{
         		_vWildSubscriptions.push_back("*:"+*q+"@0.0");
         	}
@@ -310,7 +310,7 @@ public:
         std::vector<std::string>::iterator q;
         unsigned int MaxArraySize=0;
 
-        for(q = vPublish.begin();q!=vPublish.end();q++)
+        for(q = vPublish.begin();q!=vPublish.end();++q)
         {
         	unsigned int nArraySize=0;
             std::string sEntry  = *q;
@@ -422,7 +422,7 @@ public:
 
         bool bMap = ! _Map.empty();
 
-        for(q = NewMail.begin();q!=NewMail.end();q++)
+        for(q = NewMail.begin();q!=NewMail.end();++q)
         {
             double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
             _dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
@@ -567,7 +567,7 @@ public:
         std::vector<std::string>::iterator q;
 
         std::cout<<MOOS::ConsoleColours::Green();
-        for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
+        for(q = _vSubscribe.begin();q!=_vSubscribe.end();++q)
         {
 			std::string sEntry = *q;
 			std::string sVar = MOOSChomp(sEntry,"@");
@@ -588,7 +588,7 @@ public:
 
         std::vector<std::string>::iterator w;
 
-		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end();w++)
+		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end(); ++w)
 		{
 			//GPS_X:*@0.4
 			std::string sEntry = *w;

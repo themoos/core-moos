@@ -87,7 +87,7 @@ bool _OnMail(void *pParam)
 	MOOSMSG_LIST::iterator q;
 	//unsigned int k = 0;
 	double dfNow = MOOSLocalTime();
-	for(q=M.begin();q!=M.end();q++)
+	for(q=M.begin();q!=M.end();++q)
 	{
 		if(!q->IsSkewed(dfNow) && bEnableCapture)
 		{
@@ -204,12 +204,12 @@ int main(int argc, char * argv[])
 	std::cerr<<std::setw(15)<<"Client"<<std::setw(15)<<"mean latency (ms)"<<std::setw(15)<<"#msgs"<<std::endl;
 
 	unsigned int umin = std::numeric_limits<unsigned int>::max();
-	for(q = LagLogs.begin();q!=LagLogs.end();q++)
+	for(q = LagLogs.begin();q!=LagLogs.end();++q)
 	{
 		umin = std::min<unsigned int>(umin, q->second.size());
 	}
 
-	for(q = LagLogs.begin();q!=LagLogs.end();q++)
+	for(q = LagLogs.begin();q!=LagLogs.end();++q)
 	{
 		std::vector<double> & rV = q->second;
 		double dfAv = std::accumulate(rV.begin(), rV.end(),0.0)/rV.size();

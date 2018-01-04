@@ -23,10 +23,10 @@ public:
         std::list<MOOS::ClientCommsStatus>::iterator q;
         m_Comms.GetClientCommsStatuses(Statuses);
 
-        for(q=Statuses.begin();q!= Statuses.end();q++)
+        for(q=Statuses.begin();q!= Statuses.end();++q)
         {
             std::vector<std::string>::iterator p;
-            for(p=Wildcard_names_.begin();p!= Wildcard_names_.end();p++)
+            for(p=Wildcard_names_.begin();p!= Wildcard_names_.end();++p)
             {
                 if(MOOSWildCmp(*p,q->name_))
                 {

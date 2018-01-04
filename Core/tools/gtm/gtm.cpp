@@ -27,7 +27,7 @@ public:
         std::list<MOOS::ClientCommsStatus>::iterator q;
         m_Comms.GetClientCommsStatuses(Statuses);
 
-        for(q=Statuses.begin();q!= Statuses.end();q++)
+        for(q=Statuses.begin();q!= Statuses.end();++q)
         {
             statuses_[q->name_] = *q;
         }
@@ -55,7 +55,7 @@ public:
         std::map<std::string,MOOS::ClientCommsStatus>::iterator q,p;
 
         //for every client that posted a status message...`
-        for(q=statuses_.begin();q!= statuses_.end();q++)
+        for(q=statuses_.begin();q!= statuses_.end();++q)
         {
             MOOS::ClientCommsStatus & qStatus = (q->second);
             std::list<std::string>::iterator s;
@@ -65,7 +65,7 @@ public:
                 continue;
 
             //for each message published
-            for( s = qStatus.publishes_.begin();s !=qStatus.publishes_.end();s++)
+            for( s = qStatus.publishes_.begin();s !=qStatus.publishes_.end();++s)
             {
 
                 message & rmessage = known_messages_[*s];
@@ -73,7 +73,7 @@ public:
             }
 
 
-            for( s = qStatus.subscribes_.begin();s !=qStatus.subscribes_.end();s++)
+            for( s = qStatus.subscribes_.begin();s !=qStatus.subscribes_.end();++s)
             {
                 message & rmessage = known_messages_[*s];
                 rmessage.consumers_.insert(q->first);
@@ -136,21 +136,21 @@ public:
         std::map<std::string,MOOS::ClientCommsStatus>::iterator q,p;
 
         //for every client that posted a status message...`
-        for(q=statuses_.begin();q!= statuses_.end();q++)
+        for(q=statuses_.begin();q!= statuses_.end();++q)
         {
             MOOS::ClientCommsStatus & qStatus = (q->second);
             std::list<std::string>::iterator s;
             std::set<std::string> links_made_already;
 
             //for each message published
-            for( s = qStatus.publishes_.begin();s !=qStatus.publishes_.end();s++)
+            for( s = qStatus.publishes_.begin();s !=qStatus.publishes_.end();++s)
             {
                 //find all the consumers...
                 message & rmessage = known_messages_[*s];
                 std::set<std::string>::iterator w;
                 for(w = rmessage.consumers_.begin();
                     w!=rmessage.consumers_.end();
-                    w++)
+                    ++w)
                 {
                     std::cerr<<q->first<<" sends "<<*s<<" to "<<*w<<"\n";
 
@@ -173,7 +173,7 @@ public:
         std::map<std::string, message>::iterator m;
         for(m = known_messages_.begin();
             m!= known_messages_.end();
-            m++)
+            ++m)
         {
             message & rmessage = m->second;
             if(rmessage.consumers_.empty())
@@ -217,7 +217,7 @@ public:
         std::map<std::string, message>::iterator mm;
         for(mm = known_messages_.begin();
             mm!= known_messages_.end();
-            mm++)
+            ++mm)
         {
             message & rmessage = mm->second;
 

@@ -315,7 +315,7 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
     if(GetConfigurationAndPreserveSpace( sAppName, sParams))
     {
         STRING_LIST::iterator p;
-        for(p = sParams.begin();p!=sParams.end();p++)
+        for(p = sParams.begin();p!=sParams.end();++p)
         {
             std::string sTmp = *p;
             std::string sTok = MOOSChomp(sTmp,"=");

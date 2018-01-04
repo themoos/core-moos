@@ -174,7 +174,7 @@ public:
 					<<"B/s out\n";
 
 				std::map<std::string,ClientAudit>::iterator q;
-				for(q=Audits_.begin(); q!=Audits_.end();q++)
+				for(q=Audits_.begin(); q!=Audits_.end();++q)
 				{
 					ss<<std::setw(10)<<q->first;
 					ss<<std::setw(10)<<q->second.recent_packets_received_;
@@ -252,7 +252,7 @@ public:
 	bool GetTimingStatisticSummary(std::string & sSummary)
 	{
 	    std::map<std::string,ClientAudit>::iterator q;
-	    for(q =Audits_.begin();q!=Audits_.end();q++ )
+	    for(q =Audits_.begin();q!=Audits_.end();++q )
 	    {
 	        std::string sT;
 	        if(!GetTimingStatisticSummary(q->first,sT))

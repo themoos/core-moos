@@ -98,7 +98,7 @@ bool ThreadedCommServer::Stop()
 
    //now shut down each of the client threads in turn
     std::map<std::string,ClientThread*>::iterator q;
-    for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
+    for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();++q)
     {
         q->second->Kill();
         delete q->second;
@@ -174,7 +174,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     //we need to look up timing information
     double dfConsolidationTime = 0.0;
     std::list< std::pair< std::string, double >  >::iterator v;
-    for(v = m_ClientTimingVector.begin();v!=m_ClientTimingVector.end();v++)
+    for(v = m_ClientTimingVector.begin();v!=m_ClientTimingVector.end();++v)
     {
     	if(MOOSWildCmp(v->first,sName))
     	{
@@ -314,7 +314,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             //is there any sort of notification going on here?
             bool bIsNotification = false;
             double dfLargeDelay = m_dfCommsLatencyConcern*GetMOOSTimeWarp();
-            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();q++)
+            for(MOOSMSG_LIST::iterator q = MsgLstRx.begin();q!=MsgLstRx.end();++q)
             {
             	if(q->IsType(MOOS_NOTIFY))
             	{
@@ -403,7 +403,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             //and here if we have any new fancy asynchronous clients
             //w can send them mail as well...
-            for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();q++)
+            for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();++q)
             {
             	ClientThread* pClient = q->second;
             	if(m_pfnFetchAllMailCallBack!=NULL && pClient->IsAsynchronous())
