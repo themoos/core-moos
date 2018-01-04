@@ -158,10 +158,10 @@ void PrintHelp()
     MOOSTrace("  --cpu_load=<numeric>                   : percentage cpu loading to simulate (400% takes 4 cores etc.. )  [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
-    MOOSTrace("  ./moos_test --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
-    MOOSTrace("  ./moos_test C2 --simulate_network_failure --network_failure_prob=0.05 --network_failure_time=10.0 --application_failure_prob=0.05 -s=z \n");
-    MOOSTrace("  ./moos_test --moos_name=C1 --moos_apptick=10  -s=x -p=y:4567@0.5,z@2.0\n");
-    MOOSTrace("  ./moos_test --spy_proc=camera_A,camera_B\n");
+    MOOSTrace("  ./umm --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");
+    MOOSTrace("  ./umm C2 --simulate_network_failure --network_failure_prob=0.05 --network_failure_time=10.0 --application_failure_prob=0.05 -s=z \n");
+    MOOSTrace("  ./umm --moos_name=C1 --moos_apptick=10  -s=x -p=y:4567@0.5,z@2.0\n");
+    MOOSTrace("  ./umm --spy_proc=camera_A,camera_B\n");
 
 
 }
