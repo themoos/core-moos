@@ -136,7 +136,7 @@ bool CHTTPConnection::Serve()
             
         }    
     }
-    catch(XPCException e)
+    catch(XPCException & e)
     {
         MOOSTrace("Exception caught in HTTP Connection server :\n%s\n",e.sGetException());
         UNUSED_PARAMETER(e);
@@ -263,7 +263,7 @@ bool CHTTPConnection::ReadLine(std::string & sLine)
         }
 
     }
-    catch(XPCException e)
+    catch(XPCException & e)
     {
         UNUSED_PARAMETER(e);
         MOOSAssert(0);
@@ -418,7 +418,7 @@ bool CHTTPConnection::MakeWebPage()
         }
 
     }
-    catch(CMOOSException e)
+    catch(CMOOSException & e)
     {
         m_pMOOSCommsLock->UnLock();
         return false;

@@ -445,7 +445,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
         }
     }
-    catch(CMOOSException e)
+    catch(CMOOSException & e)
     {
         MOOSTrace("ProcessClient() Exception: %s\n", e.m_sReason);
         bResult = false;

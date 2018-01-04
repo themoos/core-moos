@@ -668,7 +668,7 @@ bool CMOOSCommClient::DoClientWork()
 				m_nMsgsSent+=PktTx.GetNumMessagesSerialised();
 				m_nBytesSent+=PktTx.GetStreamLength();
 			}
-			catch (CMOOSException e) 
+			catch (CMOOSException & e) 
 			{
 				//clear the outbox
 				m_OutBox.clear();
@@ -758,7 +758,7 @@ bool CMOOSCommClient::DoClientWork()
 
         
 	}
-	catch(CMOOSException e)
+	catch(CMOOSException & e)
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
@@ -1216,7 +1216,7 @@ bool CMOOSCommClient::HandShake()
 
 		}
 	}
-	catch(CMOOSException e)
+	catch(CMOOSException & e)
 	{
 		MOOSTrace("Exception in hand shaking : %s",e.m_sReason);
 		return false;

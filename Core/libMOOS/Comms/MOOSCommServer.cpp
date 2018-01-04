@@ -408,7 +408,7 @@ bool CMOOSCommServer::ListenLoop()
 
         m_pListenSocket->vBindSocket();
     }
-    catch(XPCException e)
+    catch(XPCException& e)
     {
     #if _WIN32
         e;
@@ -502,7 +502,7 @@ bool CMOOSCommServer::ListenLoop()
 
             m_SocketListLock.UnLock();
         }
-        catch(XPCException e)
+        catch(XPCException & e)
         {
             MOOSTrace("Exception Thrown in listen loop: %s\n",e.sGetException());
         }
@@ -700,7 +700,7 @@ bool CMOOSCommServer::ProcessClient()
 
         }
     }
-    catch(CMOOSException e)
+    catch(CMOOSException & e)
     {
         MOOSTrace("ProcessClient() Exception: %s\n", e.m_sReason);
         bResult = false;
@@ -1000,7 +1000,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         return true;
     }
-    catch (CMOOSException e)
+    catch (CMOOSException & e)
     {
         MOOSTrace("\nException caught [%s]\n",e.m_sReason);
         return false;

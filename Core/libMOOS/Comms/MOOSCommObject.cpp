@@ -306,7 +306,7 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
         	nSent = pSocket->iSendMessage(PktTx.Stream(),PktTx.GetStreamLength());
         }
     }
-    catch(XPCException e)
+    catch(XPCException & e)
     {
         MOOSTrace("MOOSCommObject::SendPkt Exception caught %s\n",e.sGetException());
         throw CMOOSException("CMOOSCommObject::SendPkt() Failed Tx");
