@@ -167,15 +167,15 @@ bool MulticastNode::ReadLoop()
 
         while(!read_thread_.IsQuitRequested())
         {
-            //assume max 64K packet....
-            unsigned char t[65536];
             if(MOOS::WaitForSocket(socket_rx_,1))
             {
                 //do the read from the socket...
                 struct sockaddr_storage sender;
-                socklen_t sendsize = sizeof(sender);
                 memset(&sender,0, sizeof(sender));
 
+                //assume max 64K packet....
+                unsigned char t[65536];
+                socklen_t sendsize = sizeof(sender);
                 int n = recvfrom(socket_rx_, (char*)t, sizeof(t),
                                  0,
                                  (struct sockaddr*)&sender,
