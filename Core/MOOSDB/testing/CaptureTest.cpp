@@ -31,11 +31,13 @@
 #include "MOOS/libMOOS/App/MOOSApp.h"
 #include <ctime>
 
+namespace {
 std::vector<std::string> vars;
 std::ofstream of;
 MOOS::ThreadPrint gPrinter(of);
 bool bLog=false;
 double dfStartTime=0;
+}
 
 void PrintHelpAndExit()
 {
