@@ -737,8 +737,7 @@ bool CMOOSApp::DoRunWork()
 				//  do application specific processing
 
                 /** called just after Iterate has finished - another place to overload*/
-            	bool bOK = true;
-            	bOK = OnIteratePrepare();
+            	bool bOK = OnIteratePrepare();
             	if(m_bQuitOnIterateFail && !bOK)
             		return false;
 
