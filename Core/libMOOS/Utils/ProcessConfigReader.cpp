@@ -70,7 +70,6 @@ std::string CProcessConfigReader::GetFileName()
 
 bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName, STRING_LIST &Params)
 {
-	int nBrackets = 0;
 	Params.clear();
 
 	Reset();
@@ -82,7 +81,6 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 		std::string sBracket = GetNextValidLine();
 		if(sBracket.find("{")==0)
 		{
-			nBrackets++;
 			while(!GetFile()->eof())
 			{
 				std::string sLine = GetNextValidLine();
@@ -132,7 +130,6 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &Params)
 {
     
-    int nBrackets = 0;
     Params.clear();
     
     Reset();
@@ -144,7 +141,6 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
         std::string sBracket = GetNextValidLine();
         if(sBracket.find("{")==0)
         {
-            nBrackets++;
             while(!GetFile()->eof())
             {
                 std::string sLine = GetNextValidLine();
