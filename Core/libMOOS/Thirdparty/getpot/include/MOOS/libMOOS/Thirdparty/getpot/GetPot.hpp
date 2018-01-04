@@ -25,7 +25,6 @@
 // SOFTWARE.
 //=============================================================================
 
-
 #ifndef __INCLUDE_GUARD_GETPOT_HPP__
 #define __INCLUDE_GUARD_GETPOT_HPP__
 
