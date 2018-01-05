@@ -79,14 +79,14 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 	if(GoTo(sKey))
 	{
 		std::string sBracket = GetNextValidLine();
-		if(sBracket.find("{")==0)
+		if(MOOSStartsWith(sBracket, "{"))
 		{
 			while(!GetFile()->eof())
 			{
 				std::string sLine = GetNextValidLine();
 				MOOSTrimWhiteSpace(sLine);
 
-				if(sLine.find("}")!=0)
+				if(!MOOSStartsWith(sLine, "}"))
 				{
 					std::string sVal(sLine);
 					std::string sTok = MOOSChomp(sVal, "=");
@@ -112,7 +112,7 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 				}
 
 				//quick error check - we don't allow nested { on single lines
-				if(sLine.find("{")==0)
+				if(MOOSStartsWith(sLine, "{"))
 				{
 					MOOSTrace("CProcessConfigReader::GetConfiguration() missing \"}\" syntax error in mission file\n");
 				}

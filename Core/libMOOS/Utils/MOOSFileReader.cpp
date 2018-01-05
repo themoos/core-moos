@@ -555,7 +555,8 @@ bool CMOOSFileReader::MakeOverloadedCopy(const std::string & sCopyName,std::map<
             sTmp = sLine;
             
 			MOOSTrimWhiteSpace(sTmp);
-            if((!sTmp.find("//"))==0 && (!sLine.empty()))
+            const bool ignoreLine = sTmp.empty() || MOOSStartsWith(sTmp, "//");
+            if (!ignoreLine)
             {
                 std::string sVarName,sVarVal;
                 if(GetTokenValPair(sLine,sVarName,sVarVal))
