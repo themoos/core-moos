@@ -28,6 +28,11 @@
 #ifndef __INCLUDE_GUARD_GETPOT_CPP__
 #define __INCLUDE_GUARD_GETPOT_CPP__
 
+
+#if defined(_WIN32)
+    #define strtok_r strtok_s
+#endif
+
 #if defined(WIN32) || defined(SOLARIS_RAW) || (__GNUC__ == 2) || defined(__HP_aCC)
     // WINDOWS or SOLARIS or gcc 2.* or HP aCC
 #   define GETPOT_STRTOK(a, b, c)  strtok_r(a, b, c)

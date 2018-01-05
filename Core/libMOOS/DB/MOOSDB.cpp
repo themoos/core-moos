@@ -35,7 +35,7 @@
 
 
 #include "MOOS/libMOOS/MOOSLib.h"
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/GetPot.hpp"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/MOOSVersion.h"
 #include "MOOS/libMOOS/GitVersion.h"

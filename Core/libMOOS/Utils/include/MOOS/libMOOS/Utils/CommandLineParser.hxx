@@ -1,4 +1,4 @@
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/GetPot.hpp"
 
 namespace MOOS
 {
