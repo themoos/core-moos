@@ -308,7 +308,7 @@ GetPot::__parse_argument_vector(const STRING_VECTOR& ARGV)
         if( arg[0] != '-' ) idx_nominus.push_back(unsigned(i));
 
         // -- variables: does arg contain a '=' operator ?
-        ptrdiff_t   i  = 0;
+        size_t   i  = 0;
         for(std::string::iterator it = arg.begin(); it != arg.end(); ++it, ++i) {
             if( *it != '=' ) continue;
 
