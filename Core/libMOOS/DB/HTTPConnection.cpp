@@ -208,13 +208,7 @@ bool CHTTPConnection::ReadRequest()
                 m_Request.AddHeader(sLine);
             }
         }
-        else
-        {
-            sLine.empty();
-        }
     }while(sLine.size());
-
-  
 
     return true;
 }
