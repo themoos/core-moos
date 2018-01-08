@@ -42,7 +42,6 @@ XPCGetProtocol::XPCGetProtocol(const char *_sName)
     {
         XPCException exceptObject("Could Not Get Protocol By Name");
         throw exceptObject;
-        return;
     }
     _index = 0;
     _protocols.push_back(XPCGetProtocol::ProtoEnt(ent));
