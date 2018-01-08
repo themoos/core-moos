@@ -80,7 +80,6 @@ bool CMOOSLinuxSerialPort::Create(const char * sPort, int nBaudRate)
     default :
         printf("Unsupported baud rate\n");
         return false;
-        break;
     }
 
     // open and configure the serial port
