@@ -80,7 +80,7 @@ public:
         thread_.Start();
     }
     static bool dispatch(void * pP){
-       CPUCoreLoader* pMe = (CPUCoreLoader*)pP;
+       CPUCoreLoader* pMe = static_cast<CPUCoreLoader*>(pP);
        return pMe->Worker();
     }
     bool Worker(){
@@ -638,7 +638,7 @@ public:
 public:
     static bool ScheduleDispatch(void * pParam)
     {
-    	UMMClient* pMe = (UMMClient*)pParam;
+    	UMMClient* pMe = static_cast<UMMClient*>(pParam);
     	return pMe->ScheduleLoop();
     }
 
