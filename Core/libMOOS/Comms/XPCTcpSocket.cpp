@@ -112,7 +112,7 @@ XPCTcpSocket *XPCTcpSocket::Accept(char *_sHost)
             // Store the host name
             strcpy(_sHost, getHostInfo.sGetHostName());
         }
-        catch(XPCException e)
+        catch(XPCException & e)
         {
             strcpy(_sHost, sAddress);
             printf("INFO: %s using numeric address %s\n",e.sGetException(),_sHost);

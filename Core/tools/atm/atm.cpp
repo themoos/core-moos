@@ -68,14 +68,14 @@ void PrintStatistics(){
 
     std::list<atm_stat> stat_list;
     std::map<std::string ,atm_stat>::iterator p;
-    for(p=atm_stats.begin();p!=atm_stats.end();p++){
+    for(p=atm_stats.begin();p!=atm_stats.end();++p){
         stat_list.push_back(p->second);
     }
 
     stat_list.sort(sort_on_bw);
 
     std::list<atm_stat>::iterator q;
-    for(q=stat_list.begin();q!=stat_list.end();q++){
+    for(q=stat_list.begin();q!=stat_list.end();++q){
         std::stringstream ss;
 
         ss<<std::setw(8)<<FormatBytes(int(q->average_bandwidth))<<" ";

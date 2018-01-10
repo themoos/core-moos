@@ -156,7 +156,7 @@ bool CMOOSInstrument::DoNMEACheckSum(string sNMEA)
 
     //now calculate what we think check sum should be...
     string::iterator p;
-    for(p = sToCheck.begin();p!=sToCheck.end();p++)
+    for(p = sToCheck.begin();p!=sToCheck.end();++p)
     {
         xCheckSum^=*p;
     }
@@ -189,7 +189,7 @@ string CMOOSInstrument::Message2NMEA(string sMsg)
     unsigned char xCheckSum=0;
     //now calculate what we think check sum should be...
     string::iterator p;
-    for(p = sMsg.begin(); p != sMsg.end(); p++)
+    for(p = sMsg.begin(); p != sMsg.end(); ++p)
     {
         xCheckSum ^= *p;
     }

@@ -737,8 +737,7 @@ bool CMOOSApp::DoRunWork()
 				//  do application specific processing
 
                 /** called just after Iterate has finished - another place to overload*/
-            	bool bOK = true;
-            	bOK = OnIteratePrepare();
+            	bool bOK = OnIteratePrepare();
             	if(m_bQuitOnIterateFail && !bOK)
             		return false;
 
@@ -1257,7 +1256,7 @@ bool CMOOSApp::PublishFreshMOOSVariables()
 {
     MOOSVARMAP::iterator p;
 
-    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();p++)
+    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();++p)
     {
         CMOOSVariable & Var = p->second;
         if(Var.IsFresh())
@@ -1321,7 +1320,7 @@ bool CMOOSApp::UpdateMOOSVariables(MOOSMSG_LIST &NewMail)
     //we only subscribe to things if we are in simulator mode
     MOOSVARMAP::iterator p;
     double dfTimeNow = MOOSTime();
-    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();p++)
+    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();++p)
     {
         CMOOSVariable & rVar = p->second;
         CMOOSMsg Msg;
@@ -1344,7 +1343,7 @@ bool CMOOSApp::RegisterMOOSVariables()
 
     MOOSVARMAP::iterator p;
 
-    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();p++)
+    for(p = m_MOOSVars.begin();p!=m_MOOSVars.end();++p)
     {
         CMOOSVariable & rVar = p->second;
         if(!rVar.GetSubscribeName().empty())
@@ -1440,7 +1439,7 @@ bool CMOOSApp::LookForAndHandleAppCommand(MOOSMSG_LIST & NewMail)
 {
     MOOSMSG_LIST::iterator q;
     bool bResult = true;
-    for(q=NewMail.begin();q!=NewMail.end();q++)
+    for(q=NewMail.begin();q!=NewMail.end();++q)
     {
         if(MOOSStrCmp(q->GetKey(),GetCommandKey()))
         {

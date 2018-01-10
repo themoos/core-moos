@@ -65,7 +65,7 @@ bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
 	//in any messages we have already seen
 	std::set< std::string>::iterator q;
 
-	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();q++)
+	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();++q)
 	{
 		if(MOOSWildCmp(sPattern,*q))
 		{

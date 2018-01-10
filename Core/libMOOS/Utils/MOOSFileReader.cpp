@@ -84,7 +84,7 @@ bool CMOOSFileReader::SetFile(const std::string  & sFile)
 
     THREAD2FILE_MAP::iterator p;
 
-    for(p=m_FileMap.begin();p!=m_FileMap.end();p++)
+    for(p=m_FileMap.begin();p!=m_FileMap.end();++p)
     {
         std::ifstream * pFile = p->second;
 
@@ -555,7 +555,8 @@ bool CMOOSFileReader::MakeOverloadedCopy(const std::string & sCopyName,std::map<
             sTmp = sLine;
             
 			MOOSTrimWhiteSpace(sTmp);
-            if((!sTmp.find("//"))==0 && (!sLine.empty()))
+            const bool ignoreLine = sTmp.empty() || MOOSStartsWith(sTmp, "//");
+            if (!ignoreLine)
             {
                 std::string sVarName,sVarVal;
                 if(GetTokenValPair(sLine,sVarName,sVarVal))

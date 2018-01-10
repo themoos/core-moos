@@ -49,7 +49,6 @@ XPCSocket::XPCSocket(const char *_sProtocol, int _iPort)
                 sprintf(sMsg, "Error opening socket: %s", sGetError());
                 XPCException socketExcept(sMsg);
                 throw socketExcept;
-                return;
             }
         }
 
@@ -63,7 +62,6 @@ XPCSocket::XPCSocket(const char *_sProtocol, int _iPort)
                 sprintf(sMsg, "Error opening socket: %s", sGetError());
                 XPCException socketExcept(sMsg);
                 throw socketExcept;
-                return;
             }
         }
     }
@@ -74,7 +72,6 @@ XPCSocket::XPCSocket(const char *_sProtocol, int _iPort)
         sprintf(sMsg, "Protocol Error Definition: %s", exceptObject.sGetException());
         XPCException socketExcept(sMsg);
         throw socketExcept;
-        return;
     }
 
     // The client address is initialized to all addresses at the specified port
@@ -92,7 +89,6 @@ void XPCSocket::vSetDebug(int _iToggle)
         sprintf(sMsg, "Error Setting Debug Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -105,7 +101,6 @@ void XPCSocket::vSetBroadcast(int _iToggle)
         sprintf(sMsg, "Error Setting Broadcast Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -120,7 +115,6 @@ void XPCSocket::vSetReuseAddr(int _iToggle)
         sprintf(sMsg, "Error Setting Reuseaddr Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -133,7 +127,6 @@ void XPCSocket::vSetKeepAlive(int _iToggle)
         sprintf(sMsg, "Error Setting Keepalive Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -146,7 +139,6 @@ void XPCSocket::vSetLinger(struct linger _lingerOption)
         sprintf(sMsg, "Error Setting Linger Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -159,7 +151,6 @@ void XPCSocket::vSetSendBuf(int _iSendBufSize)
         sprintf(sMsg, "Error Setting SendBufSize Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -172,7 +163,6 @@ void XPCSocket::vSetRecieveBuf(int _iRecieveBufSize)
         sprintf(sMsg, "Error Setting RecieveBufSize Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }
 
@@ -197,7 +187,6 @@ void XPCSocket::vSetSocketBlocking(int _iToggle)
                     sprintf(sMsg, "Error Turning ON Socket Blocking Status: %s", sGetError());
                     XPCException sockOptExcept(sMsg);
                     throw sockOptExcept;
-                    return;
                 }
 
         }
@@ -219,7 +208,6 @@ void XPCSocket::vSetSocketBlocking(int _iToggle)
                     sprintf(sMsg, "Error Turning OFF Socket Blocking Status: %s", sGetError());
                     XPCException sockOptExcept(sMsg);
                     throw sockOptExcept;
-                    return;
                 }
 
         }
@@ -305,7 +293,6 @@ void XPCSocket::vGetLinger(struct linger &_lingerOption)
         sprintf(sMsg, "Error Extracting Linger Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
     return;
 }
@@ -362,6 +349,5 @@ void XPCSocket::vSetRecieveTimeOut(int nTimeOut)
         sprintf(sMsg, "Error Setting ReciveTimeOut Option: %s", sGetError());
         XPCException sockOptExcept(sMsg);
         throw sockOptExcept;
-        return;
     }
 }

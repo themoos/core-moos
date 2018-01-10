@@ -247,7 +247,7 @@ namespace MOOS
 		m_dfLastVal  = dfFiltOut;
 		m_dfLastTime = dfTXtime;
 
-		m_nMeas++;
+		++m_nMeas;
 
 		return dfFiltOut;
 	}
@@ -353,7 +353,7 @@ namespace MOOS
 		// Store latest point for use next time
 		// a point is added
 		m_InitPt = pt;
-		m_nMeas++;
+		++m_nMeas;
 		return true;
 
 	}

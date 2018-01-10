@@ -27,6 +27,8 @@
 #ifndef _XPCEndian
 #define _XPCEndian
 
+#include <algorithm>
+
 template<class OrigType> class XPCEndian
 {
 private:
@@ -38,15 +40,7 @@ private:
         // Swap the bytes to derive the endian value
         void vEndianSwap()
         {
-            char cTemp;
-            int iSwap2 = 0;
-            for (int iSwap1 = sizeof(OrigType)-1; iSwap1 >= sizeof(OrigType)/2; iSwap1--)
-            {
-                cTemp = cCharList[iSwap1];
-                cCharList[iSwap1] = cCharList[iSwap2];
-                cCharList[iSwap2] = cTemp;
-                iSwap2++;
-            }
+            std::reverse(cCharList, cCharList + sizeof(OrigType));
         }
     };
 

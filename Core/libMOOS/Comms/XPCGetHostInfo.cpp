@@ -44,7 +44,6 @@ XPCGetHostInfo::XPCGetHostInfo(const char *_sHost, hostType _type)
         {
             XPCException exceptObject("Error Getting Host By Name");
             throw exceptObject;
-            return;
         }
     }    
     else if (_type == ADDRESS)
@@ -56,7 +55,6 @@ XPCGetHostInfo::XPCGetHostInfo(const char *_sHost, hostType _type)
         {
             XPCException exceptObject("Error Getting Host By Address");
             throw exceptObject;
-            return;
         }
 
         hostPtr = gethostbyaddr((char *)&netAddr, sizeof(netAddr), AF_INET);
@@ -64,14 +62,12 @@ XPCGetHostInfo::XPCGetHostInfo(const char *_sHost, hostType _type)
         {
             XPCException exceptObject("Error Getting Host By Address");
             throw exceptObject;
-            return;
         }
     }    
     else
     {
         XPCException exceptObject("Parameter Error Constructing XPCGetHostInfo");
         throw exceptObject;    
-        return;
     }
 }
 
@@ -81,7 +77,6 @@ XPCGetHostInfo::XPCGetHostInfo(in_addr_t *_netAddr)
     {
         XPCException exceptObject("Error Getting Host By Address");
         throw exceptObject;
-        return;
     }
 
     hostPtr = gethostbyaddr((char *)_netAddr, sizeof(*_netAddr), AF_INET);
@@ -89,7 +84,6 @@ XPCGetHostInfo::XPCGetHostInfo(in_addr_t *_netAddr)
     {
         XPCException exceptObject("Error Getting Host By Address");
         throw exceptObject;
-        return;
     }
 }
 

@@ -3,7 +3,7 @@
 namespace MOOS
 {
 template<class T>
-bool CommandLineParser::GetVariable(const std::string option,  T & result)
+bool CommandLineParser::GetVariable(const std::string & option,  T & result)
 {
 
     if(!IsAvailable() || !VariableExists(option))
@@ -19,7 +19,7 @@ bool CommandLineParser::GetVariable(const std::string option,  T & result)
 
 
 template<class T>
-bool CommandLineParser::GetOption(const std::string option,  T & result)
+bool CommandLineParser::GetOption(const std::string & option,  T & result)
 {
     if(!IsAvailable())
         return false;

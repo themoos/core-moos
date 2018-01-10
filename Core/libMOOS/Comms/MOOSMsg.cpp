@@ -415,7 +415,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             (*this)<<m_nLength;
 
         }
-        catch(CMOOSException e)
+        catch(CMOOSException & e)
         {
             MOOSTrace("exception : CMOOSMsg::Serialize failed: %s\n ",e.m_sReason);
 			MOOSTrace("perhaps accummulated messages exceeded available buffer space of %d bytes\n", m_nSerializeBufferLen);
@@ -471,7 +471,7 @@ int CMOOSMsg::Serialize(unsigned char *pBuffer, int nLen, bool bToStream)
             (*this)>>m_sVal;
 
         }
-        catch(CMOOSException e)
+        catch(CMOOSException & e)
         {
             MOOSTrace("exception : CMOOSMsg::Serialize failed: %s\n ",e.m_sReason);
 

@@ -28,6 +28,7 @@
 #endif
 
 #include "MOOS/libMOOS/Utils/MOOSUtilityFunctions.h"
+#include "MOOS/libMOOS/Comms/MOOSMsg.h"
 #include "MOOS/libMOOS/DB/MOOSDBVar.h"
 #include <iostream>
 #include <cmath>
@@ -36,33 +37,40 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CMOOSDBVar::CMOOSDBVar()
-{
-    m_dfVal = -1.0;
-    m_dfTime = -1.0;
-    m_dfWriteFreq = 0.0;
-    m_sVal = "";
-    m_sWhoChangedMe = "";
-    m_nWrittenTo = 0;
-    m_dfWrittenTime = -1;
-    m_Stats.m_dfLastStatsTime = -1.0;
-    m_Stats.m_nLastStatsWrites = 0;
-}
+CMOOSDBVar::CMOOSDBVar() :
+    m_cDataType(MOOS_NOT_SET),
+    m_sName(),
+    m_dfTime(-1.0),
+    m_dfVal(-1.0),
+    m_dfWriteFreq(0.0),
+    m_dfWrittenTime(-1.0),
+    m_sVal(),
+    m_sWhoChangedMe(),
+    m_sSrcAux(),
+    m_sOriginatingCommunity(),
+    m_Stats(),
+    m_nWrittenTo(0),
+    m_Subscribers(),
+    m_Writers()
+{}
 
 
-CMOOSDBVar::CMOOSDBVar(const string & sName)
-{
-    m_sName = sName;
-    m_dfVal = -1.0;
-    m_dfTime = -1.0;
-    m_sVal = "";
-	m_sSrcAux = "";
-    m_sWhoChangedMe = "";
-    m_nWrittenTo = 0;
-    m_dfWriteFreq = 0;
-    m_dfWrittenTime = -1;
-
-}
+CMOOSDBVar::CMOOSDBVar(const string & sName) :
+    m_cDataType(MOOS_NOT_SET),
+    m_sName(sName),
+    m_dfTime(-1.0),
+    m_dfVal(-1.0),
+    m_dfWriteFreq(0.0),
+    m_dfWrittenTime(-1.0),
+    m_sVal(),
+    m_sWhoChangedMe(),
+    m_sSrcAux(),
+    m_sOriginatingCommunity(),
+    m_Stats(),
+    m_nWrittenTo(0),
+    m_Subscribers(),
+    m_Writers()
+{}
 
 CMOOSDBVar::~CMOOSDBVar()
 {

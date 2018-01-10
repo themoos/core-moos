@@ -74,13 +74,13 @@ unsigned int GetScreenWidth()
  */
 class CPUCoreLoader{
 public:
-    CPUCoreLoader(double target_load){
+    explicit CPUCoreLoader(double target_load){
         target_load_ = std::max(0.0,target_load);
         thread_.Initialise(dispatch,this);
         thread_.Start();
     }
     static bool dispatch(void * pP){
-       CPUCoreLoader* pMe = (CPUCoreLoader*)pP;
+       CPUCoreLoader* pMe = static_cast<CPUCoreLoader*>(pP);
        return pMe->Worker();
     }
     bool Worker(){
@@ -107,7 +107,7 @@ public:
 
 class CPULoader{
 public:
-    CPULoader(double target_load):target_load_(target_load){
+    explicit CPULoader(double target_load):target_load_(target_load){
         int num_core_loaders = int(target_load_)/100+1;
         for(int i = 0;i<num_core_loaders;i++){
             CPUCoreLoader* pCL = new CPUCoreLoader(target_load_);
@@ -215,7 +215,7 @@ public:
         {
         	vBounce = MOOS::StringListToVector(temp);
         	std::vector<std::string>::iterator q;
-        	for(q=vBounce.begin();q!=vBounce.end();q++)
+        	for(q=vBounce.begin();q!=vBounce.end();++q)
         	{
 
         		std::string v  = MOOS::Chomp(*q,":");
@@ -244,7 +244,7 @@ public:
         {
         	std::vector<std::string> v = MOOS::StringListToVector(temp);
         	std::vector<std::string>::iterator q;
-        	for(q=v.begin();q!=v.end();q++)
+        	for(q=v.begin();q!=v.end();++q)
         	{
         		_vWildSubscriptions.push_back("*:"+*q+"@0.0");
         	}
@@ -310,7 +310,7 @@ public:
         std::vector<std::string>::iterator q;
         unsigned int MaxArraySize=0;
 
-        for(q = vPublish.begin();q!=vPublish.end();q++)
+        for(q = vPublish.begin();q!=vPublish.end();++q)
         {
         	unsigned int nArraySize=0;
             std::string sEntry  = *q;
@@ -422,7 +422,7 @@ public:
 
         bool bMap = ! _Map.empty();
 
-        for(q = NewMail.begin();q!=NewMail.end();q++)
+        for(q = NewMail.begin();q!=NewMail.end();++q)
         {
             double dfLatencyMS  = (MOOS::Time()-q->GetTime())*1000;
             _dfMeanLatency = 0.1*dfLatencyMS+0.9*_dfMeanLatency;
@@ -567,7 +567,7 @@ public:
         std::vector<std::string>::iterator q;
 
         std::cout<<MOOS::ConsoleColours::Green();
-        for(q = _vSubscribe.begin();q!=_vSubscribe.end();q++)
+        for(q = _vSubscribe.begin();q!=_vSubscribe.end();++q)
         {
 			std::string sEntry = *q;
 			std::string sVar = MOOSChomp(sEntry,"@");
@@ -588,7 +588,7 @@ public:
 
         std::vector<std::string>::iterator w;
 
-		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end();w++)
+		for(w = _vWildSubscriptions.begin();w!=_vWildSubscriptions.end(); ++w)
 		{
 			//GPS_X:*@0.4
 			std::string sEntry = *w;
@@ -638,7 +638,7 @@ public:
 public:
     static bool ScheduleDispatch(void * pParam)
     {
-    	UMMClient* pMe = (UMMClient*)pParam;
+    	UMMClient* pMe = static_cast<UMMClient*>(pParam);
     	return pMe->ScheduleLoop();
     }
 
@@ -715,12 +715,12 @@ private:
 
     struct Job
     {
-        Job(double dfPeriod, std::string sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _DataSize(0)
+        Job(double dfPeriod, const std::string& sName):_dfPeriod(dfPeriod),_sName(sName),_nCount(0), _DataSize(0)
         {
             _dfTimeScheduled = MOOSLocalTime()+_dfPeriod;
         }
 
-        Job(double dfPeriod,std::string sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
+        Job(double dfPeriod,const std::string& sName, unsigned int nSize):_dfPeriod(dfPeriod),_sName(sName),_nCount(0)
         {
         	_DataSize = nSize;
         	_dfTimeScheduled = MOOSLocalTime()+_dfPeriod;

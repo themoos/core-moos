@@ -22,11 +22,20 @@ class CBind
 {
 	public:
 
-	CBind()
+	CBind() : pG_(0)
 	{
 		//default binding to pG_;
 		SetCallBack<CBind>(&CBind::UseMe,this);
 	}
+	
+	~CBind() {
+		delete pG_;
+	}
+
+private:
+	CBind(const CBind&);
+	CBind& operator=(const CBind&);
+
 protected:
   bool UseMe(CMOOSMsg & /*M*/)
 	{

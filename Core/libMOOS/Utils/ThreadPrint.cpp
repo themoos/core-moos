@@ -49,7 +49,7 @@ namespace MOOS {
 class ThreadPrint::Impl
 {
 public:
-	Impl(std::ostream & os): _outstream(os){}
+	explicit Impl(std::ostream & os): _outstream(os), _Enable(true) {}
 	std::ostream & _outstream;
     static CMOOSLock _Lock;
     bool _Enable;
@@ -63,9 +63,6 @@ CMOOSLock ThreadPrint::Impl::_Lock;
 
 ThreadPrint::ThreadPrint(std::ostream & os) : _Impl(new Impl(os))
 {
-	// TODO Auto-generated constructor stub
-	_Impl->_Enable = true;
-
 }
 
 ThreadPrint::~ThreadPrint() {
