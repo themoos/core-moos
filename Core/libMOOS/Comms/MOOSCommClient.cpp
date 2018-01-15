@@ -449,13 +449,13 @@ void CMOOSCommClient::PrintMessageToActiveQueueRouting()
 	std::cerr<<MOOS::ConsoleColours::reset();
 
 
-	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
+	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();++q)
 	{
 		//get a list of all queues which handle this message
 		std::set<std::string> & rQL = q->second;
 		std::set<std::string>::iterator p;
 		std::cerr<<std::setw(10)<< q->first<<" -> queues{ ";
-		for(p = rQL.begin();p!=rQL.end();p++)
+		for(p = rQL.begin();p!=rQL.end();++p)
 		{
 			if(WildcardQueuePatterns_.find(*p)!=WildcardQueuePatterns_.end())
 			{
@@ -478,7 +478,7 @@ bool CMOOSCommClient::RemoveActiveQueue(const std::string & sQueueName)
 
 	//maps message name to a list of queues...
 	std::map<std::string,std::set<std::string > >::iterator q;
-	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();q++)
+	for(q = Msg2ActiveQueueName_.begin();q!=Msg2ActiveQueueName_.end();++q)
 	{
 		//get a list of all queues which handle this message
 		std::set<std::string> & rQL = q->second;
@@ -592,7 +592,7 @@ bool CMOOSCommClient::AddWildcardActiveQueue(const std::string & sQueueName,
 	//in any messages we have already seen
 	std::set< std::string>::iterator q;
 
-	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();q++)
+	for(q=WildcardCheckSet_.begin();q!=WildcardCheckSet_.end();++q)
 	{
 		if(MOOSWildCmp(sPattern,*q))
 		{
@@ -672,7 +672,7 @@ bool CMOOSCommClient::DoClientWork()
 				m_nMsgsSent+=PktTx.GetNumMessagesSerialised();
 				m_nBytesSent+=PktTx.GetStreamLength();
 			}
-			catch (CMOOSException e) 
+			catch (CMOOSException & e) 
 			{
 				//clear the outbox
 				m_OutBox.clear();
@@ -762,7 +762,7 @@ bool CMOOSCommClient::DoClientWork()
 
         
 	}
-	catch(CMOOSException e)
+	catch(CMOOSException & e)
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
@@ -815,7 +815,7 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 			std::map<std::string, std::string  >::iterator w;
 
 			bool bFoundWCMatch = false;
-			for(w = WildcardQueuePatterns_.begin();w!=WildcardQueuePatterns_.end();w++)
+			for(w = WildcardQueuePatterns_.begin();w!=WildcardQueuePatterns_.end();++w)
 			{
 				std::string sPattern = w->second;
 				//build a list of all wc queues that match this message
@@ -861,7 +861,7 @@ bool CMOOSCommClient::DispatchInBoxToActiveThreads()
 		std::set<std::string>::iterator r;
 
 		bool bPickedUpByActiveQueue = false;
-		for(r = q->second.begin();r!=q->second.end();r++)
+		for(r = q->second.begin();r!=q->second.end();++r)
 		{
 
 //		    std::cerr<<"found queue that is relevent "<<*r<<"\n";
@@ -1219,7 +1219,7 @@ bool CMOOSCommClient::HandShake()
 
 		}
 	}
-	catch(CMOOSException e)
+	catch(CMOOSException & e)
 	{
 		MOOSTrace("Exception in hand shaking : %s",e.m_sReason);
 		return false;
@@ -1548,7 +1548,7 @@ bool CMOOSCommClient::Peek(MOOSMSG_LIST & MsgList, int nIDRequired,bool bClear)
 				continue;
 			}
 		}
-		p++;
+		++p;
 	}
 
 	//conditionally (ex MIT suggestion 2006) remove all elements
@@ -1573,7 +1573,7 @@ bool CMOOSCommClient::PeekMail(MOOSMSG_LIST &Mail,
 
 	double dfYoungest = -1;
 
-	for(p = Mail.begin();p!=Mail.end();p++)
+	for(p = Mail.begin();p!=Mail.end();++p)
 	{
 		if(p->m_sKey==sKey)
 		{
@@ -1637,7 +1637,7 @@ bool CMOOSCommClient::Close(bool  )
 
 	std::map<std::string,MOOS::ActiveMailQueue*  >::iterator q;
 
-	for(q = ActiveQueueMap_.begin();q!=ActiveQueueMap_.end();q++)
+	for(q = ActiveQueueMap_.begin();q!=ActiveQueueMap_.end();++q)
 	{
 		MOOS::ActiveMailQueue* pQueue = q->second;
 		pQueue->Stop();
@@ -1862,7 +1862,7 @@ void CMOOSCommClient::GetClientCommsStatuses(std::list<MOOS::ClientCommsStatus> 
     MOOS::ScopedLock L(m_ClientStatusLock);
     std::map<std::string , MOOS::ClientCommsStatus>::iterator q;
 
-    for(q=m_ClientStatuses.begin();q!=m_ClientStatuses.end();q++)
+    for(q=m_ClientStatuses.begin();q!=m_ClientStatuses.end();++q)
         Statuses.push_back(q->second);
 
 }
@@ -1947,7 +1947,7 @@ bool CMOOSCommClient::ApplyRecurrentSubscriptions()
 
     MOOS::ScopedLock L(RecurrentSubscriptionLock);
     std::map< std::string, double >::iterator q;
-    for(q = m_RecurrentSubscriptions.begin();q!=m_RecurrentSubscriptions.end();q++)
+    for(q = m_RecurrentSubscriptions.begin();q!=m_RecurrentSubscriptions.end();++q)
     {
         if(!Register(q->first,q->second))
             return false;

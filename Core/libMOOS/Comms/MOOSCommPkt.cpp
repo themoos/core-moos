@@ -152,7 +152,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
         //lets figure out how much space we need?
         unsigned int nBufferSize = nHeaderSize; //some head room
         MOOSMSG_LIST::iterator p;
-        for (p = List.begin(); p != List.end(); p++) {
+        for (p = List.begin(); p != List.end(); ++p) {
             nBufferSize += p->GetSizeInBytesWhenSerialised();
         }
 
@@ -161,7 +161,7 @@ bool CMOOSCommPkt::Serialize(MOOSMSG_LIST &List,
         m_pNextData = m_pStream + nHeaderSize;
         m_nByteCount += nHeaderSize;
 
-        for (p = List.begin(); p != List.end(); p++)
+        for (p = List.begin(); p != List.end(); ++p)
         {
 
             m_nMsgsSerialised++;

@@ -94,7 +94,7 @@ void AppCast::runWarning(const string& str)
 
 	// Keep separate count of runtime warnings even though the verbatim
 	// list is finite in size.
-	m_cnt_run_warnings++;
+	++m_cnt_run_warnings;
 }
 
 //----------------------------------------------------------------
@@ -154,11 +154,11 @@ string AppCast::getAppCastString() const
 	ss << osep;
 
 	// Add the messages (the free-form content of the appcast)
-	unsigned int i, vsize = m_config_warnings.size();
+	const unsigned int vsize = m_config_warnings.size();
 	if (vsize != 0)
 	{
 		ss << "config_warnings=";
-		for (i = 0; i < vsize - 1; i++)
+		for (unsigned int i = 0; i < vsize - 1; i++)
 		{
 			ss << m_config_warnings[i] << isep;
 		}
@@ -172,7 +172,7 @@ string AppCast::getAppCastString() const
 	{
 		ss << "events=";
 		list<string>::const_iterator p;
-		for (p = m_events.begin(); p != m_events.end(); p++)
+		for (p = m_events.begin(); p != m_events.end(); ++p)
 		{
 			ss << *p;
 			if (p != --m_events.end())
@@ -186,7 +186,7 @@ string AppCast::getAppCastString() const
 	{
 		ss << "run_warnings=";
 		map<string, unsigned int>::const_iterator p;
-		for (p = m_map_run_warnings.begin(); p != m_map_run_warnings.end(); p++)
+		for (p = m_map_run_warnings.begin(); p != m_map_run_warnings.end(); ++p)
 		{
 			string warning = p->first;
 			unsigned int wcount = p->second;
@@ -253,7 +253,7 @@ string AppCast::getFormattedString(bool with_header) const
 	{
 		ss << "Runtime Warnings: " << m_cnt_run_warnings << endl;
 		map<string, unsigned int>::const_iterator p;
-		for (p = m_map_run_warnings.begin(); p != m_map_run_warnings.end(); p++)
+		for (p = m_map_run_warnings.begin(); p != m_map_run_warnings.end(); ++p)
 		{
 			ss << " [" << p->second << "]: " << p->first << endl;
 		}
@@ -274,7 +274,7 @@ string AppCast::getFormattedString(bool with_header) const
 				<< "==================================================================="
 				<< endl;
 		list<string>::const_reverse_iterator q;
-		for (q = m_events.rbegin(); q != m_events.rend(); q++)
+		for (q = m_events.rbegin(); q != m_events.rend(); ++q)
 			ss << *q << endl;
 	}
 

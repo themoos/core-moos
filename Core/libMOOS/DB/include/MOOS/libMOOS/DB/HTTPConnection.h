@@ -103,7 +103,7 @@ public:
         }
 
         /** returns true if connection has a required property*/
-        bool HasProperty(std::string sHeader, std::string sProp)
+        bool HasProperty(const std::string& sHeader, const std::string& sProp)
         {
             std::list<std::string> Values;
 
@@ -111,7 +111,7 @@ public:
                 return false;
 
             std::list<std::string>::iterator q;
-            for(q = Values.begin();q!=Values.end();q++)
+            for(q = Values.begin();q!=Values.end();++q)
             {
                 if(MOOSStrCmp(*q,sProp))
                     return true;

@@ -103,7 +103,7 @@ bool EndToEndAudit::TransmitWorker(){
         MessageStatistics::iterator q;
         for(q = message_stats_to_send.begin();
             q!=message_stats_to_send.end();
-            q++){
+            ++q){
                std::string message;
                q->ToString(message);
                multicaster_.Write(message);

@@ -54,20 +54,20 @@ public:
         hi = BASE_TYPE::lower_bound(interp_time);
         if (hi != this->begin()  && hi != this->end())
         {
-	        typename BASE_TYPE::const_iterator low = hi; low--;
+          typename BASE_TYPE::const_iterator low = hi; --low;
             return m_interpFunc(*low,*hi,interp_time);
         }
         else
         {
             if (hi == this->begin()) 
             {
-                typename BASE_TYPE::const_iterator hi2 = hi; hi2++;
+                typename BASE_TYPE::const_iterator hi2 = hi; ++hi2;
                 return m_interpFunc(*hi,*hi2,interp_time);
             }
             else if (hi == this->end()) 
             {
-                typename BASE_TYPE::const_iterator low  = hi;  low--;
-				typename BASE_TYPE::const_iterator low2 = low; low2--;
+                typename BASE_TYPE::const_iterator low  = hi;  --low;
+                typename BASE_TYPE::const_iterator low2 = low; --low2;
                 
                 return m_interpFunc(*low2,*low,interp_time);
             }

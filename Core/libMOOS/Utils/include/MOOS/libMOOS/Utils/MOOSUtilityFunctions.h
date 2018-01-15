@@ -77,6 +77,12 @@ typedef std::list<std::string> STRING_LIST ;
 //find the location of sToken in a string sSource with or without case sensitivity
 size_t  MOOSStrFind( const std::string &sSource , const std::string & sToken,bool bInsensitive=false);
 
+//Look for a given pattern at the beginning of a string
+//Pattern can be a std::string or char*.
+template <typename T>
+bool MOOSStartsWith(const std::string& str, const T& pattern) {
+  return (str.rfind(pattern, 0) == 0);
+}
 
 //following function finds token = value in a list of such strings
 bool MOOSGetValueFromToken(STRING_LIST & sParams,const std::string & sToken,std::string & sVal);

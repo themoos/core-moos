@@ -42,7 +42,6 @@ XPCGetProtocol::XPCGetProtocol(const char *_sName)
     {
         XPCException exceptObject("Could Not Get Protocol By Name");
         throw exceptObject;
-        return;
     }
     _index = 0;
     _protocols.push_back(XPCGetProtocol::ProtoEnt(ent));
@@ -102,7 +101,7 @@ XPCGetProtocol::ProtoEnt::ProtoEnt(struct protoent const* ent):
     _number(ent? ent->p_proto: 0)
 {
     if (ent == 0) return;
-    for (char** alias = ent->p_aliases; *alias; alias++) {
+    for (char** alias = ent->p_aliases; *alias; ++alias) {
         _aliases.push_back(std::string(*alias));
     } 
 }

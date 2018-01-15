@@ -110,7 +110,7 @@ bool CMOOSDBHTTPServer::Listen()
         m_pListenSocket->vSetReuseAddr(1);
         m_pListenSocket->vBindSocket();
     }
-    catch(XPCException e)
+    catch(XPCException & e)
     {        
         UNUSED_PARAMETER(e);
         MOOSTrace("Error binding to HTTP listen socket - Is there another HTTPDBServer Running?\n");
@@ -158,13 +158,13 @@ bool CMOOSDBHTTPServer::Listen()
                 }
                 else
                 {
-                    q++;
+                    ++q;
                 }
             }
 
 
         }
-        catch(XPCException e)
+        catch(XPCException & e)
         {
             MOOSTrace("Exception Thrown in listen loop: %s\n",e.sGetException());
         }
