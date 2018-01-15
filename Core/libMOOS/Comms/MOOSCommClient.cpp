@@ -1154,6 +1154,7 @@ bool CMOOSCommClient::HandShake()
 
 
             m_bDBIsAsynchronous = MOOSStrCmp(WelcomeMsg.GetString(),"asynchronous");
+            MOOSValFromString(m_sDBHostAsSeenByDB,WelcomeMsg.m_sSrcAux,"hostname",true);
 
 			if(!m_bQuiet)
 			{
@@ -1180,7 +1181,6 @@ bool CMOOSCommClient::HandShake()
 
             	if(!WelcomeMsg.m_sSrcAux.empty())
             	{
-                    MOOSValFromString(m_sDBHostAsSeenByDB,WelcomeMsg.m_sSrcAux,"hostname",true);
 
                     std::cout<<std::left<<std::setw(40);
                     std::cout<<"  DB is running on ";
