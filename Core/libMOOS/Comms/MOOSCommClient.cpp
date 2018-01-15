@@ -1671,6 +1671,8 @@ bool CMOOSCommClient::ClearResources()
 
 	m_Registered.clear();
 
+    m_sDBHostAsSeenByDB.clear();
+
 	return true;
 
 }

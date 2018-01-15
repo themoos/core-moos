@@ -262,7 +262,8 @@ public:
     /** get client name */
     std::string GetClientName();
 
-    /** Get db host name as seen by DB */
+    /** Get db host name as seen by DB. Returns empty string if
+    not connected*/
     std::string GetDBHostNameAsSeenByDB();
 
     /** set / get scale factor which determines how to encourgage message bunching
