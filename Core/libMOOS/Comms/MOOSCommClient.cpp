@@ -277,11 +277,11 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 
 }
 
-std::string CMOOSCommClient::GetDBHostNameAsSeenByDB(){
+std::string CMOOSCommClient::GetDBHostNameAsSeenByDB() const{
     return m_sDBHostAsSeenByDB;
 }
 
-std::string CMOOSCommClient::GetDBHostname(){
+std::string CMOOSCommClient::GetDBHostname()  {
     return m_sDBHost;
 }
 
@@ -1202,13 +1202,8 @@ bool CMOOSCommClient::HandShake()
                         std::cout<<"[off] (not needed)\n";
                         DoLocalTimeCorrection(false);
                     }
-
-
             	}
                 std::cout<<MOOS::ConsoleColours::reset();
-
-
-
             }
 
             //read our skew

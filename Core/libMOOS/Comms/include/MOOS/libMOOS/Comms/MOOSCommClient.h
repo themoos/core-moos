@@ -264,7 +264,7 @@ public:
 
     /** Get db host name as seen by DB. Returns empty string if
     not connected*/
-    std::string GetDBHostNameAsSeenByDB();
+    std::string GetDBHostNameAsSeenByDB() const;
 
     /** set / get scale factor which determines how to encourgage message bunching
      * at high timewarps
