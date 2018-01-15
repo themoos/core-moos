@@ -277,6 +277,10 @@ unsigned int CMOOSCommClient::GetNumberOfUnsentMessages()
 
 }
 
+std::string CMOOSCommClient::GetDBHostNameAsSeenByDB(){
+    return m_sDBHostAsSeenByDB;
+}
+
 std::string CMOOSCommClient::GetDBHostname(){
     return m_sDBHost;
 }
@@ -1176,18 +1180,17 @@ bool CMOOSCommClient::HandShake()
 
             	if(!WelcomeMsg.m_sSrcAux.empty())
             	{
-            	    std::string sDBHost;
-                    MOOSValFromString(sDBHost,WelcomeMsg.m_sSrcAux,"hostname",true);
+                    MOOSValFromString(m_sDBHostAsSeenByDB,WelcomeMsg.m_sSrcAux,"hostname",true);
 
                     std::cout<<std::left<<std::setw(40);
                     std::cout<<"  DB is running on ";
-                    std::cout<<MOOS::ConsoleColours::Green()<<sDBHost<<"\n";
+                    std::cout<<MOOS::ConsoleColours::Green()<<m_sDBHostAsSeenByDB<<"\n";
                     std::cout<<MOOS::ConsoleColours::reset();
 
                     std::cout<<std::left<<std::setw(40);
 
                     std::cout<<"  Timing skew estimation is ";
-                    if( GetLocalIPAddress()!=sDBHost)
+                    if( GetLocalIPAddress()!=m_sDBHostAsSeenByDB)
                     {
                         std::cout<<MOOS::ConsoleColours::Green()<<"[on]\n";
                         std::cout<<MOOS::ConsoleColours::reset();
