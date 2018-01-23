@@ -133,13 +133,13 @@ public:
     char GetType() const;
 
     /**return time stamp of message*/
-    const double & GetTime()const {return m_dfTime;};
+    double GetTime()const {return m_dfTime;}
 
     /**return double val of message*/
-    const double & GetDouble()const {return m_dfVal;};
+    double GetDouble()const {return m_dfVal;}
 
     /**return second double */
-    const double & GetDoubleAux()const {return m_dfVal2;};
+    double GetDoubleAux()const {return m_dfVal2;}
 
     /**return string value of message*/
     const std::string & GetString()const {return m_sVal;};
