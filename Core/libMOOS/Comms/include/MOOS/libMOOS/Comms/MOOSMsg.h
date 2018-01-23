@@ -142,23 +142,23 @@ public:
     double GetDoubleAux()const {return m_dfVal2;}
 
     /**return string value of message*/
-    const std::string & GetString()const {return m_sVal;};
+    const std::string & GetString()const {return m_sVal;}
 
     /**return the name of the message*/
-    const std::string & GetKey()const {return m_sKey;};
-    const std::string & GetName()const{return GetKey();};
+    const std::string & GetKey()const {return m_sKey;}
+    const std::string & GetName()const{return GetKey();}
     bool IsName(const std::string & sName);
 
     /**return the name of the process (as registered with the DB) which
     posted this notification*/
-    const std::string & GetSource()const {return m_sSrc;};
-    void SetSource(const std::string & sSrc) { m_sSrc=sSrc;};
+    const std::string & GetSource()const {return m_sSrc;}
+    void SetSource(const std::string & sSrc) { m_sSrc=sSrc;}
 
-    const std::string & GetSourceAux()const {return m_sSrcAux;};
-	void SetSourceAux(const std::string & sSrcAux){m_sSrcAux = sSrcAux;}
+    const std::string & GetSourceAux()const {return m_sSrcAux;}
+    void SetSourceAux(const std::string & sSrcAux){m_sSrcAux = sSrcAux;}
 
     /**return the name of the MOOS community in which the orginator lives*/
-    const std::string & GetCommunity()const {return m_sOriginatingCommunity;};
+    const std::string & GetCommunity()const {return m_sOriginatingCommunity;}
 
     /**format the message as string regardless of type*/
     std::string GetAsString(int nFieldWidth=12, int nNumDP=5);
