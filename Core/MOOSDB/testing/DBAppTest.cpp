@@ -26,7 +26,6 @@
 
 
 #include "MOOS/libMOOS/App/MOOSApp.h"
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 
 

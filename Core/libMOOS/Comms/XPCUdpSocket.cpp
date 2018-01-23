@@ -162,7 +162,6 @@ void XPCUdpSocket::vBindSocket()
         sprintf(sMsg, "Error binding to socket: %s", sGetError());
         XPCException socketExcept(sMsg);
         throw socketExcept;
-        return;
     }
         
 }

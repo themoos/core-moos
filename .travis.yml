@@ -45,6 +45,6 @@ before_script:
 
 script:
   - cd build/
-  - cmake -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DUSE_CXX11_IF_AVAILABLE=$USE_CXX11_IF_AVAILABLE ..
+  - cmake -DCMAKE_INSTALL_PREFIX=install_dir -DENABLE_EXPORT=ON -DUSE_ASYNC_COMMS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DUSE_CXX11_IF_AVAILABLE=$USE_CXX11_IF_AVAILABLE ..
   - cmake --build . --config Release -- -j3
-  - sudo cmake --build . --config Release --target install
+  - cmake --build . --config Release --target install

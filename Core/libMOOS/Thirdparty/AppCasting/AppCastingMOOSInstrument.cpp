@@ -249,7 +249,7 @@ bool AppCastingMOOSInstrument::OnStartUpDirectives(string directives)
   }
 
   STRING_LIST::iterator p;
-  for(p=sParams.begin(); p!=sParams.end(); p++) {
+  for(p=sParams.begin(); p!=sParams.end(); ++p) {
     string line  = *p;
     string param = MOOSToUpper(MOOSChomp(line, "="));
     string value = line;
@@ -419,7 +419,7 @@ bool AppCastingMOOSInstrument::appcastRequested()
   bool requested = false;
 
   map<string,double>::iterator p;
-  for(p=m_map_bcast_duration.begin(); p!=m_map_bcast_duration.end(); p++) {
+  for(p=m_map_bcast_duration.begin(); p!=m_map_bcast_duration.end(); ++p) {
     string key      = p->first;
     double duration = p->second;
     double elapsed  = m_curr_time - m_map_bcast_tstart[key];

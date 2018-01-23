@@ -167,7 +167,7 @@ bool CMOOSCommServer::Stop()
     }
 
     SOCKETLIST::iterator q;
-    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();q++)
+    for(q = m_ClientSocketList.begin();q!=m_ClientSocketList.end();++q)
     {
         XPCTcpSocket* pSocket = *q;
 
@@ -217,7 +217,7 @@ bool CMOOSCommServer::Run(long lPort, const string & sCommunityName,bool bDisabl
 		std::string sLatency = "0";
 		m_CommandLineParser.GetVariable("--response",sLatency);
 		std::vector<std::string> sLL = MOOS::StringListToVector(sLatency);
-		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();q++)
+		for(std::vector<std::string>::iterator q = sLL.begin(); q!=sLL.end();++q)
 		{
 			try
 			{
@@ -408,7 +408,7 @@ bool CMOOSCommServer::ListenLoop()
 
         m_pListenSocket->vBindSocket();
     }
-    catch(XPCException e)
+    catch(XPCException& e)
     {
     #if _WIN32
         e;
@@ -502,7 +502,7 @@ bool CMOOSCommServer::ListenLoop()
 
             m_SocketListLock.UnLock();
         }
-        catch(XPCException e)
+        catch(XPCException & e)
         {
             MOOSTrace("Exception Thrown in listen loop: %s\n",e.sGetException());
         }
@@ -558,7 +558,7 @@ bool CMOOSCommServer::ServerLoop()
             m_ClientSocketList.push_front(m_ClientSocketList.back());
             m_ClientSocketList.pop_back();
 
-            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
             {
                 FD_SET((*p)->iGetSocketFd(), &fdset);
             }
@@ -607,7 +607,7 @@ bool CMOOSCommServer::ServerLoop()
         default:
             //something to read:
             m_SocketListLock.Lock();
-            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+            for(p = m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
             {
                 m_pFocusSocket = *p;
 
@@ -700,7 +700,7 @@ bool CMOOSCommServer::ProcessClient()
 
         }
     }
-    catch(CMOOSException e)
+    catch(CMOOSException & e)
     {
         MOOSTrace("ProcessClient() Exception: %s\n", e.m_sReason);
         bResult = false;
@@ -820,11 +820,7 @@ bool CMOOSCommServer::OnClientDisconnect()
         //MOOSTrace("Client \"%s\" has disconnected.\n",p->second.c_str());
 
         m_Socket2ClientMap.erase(p);
-
-        if(m_AsynchronousClientSet.find(sWho)!=m_AsynchronousClientSet.end())
-        {
-        	m_AsynchronousClientSet.erase(sWho);
-        }
+        m_AsynchronousClientSet.erase(sWho);
     }
 
 
@@ -902,7 +898,7 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
 {
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
 
-    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();p++)
+    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();++p)
     {
         if(p->second==sClientName)
         {
@@ -921,21 +917,26 @@ bool CMOOSCommServer::IsUniqueName(string &sClientName)
 //chances of a comm packet spelling out a protocol name are pretty damn slim.....
 bool CheckProtocol(XPCTcpSocket *pNewClient)
 {
-	char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1];
-	sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE]='\0';
-	int nRead = pNewClient->iRecieveMessage(sProtocol, MOOS_PROTOCOL_STRING_BUFFER_SIZE );
-	if (nRead <=0 || !MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
-	{
-		//this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
-		return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
-				"Expecting protocol named \"%s\".\n  Client is using a protocol"
-				" called  \"%s\"\n\n  Make sure the client and MOOSDB"
-				" are linking against a MOOSLIB which uses the same"
-				" protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
-	}
-	
-	return true;
-		
+    char sProtocol[MOOS_PROTOCOL_STRING_BUFFER_SIZE+1] = {};
+    int nRead = pNewClient->iRecieveMessage(sProtocol, MOOS_PROTOCOL_STRING_BUFFER_SIZE );
+    if (nRead <=0)
+    {
+        return MOOSFail("Client disconnected during wire protocol transmission.\n"
+                        "Make sure the client and MOOSDB are linking against a "
+                        "MOOSLIB which uses the same protocol.\n");
+
+    }
+    if (!MOOSStrCmp(sProtocol, MOOS_PROTOCOL_STRING))
+    {
+        //this is bad - wrong flavour of comms - perhaps client needs to be recompiled...
+        return MOOSFail("Incompatible wire protocol between DB and Client:\n  "
+                        "Expecting protocol named \"%s\".\n  Client is using a protocol"
+                        " called  \"%s\"\n\n  Make sure the client and MOOSDB"
+                        " are linking against a MOOSLIB which uses the same"
+                        " protocol \n",MOOS_PROTOCOL_STRING,sProtocol);
+    }
+
+    return true;
 }
 
 
@@ -999,7 +1000,7 @@ bool CMOOSCommServer::HandShake(XPCTcpSocket *pNewClient)
 
         return true;
     }
-    catch (CMOOSException e)
+    catch (CMOOSException & e)
     {
         MOOSTrace("\nException caught [%s]\n",e.m_sReason);
         return false;
@@ -1079,7 +1080,7 @@ int CMOOSCommServer::GetMaxSocketFD()
     SOCKETLIST::iterator p;
 
     m_nMaxSocketFD = 0;
-    for(p=m_ClientSocketList.begin();p!=m_ClientSocketList.end();p++)
+    for(p=m_ClientSocketList.begin();p!=m_ClientSocketList.end();++p)
     {
         m_nMaxSocketFD = m_nMaxSocketFD > (*p)->iGetSocketFd()
             ? m_nMaxSocketFD :
@@ -1097,7 +1098,7 @@ bool CMOOSCommServer::GetClientNames(STRING_LIST &sList)
 
     SOCKETFD_2_CLIENT_NAME_MAP::iterator p;
 
-    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();p++)
+    for(p = m_Socket2ClientMap.begin();p!=m_Socket2ClientMap.end();++p)
     {
         sList.push_front(p->second);
     }

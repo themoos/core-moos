@@ -92,14 +92,12 @@ namespace MOOS
 		{
 
 			double TimeLast=MOOS::Time();
-			double TimeNow;
-			double TimeScheduled;
 
 			MOOS::BoostThisThread();
 
 			while(!Thread_.IsQuitRequested())
 			{
-				TimeScheduled=TimeLast+Period_;
+				double TimeScheduled=TimeLast+Period_;
 
 				int MillisecondsSleep = static_cast<int>( ( TimeScheduled-MOOS::Time() )*1000.0 )  ;
 				if(MillisecondsSleep>0)
@@ -107,7 +105,7 @@ namespace MOOS
 					MOOS::Pause(MillisecondsSleep);
 				}
 
-				TimeNow = MOOS::Time();
+				double TimeNow = MOOS::Time();
 
 				if(!(*pfn_)(MOOS::Time(), TimeLast,TimeScheduled,pParamCaller_))
 				{

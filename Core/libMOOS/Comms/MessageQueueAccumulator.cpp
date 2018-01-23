@@ -56,7 +56,7 @@ bool MessageQueueAccumulator::AddMessage(CMOOSMsg & M)
 	std::map<std::string, unsigned int>::iterator q;
 
 	bool bFullHouse = true;
-	for(q=msg2queue_.begin();q!=msg2queue_.end();q++)
+	for(q=msg2queue_.begin();q!=msg2queue_.end();++q)
 	{
 		std::cerr<<" queue "<<q->first<<" has "<<store_[q->second].size()<<"stored\n";
 		if(store_[q->second].empty())

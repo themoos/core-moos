@@ -34,7 +34,7 @@
 
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
 
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/GetPot"
 
 
 namespace MOOS {
@@ -66,7 +66,7 @@ bool CommandLineParser::Open(int argc,  char * argv[])
 }
 
 
-bool CommandLineParser::GetOption(const std::string option,  double & result)
+bool CommandLineParser::GetOption(const std::string & option,  double & result)
 {
 	if(!IsAvailable())
 		return false;
@@ -81,7 +81,7 @@ bool CommandLineParser::GetOption(const std::string option,  double & result)
 }
 
 
-bool CommandLineParser::GetOption(const std::string option,  std::string  & result)
+bool CommandLineParser::GetOption(const std::string & option,  std::string  & result)
 {
 	if(!IsAvailable())
 			return false;
@@ -97,7 +97,7 @@ bool CommandLineParser::GetOption(const std::string option,  std::string  & resu
 }
 
 
-bool CommandLineParser::GetOption(const std::string option,  int & result)
+bool CommandLineParser::GetOption(const std::string & option,  int & result)
 {
 
 	if(!IsAvailable())
@@ -111,7 +111,7 @@ bool CommandLineParser::GetOption(const std::string option,  int & result)
 	return true;
 }
 
-bool CommandLineParser::GetOption(const std::string option,  unsigned int & result)
+bool CommandLineParser::GetOption(const std::string & option,  unsigned int & result)
 {
 	if(!IsAvailable())
 		return false;
@@ -132,7 +132,7 @@ bool CommandLineParser::GetOption(const std::string option,  unsigned int & resu
 }
 
 
-bool CommandLineParser::GetVariable(const std::string var,  bool & result)
+bool CommandLineParser::GetVariable(const std::string& var,  bool & result)
 {
     std::string sT;
     if(GetVariable(var,  sT))
@@ -151,7 +151,7 @@ bool CommandLineParser::GetVariable(const std::string var,  bool & result)
     return false;
 }
 
-bool CommandLineParser::GetVariable(const std::string var,  double & result)
+bool CommandLineParser::GetVariable(const std::string& var,  double & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
 		return false;
@@ -163,7 +163,7 @@ bool CommandLineParser::GetVariable(const std::string var,  double & result)
 }
 
 
-bool CommandLineParser::GetVariable(const std::string var,  std::string  & result)
+bool CommandLineParser::GetVariable(const std::string& var,  std::string  & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
 		return false;
@@ -174,7 +174,7 @@ bool CommandLineParser::GetVariable(const std::string var,  std::string  & resul
 
 }
 
-bool CommandLineParser::GetVariable(const std::string var,  int & result)
+bool CommandLineParser::GetVariable(const std::string& var,  int & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
 		return false;
@@ -186,7 +186,7 @@ bool CommandLineParser::GetVariable(const std::string var,  int & result)
 
 }
 
-bool CommandLineParser::GetVariable(const std::string var, unsigned  int & result)
+bool CommandLineParser::GetVariable(const std::string& var, unsigned  int & result)
 {
 	if(!IsAvailable() || !VariableExists(var))
 		return false;

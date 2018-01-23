@@ -262,7 +262,9 @@ public:
     /** get client name */
     std::string GetClientName();
 
-
+    /** Get db host name as seen by DB. Returns empty string if
+    not connected*/
+    std::string GetDBHostNameAsSeenByDB() const;
 
     /** set / get scale factor which determines how to encourgage message bunching
      * at high timewarps
@@ -511,8 +513,15 @@ protected:
     XPCTcpSocket* m_pSocket;
     
     /** name of the host on which the server process lives
+     * as see by the machine the client is running
     @see Init*/
     std::string m_sDBHost;
+
+
+    /** name of the machine running the DB as seen by the DB
+    returned by GetDBHostNameAsSeenByDB and set up during
+    hand shaking*/
+    std::string m_sDBHostAsSeenByDB;
     
     /** port number on which server process is listening for new connections
     @see Init*/

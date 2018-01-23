@@ -72,9 +72,6 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 {
 	Params.clear();
 
-	int nBrackets = 0;
-	Params.clear();
-
 	Reset();
 
 	std::string sKey = "PROCESSCONFIG="+sAppName;
@@ -82,15 +79,14 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 	if(GoTo(sKey))
 	{
 		std::string sBracket = GetNextValidLine();
-		if(sBracket.find("{")==0)
+		if(MOOSStartsWith(sBracket, "{"))
 		{
-			nBrackets++;
 			while(!GetFile()->eof())
 			{
 				std::string sLine = GetNextValidLine();
 				MOOSTrimWhiteSpace(sLine);
 
-				if(sLine.find("}")!=0)
+				if(!MOOSStartsWith(sLine, "}"))
 				{
 					std::string sVal(sLine);
 					std::string sTok = MOOSChomp(sVal, "=");
@@ -116,7 +112,7 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 				}
 
 				//quick error check - we don't allow nested { on single lines
-				if(sLine.find("{")==0)
+				if(MOOSStartsWith(sLine, "{"))
 				{
 					MOOSTrace("CProcessConfigReader::GetConfiguration() missing \"}\" syntax error in mission file\n");
 				}
@@ -134,7 +130,6 @@ bool CProcessConfigReader::GetConfigurationAndPreserveSpace(std::string sAppName
 bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &Params)
 {
     
-    int nBrackets = 0;
     Params.clear();
     
     Reset();
@@ -146,7 +141,6 @@ bool CProcessConfigReader::GetConfiguration(std::string sAppName, STRING_LIST &P
         std::string sBracket = GetNextValidLine();
         if(sBracket.find("{")==0)
         {
-            nBrackets++;
             while(!GetFile()->eof())
             {
                 std::string sLine = GetNextValidLine();
@@ -315,7 +309,7 @@ bool CProcessConfigReader::GetConfigurationParam(std::string sAppName,std::strin
     if(GetConfigurationAndPreserveSpace( sAppName, sParams))
     {
         STRING_LIST::iterator p;
-        for(p = sParams.begin();p!=sParams.end();p++)
+        for(p = sParams.begin();p!=sParams.end();++p)
         {
             std::string sTmp = *p;
             std::string sTok = MOOSChomp(sTmp,"=");

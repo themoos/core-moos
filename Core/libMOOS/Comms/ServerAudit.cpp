@@ -174,7 +174,7 @@ public:
 					<<"B/s out\n";
 
 				std::map<std::string,ClientAudit>::iterator q;
-				for(q=Audits_.begin(); q!=Audits_.end();q++)
+				for(q=Audits_.begin(); q!=Audits_.end();++q)
 				{
 					ss<<std::setw(10)<<q->first;
 					ss<<std::setw(10)<<q->second.recent_packets_received_;
@@ -252,7 +252,7 @@ public:
 	bool GetTimingStatisticSummary(std::string & sSummary)
 	{
 	    std::map<std::string,ClientAudit>::iterator q;
-	    for(q =Audits_.begin();q!=Audits_.end();q++ )
+	    for(q =Audits_.begin();q!=Audits_.end();++q )
 	    {
 	        std::string sT;
 	        if(!GetTimingStatisticSummary(q->first,sT))
@@ -324,7 +324,7 @@ public:
     }
 
 
-	bool AddStatistic(const std::string sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
+	bool AddStatistic(const std::string& sClient, unsigned int nBytes, unsigned int nMessages, double dfTime, bool bIncoming)
 	{
 		MOOS::DeliberatelyNotUsed(dfTime);
 
@@ -403,7 +403,7 @@ bool ServerAudit::SetQuiet(bool bQuiet)
     return Impl_->SetQuiet(bQuiet);
 }
 
-bool ServerAudit::AddStatistic(const std::string sClient,
+bool ServerAudit::AddStatistic(const std::string & sClient,
                                unsigned int nBytes,
                                unsigned int nMessages,
                                double dfTime,

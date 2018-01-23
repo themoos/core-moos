@@ -57,7 +57,7 @@ KeyboardCapture::KeyboardCapture(): impl_(new Impl)
 }
 bool KeyboardCapture::dispatch(void * param)
 {
-	KeyboardCapture* pMe = (KeyboardCapture*)param;
+	KeyboardCapture* pMe = static_cast<KeyboardCapture*>(param);
 	return pMe->Capture();
 }
 bool KeyboardCapture::Capture()
@@ -77,9 +77,9 @@ bool KeyboardCapture::Capture()
 	while(!impl_->worker_.IsQuitRequested())
 	{
 
-		char c;
 		if(!std::cin.eof())
 		{
+			char c;
 			std::cin>>c;
 			impl_->queue_.Push(c);
 		}

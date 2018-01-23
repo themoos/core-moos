@@ -35,7 +35,7 @@
 
 
 #include "MOOS/libMOOS/MOOSLib.h"
-#include "MOOS/libMOOS/Thirdparty/getpot/getpot.h"
+#include "MOOS/libMOOS/Thirdparty/getpot/GetPot.hpp"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/MOOSVersion.h"
 #include "MOOS/libMOOS/GitVersion.h"
@@ -389,7 +389,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
         m_SuicidalSleeper.SetChannel(sSuicideAddress);
     }
 
-    int nSuicidePort;
+    int nSuicidePort(0);
     if(P.GetVariable("--moos_suicide_port",nSuicidePort))
     {
         m_SuicidalSleeper.SetPort(nSuicidePort);
@@ -528,17 +528,17 @@ void CMOOSDB::UpdateReadWriteSummaryVar()
 
     DBVAR_MAP::iterator p;
 
-    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    for(p=m_VarMap.begin();p!=m_VarMap.end();++p)
     {
         CMOOSDBVar  & rVar = p->second;
         STRING_SET::iterator w;
         REGISTER_INFO_MAP::iterator v;
 
         std::stringstream ss;
-        for(v = rVar.m_Subscribers.begin();v!=rVar.m_Subscribers.end();v++)
+        for(v = rVar.m_Subscribers.begin();v!=rVar.m_Subscribers.end();++v)
             Sub[v->second.m_sClientName].push_back(rVar.m_sName);
 
-        for(w = rVar.m_Writers.begin();w!=rVar.m_Writers.end();w++)
+        for(w = rVar.m_Writers.begin();w!=rVar.m_Writers.end();++w)
             Pub[*w].push_back(rVar.m_sName);
     }
 
@@ -587,7 +587,7 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
 
     MOOSMSG_LIST::iterator p;
     
-    for(p = MsgListRx.begin();p!=MsgListRx.end();p++)
+    for(p = MsgListRx.begin();p!=MsgListRx.end();++p)
     {
         ProcessMsg(*p,MsgListTx);
     }
@@ -719,11 +719,11 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         //look to see if any existing wildcards make us want to subscribe
 		//to this new message
 		HASH_MAP_TYPE<std::string, std::set<MOOS::MsgFilter> >::const_iterator g;
-		for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); g++)
+		for (g = m_ClientFilters.begin(); g != m_ClientFilters.end(); ++g)
 		{
 			//for every client
 			std::set<MOOS::MsgFilter>::const_iterator h;
-			for (h = g->second.begin(); h != g->second.end(); h++)
+			for (h = g->second.begin(); h != g->second.end(); ++h)
 			{
 				//for every filter
 				if (h->Matches(Msg))
@@ -812,7 +812,7 @@ bool CMOOSDB::OnNotify(CMOOSMsg &Msg)
         REGISTER_INFO_MAP::iterator p;
         
         
-        for(p = rVar.m_Subscribers.begin();p!=rVar.m_Subscribers.end();p++)
+        for(p = rVar.m_Subscribers.begin();p!=rVar.m_Subscribers.end();++p)
         {
             
             CMOOSRegisterInfo & rInfo = p->second;
@@ -908,7 +908,7 @@ bool CMOOSDB::OnUnRegister(CMOOSMsg &Msg)
 		MOOS::MsgFilter F(app_pattern,var_pattern,period);
 
 		DBVAR_MAP::iterator q;
-		for(q = m_VarMap.begin();q!=m_VarMap.end();q++)
+		for(q = m_VarMap.begin();q!=m_VarMap.end();++q)
 		{
 			CMOOSMsg M;
 			Var2Msg(q->second,M);
@@ -998,7 +998,7 @@ bool CMOOSDB::OnRegister(CMOOSMsg &Msg)
 		//now iterate over all existing variables and see if they match
 		//if the do simply register for them...
 		DBVAR_MAP::iterator q;
-		for(q = m_VarMap.begin();q!=m_VarMap.end();q++)
+		for(q = m_VarMap.begin();q!=m_VarMap.end();++q)
 		{
 			CMOOSMsg M;
 			Var2Msg(q->second,M);
@@ -1121,7 +1121,7 @@ bool CMOOSDB::OnDisconnect(string &sClient)
     
     DBVAR_MAP::iterator p;
     
-    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    for(p=m_VarMap.begin();p!=m_VarMap.end();++p)
     {
         CMOOSDBVar  & rVar = p->second;
         
@@ -1181,7 +1181,7 @@ void CMOOSDB::UpdateSummaryVar()
     std::stringstream ss;
     DBVAR_MAP::iterator p;
 
-    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    for(p=m_VarMap.begin();p!=m_VarMap.end();++p)
     {
         ss<<std::left<<std::setw(20);
         ss<<p->first<<" ";
@@ -1259,14 +1259,14 @@ bool CMOOSDB::OnProcessSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     m_pCommServer->GetClientNames(Clients);
 
-    for(q=Clients.begin();q!=Clients.end();q++)
+    for(q=Clients.begin();q!=Clients.end();++q)
     {
         string sWho = *q;
         
         string sPublished= "PUBLISHED=";
         string sSubscribed = "SUBSCRIBED=";
         
-        for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+        for(p=m_VarMap.begin();p!=m_VarMap.end();++p)
         {
             CMOOSDBVar  & rVar = p->second;
             
@@ -1316,7 +1316,7 @@ bool CMOOSDB::OnServerAllRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     DBVAR_MAP::iterator p;
     
-    for(p=m_VarMap.begin();p!=m_VarMap.end();p++)
+    for(p=m_VarMap.begin();p!=m_VarMap.end();++p)
     {
         CMOOSDBVar  & rVar = p->second;
         
@@ -1354,7 +1354,7 @@ bool CMOOSDB::OnVarSummaryRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 {
     std::string TheVars;
     DBVAR_MAP::iterator p;
-    for(p = m_VarMap.begin(); p != m_VarMap.end(); p++) 
+    for(p = m_VarMap.begin(); p != m_VarMap.end(); ++p) 
     {
         //look to a comma
         if(p!=m_VarMap.begin())
@@ -1395,7 +1395,7 @@ bool CMOOSDB::OnClearRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     
     DBVAR_MAP::iterator p;
     
-    for(p = m_VarMap.begin();p!=m_VarMap.end();p++)
+    for(p = m_VarMap.begin();p!=m_VarMap.end();++p)
     {
         CMOOSDBVar & rVar = p->second;
         rVar.Reset();
@@ -1406,7 +1406,7 @@ bool CMOOSDB::OnClearRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     MOOSTrace("    Removing %d existing notification queues...",m_HeldMailMap.size());
     MOOSMSG_LIST_STRING_MAP::iterator q;
     
-    for(q = m_HeldMailMap.begin();q!=m_HeldMailMap.end();q++)
+    for(q = m_HeldMailMap.begin();q!=m_HeldMailMap.end();++q)
     {
         MOOSMSG_LIST & rList = q->second;
         rList.clear();

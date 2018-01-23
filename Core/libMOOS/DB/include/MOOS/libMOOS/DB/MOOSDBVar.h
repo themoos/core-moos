@@ -69,17 +69,16 @@ public:
     double m_dfWrittenTime;
     string m_sVal;
     string m_sWhoChangedMe;
-	string m_sSrcAux;
+    string m_sSrcAux;
     string m_sOriginatingCommunity;
 
-	struct
-	{
-	    double m_dfLastStatsTime;
-	    int     m_nLastStatsWrites;
-	} m_Stats;
+    struct Stats {
+        Stats() : m_dfLastStatsTime(-1.0), m_nLastStatsWrites(0) {}
+        double m_dfLastStatsTime;
+        int m_nLastStatsWrites;
+    } m_Stats;
 
-
-	//number of times written to
+    // number of times written to
     int     m_nWrittenTo;
 
 
