@@ -143,7 +143,7 @@ void XPCTcpSocket::vListen(int _iNumPorts)
     }
 }       
 
-int XPCTcpSocket::iSendMessage(void *_vMessage, int _iMessageSize)
+int XPCTcpSocket::iSendMessage(const void*_vMessage, int _iMessageSize)
 {
     int iNumBytes;  // Stores the number of bytes sent
     
