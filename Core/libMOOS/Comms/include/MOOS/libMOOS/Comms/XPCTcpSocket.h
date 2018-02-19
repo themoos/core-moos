@@ -56,7 +56,7 @@ public:
     XPCTcpSocket(short int _iSocketFd) : XPCSocket(_iSocketFd) { };
 
     // Sends a message to a connected host. The number of bytes sent is returned
-    int iSendMessage(void *_vMessage, int _iMessageSize);
+    int iSendMessage(const void *_vMessage, int _iMessageSize);
 
     // Receives a TCP message 
     int iRecieveMessage(void *_vMessage, int _iMessageSize, int _iOption = 0);

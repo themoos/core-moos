@@ -1125,7 +1125,11 @@ bool CMOOSCommClient::HandShake()
         }
 		
 		//announce the protocl we will be talking...
-		m_pSocket->iSendMessage((void*)MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
+		// We use strncpy to explicitly pad the destination buffer with
+		// nulls, so the handshake message will not contain random bytes.
+		char buff[MOOS_PROTOCOL_STRING_BUFFER_SIZE];
+		strncpy(buff, MOOS_PROTOCOL_STRING, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
+		m_pSocket->iSendMessage(buff, MOOS_PROTOCOL_STRING_BUFFER_SIZE);
 
 		//a little bit of handshaking..we need to say who we are
 		CMOOSMsg Msg(MOOS_DATA,HandShakeKey(),(char *)m_sMyName.c_str());
