@@ -66,15 +66,9 @@ CMOOSMsg::CMOOSMsg(char cMsgType, const std::string &sKey, double dfVal,
       m_cDataType(MOOS_DOUBLE),
       m_sKey(sKey),
       m_nID(-1),
-      m_dfTime(-1),
+      m_dfTime((dfTime == -1) ?  MOOSTime() : dfTime),
       m_dfVal(dfVal),
-      m_dfVal2(-1) {
-  if (dfTime == -1) {
-    m_dfTime = MOOSTime();
-  } else {
-    m_dfTime = dfTime;
-  }
-}
+      m_dfVal2(-1) {}
 
 CMOOSMsg::CMOOSMsg(char cMsgType, const std::string &sKey,
                    const std::string &sVal, double dfTime)
@@ -82,16 +76,10 @@ CMOOSMsg::CMOOSMsg(char cMsgType, const std::string &sKey,
       m_cDataType(MOOS_STRING),
       m_sKey(sKey),
       m_nID(-1),
-      m_dfTime(-1),
+      m_dfTime((dfTime == -1) ?  MOOSTime() : dfTime ),
       m_dfVal(-1),
       m_dfVal2(-1),
-      m_sVal(sVal) {
-  if (dfTime == -1) {
-    m_dfTime = MOOSTime();
-  } else {
-    m_dfTime = dfTime;
-  }
-}
+      m_sVal(sVal) {}
 
 CMOOSMsg::CMOOSMsg(char cMsgType, const std::string &sKey,
                    unsigned int nDataSize, const void *Data, double dfTime)
@@ -99,15 +87,10 @@ CMOOSMsg::CMOOSMsg(char cMsgType, const std::string &sKey,
       m_cDataType(MOOS_BINARY_STRING),
       m_sKey(sKey),
       m_nID(-1),
-      m_dfTime(-1),
+      m_dfTime((dfTime == -1) ?  MOOSTime() : dfTime),
       m_dfVal(-1),
       m_dfVal2(-1) {
   m_sVal.assign((char *)Data, nDataSize);
-  if (dfTime == -1) {
-    m_dfTime = MOOSTime();
-  } else {
-    m_dfTime = dfTime;
-  }
 }
 
 bool CMOOSMsg::operator == (const CMOOSMsg & M) const
