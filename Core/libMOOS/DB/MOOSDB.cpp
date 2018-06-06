@@ -1208,7 +1208,8 @@ void CMOOSDB::UpdateSummaryVar()
         switch(p->second.m_cDataType)
         {
             case MOOS_DOUBLE:
-                ss<<p->second.m_dfVal<<" ";break;
+                ss<<p->second.m_dfVal;
+                break;
             case MOOS_STRING:
             {
                 unsigned int s = p->second.m_sVal.size();
@@ -1224,16 +1225,15 @@ void CMOOSDB::UpdateSummaryVar()
                 unsigned int s = p->second.m_sVal.size();
                 std::string bss;
                 if(s<1024)
-                    bss = MOOSFormat("*binary* %-4d B  ",s);
+                    bss = MOOSFormat("*binary* %-4d B",s);
                 else if(s<1024*1024)
-                    bss = MOOSFormat("*binary* %.3f KB ",s/(1024.0));
+                    bss = MOOSFormat("*binary* %.3f KB",s/(1024.0));
                 else
-                    bss = MOOSFormat("*binary* %.3f MB ",s/(1024.0*1024.0));
+                    bss = MOOSFormat("*binary* %.3f MB",s/(1024.0*1024.0));
 
                 ss<<bss;
                 break;
             }
-
         }
 
 
