@@ -1208,7 +1208,6 @@ void CMOOSDB::UpdateSummaryVar()
         ss<<std::left<<std::setw(20);
         switch(p->second.m_cDataType)
         {
-            ss<<std::left<<std::setw(25);
             case MOOS_DOUBLE:
                 ss<<p->second.m_dfVal<<" ";break;
             case MOOS_STRING:
@@ -1221,7 +1220,6 @@ void CMOOSDB::UpdateSummaryVar()
 
                 break;
             }
-                ss<<p->second.m_sVal<<" ";break;
             case MOOS_BINARY_STRING:
             {
                 unsigned int s = p->second.m_sVal.size();
