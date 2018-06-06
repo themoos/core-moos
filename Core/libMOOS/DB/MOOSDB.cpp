@@ -1205,7 +1205,6 @@ void CMOOSDB::UpdateSummaryVar()
         ss<<std::left<<std::setw(2);
         ss<<p->second.m_cDataType<<" ";
 
-        ss<<std::left<<std::setw(20);
         switch(p->second.m_cDataType)
         {
             case MOOS_DOUBLE:
