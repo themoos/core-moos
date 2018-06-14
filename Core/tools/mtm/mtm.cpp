@@ -38,11 +38,11 @@ class MonitorTheMOOS :  public CMOOSApp
 
             if(known_.find(sVar)==known_.end())
             {
-                std::cerr<<MOOS::ConsoleColours::Magenta();
+                std::cout<<MOOS::ConsoleColours::Magenta();
             }
             else if (known_[sVar]!=sLine)
             {
-                std::cerr<<MOOS::ConsoleColours::Green();
+                std::cout<<MOOS::ConsoleColours::Green();
             }
             else if(live_only_)
             {
@@ -58,7 +58,7 @@ class MonitorTheMOOS :  public CMOOSApp
             known_[sVar]=sLine;
 
         }
-        std::cout<<"\n";
+        std::cout<<std::endl;
         return true;
     }
 
