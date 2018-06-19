@@ -31,7 +31,8 @@
 #ifndef PROCINFO_H_
 #define PROCINFO_H_
 
-#include <memory>
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
+
 /*
  * simple class which estimates CPU usage for the calling process.
  */
@@ -62,7 +63,7 @@ public:
 
 private:
 	class Impl;
-	std::auto_ptr<Impl> Impl_;
+	MOOS::ScopedPtr<Impl> Impl_;
 };
 
 }

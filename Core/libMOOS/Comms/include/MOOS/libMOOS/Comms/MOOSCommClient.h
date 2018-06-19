@@ -39,6 +39,7 @@
 
 #include "MOOS/libMOOS/Utils/MOOSLock.h"
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 #include "MOOS/libMOOS/Utils/Macros.h"
 #include "MOOS/libMOOS/Comms/MOOSCommObject.h"
 #include "MOOS/libMOOS/Comms/ActiveMailQueue.h"
@@ -592,7 +593,7 @@ protected:
     bool m_bDoLocalTimeCorrection;
     
     /** Skew filter keeps track of clock skew with server */
-    std::auto_ptr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
+    MOOS::ScopedPtr< MOOS::CMOOSSkewFilter > m_pSkewFilter;
     
     /**
      * list of names of active mail queues for each message name
