@@ -152,7 +152,7 @@ int XPCTcpSocket::iSendMessage(const void*_vMessage, int _iMessageSize)
     if ((iNumBytes = send(iSocket, (char *)_vMessage, _iMessageSize, 0)) ==
         -1)
 #else
-		if ((iNumBytes = send(iSocket, _vMessage, _iMessageSize, 0)) ==
+        if ((iNumBytes = send(iSocket, _vMessage, _iMessageSize, 0)) ==
 			-1)
 #endif		
     {

@@ -636,8 +636,7 @@ bool CMOOSDB::OnRxPkt(const std::string & sClient,MOOSMSG_LIST & MsgListRx,MOOSM
             
             assert(q!=m_HeldMailMap.end());
         }
-        
-        
+                
         if(q!=m_HeldMailMap.end())
         {
             //MOOSTrace("%f OnRxPkt %d messages held for client %s\n",MOOSTime(),q->second.size(),sClient.c_str());
@@ -871,12 +870,9 @@ bool    CMOOSDB::AddMessageToClientBox(const string &sClient,CMOOSMsg & Msg)
     }
     
     //q->second is now a reference to a list of messages that will be
-    //sent to sClient the next time it calls into the database...
-    
+    //sent to sClient the next time it calls into the database...   
     q->second.push_back(Msg);
     
-    //MOOSTrace("%d messages held for client %s\n",q->second.size(),sClient.c_str());
-
     return true;
 }
 

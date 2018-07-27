@@ -36,6 +36,14 @@
 //! Implements a cross platform thread*/
 class CMOOSThread
 {
+
+#ifdef _WIN32
+    typedef unsigned long thread_id;
+#else
+    typedef  pthread_t thread_id;
+#endif
+
+
 private:
     //! t_pfnWorkerFunc is a pointer to a thread worker function
     typedef bool (*t_pfnWorkerFunc) (void *pThreadData);
@@ -168,6 +176,10 @@ public:
         return true;
     }
     
+    //Get Native Thread Handle
+    thread_id GetNativeThreadHandle(){
+        return m_nThreadID;
+    }
     
     
     // Requests for the running thread to quit, and sleeps until
@@ -298,14 +310,16 @@ private:
 private:
     
     CMOOSLock m_lock;
+
+
     
 #ifdef _WIN32
     HANDLE m_hThread;
-    unsigned long m_nThreadID;
+    thread_id  m_nThreadID;
 #endif
 	
 #ifndef _WIN32
-	pthread_t m_nThreadID;
+    thread_id m_nThreadID;
 #endif
 
     ////////////////

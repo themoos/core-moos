@@ -483,6 +483,7 @@ bool CMOOSCommServer::ListenLoop()
 			{
 				pNewSocket->vSetRecieveBuf(m_nReceiveBufferSizeKB*1024);
 				pNewSocket->vSetSendBuf(m_nSendBufferSizeKB*1024);
+
 			}
 			catch(  XPCException & e)
 			{

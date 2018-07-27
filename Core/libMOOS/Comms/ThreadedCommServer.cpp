@@ -34,6 +34,7 @@
  *      Author: pnewman
  */
 
+#include <signal.h>
 
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -223,8 +224,8 @@ bool ThreadedCommServer::ServerLoop()
 	//eternally look at our incoming work list....
 	while(!m_ServerThread.IsQuitRequested())
     {
-        ClientThreadSharedData SDFromClient;
 
+        ClientThreadSharedData SDFromClient;
 
         if(m_bPrintHeartBeat && MOOS::Time()-last_heart_beat>kHeartBeatPrintPeriod){
             last_heart_beat = MOOS::Time();
@@ -256,7 +257,6 @@ bool ThreadedCommServer::ServerLoop()
         }
 
     }
-
     return true;
 
 }
@@ -416,10 +416,7 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                     	if(MsgLstTx.size()==0)
                     		continue;
 
-                    	//gPrinter.Print("sending message to "+q->first);
-
-        				//std::cerr<<"*pushing*  "<<MsgLstTx.size()<<" messages for "<<sWho<<"\n";
-
+                    	//gPrinter.Print("sending message to "+q->first);                      
 
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
@@ -506,6 +503,7 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 {
 
 
+    std::cerr<<"StopAndCleanUpClientThread\n";
 
 	//use this name to get the thread which is doing our work
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
@@ -557,6 +555,17 @@ ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcp
 			_dfClientTimeout(dfClientTimeout),
 			_bBoostThread(bBoost)
 {
+
+    struct timeval tv;
+    tv.tv_sec = 8;
+    tv.tv_usec = 0;
+    setsockopt(_ClientSocket.iGetSocketFd(),
+               SOL_SOCKET,
+               SO_SNDTIMEO,
+               &tv,
+               sizeof(struct timeval));
+
+
     _Worker.Initialise(RunEntry,this);
     _Worker.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
 
@@ -687,7 +696,7 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
     if(IsAsynchronous())
     {
-	    _SharedDataOutgoing.Push(SD);
+        _SharedDataOutgoing.Push(SD);
     }
 
     return true;
@@ -704,9 +713,17 @@ bool ThreadedCommServer::ClientThread::Kill()
 	    //wait for it to stop..
 	    _SharedDataOutgoing.Push(QuitInstruction);
 
-		if(!_Writer.Stop())
-			return false;
-	}
+        //this is some old skoool mechanics here
+        //which ensure the IO thread will always be
+        //unblocked. THis was added to catch the case of
+        //a hald closed socket (for example when remote
+        //client is suspended
+        pthread_kill(_Writer.GetNativeThreadHandle(),SIGUSR1);
+
+//		if(!_Writer.Stop())
+//			return false;
+
+    }
 
     if(!_Worker.Stop())
     	return false;
@@ -737,8 +754,22 @@ bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & Out
     return true;
 }
 
+//-----------------------------------------------------------------------------
+void SIGUSR1SignalHandler(int , siginfo_t *, void *)
+{
+    gPrinter.SimplyPrintTimeAndMessage("Hard exit of ThreadedCommServer::ClientThread");
+    pthread_exit(0);
+}
+
+
 bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 {
+
+    struct sigaction act;
+    memset(&act, 0, sizeof(act));
+    act.sa_sigaction = SIGUSR1SignalHandler;
+    act.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &act, NULL);
 
     bool bResult = true;
 
@@ -754,9 +785,11 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 		{
 			ClientThreadSharedData SDDownChain;
 
+            //std::cerr<<"WaitForPush \n";
 			if(_SharedDataOutgoing.Size()==0)
 			{
-				_SharedDataOutgoing.WaitForPush();
+                if(!_SharedDataOutgoing.WaitForPush(1000))
+                    continue;
 			}
 
 			_SharedDataOutgoing.Pull(SDDownChain);

@@ -69,6 +69,7 @@ CMOOSCommObject::CMOOSCommObject()
 #endif
 
 
+
 }
 
 CMOOSCommObject::~CMOOSCommObject()
