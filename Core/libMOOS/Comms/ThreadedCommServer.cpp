@@ -503,8 +503,6 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 {
 
 
-    std::cerr<<"StopAndCleanUpClientThread\n";
-
 	//use this name to get the thread which is doing our work
     std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
 
@@ -707,12 +705,14 @@ bool ThreadedCommServer::ClientThread::Kill()
         //which ensure the IO thread will always be
         //unblocked. THis was added to catch the case of
         //a hald closed socket (for example when remote
-        //client is suspended
+        //client is suspended. Currently only suported in unix land
+        //I'm sorry to say
+#ifndef _WIN32
         pthread_kill(_Writer.GetNativeThreadHandle(),SIGUSR1);
-
-//		if(!_Writer.Stop())
-//			return false;
-
+#else
+        if(!_Writer.Stop())
+            return false;
+#endif
     }
 
     if(!_Worker.Stop())
@@ -744,22 +744,26 @@ bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & Out
     return true;
 }
 
+
 //-----------------------------------------------------------------------------
+#ifndef _WIN32
 void SIGUSR1SignalHandler(int , siginfo_t *, void *)
 {
     gPrinter.SimplyPrintTimeAndMessage("Hard exit of ThreadedCommServer::ClientThread");
     pthread_exit(0);
 }
-
+#endif
 
 bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 {
 
+#ifndef _WIN32
     struct sigaction act;
     memset(&act, 0, sizeof(act));
     act.sa_sigaction = SIGUSR1SignalHandler;
     act.sa_flags = SA_SIGINFO;
     sigaction(SIGUSR1, &act, NULL);
+#endif
 
     bool bResult = true;
 
