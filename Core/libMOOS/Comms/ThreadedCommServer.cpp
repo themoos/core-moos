@@ -556,16 +556,6 @@ ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcp
 			_bBoostThread(bBoost)
 {
 
-    struct timeval tv;
-    tv.tv_sec = 8;
-    tv.tv_usec = 0;
-    setsockopt(_ClientSocket.iGetSocketFd(),
-               SOL_SOCKET,
-               SO_SNDTIMEO,
-               &tv,
-               sizeof(struct timeval));
-
-
     _Worker.Initialise(RunEntry,this);
     _Worker.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
 
