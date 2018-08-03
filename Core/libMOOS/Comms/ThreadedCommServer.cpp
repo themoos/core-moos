@@ -46,9 +46,6 @@
 #include <iterator>
 #include <algorithm>
 
-#ifndef _WIN32
-    #include <sys/signal.h>
-#endif
 
 #ifdef _WIN32
 #define INVALID_SOCKET_SELECT WSAEINVAL
@@ -747,15 +744,6 @@ bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & Out
     return true;
 }
 
-
-//-----------------------------------------------------------------------------
-#ifndef _WIN32
-void SIGUSR1SignalHandler(int , siginfo_t *, void *)
-{
-    gPrinter.SimplyPrintTimeAndMessage("Hard exit of ThreadedCommServer::ClientThread");
-    pthread_exit(0);
-}
-#endif
 
 bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 {
