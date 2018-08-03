@@ -314,7 +314,8 @@ bool CMOOSCommObject::SendPkt(XPCTcpSocket *pSocket, CMOOSCommPkt &PktTx)
     }
     
     if(nSent!=PktTx.GetStreamLength())
-    {                
+    {
+        std::cerr<<" throwing exception in SendPkt\n";
         throw CMOOSException("CMOOSCommObject::SendPkt() Failed Tx");
     }
 

@@ -122,19 +122,14 @@ protected:
          * @param pParam (a cunningly disguised instance pointer
          * @return
          */
-        static bool RunEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> Run();}
+        static bool ReadEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> AsynchronousReadLoop();}
         static bool WriteEntry(void * pParam) {  return  ( (ClientThread*)pParam) -> AsynchronousWriteLoop();}
-
-
-
-
 
         /**
          * here is the main business of the day - this does the reading and writing in turn
          * @return should not return unless socket closes..
          */
-        bool Run();
-
+        bool AsynchronousReadLoop();
 
         bool AsynchronousWriteLoop();
 
@@ -144,6 +139,8 @@ protected:
          * @return tru on success
          */
         bool SendToClient(ClientThreadSharedData & OutGoing);
+
+        bool SelectWrite(ClientThreadSharedData & SDOutGoing);
 
 
         bool HandleClientWrite();
@@ -157,7 +154,7 @@ protected:
 
         double GetConsolidationTime();
 
-        bool Kill();
+        std::string GetClientName(){ return _sClientName;};
 
         bool Start();
 
@@ -165,10 +162,11 @@ protected:
 
 
         //a thread object which will start the Run() method
-        CMOOSThread _Worker;
+        CMOOSThread _Reader;
         CMOOSThread _Writer;
 
 
+        bool Kill();
 
 
         //what is the name of the client we are representing?
@@ -197,10 +195,10 @@ protected:
 
         std::vector<unsigned char  > _IncomingStorage;
         std::vector<unsigned char  > _OutgoingStorage;
-
-
-
     };
+
+    typedef Poco::SharedPtr<ClientThread> SharedClientThread_t;
+
 
 
     /** Called when a new client connects. Performs handshaking and adds new socket to m_ClientSocketList
@@ -232,9 +230,15 @@ protected:
 
 		//all connected clients will push the received Pkts into this list....
 		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
+        typedef std::map<std::string,SharedClientThread_t> ClientThreadsMap;
+        ClientThreadsMap m_ClientThreads;
 
-		std::map<std::string,ClientThread*> m_ClientThreads;
+        typedef SafeList<SharedClientThread_t> SafeClientThreadsList;
+        SafeClientThreadsList _OldClientThreadsToDestroy;
 
+        CMOOSThread _WasteDisposal;
+        static bool WasteDisposalEntry(void * pParam) {  return  ( (ThreadedCommServer*)pParam) -> WasteDisposalLoop();}
+        virtual bool WasteDisposalLoop();
 
 };
 

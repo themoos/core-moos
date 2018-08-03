@@ -107,6 +107,9 @@ public:
     }
     
     
+    inline void RequestQuit(){
+        SetQuitFlag(true);
+    }
     
     inline bool IsQuitRequested()
     {

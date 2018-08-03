@@ -59,16 +59,18 @@
 #define INVALID_SOCKET_SELECT EBADF
 #endif
 
+#define SOCKET_WRITE_TIMEOUT_SECONDS 6
 
 namespace MOOS
 {
 
-ThreadPrint gPrinter(std::cout);
+ThreadPrint gPrinter(std::cerr);
 
 
 ThreadedCommServer::ThreadedCommServer()
 {
-    // TODO Auto-generated constructor stub
+    _WasteDisposal.Initialise(WasteDisposalEntry,this);
+    _WasteDisposal.Start();
 }
 
 ThreadedCommServer::~ThreadedCommServer()
@@ -92,18 +94,10 @@ bool ThreadedCommServer::Stop()
        m_pListenSocket = NULL;
    }
 
-
    //then pull the plug on the loop which will spot clients disconnecting
    if(m_ServerThread.IsThreadRunning())
        m_ServerThread.Stop();
 
-   //now shut down each of the client threads in turn
-    std::map<std::string,ClientThread*>::iterator q;
-    for(q=m_ClientThreads.begin();q!=m_ClientThreads.end();++q)
-    {
-        q->second->Kill();
-        delete q->second;
-    }
     m_ClientThreads.clear();
 
     //maybe the base class has other business
@@ -143,30 +137,12 @@ bool ThreadedCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
 bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,const std::string & sName)
 {
 
-    std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
-
+    ClientThreadsMap::iterator q = m_ClientThreads.find(sName);
 
     if(q != m_ClientThreads.end() )
     {
-        ClientThread* pExistingClientThread = q->second;
-
-        if(pExistingClientThread)
-        {
-            MOOSTrace("worrying condition ::AddAndStartClientThread() killing an existing client thread");
-
-            //stop the thread
-            pExistingClientThread->Kill();
-
-            //free up the heap (old skool - good grief)
-            delete pExistingClientThread;
-
-            //remove from map
-            m_ClientThreads.erase(q);
-        }
-        else
-        {
-            return MOOSFail("logical error ::AddAndStartClientThread() NULL thread pointer");
-        }
+       gPrinter.SimplyPrintTimeAndMessage("logical error starting and exisitng thread\n");
+       return false;
     }
 
     //make a new client - and show it where to put data and how to talk to a client
@@ -185,7 +161,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     }
 
 
-    ClientThread* pNewClientThread =  new  ClientThread(sName,
+    SharedClientThread_t pNewClientThread =  new  ClientThread(sName,
     		NewClientSocket,
     		m_SharedDataListFromClient,
     		bAsync,
@@ -196,9 +172,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     //add to map
     m_ClientThreads[sName] = pNewClientThread;
 
-
     return pNewClientThread->Start();
-
 
 }
 
@@ -285,13 +259,13 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
             std::string sWho = SDFromClient._sClientName;
 
             //first find the client object
-			std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sWho);
+            ClientThreadsMap::iterator q = m_ClientThreads.find(sWho);
 			if(q == m_ClientThreads.end())
 			{
 			   return MOOSFail("logical error - FIX ME!");
 			}
 
-			ClientThread* pClient = q->second;
+            SharedClientThread_t pClient = q->second;
 
             if(m_bQuiet)
                 InhibitMOOSTraceInThisThread(false);
@@ -467,7 +441,7 @@ bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 
 
     //we need to get the socket this thread is working on
-    std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(SD._sClientName);
+    ClientThreadsMap::iterator q = m_ClientThreads.find(SD._sClientName);
 
     //we need to point the base class focus socket at this
     m_pFocusSocket = &(q->second->GetSocket());
@@ -475,9 +449,7 @@ bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
     //now we can stop and clean up the thread
     StopAndCleanUpClientThread(SD._sClientName);
 
-
     SOCKETLIST::iterator p = std::find(m_ClientSocketList.begin(),m_ClientSocketList.end(),m_pFocusSocket);
-
 
     //now call the base class operation - this cleans down the socket from the
     //base class select
@@ -493,7 +465,6 @@ bool ThreadedCommServer::OnClientDisconnect(ClientThreadSharedData &SD)
 
 bool ThreadedCommServer::OnClientDisconnect()
 {
-
 	return BASE::OnClientDisconnect();
 }
 
@@ -504,25 +475,58 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 
 
 	//use this name to get the thread which is doing our work
-    std::map<std::string,ClientThread*>::iterator q = m_ClientThreads.find(sName);
-
+    ClientThreadsMap::iterator q = m_ClientThreads.find(sName);
 
     if(q==m_ClientThreads.end())
         return MOOSFail("runtime error ThreadedCommServer::StopAndCleanUpClientThread - cannot figure out worker thread");
 
     //stop the thread and wait for it to return
-    ClientThread* pWorker = q->second;
-    if(!pWorker->Kill())
-    {
-    	std::cerr<<"failed to kill a client - serious problem\n";
-    	throw std::runtime_error("failed to kill worker");
-    }
+    gPrinter.SimplyPrintTimeAndMessage("StopAndCleanUpClientThread starts");
 
     //remove any reference to this worker thread
+    _OldClientThreadsToDestroy.Push(q->second);
     m_ClientThreads.erase(q);
-    delete pWorker;
+    gPrinter.SimplyPrintTimeAndMessage("StopAndCleanUpClientThread completes");
     return true;
 }
+
+
+
+bool ThreadedCommServer::WasteDisposalLoop(){
+    //eternally look at our incoming work list....
+    while(!_WasteDisposal.IsQuitRequested())
+    {
+        std::string thread_name;
+        if(_OldClientThreadsToDestroy.WaitForPush(1000)){
+            {
+                //local scaope
+                SharedClientThread_t thread_to_delete;
+                _OldClientThreadsToDestroy.Pull(thread_to_delete);
+                thread_name=thread_to_delete->GetClientName();
+
+                //this is purely here to allow a bit of terminal IO formating
+                //to have a chance of looking good
+                MOOS::Pause(1000);
+
+                std::string clue = MOOSFormat("dead thread collection of %s",
+                                              thread_name.c_str());
+
+                gPrinter.SimplyPrintTimeAndMessage(clue);
+            }
+
+
+            gPrinter.SimplyPrintTimeAndMessage(
+                        MOOSFormat("deleted client thread for \"%s\" safely ",thread_name.c_str()) );
+
+
+        }
+
+
+    }
+
+    return true;
+}
+
 
 bool ThreadedCommServer::SupportsAsynchronousClients()
 {
@@ -540,6 +544,7 @@ bool ThreadedCommServer::TimerLoop()
 
 ThreadedCommServer::ClientThread::~ClientThread()
 {
+    gPrinter.SimplyPrintTimeAndMessage("~::ClientThread "+GetClientName());
 	Kill();
 }
 
@@ -554,20 +559,28 @@ ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcp
 			_bBoostThread(bBoost)
 {
 
-    _Worker.Initialise(RunEntry,this);
-    _Worker.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
+
+    struct timeval timeout;
+    timeout.tv_sec = SOCKET_WRITE_TIMEOUT_SECONDS;
+    timeout.tv_usec = 0;
+
+    setsockopt (_ClientSocket.iGetSocketFd(),
+                SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
+
+
+    _Reader.Initialise(ReadEntry,this);
+    _Reader.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
 
     if(IsAsynchronous())
     {
     	_Writer.Initialise(WriteEntry,this);
     	_Writer.Name("ThreadedCommServer::ClientThread::Writer::"+sName);
-
     }
 }
 
 
 
-bool ThreadedCommServer::ClientThread::Run()
+bool ThreadedCommServer::ClientThread::AsynchronousReadLoop()
 {
 
 
@@ -588,7 +601,7 @@ bool ThreadedCommServer::ClientThread::Run()
     	MOOS::BoostThisThread();
     }
 
-    while(!_Worker.IsQuitRequested())
+    while(!_Reader.IsQuitRequested())
     {
 
         // The socket file descriptor set is cleared and the socket file
@@ -693,37 +706,27 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
 bool ThreadedCommServer::ClientThread::Kill()
 {
-
     ClientThreadSharedData QuitInstruction("",ClientThreadSharedData::STOP_THREAD);
+
+    gPrinter.SimplyPrintTimeAndMessage("ClientThread::Kill() starts");
 
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
 	    _SharedDataOutgoing.Push(QuitInstruction);
-
-        //this is some old skoool mechanics here
-        //which ensure the IO thread will always be
-        //unblocked. THis was added to catch the case of
-        //a hald closed socket (for example when remote
-        //client is suspended. Currently only suported in unix land
-        //I'm sorry to say
-#ifndef _WIN32
-        pthread_kill(_Writer.GetNativeThreadHandle(),SIGUSR1);
-#else
-        if(!_Writer.Stop())
-            return false;
-#endif
+        _Writer.Stop();
     }
 
-    if(!_Worker.Stop())
-    	return false;
+    _Reader.Stop();
+
+    gPrinter.SimplyPrintTimeAndMessage("ClientThread::Kill() completes");
 
     return true;
 }
 
 bool ThreadedCommServer::ClientThread::Start()
 {
-    if(! _Worker.Start())
+    if(! _Reader.Start())
     	return false;
 
     if(IsAsynchronous())
@@ -756,30 +759,14 @@ void SIGUSR1SignalHandler(int , siginfo_t *, void *)
 
 bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 {
-
-#ifndef _WIN32
-    struct sigaction act;
-    memset(&act, 0, sizeof(act));
-    act.sa_sigaction = SIGUSR1SignalHandler;
-    act.sa_flags = SA_SIGINFO;
-    sigaction(SIGUSR1, &act, NULL);
-#endif
-
     bool bResult = true;
 
     try
     {
-        if(_bBoostThread)
-        {
-        	MOOS::BoostThisThread();
-        }
-
 
 		while(!_Writer.IsQuitRequested())
 		{
 			ClientThreadSharedData SDDownChain;
-
-            //std::cerr<<"WaitForPush \n";
 			if(_SharedDataOutgoing.Size()==0)
 			{
                 if(!_SharedDataOutgoing.WaitForPush(1000))
@@ -804,35 +791,25 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				//do normal writing
 				case ClientThreadSharedData::PKT_WRITE:
 				{
-
-					if(SDDownChain._pPkt.isNull())
-					{
-						std::cerr<<"logical error"<< MOOSHERE;
-						return false;
-					}
 					//send packet to client
-					SendPkt(&_ClientSocket,*SDDownChain._pPkt);
+                    SendPkt(&_ClientSocket,*SDDownChain._pPkt);
 					break;
 				}
-				default:
-				{
-					//we have no expectation of this signal
-					MOOSTrace("logical error %s", MOOSHERE);
-					return false;
-				}
+            default:
+                break;
 			}
 		}
     }
     catch (const CMOOSException & e)
 	{
-	   MOOSTrace("CMOOSCommServer::ClientThread::AsynchronousWriteLoop() Exception: %s\n", e.m_sReason);
-	   bResult = false;
+       gPrinter.SimplyPrintTimeAndMessage("AsynchronousWriteLoop() catches exception and exits");
+       return false;
 	}
-
-	//std::cout<<"Async writer "<<_sClientName<<" quits after thread quit requested\n";
-
     return bResult;
 }
+
+
+
 
 bool ThreadedCommServer::ClientThread::HandleClientWrite()
 {
@@ -852,9 +829,7 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
         	throw std::runtime_error("failed packet read and no exception handled");
         }
 
-
 		_ClientSocket.SetReadTime(MOOS::Time());
-
 
         //push this data back to the central thread
         _SharedDataIncoming.Push(SDUpChain);
