@@ -94,7 +94,7 @@ public:
     
     
     bool Initialise(t_pfnWorkerFunc pfnThreadFunc, void *pThreadData)
-    {
+    {        
         m_lock.Lock();
         {
             m_pfnThreadFunc  = pfnThreadFunc;
@@ -272,10 +272,12 @@ public:
 private:
     
     void SetQuitFlag(bool bState) {
+        MOOS::ScopedLock lock(m_APILock);
         m_bQuitRequested = bState;
     }
     
     void SetRunningFlag(bool bState) {
+        MOOS::ScopedLock lock(m_APILock);
         m_bRunning = bState;
     }
     
@@ -284,10 +286,12 @@ private:
     }
 
     bool GetQuitFlag() {
+        MOOS::ScopedLock lock(m_APILock);
         return  m_bQuitRequested;
     }
     
     bool GetRunningFlag() {
+        MOOS::ScopedLock lock(m_APILock);
         return  m_bRunning;
     }
     
@@ -313,6 +317,7 @@ private:
 private:
     
     CMOOSLock m_lock;
+    CMOOSLock m_APILock;
 
 
     
@@ -348,6 +353,10 @@ private:
     void *m_pThreadData;
     
     std::string m_sName;
+
+
+
+
 
 };
 #endif

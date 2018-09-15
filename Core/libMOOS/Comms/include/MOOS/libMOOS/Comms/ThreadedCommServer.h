@@ -147,14 +147,14 @@ protected:
 
         bool OnClientDisconnect();
 
-        XPCTcpSocket & GetSocket(){return _ClientSocket;};
+        XPCTcpSocket & GetSocket(){return m_ClientSocket;};
 
-        bool IsSynchronous(){return !_bAsynchronous;};
-        bool IsAsynchronous(){return _bAsynchronous;};
+        bool IsSynchronous(){return !m_bAsynchronous;};
+        bool IsAsynchronous(){return m_bAsynchronous;};
 
         double GetConsolidationTime();
 
-        std::string GetClientName(){ return _sClientName;};
+        const std::string & GetClientName(){ return m_sClientName;};
 
         bool Start();
 
@@ -162,42 +162,41 @@ protected:
 
 
         //a thread object which will start the Run() method
-        CMOOSThread _Reader;
-        CMOOSThread _Writer;
+        CMOOSThread m_Reader;
+        CMOOSThread m_Writer;
 
-
+        //terminates this client and constituent threads
         bool Kill();
 
-
         //what is the name of the client we are representing?
-        std::string _sClientName;
+        std::string m_sClientName;
 
         //we are simply given a reference to the socket via which the client is talking at constr
-        XPCTcpSocket & _ClientSocket;
+        XPCTcpSocket & m_ClientSocket;
 
         //note that this a reference to a list given to us (we don't own it) at construction
-        ThreadedCommServer::SHARED_PKT_LIST &  _SharedDataIncoming;
+        ThreadedCommServer::SHARED_PKT_LIST &  m_SharedDataIncoming;
 
         //note that this one we own - its private to us
-        ThreadedCommServer::SHARED_PKT_LIST _SharedDataOutgoing;
+        ThreadedCommServer::SHARED_PKT_LIST m_SharedDataOutgoing;
 
         //is the client asynchronous?
-        bool _bAsynchronous;
+        bool m_bAsynchronous;
 
         //what consolidation period are we asking clients to invoke?
-        double _dfConsolidationPeriod;
+        double m_dfConsolidationPeriod;
 
         //how long can we tolerate silence
-        double _dfClientTimeout;
+        double m_dfClientTimeout;
 
         //are we asked to boost prioirty
-        bool _bBoostThread;
+        bool m_bBoostThread;
 
-        std::vector<unsigned char  > _IncomingStorage;
-        std::vector<unsigned char  > _OutgoingStorage;
+        std::vector<unsigned char  > m_IncomingStorage;
+        std::vector<unsigned char  > m_OutgoingStorage;
     };
 
-    typedef Poco::SharedPtr<ClientThread> SharedClientThread_t;
+    typedef Poco::SharedPtr<ClientThread> SharedClientThread;
 
 
 
@@ -230,14 +229,18 @@ protected:
 
 		//all connected clients will push the received Pkts into this list....
 		SafeList<ClientThreadSharedData> m_SharedDataListFromClient;
-        typedef std::map<std::string,SharedClientThread_t> ClientThreadsMap;
+        typedef std::map<std::string,SharedClientThread> ClientThreadsMap;
         ClientThreadsMap m_ClientThreads;
 
-        typedef SafeList<SharedClientThread_t> SafeClientThreadsList;
-        SafeClientThreadsList _OldClientThreadsToDestroy;
+        typedef SafeList<SharedClientThread> SafeClientThreadsList;
+        SafeClientThreadsList m_OldClientThreadsToDestroy;
 
-        CMOOSThread _WasteDisposal;
-        static bool WasteDisposalEntry(void * pParam) {  return  ( (ThreadedCommServer*)pParam) -> WasteDisposalLoop();}
+        //do not decelare m_WasteDisposal before m_OldClientThreadsToDestroy
+        //as we have to have the thread being destroyed before the resource it
+        //is working on.
+        CMOOSThread m_WasteDisposal;
+        static bool WasteDisposalEntry(void * pParam) {
+            return   static_cast<ThreadedCommServer*>(pParam) -> WasteDisposalLoop();}
         virtual bool WasteDisposalLoop();
 
 };

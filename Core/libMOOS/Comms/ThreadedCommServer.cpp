@@ -34,7 +34,9 @@
  *      Author: pnewman
  */
 
-#include <signal.h>
+#include <csignal>
+#include <ctime>
+
 
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Comms/XPCTcpSocket.h"
@@ -56,18 +58,25 @@
 #define INVALID_SOCKET_SELECT EBADF
 #endif
 
-#define SOCKET_WRITE_TIMEOUT_SECONDS 6
+//#define SOCKET_WRITE_TIMEOUT_SECONDS 6
+
+
+namespace {
+const std::time_t kSocketWriteTimeoutSeconds = 6;
+const int kExpectedTimeForThreadToDieMilliseconds = 1000;
+MOOS::ThreadPrint gPrinter(std::cerr);
+}
+
 
 namespace MOOS
 {
 
-ThreadPrint gPrinter(std::cerr);
 
 
 ThreadedCommServer::ThreadedCommServer()
 {
-    _WasteDisposal.Initialise(WasteDisposalEntry,this);
-    _WasteDisposal.Start();
+    m_WasteDisposal.Initialise(WasteDisposalEntry,this);
+    m_WasteDisposal.Start();
 }
 
 ThreadedCommServer::~ThreadedCommServer()
@@ -138,7 +147,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
 
     if(q != m_ClientThreads.end() )
     {
-       gPrinter.SimplyPrintTimeAndMessage("logical error starting and exisitng thread\n");
+       gPrinter.SimplyPrintTimeAndMessage("logical error starting and exiting thread\n");
        return false;
     }
 
@@ -158,7 +167,7 @@ bool ThreadedCommServer::AddAndStartClientThread(XPCTcpSocket & NewClientSocket,
     }
 
 
-    SharedClientThread_t pNewClientThread =  new  ClientThread(sName,
+    SharedClientThread pNewClientThread =  new  ClientThread(sName,
     		NewClientSocket,
     		m_SharedDataListFromClient,
     		bAsync,
@@ -257,12 +266,11 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
 
             //first find the client object
             ClientThreadsMap::iterator q = m_ClientThreads.find(sWho);
-			if(q == m_ClientThreads.end())
-			{
+			if(q == m_ClientThreads.end()){
 			   return MOOSFail("logical error - FIX ME!");
 			}
 
-            SharedClientThread_t pClient = q->second;
+            SharedClientThread pClient = q->second;
 
             if(m_bQuiet)
                 InhibitMOOSTraceInThisThread(false);
@@ -387,8 +395,6 @@ bool ThreadedCommServer::ProcessClient(ClientThreadSharedData &SDFromClient,MOOS
                     	if(MsgLstTx.size()==0)
                     		continue;
 
-                    	//gPrinter.Print("sending message to "+q->first);                      
-
                     	ClientThreadSharedData SDAdditionalDownStream(sWho,
                     			ClientThreadSharedData::PKT_WRITE);
 
@@ -477,12 +483,14 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
     if(q==m_ClientThreads.end())
         return MOOSFail("runtime error ThreadedCommServer::StopAndCleanUpClientThread - cannot figure out worker thread");
 
-    //stop the thread and wait for it to return
+    //mark start of clean up
     gPrinter.SimplyPrintTimeAndMessage("StopAndCleanUpClientThread starts");
 
     //remove any reference to this worker thread
-    _OldClientThreadsToDestroy.Push(q->second);
+    m_OldClientThreadsToDestroy.Push(q->second);
     m_ClientThreads.erase(q);
+
+    //mark completion of start up
     gPrinter.SimplyPrintTimeAndMessage("StopAndCleanUpClientThread completes");
     return true;
 }
@@ -491,30 +499,29 @@ bool ThreadedCommServer::StopAndCleanUpClientThread(std::string sName)
 
 bool ThreadedCommServer::WasteDisposalLoop(){
     //eternally look at our incoming work list....
-    while(!_WasteDisposal.IsQuitRequested())
-    {
+    while(!m_WasteDisposal.IsQuitRequested()) {
         std::string thread_name;
-        if(_OldClientThreadsToDestroy.WaitForPush(1000)){
+        if(m_OldClientThreadsToDestroy.WaitForPush(1000)){
             {
-                //local scaope
-                SharedClientThread_t thread_to_delete;
-                _OldClientThreadsToDestroy.Pull(thread_to_delete);
+                // This is last pointer to thread so when thiis goes out of scope
+                //it will be deleted
+                SharedClientThread thread_to_delete;
+                m_OldClientThreadsToDestroy.Pull(thread_to_delete);
                 thread_name=thread_to_delete->GetClientName();
-
-                //this is purely here to allow a bit of terminal IO formating
-                //to have a chance of looking good
-                MOOS::Pause(1000);
-
-                std::string clue = MOOSFormat("dead thread collection of %s",
-                                              thread_name.c_str());
-
-                gPrinter.SimplyPrintTimeAndMessage(clue);
             }
 
+            //this is purely here to allow a bit of terminal IO formating
+            //to have a chance of looking good
+            MOOS::Pause(kExpectedTimeForThreadToDieMilliseconds);
+
+            std::string clue = MOOSFormat("dead thread collection of %s",
+                                          thread_name.c_str());
+
+            gPrinter.SimplyPrintTimeAndMessage(clue);
 
             gPrinter.SimplyPrintTimeAndMessage(
-                        MOOSFormat("deleted client thread for \"%s\" safely ",thread_name.c_str()) );
-
+                        MOOSFormat("deleted client thread for \"%s\" safely ",
+                                   thread_name.c_str()) );
 
         }
 
@@ -541,37 +548,40 @@ bool ThreadedCommServer::TimerLoop()
 
 ThreadedCommServer::ClientThread::~ClientThread()
 {
-    gPrinter.SimplyPrintTimeAndMessage("~::ClientThread "+GetClientName());
+    gPrinter.SimplyPrintTimeAndMessage("::~ClientThread "+GetClientName());
 	Kill();
 }
 
 
 ThreadedCommServer::ClientThread::ClientThread(const std::string & sName, XPCTcpSocket & ClientSocket,SHARED_PKT_LIST & SharedDataIncoming, bool bAsync, double dfConsolidationPeriodMS,double dfClientTimeout, bool bBoost ):
-            _sClientName(sName),
-            _ClientSocket(ClientSocket),
-            _SharedDataIncoming(SharedDataIncoming),
-			_bAsynchronous(bAsync),
-			_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0),
-			_dfClientTimeout(dfClientTimeout),
-			_bBoostThread(bBoost)
+            m_sClientName(sName),
+            m_ClientSocket(ClientSocket),
+            m_SharedDataIncoming(SharedDataIncoming),
+            m_bAsynchronous(bAsync),
+            m_dfConsolidationPeriod(dfConsolidationPeriodMS/1000.0),
+            m_dfClientTimeout(dfClientTimeout),
+            m_bBoostThread(bBoost)
 {
 
 
     struct timeval timeout;
-    timeout.tv_sec = SOCKET_WRITE_TIMEOUT_SECONDS;
+    timeout.tv_sec = kSocketWriteTimeoutSeconds;
     timeout.tv_usec = 0;
 
-    setsockopt (_ClientSocket.iGetSocketFd(),
-                SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
+    char timeout_as_char_array[sizeof(timeval)];
+    memcpy(timeout_as_char_array,&timeout,sizeof(timeout));
+
+    setsockopt (m_ClientSocket.iGetSocketFd(),
+                SOL_SOCKET, SO_SNDTIMEO, timeout_as_char_array, sizeof(timeout));
 
 
-    _Reader.Initialise(ReadEntry,this);
-    _Reader.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
+    m_Reader.Initialise(ReadEntry,this);
+    m_Reader.Name("ThreadedCommServer::ClientThread::Worker::"+sName);
 
     if(IsAsynchronous())
     {
-    	_Writer.Initialise(WriteEntry,this);
-    	_Writer.Name("ThreadedCommServer::ClientThread::Writer::"+sName);
+        m_Writer.Initialise(WriteEntry,this);
+        m_Writer.Name("ThreadedCommServer::ClientThread::Writer::"+sName);
     }
 }
 
@@ -593,19 +603,19 @@ bool ThreadedCommServer::ClientThread::AsynchronousReadLoop()
     double dfLastGoodComms = MOOSLocalTime();
 
     //this is an io-bound important thread...
-    if(_bBoostThread)
+    if(m_bBoostThread)
     {
     	MOOS::BoostThisThread();
     }
 
-    while(!_Reader.IsQuitRequested())
+    while(!m_Reader.IsQuitRequested())
     {
 
         // The socket file descriptor set is cleared and the socket file
         // descriptor contained within tcpSocket is added to the file
         // descriptor set.
         FD_ZERO(&fdset);
-        FD_SET(_ClientSocket.iGetSocketFd(), &fdset);
+        FD_SET(m_ClientSocket.iGetSocketFd(), &fdset);
 
         // The select system call is set to timeout after 1 seconds with no data existing
         // on the socket. This reinitialisation has to be here, within the loop as Linux actually writes over
@@ -619,7 +629,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousReadLoop()
         // for reading.  If data is not available after 1000 useconds, select
         // returns with a value of 0.  If data is available on the socket,
         // the select returns and data can be retrieved off the socket.
-        int iSelectRet = select(_ClientSocket.iGetSocketFd() + 1,
+        int iSelectRet = select(m_ClientSocket.iGetSocketFd() + 1,
             &fdset,
             NULL,
             NULL,
@@ -640,10 +650,10 @@ bool ThreadedCommServer::ClientThread::AsynchronousReadLoop()
 
         case 0:
             //timeout...nothing to read - spin
-        	if(MOOSLocalTime(false)-dfLastGoodComms>_dfClientTimeout)
+            if(MOOSLocalTime(false)-dfLastGoodComms>m_dfClientTimeout)
         	{
         		std::cout<<MOOS::ConsoleColours::Red();
-        		std::cout<<"Disconnecting \""<<_sClientName<<"\" after "<<_dfClientTimeout<<" seconds of silence\n";
+                std::cout<<"Disconnecting \""<<m_sClientName<<"\" after "<<m_dfClientTimeout<<" seconds of silence\n";
         		std::cout<<MOOS::ConsoleColours::reset();
         		OnClientDisconnect();
         		return true;
@@ -652,7 +662,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousReadLoop()
 
         default:
             //something to read (somewhere)
-            if (FD_ISSET(_ClientSocket.iGetSocketFd(), &fdset) != 0)
+            if (FD_ISSET(m_ClientSocket.iGetSocketFd(), &fdset) != 0)
             {
                 if(!HandleClientWrite())
                 {
@@ -687,14 +697,14 @@ bool ThreadedCommServer::ClientThread::OnClientDisconnect()
 
     //prepare to send it up the chain
     CMOOSCommPkt PktRx,PktTx;
-    ClientThreadSharedData SD(_sClientName,ClientThreadSharedData::CONNECTION_CLOSED);
+    ClientThreadSharedData SD(m_sClientName,ClientThreadSharedData::CONNECTION_CLOSED);
 
     //push this data back to the central thread
-    _SharedDataIncoming.Push(SD);
+    m_SharedDataIncoming.Push(SD);
 
     if(IsAsynchronous())
     {
-        _SharedDataOutgoing.Push(SD);
+        m_SharedDataOutgoing.Push(SD);
     }
 
     return true;
@@ -710,11 +720,11 @@ bool ThreadedCommServer::ClientThread::Kill()
 	if(IsAsynchronous())
 	{
 	    //wait for it to stop..
-	    _SharedDataOutgoing.Push(QuitInstruction);
-        _Writer.Stop();
+        m_SharedDataOutgoing.Push(QuitInstruction);
+        m_Writer.Stop();
     }
 
-    _Reader.Stop();
+    m_Reader.Stop();
 
     gPrinter.SimplyPrintTimeAndMessage("ClientThread::Kill() completes");
 
@@ -723,11 +733,11 @@ bool ThreadedCommServer::ClientThread::Kill()
 
 bool ThreadedCommServer::ClientThread::Start()
 {
-    if(! _Reader.Start())
+    if(! m_Reader.Start())
     	return false;
 
     if(IsAsynchronous())
-    	if(! _Writer.Start())
+        if(! m_Writer.Start())
     		return false;
 
     return true;
@@ -735,12 +745,12 @@ bool ThreadedCommServer::ClientThread::Start()
 
 double ThreadedCommServer::ClientThread::GetConsolidationTime()
 {
-	return _dfConsolidationPeriod;
+    return m_dfConsolidationPeriod;
 }
 
 bool ThreadedCommServer::ClientThread::SendToClient(ClientThreadSharedData & OutGoing)
 {
-    _SharedDataOutgoing.Push(OutGoing);
+    m_SharedDataOutgoing.Push(OutGoing);
     return true;
 }
 
@@ -752,16 +762,16 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
     try
     {
 
-		while(!_Writer.IsQuitRequested())
+        while(!m_Writer.IsQuitRequested())
 		{
 			ClientThreadSharedData SDDownChain;
-			if(_SharedDataOutgoing.Size()==0)
-			{
-                if(!_SharedDataOutgoing.WaitForPush(1000))
+            if(m_SharedDataOutgoing.Size()==0){
+                if(!m_SharedDataOutgoing.WaitForPush(1000)){
                     continue;
+                }
 			}
 
-			_SharedDataOutgoing.Pull(SDDownChain);
+            m_SharedDataOutgoing.Pull(SDDownChain);
 
 			switch(SDDownChain._Status)
 			{
@@ -780,7 +790,7 @@ bool ThreadedCommServer::ClientThread::AsynchronousWriteLoop()
 				case ClientThreadSharedData::PKT_WRITE:
 				{
 					//send packet to client
-                    SendPkt(&_ClientSocket,*SDDownChain._pPkt);
+                    SendPkt(&m_ClientSocket,*SDDownChain._pPkt);
 					break;
 				}
             default:
@@ -807,30 +817,30 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
     {
 
         //prepare to send it up the chain
-        ClientThreadSharedData SDUpChain(_sClientName);
+        ClientThreadSharedData SDUpChain(m_sClientName);
         SDUpChain._Status = ClientThreadSharedData::PKT_READ;
 
         //read input
 
-        if(!ReadPkt(&_ClientSocket,*SDUpChain._pPkt))
+        if(!ReadPkt(&m_ClientSocket,*SDUpChain._pPkt))
         {
         	throw std::runtime_error("failed packet read and no exception handled");
         }
 
-		_ClientSocket.SetReadTime(MOOS::Time());
+        m_ClientSocket.SetReadTime(MOOS::Time());
 
         //push this data back to the central thread
-        _SharedDataIncoming.Push(SDUpChain);
+        m_SharedDataIncoming.Push(SDUpChain);
 
         if(IsSynchronous())
         {
 			//wait for data to be returned...
-            ClientThreadSharedData SDDownChain(_sClientName);
+            ClientThreadSharedData SDDownChain(m_sClientName);
 
-            if(_SharedDataOutgoing.Size()==0)
-            	_SharedDataOutgoing.WaitForPush();
+            if(m_SharedDataOutgoing.Size()==0)
+                m_SharedDataOutgoing.WaitForPush();
 
-			_SharedDataOutgoing.Pull(SDDownChain);
+            m_SharedDataOutgoing.Pull(SDDownChain);
 
 			if(SDDownChain._Status!=ClientThreadSharedData::PKT_WRITE)
 			{
@@ -839,9 +849,9 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 			}
 
 			//send packet to client
-			SendPkt(&_ClientSocket,*SDDownChain._pPkt);
+            SendPkt(&m_ClientSocket,*SDDownChain._pPkt);
 
-			if(_SharedDataOutgoing.Size()!=0)
+            if(m_SharedDataOutgoing.Size()!=0)
 			{
 				std::cerr<<"logical error ThreadedCommServer::ClientThread::HandleClientWrite\n";
 			}
