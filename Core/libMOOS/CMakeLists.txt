@@ -196,7 +196,7 @@ mark_as_advanced(TIME_WARP_AGGLOMERATION_CONSTANT)
 install(
     DIRECTORY ${INCLUDE_ROOTS}
     DESTINATION .
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx"
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.hpp"
 )
 
 # install libraries
