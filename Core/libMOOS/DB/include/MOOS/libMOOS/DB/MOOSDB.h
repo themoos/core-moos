@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "MOOS/libMOOS/Utils/ProcessConfigReader.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 
 #include "MOOS/libMOOS/Comms/CommsTypes.h"
 #include "MOOS/libMOOS/Comms/MOOSMsg.h"
@@ -151,10 +152,10 @@ private:
     HASH_MAP_TYPE<std::string,std::set< MOOS::MsgFilter > > m_ClientFilters;
 
     //pointer to a webserver if one is needed
-    std::auto_ptr<CMOOSDBHTTPServer> m_pWebServer;
+    MOOS::ScopedPtr<CMOOSDBHTTPServer> m_pWebServer;
 
     //pointer to the comms server (could be a threaded one but base class is CMOOSCommServer
-    std::auto_ptr<CMOOSCommServer> m_pCommServer;
+    MOOS::ScopedPtr<CMOOSCommServer> m_pCommServer;
 
     MOOS::MOOSDBLogger m_EventLogger;
 

@@ -53,6 +53,7 @@
 #include "MOOS/libMOOS/Utils/MOOSUtils.h"
 #include "MOOS/libMOOS/Utils/MOOSException.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedLock.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
 #include "MOOS/libMOOS/Utils/ThreadPriority.h"
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
@@ -1718,7 +1719,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	{
 		// Make a fresh skew filter
 		//m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSConditionedSkewFilter);
-		m_pSkewFilter = std::auto_ptr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
+		m_pSkewFilter = MOOS::ScopedPtr<MOOS::CMOOSSkewFilter>(new MOOS::CMOOSSkewFilter);
 		if (!m_pSkewFilter.get())
 			return false;
 	}

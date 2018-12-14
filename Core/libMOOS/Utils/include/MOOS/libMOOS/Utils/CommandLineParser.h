@@ -28,7 +28,9 @@
 
 #ifndef COMMANDLINEPARSER_H_
 #define COMMANDLINEPARSER_H_
-#include <memory>
+
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
+
 #include <vector>
 #include <string>
 #include <stdint.h>
@@ -94,7 +96,7 @@ public:
 	 */
 	bool VariableExists(const std::string & var);
 private:
-	std::auto_ptr<GetPot> pcl_;
+	MOOS::ScopedPtr<GetPot> pcl_;
 
 };
 

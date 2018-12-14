@@ -40,7 +40,7 @@
 #include "MOOS/libMOOS/MOOSVersion.h"
 #include "MOOS/libMOOS/GitVersion.h"
 #include "MOOS/libMOOS/DB/MOOSDBLogger.h"
-
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 
 
 
@@ -326,7 +326,7 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
 
 	//if either the mission file or command line have set a webserver port then launch one
 	if(nWebServerPort>0)
-		m_pWebServer = std::auto_ptr<CMOOSDBHTTPServer> (new CMOOSDBHTTPServer(GetDBPort(), nWebServerPort));
+		m_pWebServer.reset(new CMOOSDBHTTPServer(GetDBPort(), nWebServerPort));
 
 	double dfClientTimeout = 5.0;
 	m_MissionReader.GetValue("ClientTimeout",dfClientTimeout);
@@ -426,12 +426,12 @@ bool CMOOSDB::Run(int argc,  char * argv[] )
     if(bSingleThreaded)
     {
         std::cout<<MOOS::ConsoleColours::yellow()<<"warning : running in single threaded mode performance will be affected by poor networks\n"<<MOOS::ConsoleColours::reset();
-		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new CMOOSCommServer);
+        m_pCommServer.reset(new CMOOSCommServer);
     }
     else
     {
         //std::cerr<<MOOS::ConsoleColours::green()<<"running in multi-threaded mode\n"<<MOOS::ConsoleColours::reset();
-		m_pCommServer = std::auto_ptr<CMOOSCommServer> (new MOOS::ThreadedCommServer);
+        m_pCommServer.reset(new MOOS::ThreadedCommServer);
     }
 
     m_pCommServer->SetQuiet(m_bQuiet);

@@ -33,7 +33,7 @@
  */
 
 #include "MOOS/libMOOS/Utils/CommandLineParser.h"
-
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/GetPot"
 
 
@@ -61,7 +61,7 @@ CommandLineParser::CommandLineParser(int argc,  char * argv[])
 bool CommandLineParser::Open(int argc,  char * argv[])
 {
 
-	pcl_ = std::auto_ptr<GetPot>(new GetPot(argc,argv) );
+	pcl_.reset( new GetPot(argc,argv) );
 	return true;
 }
 
