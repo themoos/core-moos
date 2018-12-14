@@ -190,7 +190,7 @@ add_subdirectory(Core)
 export(
     TARGETS MOOS
     NAMESPACE MOOS::
-    FILE UseMOOS.cmake
+    FILE MOOSTargets.cmake
 )
 
 # Support existing projects that expect to find MOOS_LIBRARIES and
@@ -222,7 +222,7 @@ set(PROJECT_CONFIG_PATH "lib/cmake/MOOS")
 install(
     EXPORT MOOS
     NAMESPACE MOOS::
-    FILE UseMOOS.cmake
+    FILE MOOSTargets.cmake
     DESTINATION ${PROJECT_CONFIG_PATH}
 )
 
