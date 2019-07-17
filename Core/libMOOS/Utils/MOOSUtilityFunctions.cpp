@@ -120,8 +120,9 @@ namespace MOOS
 
 	    time_t nowtime;
 	    struct tm *nowtm;
-	    char sdate[64], stime[64],stimeall[64];
-
+	    char sdate[64], stime[32],stimeall[64]; //shrink stime so stimeall buffer
+                                                // is large enough to fit stime and usec
+                                                // and prevent compiler warning
 	    nowtime = TimeVal.tv_sec;
 	    nowtm = localtime(&nowtime);
 
