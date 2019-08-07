@@ -54,7 +54,7 @@
 using namespace std;
 
 #ifndef _WIN32
-    #include <sys/signal.h>
+    #include <signal.h>
 #endif
 
 #define TOLERABLE_SILENCE 5.0
