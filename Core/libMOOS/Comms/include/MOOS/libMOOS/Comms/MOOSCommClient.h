@@ -462,6 +462,8 @@ protected:
 
     /** true if we are connected to the server */
     bool m_bConnected;
+    /** time of the last successful connection */
+    double m_dfLastConnectionTime;
     
     /** true if we want to be able to fake sources of messages (used by playback)*/
     bool m_bFakeSource;
