@@ -122,4 +122,4 @@ bool KeyboardCapture::GetKeyboardInput(char & input)
 }
 
 
-};
+}

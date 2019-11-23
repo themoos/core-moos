@@ -174,7 +174,7 @@ namespace MOOS
 		return atof(sNum.c_str());
 	}
 
-};
+}
 
 
 void    SetMOOSSkew(double dfSkew)
