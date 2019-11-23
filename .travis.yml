@@ -28,10 +28,9 @@ matrix:
     - os: osx
       compiler: gcc
   include:
-    # Make sure that things still work OK by default on a non c++11 compiler
     - os: linux
-      dist: precise
-      env: DIST=precise # Just to provide a useful label in travis web view
+      dist: xenial
+      env: DIST=xenial # Just to provide a useful label in travis web view
     # Check that a shared libs build works
     - os: linux
       dist: trusty
