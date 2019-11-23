@@ -3,23 +3,23 @@
 //
 //   This file is part of the MOOS project
 //
-//   MOOS : Mission Oriented Operating Suite A suit of 
-//   Applications and Libraries for Mobile Robotics Research 
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
 //   Copyright (C) Paul Newman
-//    
-//   This software was written by Paul Newman at MIT 2001-2002 and 
-//   the University of Oxford 2003-2013 
-//   
-//   email: pnewman@robots.ox.ac.uk. 
-//              
+//
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
 //   http://www.gnu.org/licenses/lgpl.txt
-//          
-//   This program is distributed in the hope that it will be useful, 
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
 **/
@@ -120,8 +120,9 @@ namespace MOOS
 
 	    time_t nowtime;
 	    struct tm *nowtm;
-	    char sdate[64], stime[64],stimeall[64];
-
+	    char sdate[64], stime[32],stimeall[64]; //shrink stime so stimeall buffer
+                                                // is large enough to fit stime and usec
+                                                // and prevent compiler warning
 	    nowtime = TimeVal.tv_sec;
 	    nowtm = localtime(&nowtime);
 
@@ -251,7 +252,7 @@ double MOOSLocalTime(bool bApplyTimeWarping)
 
 #else
 	if( gbWin32HPTiming )
-	{	
+	{
 
 		static LARGE_INTEGER liStart;
 		static LARGE_INTEGER liPerformanceFreq;
@@ -260,8 +261,8 @@ double MOOSLocalTime(bool bApplyTimeWarping)
 
 		//to do - we should consider thread saftery here..
 		if(!bHPTimeInitialised)
-		{			
-		
+		{
+
 			//initialise with crude time
 			struct _timeb timebuffer;
 			_ftime( &timebuffer );
@@ -274,7 +275,7 @@ double MOOSLocalTime(bool bApplyTimeWarping)
 
 			return bApplyTimeWarping ? dfMOOSStart*gdfMOOSTimeWarp :dfMOOSStart;
 
-		
+
 		}
 		else
 		{
@@ -296,7 +297,7 @@ double MOOSLocalTime(bool bApplyTimeWarping)
 		//user has elected to use low precision win32 timing
 		struct _timeb timebuffer;
 		_ftime( &timebuffer );
-        double T = timebuffer.time + ((double)timebuffer.millitm)/1000.0; 
+        double T = timebuffer.time + ((double)timebuffer.millitm)/1000.0;
 
         return bApplyTimeWarping ? T*gdfMOOSTimeWarp : T;
 
@@ -330,7 +331,7 @@ bool SetMOOSTimeWarp(double dfWarp)
         return true;
     }
     return false;//MOOSFail("Time warp must be positive and less than %f \n",MAX_TIME_WARP);
-    
+
 }
 
 void MOOSPause(int nMS,bool bApplyTimeWarping)
@@ -343,7 +344,7 @@ void MOOSPause(int nMS,bool bApplyTimeWarping)
     double dfMilliSeconds = nMS;
     if(bApplyTimeWarping)
         dfMilliSeconds/=gdfMOOSTimeWarp;
-    
+
     timespec TimeSpec;
     TimeSpec.tv_sec     = (int)(dfMilliSeconds/1000);
     //TimeSpec.tv_nsec    = (nMS%1000) *1000000;
@@ -383,7 +384,7 @@ struct CompareInsensitive: public std::binary_function< char, char, bool >
 	{
 		return std::toupper(lhs) == std::toupper(rhs);
 	}
-    
+
 };
 
 //case insensitive find
@@ -391,10 +392,10 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 {
     if(sToken.empty())
     	return std::string::npos;
-	if(bInsensitive)
+    if(bInsensitive)
     {
         std::string::const_iterator q = std::search(
-                                              sSource.begin(), sSource.end(), 
+                                              sSource.begin(), sSource.end(),
                                               sToken.begin(), sToken.end(),
                                               CompareInsensitive());
         if(q==sSource.end())
@@ -413,7 +414,7 @@ size_t  MOOSStrFind(const std::string & sSource,const std::string & sToken,bool 
 
 bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool bInsensitive)
 {
-    
+
 	if(sTk.find(",")!=std::string::npos)
 		return false;
 
@@ -449,7 +450,7 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
     	//can we find an "="?
         if(nEqualsPos!=string::npos)
         {
-         
+
             //there should only be white space twixt token and equals
             std::string t = sStr.substr(nPos+sTk.size(),nEqualsPos-(nPos+sTk.size()));
             MOOSTrimWhiteSpace(t);
@@ -459,14 +460,14 @@ bool MOOSValFromString(string & sVal,const string & sStr,const string & sTk,bool
                 k=nPos+1;
                 continue;
             }
-            
+
             sVal="";
 
             int nCommaPos =sStr.find(',',nEqualsPos);
 
             sVal.append(sStr,nEqualsPos+1,nCommaPos-nEqualsPos-1);
             MOOSTrimWhiteSpace(sVal);
-                        
+
             return true;
         }
         else
@@ -805,20 +806,20 @@ bool MOOSValFromString(std::vector<double> &dfValVec,
 
 }
 
-bool MOOSValFromString(std::vector<unsigned int> &nValVec,                      
+bool MOOSValFromString(std::vector<unsigned int> &nValVec,
                        int &nRows,
                        int &nCols,
-                       const std::string & sStr, 
+                       const std::string & sStr,
                        const std::string & sToken,
                        bool bInsensitive)
 {
 
     size_t nPos = MOOSStrFind(sStr,sToken+'=',bInsensitive);
-    
+
     if(nPos==string::npos)
         return false;
-    
-    return MOOSVectorFromString(sStr.substr(nPos),nValVec,nRows,nCols);   
+
+    return MOOSVectorFromString(sStr.substr(nPos),nValVec,nRows,nCols);
 }
 
 
@@ -846,8 +847,8 @@ bool GetNextAlogLineByMessageName(std::istream & Input,
 								  std::string & sSource,
 								  std::string & sPayload)
 {
-	
-	while (!Input.eof()) 
+
+	while (!Input.eof())
 	{
 		std::string sLine;
 		std::getline(Input,sLine);
@@ -855,11 +856,11 @@ bool GetNextAlogLineByMessageName(std::istream & Input,
 		{
 			std::string sWhat,sWho;
 			std::stringstream ss(sLine);
-			
+
 			ss>>dfTime;
-			
+
 			ss>>sWhat;
-			
+
 			if(MOOSStrCmp(sWhat,sMessageName))
 			{
 				ss>>sSource;
@@ -878,7 +879,7 @@ double MOOS_ANGLE_WRAP(double dfAng)
         return dfAng;
 
 	// Shift so that problem is now to wrap between (0, 2*PI)
-	dfAng += PI;
+    dfAng += PI;
 
 	// Wrap
 	dfAng = fmod(dfAng, 2*PI);
@@ -888,7 +889,7 @@ double MOOS_ANGLE_WRAP(double dfAng)
 
 	// Shift back
 	return (dfAng == 0.0 ? PI : dfAng-PI);
-	
+
 	// Old version did not cope with multiple wraps
 	//return (dfAng+(dfAng>PI ? -TWO_PI :TWO_PI));
 }
@@ -956,61 +957,61 @@ string MOOSGetDate(double t)
 }
 
 
-bool MOOSWildCmp(const std::string & sPattern, const std::string & sString ) 
+bool MOOSWildCmp(const std::string & sPattern, const std::string & sString )
 {
     const char * sWild = sPattern.c_str();
     const char * sStr = sString.c_str();
     // Based on code originally written by Jack Handy
-    
+
     const char *cp = NULL, *mp = NULL;
-    
-    while ((*sStr) && (*sWild != '*')) 
+
+    while ((*sStr) && (*sWild != '*'))
     {
         //no active wild card in place
-        if ((*sWild != *sStr) && (*sWild != '?')) 
+        if ((*sWild != *sStr) && (*sWild != '?'))
         {
             //no single char wildcard in place and
             //differing characters
             return false;
         }
-        
+
         //step on in lockstep
         sWild++;
         sStr++;
     }
-    
-    while (*sStr) 
+
+    while (*sStr)
     {
-        
+
         //still more of sStr to explore
-        if (*sWild == '*') 
+        if (*sWild == '*')
         {
-            if (!*++sWild) 
+            if (!*++sWild)
             {
                 //this * was the last character in the wildcard string
-                //any  remaining string is fine... 
+                //any  remaining string is fine...
                 return true;
             }
-            
+
             //sWild is now one past the *
             mp = sWild;
             cp = sStr+1;
         }
-        else if ((*sWild == *sStr) || (*sWild == '?')) 
+        else if ((*sWild == *sStr) || (*sWild == '?'))
         {
             //lock step advance
             sWild++;
             sStr++;
         }
-        else 
+        else
         {
             //wildcard active
             sWild = mp;
             sStr = cp++;
         }
     }
-    
-    while (*sWild == '*') 
+
+    while (*sWild == '*')
     {
         sWild++;
     }
@@ -1027,9 +1028,9 @@ string MOOSGetTimeStampString(double t)
     {
         time( &aclock );
     }
- 	
+
     Now = localtime( &aclock );
-    //change suggested by toby schneider April 2009 
+    //change suggested by toby schneider April 2009
     //Now = gmtime( &aclock );
     char sTmp[1000];
 
@@ -1051,7 +1052,7 @@ string MOOSGetTimeStampString(double t)
 
 void MOOSToUpper(string &str)
 {
-	std::transform(str.begin(), str.end(),str.begin(), ::toupper); 
+	std::transform(str.begin(), str.end(),str.begin(), ::toupper);
 }
 
 void MOOSToLower(string &str)
@@ -1240,11 +1241,11 @@ void InhibitMOOSTraceInThisThread(bool bInhibit)
     MOOS::ScopedLock Lock(gTraceLock);
 
 #ifdef _WIN32
-    DWORD Me = GetCurrentThreadId(); 
+    DWORD Me = GetCurrentThreadId();
 #else
     pthread_t Me =  pthread_self();
 #endif
-    
+
     gThread2TraceMap[Me] = bInhibit;
 }
 
@@ -1264,7 +1265,7 @@ void MOOSTrace(const char *FmtStr,...)
     //from this thread has been inhibited by a call to
     //
 #ifdef _WIN32
-    DWORD Me = GetCurrentThreadId(); 
+    DWORD Me = GetCurrentThreadId();
 #else
     pthread_t Me =  pthread_self();
 #endif
@@ -1282,8 +1283,8 @@ void MOOSTrace(const char *FmtStr,...)
                     return;
         }
     }
-    
-    
+
+
     const unsigned int MAX_TRACE_STR = 2048;
 
     if(strlen(FmtStr)<MAX_TRACE_STR)

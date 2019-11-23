@@ -3,21 +3,21 @@
 //
 //   This file is part of the MOOS project
 //
-//   MOOS : Mission Oriented Operating Suite A suit of 
-//   Applications and Libraries for Mobile Robotics Research 
+//   MOOS : Mission Oriented Operating Suite A suit of
+//   Applications and Libraries for Mobile Robotics Research
 //   Copyright (C) Paul Newman
-//    
-//   This software was written by Paul Newman at MIT 2001-2002 and 
-//   the University of Oxford 2003-2013 
-//   
-//   email: pnewman@robots.ox.ac.uk. 
-//              
+//
+//   This software was written by Paul Newman at MIT 2001-2002 and
+//   the University of Oxford 2003-2013
+//
+//   email: pnewman@robots.ox.ac.uk.
+//
 //   This source code and the accompanying materials
 //   are made available under the terms of the GNU Lesser Public License v2.1
 //   which accompanies this distribution, and is available at
-//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful, 
-//   but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+//   http://www.gnu.org/licenses/lgpl.txt distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 //
 ////////////////////////////////////////////////////////////////////////////
 **/
@@ -86,8 +86,8 @@ using namespace std;
 /*file scope function to redirect thread work to a particular instance of CMOOSCommClient */
 bool ClientLoopProc( void * pParameter)
 {
-	CMOOSCommClient* pMe = 	(CMOOSCommClient*)pParameter;    
-	return pMe->ClientLoop();	
+	CMOOSCommClient* pMe = 	(CMOOSCommClient*)pParameter;
+	return pMe->ClientLoop();
 }
 
 CMOOSCommClient::CMOOSCommClient()
@@ -98,7 +98,7 @@ CMOOSCommClient::CMOOSCommClient()
 
 	m_pfnDisconnectCallBack = NULL;
 	m_pDisconnectCallBackParam = NULL;
-    
+
     m_pfnMailCallBack = NULL;
 	m_pSocket = NULL;
 
@@ -124,14 +124,14 @@ CMOOSCommClient::CMOOSCommClient()
     //by using time information sent by the CommServer sitting
     //at the other end of this conenection.
     m_bDoLocalTimeCorrection = true;
-	
+
 	m_bMailPresent = false;
 
 	//assume an old DB
 	m_bDBIsAsynchronous = false;
 
 	SetCommsControlTimeWarpScaleFactor(TIME_WARP_AGGLOMERATION_CONSTANT);
-    
+
     SetVerboseDebug(false);
 
 	SocketsInit();
@@ -216,7 +216,7 @@ bool CMOOSCommClient::SetCommsTick(int nCommTick)
             m_nFundamentalFreq = 1;
         return true;
     }
-    
+
 }
 
 
@@ -396,25 +396,25 @@ bool CMOOSCommClient::ClientLoop()
 			while(!m_bQuit)
 			{
 
-                
+
                 if(m_bVerboseDebug)
                 {
 					MOOSTrace("COMMSCLIENT DEBUG: Tick period %f ms (should be %d ms)\n",MOOSLocalTime()-dfTDebug,(int)(1000.0/m_nFundamentalFreq));
                     dfTDebug = MOOSLocalTime();
                 }
-                                   
+
 				if(!DoClientWork())
 				{
 					break;
 				}
-                
+
                 if(m_bVerboseDebug)
                     MOOSTrace("COMMSCLIENT DEBUG: DoClientWork takes %fs\n",MOOSLocalTime()-dfTDebug);
 
 				//wait a while before contacting server again;
                 if(m_nFundamentalFreq==0)
                     m_nFundamentalFreq=1;
-                
+
 				MOOSPause((int)(1000.0/m_nFundamentalFreq));
 
 			}
@@ -436,7 +436,7 @@ bool CMOOSCommClient::ClientLoop()
     if(!m_bQuiet)
         MOOSTrace("CMOOSCommClient::ClientLoop() quits\n");
 
-	m_bConnected = false;
+    m_bConnected = false;
 
 	return true;
 }
@@ -652,8 +652,8 @@ bool CMOOSCommClient::DoClientWork()
 
 		//note the symmetry here... a warm feeling
 		CMOOSCommPkt PktTx,PktRx;
-		
-		m_OutLock.Lock();         
+
+		m_OutLock.Lock();
 		{
 			//if nothing to send we send a NULL packet
 			//just to tick things over..
@@ -667,17 +667,17 @@ bool CMOOSCommClient::DoClientWork()
 
 
 			//convert our out box to a single packet
-			try 
+			try
 			{
 				PktTx.Serialize(m_OutBox,true);
 				m_nMsgsSent+=PktTx.GetNumMessagesSerialised();
 				m_nBytesSent+=PktTx.GetStreamLength();
 			}
-			catch (CMOOSException & e) 
+			catch (CMOOSException & e)
 			{
 				//clear the outbox
 				m_OutBox.clear();
-				throw CMOOSException("Serialisation Failed - this must be a lot of mail..."); 
+				throw CMOOSException("Serialisation Failed - this must be a lot of mail...");
 			}
 
 			//clear the outbox
@@ -686,7 +686,7 @@ bool CMOOSCommClient::DoClientWork()
 
 		}
 		m_OutLock.UnLock();
-                    
+
 		double dfLocalPktTxTime = MOOSLocalTime();
 
         if(m_bVerboseDebug)
@@ -695,7 +695,7 @@ bool CMOOSCommClient::DoClientWork()
         }
 
         SendPkt(m_pSocket,PktTx);
-		
+
         ReadPkt(m_pSocket,PktRx);
 
 		m_nPktsReceived++;
@@ -707,12 +707,12 @@ bool CMOOSCommClient::DoClientWork()
 
 		//quick! grab this time
 		double dfLocalPktRxTime = MOOSLocalTime();
-        
+
         if(m_bVerboseDebug)
         {
             MOOSTrace("COMMSERVER DEBUG: completed call to DB after %f s\n",dfLocalPktRxTime-dfLocalPktRxTime);
         }
-                 
+
 
 
 		m_InLock.Lock();
@@ -748,8 +748,8 @@ bool CMOOSCommClient::DoClientWork()
 
 			//here we dispatch to special call backs managed by threads
 			DispatchInBoxToActiveThreads();
-            
-       
+
+
 			m_bMailPresent = !m_InBox.empty();
 		}
 		m_InLock.UnLock();
@@ -761,13 +761,13 @@ bool CMOOSCommClient::DoClientWork()
                 MOOSTrace("user mail callback returned false..is all ok?\n");
         }
 
-        
+
 	}
 	catch(CMOOSException & e)
 	{
 		MOOSTrace("Exception in ClientLoop() : %s\n",e.m_sReason);
 		OnCloseConnection();
-		return false;//jump out to connect loop....				
+		return false;//jump out to connect loop....
 	}
 
 	return true;
@@ -916,7 +916,7 @@ bool CMOOSCommClient::StartThreads()
         return false;
 
 
-	return true;
+    return true;
 }
 
 bool CMOOSCommClient::ConnectToServer()
@@ -942,7 +942,7 @@ bool CMOOSCommClient::ConnectToServer()
         if(m_bDisableNagle)
         	m_pSocket->vSetNoDelay(1);
 
-		try
+        try
 		{
 			m_pSocket->vConnect(m_sDBHost.c_str());
 			break;
@@ -1000,7 +1000,7 @@ bool CMOOSCommClient::ConnectToServer()
 	    if(!m_bQuiet)
 	        MOOSTrace("--------------------------------------------------\n\n");
 
-		m_bQuit = true;
+        m_bQuit = true;
 
 		if(m_pSocket)
 			delete m_pSocket;
@@ -1034,13 +1034,13 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 			Msg.m_sSrc = m_sMyName;
 		}
 	}
-	
+
 
 	if(Msg.IsType(MOOS_SERVER_REQUEST))
 	{
-		Msg.m_nID=MOOS_SERVER_REQUEST_ID;	
+		Msg.m_nID=MOOS_SERVER_REQUEST_ID;
 	}
-	else 
+	else
 	{
 		//set up Message ID;
 		Msg.m_nID=m_nNextMsgID++;
@@ -1053,7 +1053,7 @@ bool CMOOSCommClient::Post(CMOOSMsg &Msg, bool bKeepMsgSourceName)
 		m_OutBox.push_back(Msg);
 
 	if(m_OutBox.size()>m_nOutPendingLimit)
-	{	
+	{
         if(!m_bExpectMailBoxOverFlow)
         {
             MOOSTrace("\nThe outbox is very full. This is suspicious and dangerous.\n");
@@ -1119,12 +1119,12 @@ bool CMOOSCommClient::HandShake()
         if(m_bDoLocalTimeCorrection)
             SetMOOSSkew(0);
 
-	    if(!m_bQuiet)
+        if(!m_bQuiet)
         {
             std::cout<<"\n";
             std::cout<<std::left<<std::setw(40)<<("  Handshaking as "+m_sMyName);
         }
-		
+
 		//announce the protocl we will be talking...
 		// We use strncpy to explicitly pad the destination buffer with
 		// nulls, so the handshake message will not contain random bytes.
@@ -1361,14 +1361,14 @@ bool CMOOSCommClient::Register(const std::string & sVarPattern,const std::string
         return MOOSFail("empty source pattern in CMOOSCommClient::Register");
 
 
-	MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
-	MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
-	MOOSAddValToString(sMsg,"Interval",dfInterval);
+    MOOSAddValToString(sMsg,"AppPattern",sAppPattern);
+    MOOSAddValToString(sMsg,"VarPattern",sVarPattern);
+    MOOSAddValToString(sMsg,"Interval",dfInterval);
 
-	CMOOSMsg MsgR(MOOS_WILDCARD_REGISTER,m_sMyName,sMsg);
+    CMOOSMsg MsgR(MOOS_WILDCARD_REGISTER,m_sMyName,sMsg);
 
 
-	return Post(MsgR);
+    return Post(MsgR);
 }
 
 
@@ -1395,9 +1395,9 @@ bool CMOOSCommClient::Notify(const std::string & sVar,double dfVal, const std::s
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),dfVal,dfTime);
 
 	Msg.SetSourceAux(sSrcAux);
-	
+
 	m_Published.insert(sVar);
-	
+
 	return Post(Msg);
 }
 
@@ -1417,11 +1417,11 @@ bool CMOOSCommClient::Notify(const string &sVar, const string & sVal, double dfT
 bool CMOOSCommClient::Notify(const std::string &sVar, const std::string & sVal, const std::string & sSrcAux, double dfTime)
 {
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar.c_str(),sVal.c_str(),dfTime);
-	
+
 	Msg.SetSourceAux(sSrcAux);
-	
+
 	m_Published.insert(sVar);
-	
+
 	return Post(Msg);
 }
 
@@ -1440,28 +1440,28 @@ bool CMOOSCommClient::Notify(const std::string &sVar, const char * sVal,const st
 bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize, double dfTime)
 {
 	std::string BinaryPayload((char*)pData,nSize);
-	
+
 	CMOOSMsg Msg(MOOS_NOTIFY,sVar,BinaryPayload,dfTime);
 
 	Msg.MarkAsBinary();
-	
+
 	m_Published.insert(sVar);
-	
+
 	return Post(Msg);
-	
+
 }
 
 
 bool CMOOSCommClient::Notify(const string &sVar, void * pData,unsigned int nSize, const std::string & sSrcAux,double dfTime)
 {
-	
+
     CMOOSMsg Msg(MOOS_NOTIFY,sVar,nSize,pData,dfTime);
 
 	Msg.SetSourceAux(sSrcAux);
     Msg.MarkAsBinary();
 
 	m_Published.insert(sVar);
-	
+
 	return Post(Msg);
 }
 
@@ -1489,12 +1489,12 @@ bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList,
 {
     if(!IsConnected())
         return false;
-    
-	CMOOSMsg Msg(MOOS_SERVER_REQUEST,sWhat.c_str(),"");
+
+    CMOOSMsg Msg(MOOS_SERVER_REQUEST,sWhat.c_str(),"");
 
 	if(!Post(Msg))
 		return false;
-	
+
 	if(!Flush())
 		return false;
 
@@ -1509,10 +1509,10 @@ bool CMOOSCommClient::ServerRequest(const string &sWhat,MOOSMSG_LIST  & MsgList,
 
 	while(dfWaited<dfTimeOut)
 	{
-		if (Peek(MsgList, MOOS_SERVER_REQUEST_ID, bClear)) 
+		if (Peek(MsgList, MOOS_SERVER_REQUEST_ID, bClear))
 		{
 			//OK we have our reply...
-			return true;            
+			return true;
 		}
 		else
 		{
@@ -1552,7 +1552,7 @@ bool CMOOSCommClient::Peek(MOOSMSG_LIST & MsgList, int nIDRequired,bool bClear)
 	}
 
 	//conditionally (ex MIT suggestion 2006) remove all elements
-	if(bClear) 
+	if(bClear)
 		m_InBox.clear();
 
 
@@ -1563,7 +1563,7 @@ bool CMOOSCommClient::Peek(MOOSMSG_LIST & MsgList, int nIDRequired,bool bClear)
 
 //a static helper function
 bool CMOOSCommClient::PeekMail(MOOSMSG_LIST &Mail,
-							   const string &sKey, 
+							   const string &sKey,
 							   CMOOSMsg &Msg,
 							   bool bRemove,
 							   bool bFindYoungest )
@@ -1627,10 +1627,10 @@ bool CMOOSCommClient::Close(bool  )
 {
 
 	m_bQuit = true;
-	
+
 	if(m_ClientThread.IsThreadRunning())
 		m_ClientThread.Stop();
-    
+
 	ClearResources();
 
 	MOOS::ScopedLock L(ActiveQueuesLock_);
@@ -1728,7 +1728,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	double dfNewSkew = m_pSkewFilter->Update(dfRqTime, dfTxTime, dfRxTime, &skewinfo);
 
 #else // MOOS_DETECT_CLOCK_DRIFT
-	
+
 	double dfMeasuredSkewA = dfTxTime-dfRxTime;
 	double dfMeasuredSkewB = dfTxTime-dfRqTime;
 	double dfMeasuredSkew  = 0.5*(dfMeasuredSkewA+dfMeasuredSkewB);
@@ -1736,7 +1736,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	double dfNewSkew;
 	if(dfOldSkew!=0.0)
 	{
-		dfNewSkew = 0.9*dfOldSkew+0.1*dfMeasuredSkew;	
+		dfNewSkew = 0.9*dfOldSkew+0.1*dfMeasuredSkew;
 	}
 	else
 	{
@@ -1765,7 +1765,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 	if (SkewLog.get())
 	{
 	    SkewLog->setf(std::ios::fixed);
-	    (*SkewLog) << 
+	    (*SkewLog) <<
 		"RQ=" << setprecision(9) << dfRqTime << "," <<
 		"TX=" << setprecision(9) << dfTxTime << "," <<
 		"RX=" << setprecision(9) << dfRxTime << "," <<
@@ -1779,7 +1779,7 @@ bool CMOOSCommClient::UpdateMOOSSkew(double dfRqTime, double dfTxTime, double df
 		"envEst=" << setprecision(9) << skewinfo.envEst << "," <<
 		"filtEst=" << setprecision(9) << skewinfo.filtEst <<
 #endif // MOOS_DETECT_CLOCK_DRIFT
-		std::endl;		
+		std::endl;
 	}
 */
 
