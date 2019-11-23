@@ -39,7 +39,7 @@
 
 #ifndef _WIN32
     #include <fcntl.h>
-    #include <sys/signal.h>
+    #include <signal.h>
     #include <sys/types.h>
     #include <termios.h>
         #include <unistd.h>
