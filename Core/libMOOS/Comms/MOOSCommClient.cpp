@@ -105,6 +105,7 @@ CMOOSCommClient::CMOOSCommClient()
 	m_nOutPendingLimit = OUTBOX_PENDING_LIMIT;
 	m_nInPendingLimit = INBOX_PENDING_LIMIT;
 	m_bConnected = false;
+        m_dfLastConnectionTime = -1;
 	m_nFundamentalFreq = CLIENT_DEFAULT_FUNDAMENTAL_FREQ;
 	m_nNextMsgID=0;
 	m_bFakeSource = false;
@@ -977,6 +978,7 @@ bool CMOOSCommClient::ConnectToServer()
 		//suggestion to move this to here accpted by PMN on 21st Jan 2009
         //we must be connected for user callback to work..
         m_bConnected = true;
+        m_dfLastConnectionTime = MOOSLocalTime();
 
 
         if(m_pfnConnectCallBack!=NULL)

@@ -366,14 +366,18 @@ bool MOOSAsyncCommClient::ReadingLoop() {
         {
             if (!DoReading())
             {
+              const double StartTimeOfConnectionToTerminate =
+                  m_dfLastConnectionTime;
                 OutGoingQueue_.Push(
                                     CMOOSMsg(MOOS_TERMINATE_CONNECTION,
                                              "-quit-", 0));
 
-                //std::cout<<"reading failed!\n";
-
-                while (IsConnected())//wait for connection to terminate...
-                    MOOSPause(200);
+                while (IsConnected() &&
+                       m_dfLastConnectionTime ==
+                       StartTimeOfConnectionToTerminate) {
+                  //wait for connection to terminate...
+                  MOOSPause(200);
+                }
             }
 
         }
