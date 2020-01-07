@@ -34,17 +34,14 @@
 #endif
 
 
+#include "MOOS/libMOOS/MOOSVersion.h"
 #include "MOOS/libMOOS/MOOSLib.h"
 #include "MOOS/libMOOS/Thirdparty/getpot/GetPot.hpp"
 #include "MOOS/libMOOS/Utils/ConsoleColours.h"
-#include "MOOS/libMOOS/MOOSVersion.h"
-#include "MOOS/libMOOS/GitVersion.h"
 #include "MOOS/libMOOS/DB/MOOSDBLogger.h"
 #include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
-
-
-
 #include "MOOS/libMOOS/DB/MOOSDB.h"
+
 #include "assert.h"
 #include <iostream>
 #include <cmath>
@@ -253,7 +250,7 @@ void CMOOSDB::OnPrintVersionAndExit()
     std::cout<<"--------------------------------------------------\n";
     std::cout<<"MOOS version "<<MOOS_VERSION_NUMBER<<"\n";
     std::cout<<"Built on "<<__DATE__<<" at "<<__TIME__<<"\n";
-    std::cout<<MOOS_GIT_VERSION<<"\n";
+    std::cout<<"Git version " << MOOS_GIT_VERSION<<"\n";
     std::cout<<"--------------------------------------------------\n";
     exit(0);
 }
