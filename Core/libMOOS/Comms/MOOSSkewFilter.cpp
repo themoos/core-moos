@@ -42,13 +42,15 @@ namespace MOOS
         MOOSTrace("UpperBound:\n");
         m_UpperBound.DumpState();
 	}
-
-
+    
     CMOOSSkewFilter::CMOOSSkewFilter()
         : m_LowerBound(CConvexEnvelope::envelopeAbove),
-        m_UpperBound(CConvexEnvelope::envelopeBelow)
+        m_UpperBound(CConvexEnvelope::envelopeBelow),
+        m_dfLastVal(0.0),
+        m_dfLastTime(0.0),
+        m_dfCurrSkew(0.0),
+        m_nMeas(0)
     {
-        Reset();
     }
 
 
@@ -260,9 +262,14 @@ namespace MOOS
 
 
 	CConvexEnvelope::CConvexEnvelope(eDirection aboveOrBelow)
-        : m_aboveOrBelow(aboveOrBelow)
+	: m_segs(),
+	  m_bHaveInitPt(false),
+	  m_InitPt(),
+	  m_uiLongestSegID(0),
+	  m_dfLongestSegLen(0.0),
+	  m_aboveOrBelow(aboveOrBelow),
+	  m_nMeas(0)
 	{
-		Reset();
 	}
 
 
