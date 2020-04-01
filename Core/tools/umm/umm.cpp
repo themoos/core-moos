@@ -156,7 +156,7 @@ void PrintHelp()
     MOOSTrace("  --network_failure_prob=<numeric>       : probability of each DB interaction having network failure [0.1]\n");
     MOOSTrace("  --network_failure_time=<numeric>       : duration of network failure [3s]\n");
     MOOSTrace("  --application_failure_prob=<numeric>   : probability of application failing during DB-communication [0]\n");
-    MOOSTrace("  --cpu_load=<numeric>                   : percentage cpu loading to simulate (400% takes 4 cores etc.. )  [0]\n");
+    MOOSTrace("  --cpu_load=<numeric>                   : percentage cpu loading to simulate (400%% takes 4 cores etc.. )  [0]\n");
 
     MOOSTrace("\n\nExample Usage:\n");
     MOOSTrace("  ./umm --moos_name=C1 --moos_apptick=30  -s=x -p=y@0.5,z@2.0\n");

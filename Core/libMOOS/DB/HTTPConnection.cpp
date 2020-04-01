@@ -595,7 +595,7 @@ bool CHTTPConnection::SendHeader()
 {
       SendLine("HTTP/1.1 200 OK");
       SendLine("Content-Type: text/html; charset=ISO-8859-1");
-      SendLine(MOOSFormat("Content-Length: %d",m_sWebPage.size()));
+      SendLine(MOOSFormat("Content-Length: %lu",m_sWebPage.size()));
       SendLine("");
 
       return true;

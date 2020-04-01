@@ -1179,7 +1179,7 @@ string MOOSFormat(const char * FmtStr,...)
 
         if(n==sizeof(buf))
         {
-            MOOSTrace("WARNING MOOFormat() TRUNCATED TO %d CHARS",sizeof(buf));
+            MOOSTrace("WARNING MOOFormat() TRUNCATED TO %lu CHARS",sizeof(buf));
         }
 
         va_end( arg_ptr );
@@ -1216,7 +1216,7 @@ bool MOOSFail(const char * FmtStr,...)
 
         if(n==sizeof(buf))
         {
-            MOOSTrace("WARNING MOOFormat() TRUNCATED TO %d CHARS",sizeof(buf));
+            MOOSTrace("WARNING MOOFormat() TRUNCATED TO %lu CHARS",sizeof(buf));
         }
 
         va_end( arg_ptr );

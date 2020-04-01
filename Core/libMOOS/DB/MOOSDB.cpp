@@ -1384,7 +1384,7 @@ bool CMOOSDB::OnClearRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
 
     MOOSTrace("Clear Down Requested:\n");
     
-    MOOSTrace("    Resetting %d variables...",m_VarMap.size());
+    MOOSTrace("    Resetting %lu variables...",m_VarMap.size());
     
     DBVAR_MAP::iterator p;
     
@@ -1396,7 +1396,7 @@ bool CMOOSDB::OnClearRequested(CMOOSMsg &Msg, MOOSMSG_LIST &MsgTxList)
     MOOSTrace("done\n");
     
     
-    MOOSTrace("    Removing %d existing notification queues...",m_HeldMailMap.size());
+    MOOSTrace("    Removing %lu existing notification queues...",m_HeldMailMap.size());
     MOOSMSG_LIST_STRING_MAP::iterator q;
     
     for(q = m_HeldMailMap.begin();q!=m_HeldMailMap.end();++q)
