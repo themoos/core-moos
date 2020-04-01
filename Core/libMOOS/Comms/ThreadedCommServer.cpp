@@ -856,10 +856,6 @@ bool ThreadedCommServer::ClientThread::HandleClientWrite()
 				std::cerr<<"logical error ThreadedCommServer::ClientThread::HandleClientWrite\n";
 			}
         }
-        else
-        {
-        }
-
     }
     catch (const CMOOSException & e)
     {
