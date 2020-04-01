@@ -147,7 +147,7 @@ CMOOSCommClient::CMOOSCommClient()
 
 CMOOSCommClient::~CMOOSCommClient()
 {
-	Close();
+    CMOOSCommClient::Close();
 }
 
 bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency)

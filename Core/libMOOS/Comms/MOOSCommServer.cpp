@@ -143,7 +143,7 @@ CMOOSCommServer::CMOOSCommServer()
 
 CMOOSCommServer::~CMOOSCommServer()
 {
-    Stop();
+    CMOOSCommServer::Stop();
 }
 
 bool CMOOSCommServer::Stop()
