@@ -637,13 +637,13 @@ bool MOOSVectorFromString(const string & sStr,std::vector<double> & dfValVec,int
 
     if(nPos==string::npos)
         return false;
-
-
-    if(nCols==0 ||nRows==0)
+    
+    
+    if(nCols<=0 ||nRows<=0)
         return false;
 
     dfValVec.clear();
-    dfValVec.reserve(nRows*nCols);
+    dfValVec.reserve(std::size_t(nRows)*std::size_t(nCols));
 
 
     const char * pStr = sStr.data();
@@ -695,13 +695,13 @@ bool MOOSVectorFromString(const string & sStr,std::vector<float> & fValVec,int &
 
     if(nPos==string::npos)
         return false;
-
-
-    if(nCols==0 ||nRows==0)
+    
+    
+    if(nCols<=0 ||nRows<=0)
         return false;
 
     fValVec.clear();
-    fValVec.reserve(nRows*nCols);
+    fValVec.reserve(std::size_t(nRows)*std::size_t(nCols));
 
 
     const char * pStr = sStr.data();
@@ -757,13 +757,13 @@ bool MOOSVectorFromString(const string & sStr,std::vector<unsigned int> & nValVe
 
     if(nPos==string::npos)
         return false;
-
-
-    if(nCols==0 ||nRows==0)
+    
+    
+    if(nCols<=0 ||nRows<=0)
         return false;
 
     nValVec.clear();
-    nValVec.reserve(nRows*nCols);
+    nValVec.reserve(std::size_t(nRows)*std::size_t(nCols));
 
 
     const char * pStr = sStr.data();
