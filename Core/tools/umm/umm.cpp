@@ -40,6 +40,7 @@
 #include "MOOS/libMOOS/Utils/KeyboardCapture.h"
 #include "MOOS/libMOOS/Utils/IPV4Address.h"
 #include "MOOS/libMOOS/Utils/ProcInfo.h"
+#include "MOOS/libMOOS/Utils/MOOSScopedPtr.h"
 #include <algorithm>
 #include <queue>
 #include <ctime>
@@ -281,7 +282,7 @@ public:
             if(_cpu_load<0 || _cpu_load>kMaxCPULoadPercent){
                 std::cerr<<"CPU Load must be >0 and <= "<<kMaxCPULoadPercent<<"\n";
             }else{
-                cpu_loader_ = new CPULoader(_cpu_load);
+                cpu_loader_.reset(new CPULoader(_cpu_load));
             }
         }
 
@@ -707,8 +708,8 @@ private:
     std::ofstream _LogFile;
     int _TxCount;
     double _cpu_load;
-
-    CPULoader* cpu_loader_;
+    
+    MOOS::ScopedPtr<CPULoader> cpu_loader_;
 
 
 
