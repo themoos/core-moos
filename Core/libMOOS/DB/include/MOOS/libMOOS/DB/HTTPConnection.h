@@ -26,6 +26,7 @@
 
 
 #ifndef CHTTPCONNECTIONH
+#define CHTTPCONNECTIONH
 
 #include "MOOS/libMOOS/Utils/MOOSThread.h"
 #include <map>
