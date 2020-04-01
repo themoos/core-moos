@@ -186,7 +186,7 @@ namespace MOOS
 		{
 		}
 
-        void Reset()
+        virtual void Reset()
         {
             m_dfBeginTime  = 0;
             m_dfSkewOffset = 0;
@@ -196,7 +196,7 @@ namespace MOOS
         }
 
         // Mainly we override the 'update' function
-        double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
+        virtual double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
         {
             // Transform input values
             // If this is the first call then we need to store offsets
