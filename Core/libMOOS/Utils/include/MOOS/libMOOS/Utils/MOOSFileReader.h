@@ -24,17 +24,17 @@
 // MOOSFileReader.h: interface for the CMOOSFileReader class.
 //
 //////////////////////////////////////////////////////////////////////
-#ifdef _WIN32
-    #pragma warning(disable : 4786)
-    #pragma warning(disable : 4503)
-#endif
-
 #if !defined(AFX_MOOSFILEREADER_H__B355D791_3CC0_4612_B755_020A269204F2__INCLUDED_)
 #define AFX_MOOSFILEREADER_H__B355D791_3CC0_4612_B755_020A269204F2__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#ifdef _WIN32
+#pragma warning(disable : 4786)
+#pragma warning(disable : 4503)
+#endif
 
 #include <fstream>
 #include <string>
