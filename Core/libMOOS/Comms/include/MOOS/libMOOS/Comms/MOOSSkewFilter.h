@@ -89,10 +89,6 @@ namespace MOOS
 		bool GetLineParams(const tPt &p1, const tPt &p2, double &M, double &C) const;
 
 	private:
-		CConvexEnvelope(const CConvexEnvelope &v); // Not implemented
-		void operator=(const CConvexEnvelope &v);  // Not implemented
-
-	private:
 		std::deque<tSeg> m_segs;
 
 		// Temporarily store first point for each pending segment.
@@ -186,7 +182,7 @@ namespace MOOS
 		{
 		}
 
-        void Reset()
+        virtual void Reset()
         {
             m_dfBeginTime  = 0;
             m_dfSkewOffset = 0;
@@ -196,7 +192,7 @@ namespace MOOS
         }
 
         // Mainly we override the 'update' function
-        double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
+        virtual double Update(double dfRQtime, double dfTXtime, double dfRXtime, tSkewInfo *skewinfo)
         {
             // Transform input values
             // If this is the first call then we need to store offsets
@@ -227,11 +223,6 @@ namespace MOOS
 
             return dfSkew - m_dfSkewOffset;
         }
-
-	private:
-		CMOOSConditionedSkewFilter(const CMOOSConditionedSkewFilter &v); // Not implemented
-		void             operator=(const CMOOSConditionedSkewFilter &v); // Not implemented
-
 
     private:
         double m_dfBeginTime;

@@ -24,16 +24,16 @@
 // MOOSSerialPort.h: interface for the CMOOSLinuxSerialPort class.
 //
 //////////////////////////////////////////////////////////////////////
-#ifdef _WIN32
-    #pragma warning(disable : 4786)
-#endif
-
 #if !defined(AFX_MOOSLINUXSERIALPORT_H__7C4C08B7_D9E9_4226_A227_81B9621BC09A__INCLUDED_)
 #define AFX_MOOSLINUXSERIALPORT_H__7C4C08B7_D9E9_4226_A227_81B9621BC09A__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#ifdef _WIN32
+#pragma warning(disable : 4786)
+#endif
 
 #include <string>
 

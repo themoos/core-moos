@@ -147,7 +147,7 @@ CMOOSCommClient::CMOOSCommClient()
 
 CMOOSCommClient::~CMOOSCommClient()
 {
-	Close();
+    CMOOSCommClient::Close();
 }
 
 bool CMOOSCommClient::Run(const std::string & sServer, int Port, const std::string & sMyName, unsigned int nFundamentalFrequency)
@@ -938,7 +938,7 @@ bool CMOOSCommClient::ConnectToServer()
 	while(!m_bQuit)
 	{
         if(!m_bQuiet)
-		    MOOSTrace("  contacting a MOOS server %s:%d -  try %.5d ",m_sDBHost.c_str(),m_lPort,++nAttempt);
+		    MOOSTrace("  contacting a MOOS server %s:%ld -  try %.5d ",m_sDBHost.c_str(),m_lPort,++nAttempt);
 
         if(m_bDisableNagle)
         	m_pSocket->vSetNoDelay(1);
@@ -1682,7 +1682,7 @@ bool CMOOSCommClient::ClearResources()
 string CMOOSCommClient::GetDescription()
 {
     //pmn makes this more of a standard thing in May 2009  - use of : instead of @
-	return MOOSFormat("%s:%d",m_sDBHost.c_str(),m_lPort);
+	return MOOSFormat("%s:%ld",m_sDBHost.c_str(),m_lPort);
 }
 
 bool CMOOSCommClient::Flush()

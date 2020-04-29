@@ -416,7 +416,7 @@ bool MOOSAsyncCommClient::DoReading()
 		{
 			if(m_InBox.size()>m_nInPendingLimit)
 			{
-				MOOSTrace("Too many unread incoming messages [%d] : purging\n",m_InBox.size());
+				MOOSTrace("Too many unread incoming messages [%lu] : purging\n",m_InBox.size());
 				MOOSTrace("The user must read mail occasionally");
 				m_InBox.clear();
 			}

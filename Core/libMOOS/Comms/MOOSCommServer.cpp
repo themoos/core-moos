@@ -143,7 +143,7 @@ CMOOSCommServer::CMOOSCommServer()
 
 CMOOSCommServer::~CMOOSCommServer()
 {
-    Stop();
+    CMOOSCommServer::Stop();
 }
 
 bool CMOOSCommServer::Stop()
@@ -745,13 +745,13 @@ bool CMOOSCommServer::OnNewClient(XPCTcpSocket * pNewClient,char * sName)
         {
             std::cout<<"  Handshaking   :  "<<MOOS::ConsoleColours::green()<<"OK\n"<<MOOS::ConsoleColours::reset();
 
-            string sName = GetClientName(pNewClient);
+            string sClientName = GetClientName(pNewClient);
 
-            if(!sName.empty())
+            if(!sClientName.empty())
             {
-                std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sName<<MOOS::ConsoleColours::reset()<<"\n";
+                std::cout<<"  Client's name :  "<<MOOS::ConsoleColours::green()<<sClientName<<MOOS::ConsoleColours::reset()<<"\n";
             }
-            if(m_AsynchronousClientSet.find(sName)!=m_AsynchronousClientSet.end())
+            if(m_AsynchronousClientSet.find(sClientName)!=m_AsynchronousClientSet.end())
             {
                 std::cout<<"  Type          :  "<<MOOS::ConsoleColours::Yellow()<<"Asynchronous"<<MOOS::ConsoleColours::reset()<<"\n";
             }
