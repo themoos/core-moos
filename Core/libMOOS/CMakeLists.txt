@@ -78,31 +78,18 @@ set(DB_SOURCES
     DB/MOOSDBLogger.cpp
 )
 
-#do we want to use the new fast asynchronous client architecture?
-option(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
-if(USE_ASYNC_COMMS)
-  set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
-endif()
-
-# Configure step picks up the ASYNCHRONOUS_CLIENT_DEFINE variable
-configure_file(${CMAKE_MODULE_PATH}/ClientDefines.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/App/include/MOOS/libMOOS/App/ClientDefines.h
-    @ONLY
-)
-
-
-
 ##########################
 # Packages / Dependencies
 set(INCLUDE_ROOTS
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/App/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Comms/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/DB/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Utils/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/App/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Comms/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/DB/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Utils/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/PocoBits/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/getpot/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/AppCasting/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/include"
 )
 
 
@@ -121,6 +108,13 @@ add_library(MOOS
     ${APP_SOURCES}
     ${DB_SOURCES}
 )
+
+#do we want to use the new fast asynchronous client architecture?
+option(USE_ASYNC_COMMS  "enable fast asynchronous comms architecture" ON)
+if(USE_ASYNC_COMMS)
+  set(ASYNCHRONOUS_CLIENT_DEFINE "#define ASYNCHRONOUS_CLIENT")
+  target_compile_definitions(MOOS PRIVATE ASYNCHRONOUS_CLIENT)
+endif()
 
 foreach(INCLUDE_ROOT IN LISTS INCLUDE_ROOTS)
     target_include_directories(MOOS PUBLIC
@@ -198,6 +192,13 @@ install(
     DESTINATION .
     FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.hpp"
 )
+
+# Create and install ClientDefines.h header for ASYNCHRONOUS_CLIENT_DEFINE variable
+configure_file("${CMAKE_MODULE_PATH}/ClientDefines.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/MOOS/libMOOS/App/ClientDefines.h"
+    @ONLY
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/MOOS/libMOOS/App/ClientDefines.h" DESTINATION include/MOOS/libMOOS/App)
 
 # install libraries
 install(TARGETS MOOS

@@ -239,6 +239,9 @@ install(
 # Save a version file in the project's install directory
 install(FILES ${VERSION_FILE} DESTINATION "${PROJECT_CONFIG_PATH}")
 
+# Install the MOOSVersion header
+install(FILES "${CMAKE_BINARY_DIR}/Core/libMOOS/include/MOOS/libMOOS/MOOSVersion.h" DESTINATION include/MOOS/libMOOS)
+
 #########################
 
 option(ENABLE_EXPORT
