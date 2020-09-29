@@ -27,5 +27,6 @@ install(TARGETS ${EXECNAME}
   ARCHIVE DESTINATION lib
 )
 
-add_subdirectory(testing)
-
+if(BUILD_TESTS)
+  add_subdirectory(testing)
+endif()
