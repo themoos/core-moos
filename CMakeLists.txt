@@ -90,6 +90,9 @@ if(ENABLE_DOXYGEN)
     include(UseDoxygen)
 endif()
 
+# Option to enable building of tests
+option(BUILD_TESTS "Build tests" ON)
+
 # Option to enable CDash testing
 option(CDASH_SUPPORT "Turn on testing targets that upload results to CDash" OFF)
 
