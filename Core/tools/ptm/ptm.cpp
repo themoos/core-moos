@@ -34,10 +34,7 @@ struct PokeDetails{
         return !details.app_name.empty() && !details.var_name.empty();
     }
 };
-
-bool ParseDetails( s
     
-
 class PokeTheMOOS :  public CMOOSApp
 {
 public:
@@ -74,7 +71,7 @@ int main(int argc , char* argv[])
 
     std::string route_details_string= P.GetFreeParameter(0, "");
     PokeDetails details;
-    if(!ParseDetails(route_details_string,details)){
+    if(!details.from_string(route_details_string,details)){
         std::cerr<<"failed to parse route details in form var_name@app_name\n";
         exit(-1);
     }
