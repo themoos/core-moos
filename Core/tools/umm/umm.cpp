@@ -136,6 +136,7 @@ void PrintHelp()
     MOOSTrace("  -b=<string>            : bounce or reflect variables back under new name using syntax name:new_name,{name:new_name] eg -b=x:y,u:v\n");
 
     MOOSTrace("  --num_tx=<integer>     : only send \"integer\" number of messages\n");
+    MOOSTrace("  --num_rx=<integer>     : only read \"integer\" number of messages\n");
     MOOSTrace("  --latency              : show latency (time between posting and receiving)\n");
     MOOSTrace("  --bandwidth            : print bandwidth\n");
     MOOSTrace("  --skew                 : print timing adjustment relative to the MOOSDB\n");
@@ -172,10 +173,11 @@ void PrintHelp()
 class UMMClient : public CMOOSApp
 {
 public:
-    UMMClient()
-    {
+    UMMClient(){
         _dfMeanLatency = 0;
         _bPingRxd = false;
+        _RxCount=std::numeric_limits<int>::max();
+        _TotalMessagesRead = 0;
     };
 
     bool OnProcessCommandLine()
@@ -255,6 +257,9 @@ public:
 
         _TxCount = -1;
         m_CommandLineParser.GetVariable("--num_tx",_TxCount);
+
+        _RxCount = std::numeric_limits<int>::max();
+        m_CommandLineParser.GetVariable("--num_rx",_RxCount);
 
 
         _bPing = m_CommandLineParser.GetFlag("--ping");
@@ -490,6 +495,12 @@ public:
                     _bPingRxd = true;
                 }
         	}
+
+            //check we are underbound on total number of received messages
+            _TotalMessagesRead++;
+            if(_TotalMessagesRead>=_RxCount){
+                exit(0);
+            }
         }
 
         return true;
@@ -708,6 +719,8 @@ private:
     std::ofstream _LogFile;
     int _TxCount;
     double _cpu_load;
+    int _RxCount;
+    int _TotalMessagesRead;
     
     MOOS::ScopedPtr<CPULoader> cpu_loader_;
 
