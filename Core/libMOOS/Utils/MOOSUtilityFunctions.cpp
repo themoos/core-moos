@@ -47,6 +47,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
+#include <functional>
 
 #ifndef _WIN32
 #include <unistd.h>
