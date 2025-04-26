@@ -58,6 +58,10 @@ ActiveMailQueue::ActiveMailQueue(const std::string & Name) : Name_(Name)
 ActiveMailQueue::~ActiveMailQueue() {
 	// TODO Auto-generated destructor stub
 	Stop();
+	if(pClassMemberFunctionCallback_){
+		delete pClassMemberFunctionCallback_;
+		pClassMemberFunctionCallback_ = NULL;
+	}
 }
 
 std::string ActiveMailQueue::GetName()
